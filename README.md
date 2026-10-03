@@ -9,7 +9,7 @@ Sistema profesional para **evaluar, programar, entrenar y hacer seguimiento** de
 | Documento | Contenido |
 |---|---|
 | [`docs/MASTER_SPECIFICATION.md`](docs/MASTER_SPECIFICATION.md) | Especificación maestra: visión, usuarios, arquitectura, stack, base de datos, módulos, flujos, sistema científico, evaluación, planificación, motor de decisiones, seguridad, testing, roadmap y riesgos. |
-| [`docs/research/`](docs/research/) | Anexos de la Fase 0: análisis de los documentos aportados, registro de evidencia verificada, base de tests y QA de referencias. |
+| [`docs/research/`](docs/research/README.md) | Anexos de la Fase 0: análisis de los documentos aportados, registro de evidencia verificada, base de tests y QA de referencias. |
 | [`CHANGELOG.md`](CHANGELOG.md) | Registro de cambios. |
 
 ## Principios
