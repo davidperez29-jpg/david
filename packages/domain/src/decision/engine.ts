@@ -194,7 +194,7 @@ export function runDecisionEngine(ctx: ClientContext, k: KnowledgeSnapshot): Dec
       t.trait === 'sprint_slow' ? 'lento' : t.trait === 'relative_strength_low' ? 'baja' : 'bajo';
     let v: boolean | null = null;
     let basis: DecisionResult['traits'][number]['basis'] = 'unknown';
-    let detail = '';
+    let detail: string;
     if (ctx.manualTraits[t.trait] !== undefined) {
       v = ctx.manualTraits[t.trait]!;
       basis = 'manual';
