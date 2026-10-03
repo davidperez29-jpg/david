@@ -675,7 +675,7 @@ async function runSessions(
             e.preload.durationS != null
               ? null
               : name === 'Iker' && j === exs.findIndex((x) => x.prescription.rirMax != null)
-                ? Math.min(10, e.prescription.rirMax + 2)
+                ? Math.min(10, (e.prescription.rirMax ?? 2) + 2)
                 : (e.preload.rir ?? 2),
           durationS: e.preload.durationS,
           loggedAt: `${s.scheduledDate}T18:${String(10 + set).padStart(2, '0')}:00+02:00`,
