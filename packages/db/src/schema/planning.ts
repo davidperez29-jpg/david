@@ -362,6 +362,11 @@ export const sessionExercises = pgTable(
       .array()
       .notNull()
       .default(sql`'{}'::uuid[]`),
+    /** Alternatives pre-approved by the trainer for live substitution (§9.3). */
+    alternativeExerciseIds: uuid('alternative_exercise_ids')
+      .array()
+      .notNull()
+      .default(sql`'{}'::uuid[]`),
     ...prescription(),
     /** Which 1RM/e1RM metric %1RM refers to. */
     loadBasisMetric: text('load_basis_metric'),

@@ -58,6 +58,27 @@ export function generateRlsSql(): string {
   );
   stmt(`REVOKE ALL ON FUNCTION email_in_use(text) FROM PUBLIC;`);
   stmt(`GRANT EXECUTE ON FUNCTION email_in_use(text) TO app_runtime;`);
+  // Clients alert their assigned trainers (pain, substitution) without being able to write
+  // arbitrary notifications: only for their own client record, only to its active trainers.
+  stmt(`CREATE OR REPLACE FUNCTION notify_client_trainers(cid uuid, ntype text, ntitle text, nbody text, nlink text) RETURNS integer LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+  DECLARE n integer;
+  BEGIN
+    IF app_org_id() IS NULL OR NOT (app_client_id() = cid OR app_is_staff()) THEN
+      RAISE EXCEPTION 'notify_client_trainers: not allowed' USING ERRCODE = '42501';
+    END IF;
+    INSERT INTO notifications (id, organization_id, user_id, channel, type, title, body, link)
+    SELECT gen_random_uuid(), c.organization_id, tr.user_id, 'in_app', ntype, ntitle, nbody, nlink
+    FROM clients c
+    JOIN trainer_client_assignments a ON a.client_id = c.id AND a.ended_at IS NULL
+    JOIN trainers tr ON tr.id = a.trainer_id
+    WHERE c.id = cid AND c.organization_id = app_org_id();
+    GET DIAGNOSTICS n = ROW_COUNT;
+    RETURN n;
+  END $$;`);
+  stmt(`REVOKE ALL ON FUNCTION notify_client_trainers(uuid, text, text, text, text) FROM PUBLIC;`);
+  stmt(
+    `GRANT EXECUTE ON FUNCTION notify_client_trainers(uuid, text, text, text, text) TO app_runtime;`,
+  );
 
   // Scope triggers.
   stmt(`CREATE OR REPLACE FUNCTION inherit_scope() RETURNS trigger LANGUAGE plpgsql AS $$

@@ -123,6 +123,9 @@ export const setLogs = pgTable(
     /** Idempotency key for offline sync (§4.5). */
     clientMutationId: text('client_mutation_id').unique(),
     source: logSource('source').notNull().default('manual'),
+    /** Offline sync conflict (§4.5): the log is kept and flagged for the trainer to review. */
+    needsReview: boolean('needs_review').notNull().default(false),
+    reviewReason: text('review_reason'),
   },
   (t) => [
     index('set_logs_session_idx').on(t.sessionId),
@@ -251,6 +254,7 @@ export const exerciseSubstitutions = pgTable(
     decidedBy: uuid('decided_by'),
     decidedAt: timestamp('decided_at', { withTimezone: true }),
     comment: text('comment'),
+    clientMutationId: text('client_mutation_id').unique(),
     ...timestamps(),
   },
   (t) => [index('exercise_substitutions_client_idx').on(t.clientId)],

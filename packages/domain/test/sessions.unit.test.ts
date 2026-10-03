@@ -1,0 +1,75 @@
+import { describe, expect, it } from 'vitest';
+import {
+  PAIN_MESSAGE,
+  pickToday,
+  preloadSet,
+  resolveSubstitution,
+  sessionCompletion,
+  syncConflict,
+  validateSetLog,
+} from '../src';
+
+describe('session execution rules', () => {
+  it('picks today’s session, else the next pending one, never a past one', () => {
+    const s = [
+      { id: 'a', date: '2026-10-05', attended: true },
+      { id: 'b', date: '2026-10-07', attended: false },
+      { id: 'c', date: '2026-10-09', attended: false },
+    ];
+    expect(pickToday(s, '2026-10-07')).toEqual({ session: s[1], isToday: true });
+    expect(pickToday(s, '2026-10-08')).toEqual({ session: s[2], isToday: false });
+    expect(pickToday(s, '2026-10-10').session).toBeNull();
+  });
+  it('preloads the prescribed load, else the last one used', () => {
+    const p = {
+      sets: 3,
+      repsMin: 8,
+      repsMax: 10,
+      loadKg: null,
+      rirMin: 2,
+      durationS: null,
+      distanceM: null,
+    };
+    expect(preloadSet(p, { loadKg: 20, reps: 10 })).toMatchObject({ loadKg: 20, reps: 10, rir: 2 });
+    expect(preloadSet({ ...p, loadKg: 22.5 }, { loadKg: 20, reps: 10 }).loadKg).toBe(22.5);
+    expect(preloadSet(p, null).loadKg).toBeNull();
+  });
+  it('validates set logs', () => {
+    expect(validateSetLog({ setIndex: 1, loadKg: 20, reps: 10, rir: 2 })).toEqual({});
+    expect(
+      Object.keys(validateSetLog({ setIndex: 0, rir: 11, rpe: 7.3, reps: -1 })).sort(),
+    ).toEqual(['reps', 'rir', 'rpe', 'setIndex']);
+    expect(validateSetLog({ setIndex: 1, rir: 2, rpe: 8 }).rpe).toBeTruthy();
+  });
+  it('applies pre-approved alternatives; otherwise waits for the trainer; pain always alerts', () => {
+    expect(resolveSubstitution('missing_equipment', 'x', ['x'])).toEqual({
+      status: 'approved',
+      notifyTrainer: false,
+      message: null,
+    });
+    expect(resolveSubstitution('preference', 'y', ['x'])).toMatchObject({
+      status: 'pending',
+      notifyTrainer: true,
+    });
+    expect(resolveSubstitution('pain', 'x', ['x'])).toMatchObject({
+      status: 'approved',
+      notifyTrainer: true,
+      message: PAIN_MESSAGE,
+    });
+  });
+  it('keeps conflicting offline logs and explains why they need review', () => {
+    const ok = {
+      sessionExerciseExists: true,
+      sessionPublished: true,
+      sessionEditedAfter: false,
+      performedMatches: true,
+    };
+    expect(syncConflict(ok)).toBeNull();
+    expect(syncConflict({ ...ok, sessionExerciseExists: false })).toMatch(/ya no está/);
+    expect(syncConflict({ ...ok, sessionEditedAfter: true })).toMatch(/editó/);
+  });
+  it('computes completion', () => {
+    expect(sessionCompletion(12, 12)).toEqual({ percent: 100, status: 'completed' });
+    expect(sessionCompletion(12, 6)).toEqual({ percent: 50, status: 'partial' });
+  });
+});
