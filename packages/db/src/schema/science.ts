@@ -1,4 +1,4 @@
-import { sql } from 'drizzle-orm';
+import { sql, type SQL } from 'drizzle-orm';
 import {
   boolean,
   check,
@@ -12,12 +12,18 @@ import {
   primaryKey,
   smallint,
   text,
+  uniqueIndex,
   timestamp,
   unique,
   uuid,
 } from 'drizzle-orm/pg-core';
 import { authorship, id, timestamps, version } from './_common';
 import { orgScoped } from './_org';
+import type { AnyPgColumn } from 'drizzle-orm/pg-core';
+
+/** Global rows (organization NULL) share one uniqueness scope. */
+const orgKey = (c: AnyPgColumn): SQL =>
+  sql`coalesce(${c}, '00000000-0000-0000-0000-000000000000'::uuid)`;
 
 /**
  * BIBLIOTECA CIENTÍFICA (§4.2 capa A, §10). Sources → findings (one result, one population,
@@ -130,6 +136,8 @@ export const evidenceSources = pgTable(
   {
     id: id(),
     organizationId: orgScoped(),
+    /** Stable key used by curated seeds (idempotent import). */
+    sourceKey: text('source_key'),
     title: text('title').notNull(),
     authors: jsonb('authors')
       .$type<string[]>()
@@ -167,8 +175,16 @@ export const evidenceSources = pgTable(
     version: version(),
   },
   (t) => [
-    unique('evidence_sources_doi_uq').on(t.organizationId, t.doi).nullsNotDistinct(),
-    unique('evidence_sources_pmid_uq').on(t.organizationId, t.pmid).nullsNotDistinct(),
+    // Unique per scope (organization or global) only when the identifier is present.
+    uniqueIndex('evidence_sources_doi_uq')
+      .on(orgKey(t.organizationId), t.doi)
+      .where(sql`${t.doi} IS NOT NULL`),
+    uniqueIndex('evidence_sources_key_uq')
+      .on(orgKey(t.organizationId), t.sourceKey)
+      .where(sql`${t.sourceKey} IS NOT NULL`),
+    uniqueIndex('evidence_sources_pmid_uq')
+      .on(orgKey(t.organizationId), t.pmid)
+      .where(sql`${t.pmid} IS NOT NULL`),
     check('evidence_sources_doi_ck', sql`${t.doi} IS NULL OR ${t.doi} ~ '^10\\.[0-9]{4,9}/\\S+$'`),
     check('evidence_sources_pmid_ck', sql`${t.pmid} IS NULL OR ${t.pmid} ~ '^[0-9]{1,9}$'`),
     check(
@@ -183,6 +199,8 @@ export const evidenceFindings = pgTable(
   {
     id: id(),
     organizationId: orgScoped(),
+    /** Stable key used by curated seeds (idempotent import). */
+    findingKey: text('finding_key'),
     sourceId: uuid('source_id')
       .notNull()
       .references(() => evidenceSources.id, { onDelete: 'cascade' }),
@@ -212,6 +230,9 @@ export const evidenceFindings = pgTable(
   (t) => [
     index('evidence_findings_source_idx').on(t.sourceId),
     index('evidence_findings_outcome_idx').on(t.outcomeId),
+    uniqueIndex('evidence_findings_key_uq')
+      .on(orgKey(t.organizationId), t.findingKey)
+      .where(sql`${t.findingKey} IS NOT NULL`),
   ],
 );
 
