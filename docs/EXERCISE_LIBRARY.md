@@ -1,6 +1,6 @@
 # Biblioteca de ejercicios
 
-> Fase 3. Capa B de la arquitectura (`MASTER_SPECIFICATION.md` §4.2): ejercicios, media, taxonomías, progresiones y sustituciones. **No contiene evidencia científica**: un ejercicio solo enlaza con métodos de la biblioteca científica por id (`exercise_method_links`), que se usarán a partir de la Fase 4.
+> Fase 3. Capa B de la arquitectura (`MASTER_SPECIFICATION.md` §4.2): ejercicios, media, taxonomías, progresiones y sustituciones. **No contiene evidencia científica**: un ejercicio solo enlaza con métodos de la biblioteca científica por id (`exercise_method_links`), desde la pestaña «Métodos» de la ficha (Fase 4, ver `SCIENTIFIC_FRAMEWORK.md`).
 
 ## 1. Modelo
 
@@ -131,7 +131,6 @@ Ver `docs/API.md` (sección «Biblioteca de ejercicios»).
 
 | Elemento | Fase |
 |---|---|
-| Enlace de ejercicios con métodos de la biblioteca científica | 4 |
 | Vista del ejercicio para el cliente dentro de la sesión (vídeo verificado, silueta, cues) | 7 |
 | Sustitución en vivo durante la sesión, con alternativas preaprobadas | 7 |
 | Comprobación periódica de enlaces de vídeo rotos (job) | 15 (requiere acceso de red a YouTube/Vimeo) |

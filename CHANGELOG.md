@@ -2,6 +2,33 @@
 
 Formato: fecha · cambio · motivo · archivos · impacto.
 
+## 2026-10-03 — Fase 4: biblioteca científica
+
+- **Cambio:** dominio científico.
+  - `gradeFinding` calcula el nivel A–H a partir de la justificación guardada (diseño y motivos para bajar).
+  - `claimLevel` calcula el nivel de las afirmaciones y da D ante contradicciones comparables.
+  - `assessApplicability` compara a una persona con la población estudiada.
+  - Validadores de QA científico para fuentes, hallazgos y afirmaciones.
+  - **Motivo:** §10.4 y §10.6.
+  - **Archivos:** `packages/domain/src/science/*`.
+- **Cambio:** casos de uso, API y UI de la biblioteca científica.
+  - **Incluye:** fuentes, verificación, hallazgos, afirmaciones, revisiones con lista de control, métodos con variables de dosis, informe de QA y enlace ejercicio ↔ método.
+  - **Archivos:** `packages/application/src/science.ts`, `apps/web/src/app/app/science/*`, `apps/web/src/app/api/v1/science/*`.
+  - **Impacto:** permisos `science:read/write` para ADMIN y TRAINER, y `science:publish` solo para ADMIN.
+- **Cambio:** semilla global de evidencia verificada en PubMed (conector NCBI).
+  - **Datos:** 135 fuentes, 218 hallazgos con cita literal, 80 afirmaciones y 23 métodos.
+  - **Importación:** idempotente, en `db:seed` y `db:reset`.
+  - **Comprobación:** muestra aleatoria de 12 fuentes contrastada con PubMed, con coincidencia total.
+  - **Archivos:** `seed-data/evidence/*`, `packages/db/src/seed/evidence.ts`.
+  - **Impacto:** 8 desenlaces y 4 poblaciones nuevos en el catálogo.
+- **Cambio:** 28 correcciones a referencias de los documentos aportados y 19 referencias no localizables en PubMed **[REQUIERE VERIFICACIÓN]**.
+  - **Archivos:** `docs/research/evidence_seed_report.md`.
+- **Corrección:** las restricciones únicas de DOI, PMID y claves de semilla trataban `NULL` como igual, así que una organización no podía tener dos fuentes sin DOI ni dos hallazgos sin clave. Ahora son índices únicos parciales.
+  - **Archivos:** `drizzle/0008_science_unique_identifiers.sql`.
+- **Corrección:** los esquemas de actualización de fuentes y afirmaciones aplicaban los valores por defecto de creación. Una edición parcial vaciaba los autores (y anulaba la verificación) o los hallazgos enlazados. Hay tests de regresión.
+- **Cambio:** tests: 138 unitarios, 76 de integración y 11 E2E.
+- **Cambio:** documentación: `SCIENTIFIC_FRAMEWORK.md`; `API.md`, `TESTING.md`, `ROADMAP.md`, `DATABASE.md`, `EXERCISE_LIBRARY.md` y `README.md` actualizados.
+
 ## 2026-10-03 — Fase 3: biblioteca de ejercicios
 
 - **Cambio:** dominio de la biblioteca: sustituciones con filtros y motivos explicados, detección de contradicciones en progresiones, validación de vídeos, requisitos de publicación.

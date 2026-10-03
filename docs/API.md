@@ -80,3 +80,32 @@ Base: `/api/v1`. JSON. Autenticación por cookie de sesión `tp_session` (httpOn
 | `POST /exercise-progressions` · `DELETE /exercise-progressions/{id}` | `library:write` | `progressionSchema` | Rechaza contradicciones (ciclos). |
 | `GET /files/{id}` | `library:read` | — | Archivo autorizado (siluetas). |
 | `GET/POST /clients/{id}/tolerances` · `DELETE …/{toleranceId}` | `health:read` / `health:write` (staff) + consentimiento | `toleranceSchema` | Ejercicios o patrones tolerados / no tolerados. |
+
+## Biblioteca científica (Fase 4)
+
+Detalle del modelo y de las reglas en `SCIENTIFIC_FRAMEWORK.md`. El contenido global es de solo lectura; el de otra organización devuelve 404.
+
+| Método y ruta | Permiso | Entrada | Descripción |
+|---|---|---|---|
+| `GET /science/taxonomies` | `science:read` | — | Poblaciones y desenlaces. |
+| `GET /science/sources` | `science:read` | `listScienceSchema` (`q` título/revista/DOI/PMID, `design`, `status`, `limit`, `offset`) | Fuentes con número de hallazgos. |
+| `POST /science/sources` | `science:write` | `sourceSchema` | Se crea **sin verificar**. DOI/PMID únicos por organización. |
+| `GET /science/sources/{id}` | `science:read` | — | Fuente, hallazgos (nivel, explicación de la gradación), revisiones y QA. |
+| `PATCH /science/sources/{id}` | `science:write` | `updateSourceSchema` (`expectedVersion`) | Cambiar título, autores, año, revista, DOI o PMID anula la verificación. |
+| `POST /science/sources/{id}/verify` | `science:publish` | `verifySourceSchema` (`status`, `access`, `verificationMethod`, `corrections?`) | Exige DOI, PMID o URL. Recalcula niveles. |
+| `POST /science/sources/{id}/findings` | `science:write` | `findingSchema` (cita literal y `grading` obligatorios) | Devuelve `{id, level}`; el nivel se calcula. |
+| `GET /science/findings` | `science:read` | `listScienceSchema` (`q`, `level`) | Selector de hallazgos. |
+| `DELETE /science/findings/{id}` | `science:write` | — | Recalcula las afirmaciones afectadas. |
+| `GET /science/claims` | `science:read` | `listScienceSchema` (`q`, `level`, `status`) | |
+| `POST /science/claims` | `science:write` | `claimSchema` | Nace en borrador; nivel calculado. |
+| `GET /science/claims/{id}` | `science:read` | — | Evidencia (cita, DOI/PMID, verificación), QA, revisiones y uso en métodos. |
+| `PATCH /science/claims/{id}` | `science:write` | `updateClaimSchema` (`expectedVersion`) | Si estaba publicada, vuelve a borrador. |
+| `POST /science/claims/{id}/status` | `science:publish` (revisar y publicar) / `science:write` | `{status}` | Publicar exige QA sin errores (`details.qa`). |
+| `POST /science/reviews` | `science:publish` | `evidenceReviewSchema` | Aprobar exige la lista de control completa. |
+| `GET /science/methods` | `science:read` | — | Métodos con número de afirmaciones y ejercicios. |
+| `POST /science/methods` | `science:write` | `methodSchema` | Notas, variables de dosis y hallazgos. |
+| `GET /science/methods/{id}` | `science:read` | — | Trazabilidad completa: variables y notas → afirmaciones → hallazgos → fuentes. |
+| `PATCH /science/methods/{id}` | `science:write` | `updateMethodSchema` (`expectedVersion`) | Las listas enviadas se reemplazan. |
+| `POST /science/methods/{id}/status` | `science:publish` (publicar) / `science:write` | `{status}` | Publicar exige definición y todas las variables justificadas (`details.publish`). |
+| `GET /science/qa` | `science:read` | — | Totales, afirmaciones por nivel, errores y avisos con enlace. |
+| `PUT /exercises/{id}/methods` | `library:write` | `{methodIds}` | Enlaza un ejercicio propio con métodos (propios o globales). |

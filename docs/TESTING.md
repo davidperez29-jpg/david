@@ -42,3 +42,22 @@ Pendiente para fases siguientes: evaluación, programa, sesión, ejercicios, fee
 
 - Unidad: 102 tests ✔ · Integración: 63 tests ✔ (todos bajo RLS) · E2E: 8 tests ✔ (Chromium, escritorio y Pixel 7); los E2E son repetibles sin reiniciar la base de datos.
 - `lint`, `typecheck`, `format:check` y `depcruise` sin errores.
+
+## 4. Resultado en la entrega de la Fase 4
+
+- Unidad: 138 tests ✔ (incluye la gradación, el QA, la aplicabilidad y la coherencia de los archivos de evidencia) · Integración: 76 tests ✔ · E2E: 11 tests ✔.
+- Integración científica (`science.int.test.ts`, `evidence-seed.int.test.ts`):
+  - niveles recalculados al verificar y al editar;
+  - una fuente sin verificar da nivel H;
+  - el QA bloquea la publicación;
+  - publicar es exclusivo de ADMIN;
+  - la lista de control incompleta no permite aprobar;
+  - las contradicciones dan nivel D;
+  - un método no se publica con variables sin justificar;
+  - aislamiento entre organizaciones;
+  - el contenido global es de solo lectura;
+  - DOI/PMID únicos;
+  - la importación es idempotente;
+  - la retracción queda registrada.
+- La base de datos de integración se crea con la biblioteca científica global importada (`prepareTestDatabase`).
+- `lint`, `typecheck`, `format:check` y `depcruise` sin errores.

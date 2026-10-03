@@ -198,7 +198,7 @@ Auditoría:
 |---|---|
 | `pnpm db:generate` | Genera una migración a partir de cambios en el esquema Drizzle. |
 | `pnpm db:migrate` | Aplica las migraciones pendientes. |
-| `pnpm db:seed` | Catálogos (idempotente). |
+| `pnpm db:seed` | Catálogos y biblioteca científica global verificada (`seed-data/evidence`); idempotente. |
 | `pnpm db:reset` | **Solo desarrollo**: borra el esquema, migra y siembra. |
 | `pnpm db:seed:demo` | Datos ficticios. |
 | `pnpm --filter @tp/db rls:generate` | Imprime el SQL de RLS. |
@@ -211,3 +211,9 @@ Auditoría:
 | Particionado de `audit_logs` y `set_logs` por fecha | 15, si el volumen lo exige |
 | Validación de `extra` contra `prescription_variables` en la capa de aplicación | 6 |
 | Detección de ciclos en el grafo de progresiones (aplicación) | 3 |
+
+## Biblioteca científica (Fase 4)
+
+- `evidence_sources`: DOI, PMID y `source_key` son únicos **por ámbito** (organización o global) solo cuando tienen valor. Son índices únicos parciales sobre `coalesce(organization_id, 0…0)` (migración `0008`), así que pueden convivir varias fuentes sin DOI.
+- `evidence_findings.finding_key` (`tema:clave`) y `evidence_sources.source_key` (migración `0007`) son las claves de la importación idempotente de `seed-data/evidence`.
+- Los niveles (`evidence_level`) se **calculan** desde `grading_rationale`; no se editan a mano. Ver `SCIENTIFIC_FRAMEWORK.md`.

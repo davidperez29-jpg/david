@@ -8,8 +8,9 @@ Plan completo y criterios de aceptación: `MASTER_SPECIFICATION.md` §16.
 | 1 Auth + usuarios + clientes | ✅ 2026-10-03 | Monorepo y CI; autenticación propia con 2FA; organizaciones, roles, invitaciones; ficha de cliente completa (perfil, objetivos, disponibilidad, material, historial, salud declarada, cribado, consentimientos); auditoría *append-only*; UI de entrenador y de cliente; datos demo; tests unitarios, de integración y E2E. |
 | 2 Base de datos + estructura | ✅ 2026-10-03 | Esquema completo (91 tablas), restricciones, triggers de integridad multi-tenant, RLS en todas las tablas con activación automática por caso de uso, catálogos estructurales (patrones, músculos, categorías, variables y perfiles de prescripción, poblaciones, desenlaces), `DATABASE.md`. |
 | 3 Biblioteca de ejercicios | ✅ 2026-10-03 | Alta, edición, publicación con requisitos, búsqueda sin tildes y filtros, vídeos con verificación humana, siluetas, grafo de progresiones sin contradicciones, sustituciones explicadas con material y tolerancias del cliente; banco de los Excel (1 141 ejercicios) importado como borradores para revisar. |
-| 4 Biblioteca científica | ⏭ siguiente | Fuentes, hallazgos, afirmaciones, métodos y QA; enlace ejercicio ↔ método. |
-| 5–15 | pendiente | Ver especificación. |
+| 4 Biblioteca científica | ✅ 2026-10-03 | Fuentes, hallazgos, afirmaciones y métodos con niveles A–H calculados, QA científico, revisión con lista de control, publicación solo por administración; trazabilidad método → fuente con DOI/PubMed; 135 fuentes verificadas en PubMed, 80 afirmaciones y 23 métodos globales; enlace ejercicio ↔ método. |
+| 5 Evaluación | ⏭ siguiente | Tests de evaluación con valores de referencia verificados. |
+| 6–15 | pendiente | Ver especificación. |
 
 ## Criterios de cierre de la Fase 1 (§63)
 
@@ -46,3 +47,15 @@ Plan completo y criterios de aceptación: `MASTER_SPECIFICATION.md` §16.
 | Documentación | ✅ `EXERCISE_LIBRARY.md`, `API.md`, `TESTING.md`. |
 | Datos | ✅ Demo con 1 141 ejercicios en borrador y 1 011 vídeos pendientes de verificar. |
 | Pendiente conocido | Revisión humana del banco importado (324 ejercicios sin patrón, 720 sin músculos); verificación de los vídeos. |
+
+## Criterios de cierre de la Fase 4
+
+| Criterio | Estado |
+|---|---|
+| Funcionalidad | ✅ Capa científica completa (§10): fuentes, hallazgos, afirmaciones, métodos, revisiones, QA y aplicabilidad; enlace ejercicio ↔ método. |
+| UX | ✅ Niveles siempre con su significado; trazabilidad desplegable con citas literales y enlaces a DOI/PubMed; atribución «Según PubMed». |
+| Seguridad | ✅ Permisos `science:*` (publicar solo ADMIN), RLS de catálogo, contenido global de solo lectura, bloqueo optimista, auditoría de cada cambio. |
+| Tests | ✅ 138 unitarios, 76 de integración y 11 E2E. |
+| Documentación | ✅ `SCIENTIFIC_FRAMEWORK.md`, `research/evidence_seed_report.md`, `API.md`, `TESTING.md`, `DATABASE.md`. |
+| Datos | ✅ 135 fuentes (verificadas en PubMed), 218 hallazgos, 80 afirmaciones (79 publicadas), 23 métodos; incluidos en `db:seed`/`db:reset`. |
+| Pendiente conocido | Revisión humana experta de las afirmaciones globales; 19 referencias de los documentos no localizables en PubMed **[REQUIERE VERIFICACIÓN]**. |

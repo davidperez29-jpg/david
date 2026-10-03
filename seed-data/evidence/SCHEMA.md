@@ -18,6 +18,7 @@ One JSON file per topic: `{ "sources": [...], "findings": [...], "claims": [...]
 | trainingStatus                                                                                                             | untrained \| recreational \| trained \| highly_trained \| elite \| mixed \| unknown |                                                                                                                                                                                                         |
 | sport                                                                                                                      | string \| null                                                                      |                                                                                                                                                                                                         |
 | access                                                                                                                     | abstract_only \| full_text                                                          | what was actually read                                                                                                                                                                                  |
+| verificationStatus                                                                                                         | `retracted` (optional)                                                              | set only for retracted papers; every other source imports as verified                                                                                                                                   |
 
 ## findings[]
 
@@ -44,3 +45,8 @@ One JSON file per topic: `{ "sources": [...], "findings": [...], "claims": [...]
 | confidence    | high \| moderate \| low \| very_low                                                             |
 | limitations   | Spanish                                                                                         |
 | applicability | `{ "appliesTo": [population slugs], "notFor": [population slugs] }`                             |
+
+## methods.json
+
+`{ "methods": [{ slug, name, kind, definition, summaryForTrainer, summaryForClient, notes: [{kind, text, claim?}], variables: [{variableKey, population?, min?, max?, typical?, unit?, claim, notes?}] }] }`.
+Every variable must cite a claim whose statement contains the range; notes without `claim` are practical guidance (level F).
