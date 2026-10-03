@@ -1,6 +1,6 @@
 # Seguridad y privacidad
 
-> Base de la Fase 1. Se completará en la Fase 13 (ASVS L2, DPIA, retención, exportación/supresión RGPD). Diseño completo: `MASTER_SPECIFICATION.md` §14.
+> Actualizado en la Fase 2. Se completará en la Fase 13 (ASVS L2, DPIA, retención, exportación/supresión RGPD). Diseño completo: `MASTER_SPECIFICATION.md` §14.
 
 ## 1. Controles implementados
 
@@ -13,6 +13,8 @@
 | 2FA | TOTP (RFC 6238) opcional para todos, recomendado para staff; secreto cifrado; la sesión queda en `second_factor_required` hasta verificar | `totp.ts`, `/login/2fa`, `/app/settings` |
 | Invitaciones | Únicas, de 7 días, de un solo uso, token hasheado; una nueva anula las pendientes del mismo email; solo ADMIN invita a staff | `invitations.ts` |
 | Autorización | RBAC + ámbito (`org` / `assigned` / `own`), *deny by default*; recursos fuera de ámbito → 404 | `domain/iam/policy.ts`, `application/authz.ts` |
+| Row Level Security | Segunda barrera en PostgreSQL para **todas** las tablas: rol `app_runtime` sin `BYPASSRLS`, actor por transacción, denegación sin contexto, tablas de seguridad solo para el sistema, auditoría no falsificable (`actor_user_id = app_user_id()`) | `packages/db/src/rls`, `application/rls.ts`, `DATABASE.md` §5 |
+| Integridad multi-tenant | Triggers que impiden mezclar organización/cliente en hijos y relaciones | `DATABASE.md` §4 |
 | Rutas | Todo handler de `/api/v1` usa `authedRoute` o `publicRoute`; los públicos están en una lista cerrada (test) | `server/api.ts`, `test/routes.unit.test.ts` |
 | CSRF | `SameSite=Lax` + comprobación de `Origin`/`Referer` en POST/PUT/PATCH/DELETE | `server/api.ts` |
 | Cabeceras | CSP sin orígenes externos, `frame-ancestors 'none'`, HSTS, `nosniff`, `Referrer-Policy`, `Permissions-Policy` | `next.config.ts` |
@@ -34,7 +36,6 @@
 
 | Elemento | Fase |
 |---|---|
-| RLS de PostgreSQL como defensa en profundidad | 2 |
 | Comprobación de contraseñas filtradas (k-anonimato) | 13 |
 | Exportación y supresión/anonimización del interesado desde la UI | 13 |
 | Política de retención automática y DPIA | 13 (requiere asesoramiento legal, D7) |

@@ -1,6 +1,6 @@
 # Arquitectura
 
-> Derivado de `MASTER_SPECIFICATION.md` §4–§5. Este documento describe lo **implementado** (Fase 1) y las decisiones tomadas. Si la especificación y este documento discrepan en algo ya implementado, manda este documento y la especificación se actualiza.
+> Derivado de `MASTER_SPECIFICATION.md` §4–§5. Este documento describe lo **implementado** (Fases 1–2) y las decisiones tomadas. Si la especificación y este documento discrepan en algo ya implementado, manda este documento y la especificación se actualiza.
 
 ## 1. Vista general
 
@@ -36,9 +36,11 @@ packages/domain        Reglas puras: permisos/política, objetivos, consentimien
 ```
 Navegador ──fetch same-origin──▶ /api/v1/... (route.ts)
    authedRoute: comprueba Origin (CSRF) → resuelve sesión (cookie httpOnly) → Actor
-   └─▶ caso de uso (packages/application)
+   └─▶ caso de uso (packages/application), envuelto en secured():
+         BEGIN; bindActor → SET LOCAL ROLE app_runtime + app.* (RLS activa)
          parse(zod)  → authorizeClient / requirePermission (domain.authorize)
-         ctx.db.transaction( cambios + writeAudit )        ← misma transacción
+         cambios + writeAudit                               ← misma transacción
+         COMMIT
    ◀── JSON (Cache-Control: no-store) | error {code,message,details,requestId}
 ```
 
@@ -51,7 +53,9 @@ Las páginas de servidor (React Server Components) llaman a los **mismos** casos
 | ADR-001 | Monolito modular TS + PostgreSQL | Django, NestJS+SPA, BaaS | §5.1 de la especificación. |
 | ADR-002 | **Autenticación propia** sobre primitivas probadas (`@node-rs/argon2`, `crypto`, `otplib`) en lugar de Better Auth | Better Auth, Auth.js | Spike de Fase 1 (decisión D3): el flujo es solo por invitación (sin registro público), con roles por organización, 2FA para staff, auditoría en la misma transacción y RLS futura. Integrarlo en una librería exigía puentear su registro, sus tablas y sus hooks; la superficie propia es pequeña (≈400 líneas), está cubierta por tests y no hay dependencia de su API. Revisable si se necesitan OAuth/SSO. |
 | ADR-003 | Sesiones opacas en BD (token aleatorio de 256 bits, se guarda solo su SHA-256) | JWT | Revocación inmediata (desactivar usuario, cambio de contraseña), sin claves de firma que rotar. |
-| ADR-004 | Autorización en la capa de aplicación (RBAC + ámbito `org/assigned/own`), *deny by default* | Solo RLS | Testeable de forma pura; RLS se añadirá como defensa en profundidad en la Fase 2 (§14.3). |
+| ADR-004 | Autorización en la capa de aplicación (RBAC + ámbito `org/assigned/own`), *deny by default* | Solo RLS | Testeable de forma pura y con mensajes de error útiles. |
+| ADR-011 | **RLS de PostgreSQL** como segunda barrera: cada caso de uso se ejecuta en una transacción con `SET LOCAL ROLE app_runtime` y el actor en `app.*` (`secured()` + `bindActor()`) | RLS solo en algunas tablas; conexión distinta por rol | Un fallo de autorización en la aplicación no puede exponer filas de otro tenant o cliente. Automático: no depende de que cada pantalla lo recuerde. Mapa declarativo y test de cobertura de todas las tablas (`DATABASE.md` §5). |
+| ADR-012 | Coherencia organización/cliente por **triggers** (`inherit_scope`, `check_client_org`) | Claves foráneas compuestas | Funciona con `client_id` nulo (plantillas) y no exige que la aplicación copie columnas en cada nivel. |
 | ADR-005 | Clientes de otra organización o fuera de ámbito → `404` | `403` | No revelar la existencia de recursos (anti-enumeración). |
 | ADR-006 | Auditoría *append-only* garantizada por **trigger** de PostgreSQL | Solo `REVOKE` | El trigger protege incluso frente al propietario de la tabla. |
 | ADR-007 | Cifrado de columna AES-256-GCM para teléfono, texto libre de salud y secretos TOTP | Solo cifrado en disco | Datos de salud (art. 9 RGPD) y secretos de 2FA. Claves derivadas por HMAC de `APP_ENCRYPTION_KEY`. |
@@ -59,11 +63,9 @@ Las páginas de servidor (React Server Components) llaman a los **mismos** casos
 | ADR-009 | Sin proveedor de email en Fase 1: `Mailer` en memoria y el enlace de invitación se muestra al ADMIN/entrenador | Integrar ya un proveedor | El proveedor (región UE) es una decisión de coste del usuario (D4). El puerto `Mailer` ya existe. |
 | ADR-010 | Cuestionario de cribado: se registra **resultado**, no se reproduce el cuestionario | Reproducir PAR-Q+ en la app | No reproducir un instrumento sin la versión verificada y su licencia. |
 
-## 4. Modelo de datos implementado (Fase 1)
+## 4. Modelo de datos
 
-`organizations`, `users`, `roles`, `permissions`, `role_permissions`, `user_roles`, `auth_sessions`, `login_attempts`, `invitations`, `password_reset_tokens`, `trainers`, `clients`, `trainer_client_assignments`, `client_training_profiles`, `client_availability`, `client_equipment`, `client_goals`, `client_history_entries`, `health_declarations`, `screening_responses`, `consents`, `goals`, `sports`, `equipment`, `audit_logs`.
-
-Detalle de columnas: `packages/db/src/schema/*.ts` (fuente de verdad) y `packages/db/drizzle/*.sql`. El documento `DATABASE.md` completo se escribe en la Fase 2.
+91 tablas en 10 dominios, 168 políticas RLS. Ver [`DATABASE.md`](DATABASE.md).
 
 ## 5. Configuración
 
@@ -87,4 +89,4 @@ pnpm dev                        # http://localhost:3000
 
 Usuarios demo: `lucia.moreno@example.com` (ADMIN + entrenadora), `pablo.ibarra@example.com`, `nerea.soto@example.com` (entrenadores), `marcos.villalba@example.com`, `elena.prieto@example.com`, `iker.arrieta@example.com` (clientes con app). Contraseña: `demo-entrenamiento-2026` (o `DEMO_PASSWORD`).
 
-Producción: crear la organización con `pnpm --filter @tp/application create-org` (variables `ORG_NAME`, `ORG_SLUG`, `ADMIN_*`), aplicar migraciones con `pnpm db:migrate` y catálogos con `pnpm db:seed`.
+Producción: el usuario de base de datos de la aplicación debe ser miembro del rol `app_runtime` (ver `DATABASE.md` §5.4). Crear la organización con `pnpm --filter @tp/application create-org` (variables `ORG_NAME`, `ORG_SLUG`, `ADMIN_*`), aplicar migraciones con `pnpm db:migrate` y catálogos con `pnpm db:seed`.

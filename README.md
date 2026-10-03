@@ -2,7 +2,7 @@
 
 Sistema profesional para **evaluar, programar, entrenar y hacer seguimiento** de clientes, presencial y online, con trazabilidad científica y control total del entrenador.
 
-> **Estado actual: Fase 1 completada** — autenticación, usuarios, organizaciones y ficha de cliente, con experiencias de entrenador y cliente. Siguiente: Fase 2 (estructura completa de BD + RLS).
+> **Estado actual: Fase 2 completada**: estructura completa de la base de datos (91 tablas) con Row Level Security. Ya funcionan la autenticación, los usuarios, las organizaciones y la ficha de cliente. Siguiente: Fase 3 (biblioteca de ejercicios).
 
 ## Arranque rápido
 

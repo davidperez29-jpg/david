@@ -1,6 +1,6 @@
 # Testing
 
-> Estrategia completa en `MASTER_SPECIFICATION.md` §15. Estado tras la Fase 1.
+> Estrategia completa en `MASTER_SPECIFICATION.md` §15. Estado tras la Fase 2.
 
 ## 1. Cómo ejecutar
 
@@ -28,13 +28,15 @@ Los tests de integración no truncan tablas (la auditoría es *append-only*): ca
 | Cliente | Alta completa transaccional, objetivos inválidos sin alta parcial, bloqueo optimista, auditoría por campo, objetivos con historial, disponibilidad del propio cliente, búsqueda (con escape de comodines), archivado, asignaciones | `clients.int.test.ts` |
 | Salud y RGPD | Consentimiento obligatorio, staff no puede fingir consentimiento en app, cifrado, aviso de derivación, auditoría de lectura sin texto de salud, cribado «derivar», revocación | `health.int.test.ts` |
 | Auditoría | *Append-only* a nivel de BD (UPDATE/DELETE rechazados) | `health.int.test.ts` |
+| RLS (Fase 2) | Todas las tablas de `public` mapeadas y con RLS; sin contexto no se ve nada; tablas de sistema inaccesibles; con SQL directo: entrenador solo asignados, cliente solo él mismo, ADMIN nunca otra organización, cliente no escribe salud ni planes, staff no escribe en otra organización ni en catálogo global, auditoría no modificable ni falsificable; triggers de herencia y de pareja cliente-organización; plantillas invisibles para clientes; seeds idempotentes | `rls.int.test.ts` |
+| Esquema (Fase 2) | Perfiles de prescripción solo con variables existentes, slugs únicos, RIR 0–10, mapa RLS coherente, salud y decisiones nunca escribibles por el cliente, migración RLS sin desviación respecto al generador | `packages/db/test/catalog.unit.test.ts` |
 | Cálculos | Edad, validación de objetivos, consentimientos vigentes, diff y redacción | `clients.unit.test.ts` |
 | Rutas | Todos los handlers usan `authedRoute`/`publicRoute`; lista cerrada de públicos | `apps/web/test/routes.unit.test.ts` |
 | E2E | Alta de cliente con asistente + consentimiento + cribado + historial; aislamiento entre entrenadores; cliente no accede al área de entrenador ni a la API de usuarios; CSRF; API sin sesión; experiencia móvil (consentimiento, perfil, objetivos táctiles ≥ 48 px) | `apps/web/e2e/*.spec.ts` |
 
 Pendiente para fases siguientes: evaluación, programa, sesión, ejercicios, feedback, adherencia, informes, filtros avanzados y sustitución (las funciones aún no existen), accesibilidad automatizada con axe-core (Fase 14) y cobertura de líneas ≥ 90 % en `domain` (se medirá cuando existan los motores).
 
-## 3. Resultado en la entrega de la Fase 1
+## 3. Resultado en la entrega de la Fase 2
 
-- Unidad: 60 tests ✔ · Integración: 34 tests ✔ · E2E: 6 tests ✔ (Chromium, escritorio y Pixel 7).
+- Unidad: 66 tests ✔ · Integración: 49 tests ✔ (todos los casos de uso se ejecutan ya bajo RLS) · E2E: 6 tests ✔ (Chromium, escritorio y Pixel 7).
 - `lint`, `typecheck`, `format:check` y `depcruise` sin errores.
