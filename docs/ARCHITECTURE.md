@@ -76,6 +76,8 @@ Las páginas de servidor (React Server Components) llaman a los **mismos** casos
 | `APP_ENCRYPTION_KEY` | Clave maestra (≥ 32 bytes en base64). Rotación: Fase 13. |
 | `APP_BASE_URL` | URL pública para enlaces de invitación y recuperación. |
 | `DEMO_PASSWORD` | (opcional) contraseña de los usuarios demo. |
+| `FILE_STORAGE_DIR` | Carpeta para imágenes subidas (por defecto `apps/web/.data/files`). |
+| `DEMO_SKIP_BANK` | (opcional) no importar el banco de ejercicios en la demo. |
 
 ## 6. Puesta en marcha local
 

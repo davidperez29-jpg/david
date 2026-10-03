@@ -7,8 +7,8 @@ Plan completo y criterios de aceptación: `MASTER_SPECIFICATION.md` §16.
 | 0 Investigación + arquitectura | ✅ 2026-10-03 | Especificación maestra y anexos de investigación (verificación científica pendiente de acceso directo a Crossref/PubMed, D1). |
 | 1 Auth + usuarios + clientes | ✅ 2026-10-03 | Monorepo y CI; autenticación propia con 2FA; organizaciones, roles, invitaciones; ficha de cliente completa (perfil, objetivos, disponibilidad, material, historial, salud declarada, cribado, consentimientos); auditoría *append-only*; UI de entrenador y de cliente; datos demo; tests unitarios, de integración y E2E. |
 | 2 Base de datos + estructura | ✅ 2026-10-03 | Esquema completo (91 tablas), restricciones, triggers de integridad multi-tenant, RLS en todas las tablas con activación automática por caso de uso, catálogos estructurales (patrones, músculos, categorías, variables y perfiles de prescripción, poblaciones, desenlaces), `DATABASE.md`. |
-| 3 Biblioteca de ejercicios | ⏭ siguiente | CRUD y buscador, media con verificación, progresiones, sustituciones; normalización del banco de los Excel. |
-| 4 Biblioteca científica | pendiente | Requiere segunda verificación con acceso a Crossref/PubMed (D1). |
+| 3 Biblioteca de ejercicios | ✅ 2026-10-03 | Alta, edición, publicación con requisitos, búsqueda sin tildes y filtros, vídeos con verificación humana, siluetas, grafo de progresiones sin contradicciones, sustituciones explicadas con material y tolerancias del cliente; banco de los Excel (1 141 ejercicios) importado como borradores para revisar. |
+| 4 Biblioteca científica | ⏭ siguiente | Fuentes, hallazgos, afirmaciones, métodos y QA; enlace ejercicio ↔ método. |
 | 5–15 | pendiente | Ver especificación. |
 
 ## Criterios de cierre de la Fase 1 (§63)
@@ -34,3 +34,15 @@ Plan completo y criterios de aceptación: `MASTER_SPECIFICATION.md` §16.
 | Documentación | ✅ `DATABASE.md`; `ARCHITECTURE.md`, `SECURITY.md` y `TESTING.md` actualizados. |
 | Datos | ✅ Catálogos estructurales sembrados de forma idempotente; demo cargable con un comando. |
 | UX | Sin cambios visibles (fase de estructura). |
+
+## Criterios de cierre de la Fase 3
+
+| Criterio | Estado |
+|---|---|
+| Funcionalidad | ✅ Biblioteca completa (§14, §27–§30); importación del banco de la metodología del usuario. |
+| UX | ✅ Revisada con capturas; búsqueda tolerante; alternativas con motivos legibles. Los nombres de grupos musculares se muestran en español. |
+| Seguridad | ✅ Permisos `library:*`, RLS de catálogo, subida de imágenes con detección de tipo y sin SVG, CSP de `frame-src` restringida, límite por IP corregido para gimnasios con IP compartida. |
+| Tests | ✅ 102 unitarios, 63 de integración y 8 E2E. |
+| Documentación | ✅ `EXERCISE_LIBRARY.md`, `API.md`, `TESTING.md`. |
+| Datos | ✅ Demo con 1 141 ejercicios en borrador y 1 011 vídeos pendientes de verificar. |
+| Pendiente conocido | Revisión humana del banco importado (324 ejercicios sin patrón, 720 sin músculos); verificación de los vídeos. |

@@ -1,6 +1,6 @@
 # Testing
 
-> Estrategia completa en `MASTER_SPECIFICATION.md` §15. Estado tras la Fase 2.
+> Estrategia completa en `MASTER_SPECIFICATION.md` §15. Estado tras la Fase 3.
 
 ## 1. Cómo ejecutar
 
@@ -29,6 +29,8 @@ Los tests de integración no truncan tablas (la auditoría es *append-only*): ca
 | Salud y RGPD | Consentimiento obligatorio, staff no puede fingir consentimiento en app, cifrado, aviso de derivación, auditoría de lectura sin texto de salud, cribado «derivar», revocación | `health.int.test.ts` |
 | Auditoría | *Append-only* a nivel de BD (UPDATE/DELETE rechazados) | `health.int.test.ts` |
 | RLS (Fase 2) | Todas las tablas de `public` mapeadas y con RLS; sin contexto no se ve nada; tablas de sistema inaccesibles; con SQL directo: entrenador solo asignados, cliente solo él mismo, ADMIN nunca otra organización, cliente no escribe salud ni planes, staff no escribe en otra organización ni en catálogo global, auditoría no modificable ni falsificable; triggers de herencia y de pareja cliente-organización; plantillas invisibles para clientes; seeds idempotentes | `rls.int.test.ts` |
+| Ejercicios (Fase 3) | Normalización de nombres; vídeos válidos e inválidos (incluido `javascript:`); ciclos de progresión; sustituciones (filtros duros con motivo, dolor → menor carga axial, dificultad → regresión, patrones restringidos); requisitos de publicación; integración: búsqueda sin tildes y con errores, filtros por patrón/músculo/material, aislamiento entre organizaciones, cliente sin acceso, publicación y revisión, bloqueo optimista, taxonomía ajena rechazada, vídeo pendiente → verificado, silueta con detección de tipo (SVG rechazado) y sustitución, progresiones contradictorias, contenido global de solo lectura y copia, sustituciones con material y tolerancias del cliente, importación idempotente del banco; E2E: buscar en el banco importado, crear, completar y publicar, vídeo inválido y verificación, cliente sin acceso a la API | `library.unit.test.ts`, `exercise-bank.unit.test.ts`, `library.int.test.ts`, `e2e/library.spec.ts` |
+| Límite por IP | 35 inicios de sesión correctos desde la misma IP no bloquean | `auth.int.test.ts` |
 | Esquema (Fase 2) | Perfiles de prescripción solo con variables existentes, slugs únicos, RIR 0–10, mapa RLS coherente, salud y decisiones nunca escribibles por el cliente, migración RLS sin desviación respecto al generador | `packages/db/test/catalog.unit.test.ts` |
 | Cálculos | Edad, validación de objetivos, consentimientos vigentes, diff y redacción | `clients.unit.test.ts` |
 | Rutas | Todos los handlers usan `authedRoute`/`publicRoute`; lista cerrada de públicos | `apps/web/test/routes.unit.test.ts` |
@@ -36,7 +38,7 @@ Los tests de integración no truncan tablas (la auditoría es *append-only*): ca
 
 Pendiente para fases siguientes: evaluación, programa, sesión, ejercicios, feedback, adherencia, informes, filtros avanzados y sustitución (las funciones aún no existen), accesibilidad automatizada con axe-core (Fase 14) y cobertura de líneas ≥ 90 % en `domain` (se medirá cuando existan los motores).
 
-## 3. Resultado en la entrega de la Fase 2
+## 3. Resultado en la entrega de la Fase 3
 
-- Unidad: 66 tests ✔ · Integración: 49 tests ✔ (todos los casos de uso se ejecutan ya bajo RLS) · E2E: 6 tests ✔ (Chromium, escritorio y Pixel 7).
+- Unidad: 102 tests ✔ · Integración: 63 tests ✔ (todos bajo RLS) · E2E: 8 tests ✔ (Chromium, escritorio y Pixel 7); los E2E son repetibles sin reiniciar la base de datos.
 - `lint`, `typecheck`, `format:check` y `depcruise` sin errores.

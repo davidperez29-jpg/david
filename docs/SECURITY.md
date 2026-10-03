@@ -18,6 +18,8 @@
 | Rutas | Todo handler de `/api/v1` usa `authedRoute` o `publicRoute`; los públicos están en una lista cerrada (test) | `server/api.ts`, `test/routes.unit.test.ts` |
 | CSRF | `SameSite=Lax` + comprobación de `Origin`/`Referer` en POST/PUT/PATCH/DELETE | `server/api.ts` |
 | Cabeceras | CSP sin orígenes externos, `frame-ancestors 'none'`, HSTS, `nosniff`, `Referrer-Policy`, `Permissions-Policy` | `next.config.ts` |
+| Subida de archivos | Solo PNG/JPEG/WebP ≤ 2 MB detectados por contenido, sin SVG; clave de almacenamiento aleatoria y validada (sin *path traversal*); servido con `nosniff` y autorización | `application/storage.ts`, `library.ts` |
+| Vídeos embebidos | Solo YouTube (`youtube-nocookie`) y Vimeo, en iframe con *sandbox*; CSP `frame-src` limitada a esos dos orígenes | `domain/library/video.ts`, `next.config.ts` |
 | Validación | Zod en toda entrada; límite de 256 KB por petición; escape de comodines `LIKE` en búsquedas | `contracts`, `server/api.ts`, `clients.ts` |
 | Bloqueo optimista | `version` en clientes: un cambio concurrente devuelve 409 | `updateClient` |
 | Cifrado de columna | AES-256-GCM (IV aleatorio, etiqueta de autenticación) para teléfono, texto libre de salud y secreto TOTP | `auth/crypto.ts` |

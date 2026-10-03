@@ -2,7 +2,7 @@
 
 Sistema profesional para **evaluar, programar, entrenar y hacer seguimiento** de clientes, presencial y online, con trazabilidad científica y control total del entrenador.
 
-> **Estado actual: Fase 2 completada**: estructura completa de la base de datos (91 tablas) con Row Level Security. Ya funcionan la autenticación, los usuarios, las organizaciones y la ficha de cliente. Siguiente: Fase 3 (biblioteca de ejercicios).
+> **Estado actual: Fase 3 completada**: biblioteca de ejercicios con búsqueda, vídeos verificados por personas, siluetas, progresiones y sustituciones explicadas, y el banco de tus Excel importado para revisar. Ya funcionan también la autenticación, los clientes y la base de datos completa con Row Level Security. Siguiente: Fase 4 (biblioteca científica).
 
 ## Arranque rápido
 
@@ -22,6 +22,7 @@ Usuario demo: `lucia.moreno@example.com` / `demo-entrenamiento-2026`. Más detal
 | [`docs/MASTER_SPECIFICATION.md`](docs/MASTER_SPECIFICATION.md) | Especificación maestra: visión, usuarios, arquitectura, stack, base de datos, módulos, flujos, sistema científico, evaluación, planificación, motor de decisiones, seguridad, testing, roadmap y riesgos. |
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)                 | Arquitectura implementada, decisiones (ADR) y puesta en marcha.                                                                                                                                           |
 | [`docs/DATABASE.md`](docs/DATABASE.md)                         | Modelo de datos, integridad y Row Level Security.                                                                                                                                                         |
+| [`docs/EXERCISE_LIBRARY.md`](docs/EXERCISE_LIBRARY.md)         | Biblioteca de ejercicios y banco importado.                                                                                                                                                               |
 | [`docs/SECURITY.md`](docs/SECURITY.md)                         | Controles de seguridad y RGPD.                                                                                                                                                                            |
 | [`docs/TESTING.md`](docs/TESTING.md)                           | Cómo ejecutar los tests y qué cubren.                                                                                                                                                                     |
 | [`docs/API.md`](docs/API.md)                                   | API REST v1.                                                                                                                                                                                              |

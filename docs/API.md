@@ -58,3 +58,25 @@ Base: `/api/v1`. JSON. Autenticación por cookie de sesión `tp_session` (httpOn
 | `DELETE /clients/{id}/consents/{purpose}` | `consents:write` | — | Revocación. |
 | `POST /clients/{id}/assignments` · `DELETE …/{assignmentId}` | `clients:assign` (ADMIN) | `assignTrainerSchema` | Asignaciones (mínimo una activa). |
 | `GET /clients/{id}/audit` | `audit:read` | — | Historial de cambios del cliente. |
+
+## Biblioteca de ejercicios (Fase 3)
+
+| Método y ruta | Permiso | Entrada | Descripción |
+|---|---|---|---|
+| `GET /library/taxonomies` | `library:read` | — | Patrones, músculos, categorías, etiquetas, material, perfiles de prescripción. |
+| `GET /exercises` | `library:read` | `listExercisesSchema` (query: `q`, `patternId`, `categoryId`, `muscleGroup`, `level`, `region`, `laterality`, `contraction`, `equipmentIds` CSV, `status`, `needsReview`, `video`, `scope`, `limit`, `offset`) | Búsqueda sin tildes, tolerante a errores. |
+| `POST /exercises` | `library:write` | `createExerciseSchema` | Crea un borrador. |
+| `GET /exercises/{id}` | `library:read` | — | Ficha completa, `publishProblems`, relaciones, media (`embedUrl`, `notice`). |
+| `PATCH /exercises/{id}` | `library:write` | `updateExerciseSchema` (`expectedVersion` obligatorio) | Solo ejercicios propios; las relaciones enviadas se reemplazan. |
+| `POST /exercises/{id}/status` | `library:publish` / `library:write` | `{status}` | Publicar exige los requisitos de `EXERCISE_LIBRARY.md` §2.1. |
+| `POST /exercises/{id}/review` | `library:write` | `{notes?}` | Marca como revisado un ejercicio importado. |
+| `POST /exercises/{id}/fork` | `library:write` | — | Copia un ejercicio global a la organización. |
+| `POST /exercises/{id}/duplicate` | `library:write` | — | Nuevo borrador «(copia)». |
+| `POST /exercises/{id}/videos` | `library:write` | `addVideoSchema` | YouTube o Vimeo; queda pendiente de verificación. |
+| `POST /exercises/{id}/media/{mediaId}/verify` | `library:write` | `{status: verified \| broken}` | Verificación humana. |
+| `DELETE /exercises/{id}/media/{mediaId}` | `library:write` | — | |
+| `POST /exercises/{id}/silhouette` | `library:write` | `multipart/form-data` (`file`) | PNG/JPEG/WebP ≤ 2 MB, tipo detectado por contenido. |
+| `GET /exercises/{id}/substitutes` | `library:read` | `substitutesQuerySchema` (`reason`, `clientId?`, `location?`, `limit`) | Sugerencias con motivos y número de excluidos. |
+| `POST /exercise-progressions` · `DELETE /exercise-progressions/{id}` | `library:write` | `progressionSchema` | Rechaza contradicciones (ciclos). |
+| `GET /files/{id}` | `library:read` | — | Archivo autorizado (siluetas). |
+| `GET/POST /clients/{id}/tolerances` · `DELETE …/{toleranceId}` | `health:read` / `health:write` (staff) + consentimiento | `toleranceSchema` | Ejercicios o patrones tolerados / no tolerados. |

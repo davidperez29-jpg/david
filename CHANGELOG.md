@@ -2,6 +2,26 @@
 
 Formato: fecha · cambio · motivo · archivos · impacto.
 
+## 2026-10-03 — Fase 3: biblioteca de ejercicios
+
+- **Cambio:** dominio de la biblioteca: sustituciones con filtros y motivos explicados, detección de contradicciones en progresiones, validación de vídeos, requisitos de publicación.
+  - **Motivo:** §14, §27–§30.
+  - **Archivos:** `packages/domain/src/library/*`.
+- **Cambio:** casos de uso, API y UI de la biblioteca.
+  - **Incluye:** búsqueda sin tildes (`immutable_unaccent` + trigram), filtros, edición con bloqueo optimista, copia de contenido global, vídeos con verificación humana, siluetas, progresiones, sustituciones y tolerancias del cliente.
+  - **Archivos:** `packages/application/src/library.ts`, `apps/web/src/app/app/library/*`, migraciones `0005` y `0006`.
+  - **Impacto:** nuevo permiso `library:*` para el staff.
+- **Cambio:** almacenamiento de archivos (puerto `FileStorage`, disco local) y descarga autorizada.
+  - **Impacto:** nueva variable `FILE_STORAGE_DIR`.
+- **Cambio:** normalización e importación del banco de ejercicios de los 4 Excel.
+  - **Datos:** 1 141 ejercicios y 1 011 vídeos.
+  - **Estado:** importados como borradores pendientes de revisión y con los vídeos sin verificar; incluidos en la demo.
+  - **Archivos:** `seed-data/exercise-bank/bank.json`, `packages/application/scripts/exercise-bank/*`, `src/library-import.ts`.
+- **Corrección:** el límite de intentos de login por IP contaba también los accesos correctos, de modo que un gimnasio con IP compartida podía quedar bloqueado. Ahora cuenta solo los fallos (50 en 15 min).
+  - **Archivos:** `packages/auth/src/rate-limit.ts`.
+- **Cambio:** tests: 102 unitarios, 63 de integración y 8 E2E, ahora repetibles sin reiniciar la base de datos.
+- **Cambio:** documentación: `EXERCISE_LIBRARY.md`; `API.md`, `TESTING.md`, `SECURITY.md`, `ARCHITECTURE.md` y `ROADMAP.md` actualizados.
+
 ## 2026-10-03 — Fase 2: base de datos y estructura
 
 - **Cambio:** esquema completo de §6.
