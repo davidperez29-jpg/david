@@ -120,6 +120,20 @@
       "when": 1791057286177,
       "tag": "0016_progress_metrics",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1791060227471,
+      "tag": "0017_decision_engine",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1791060233409,
+      "tag": "0018_rls_v4",
+      "breakpoints": true
     }
   ]
 }

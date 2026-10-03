@@ -46,6 +46,10 @@ export const PERMISSIONS = [
   'monitoring:read',
   'alerts:manage',
   'monitoring:rules',
+  'decision:read',
+  'decision:run',
+  'decision:decide',
+  'decision:rules',
   'privacy:export_subject',
 ] as const;
 export type Permission = (typeof PERMISSIONS)[number];
@@ -90,6 +94,11 @@ export const ROLE_PERMISSIONS: Matrix = {
     'alerts:manage': 'org',
     // Alert thresholds are organization policy: ADMIN only (§13.4, rule editor).
     'monitoring:rules': 'org',
+    'decision:read': 'org',
+    'decision:run': 'org',
+    'decision:decide': 'org',
+    // Decision rules and thresholds are organization policy (§13.4, §13.9).
+    'decision:rules': 'org',
     'privacy:export_subject': 'org',
   },
   TRAINER: {
@@ -130,6 +139,10 @@ export const ROLE_PERMISSIONS: Matrix = {
     // Adherence, load and alerts of assigned clients; thresholds are read-only for trainers.
     'monitoring:read': 'assigned',
     'alerts:manage': 'assigned',
+    // Proposals for assigned clients; the trainer accepts, edits or rejects them.
+    'decision:read': 'assigned',
+    'decision:run': 'assigned',
+    'decision:decide': 'assigned',
   },
   CLIENT: {
     'clients:read': 'own',

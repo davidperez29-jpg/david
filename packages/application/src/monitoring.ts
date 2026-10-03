@@ -17,6 +17,7 @@ import { schema, type Database } from '@tp/db';
 import {
   addDays,
   adherence,
+  DEFAULT_DECISION_RULES,
   DomainError,
   evaluateAlerts,
   hasActiveConsent,
@@ -222,7 +223,8 @@ async function updateMonitoringRules_(ctx: RequestContext, input: unknown) {
 async function setClientRuleOverride_(ctx: RequestContext, clientId: string, input: unknown) {
   const d = parse(clientRuleOverrideSchema, input);
   await authorizeClient(ctx, 'alerts:manage', clientId);
-  if (!MONITORING_RULES.some((r) => r.key === d.ruleKey))
+  // Monitoring and decision-engine rules can be switched off for one client (§13.9).
+  if (![...MONITORING_RULES, ...DEFAULT_DECISION_RULES].some((r) => r.key === d.ruleKey))
     throw new DomainError('validation', 'Regla desconocida.', { ruleKey: ['unknown'] });
   if (d.enabled)
     await ctx.db

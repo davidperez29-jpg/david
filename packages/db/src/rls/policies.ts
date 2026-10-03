@@ -166,6 +166,8 @@ CREATE POLICY tca_write ON trainer_client_assignments FOR ALL USING (organizatio
   alerts: { kind: 'client_owned', clientWrite: false, clientRead: false },
   manual_overrides: { kind: 'client_optional', clientWrite: false, clientRead: false },
   client_rule_overrides: { kind: 'client_owned', clientWrite: false, clientRead: false },
+  decision_runs: { kind: 'client_owned', clientWrite: false, clientRead: false },
+  client_trait_flags: { kind: 'client_owned', clientWrite: false, clientRead: false },
 
   // ── Platform ────────────────────────────────────────────────────────────────
   notifications: {

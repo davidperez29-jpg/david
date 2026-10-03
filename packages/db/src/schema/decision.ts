@@ -57,6 +57,7 @@ export const recommendationStatus = pgEnum('recommendation_status', [
   'rejected',
   'superseded',
   'expired',
+  'postponed',
 ]);
 export const recConfidence = pgEnum('recommendation_confidence', ['high', 'moderate', 'low']);
 export const alertSeverity = pgEnum('alert_severity', ['green', 'yellow', 'red']);
@@ -225,4 +226,43 @@ export const manualOverrides = pgTable(
     occurredAt: timestamp('occurred_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [index('manual_overrides_entity_idx').on(t.entityType, t.entityId)],
+);
+
+/**
+ * One execution of the decision engine for a client (§13.2): the full result and the inputs, so
+ * the same view can be shown later and audited. Recommendations reference it by id.
+ */
+export const decisionRuns = pgTable(
+  'decision_runs',
+  {
+    id: id(),
+    organizationId: orgOwned(),
+    clientId: uuid('client_id')
+      .notNull()
+      .references(() => clients.id, { onDelete: 'cascade' }),
+    ruleSetVersion: integer('rule_set_version').notNull(),
+    inputHash: text('input_hash').notNull(),
+    context: jsonb('context').notNull(),
+    result: jsonb('result').notNull(),
+    createdBy: uuid('created_by').notNull(),
+    ...timestamps(),
+  },
+  (t) => [index('decision_runs_client_idx').on(t.clientId, t.createdAt)],
+);
+
+/** The trainer's manual judgement of a trait when no applicable reference exists (§13.10). */
+export const clientTraitFlags = pgTable(
+  'client_trait_flags',
+  {
+    organizationId: orgOwned(),
+    clientId: uuid('client_id')
+      .notNull()
+      .references(() => clients.id, { onDelete: 'cascade' }),
+    trait: text('trait').notNull(),
+    value: boolean('value').notNull(),
+    note: text('note'),
+    createdBy: uuid('created_by').notNull(),
+    ...timestamps(),
+  },
+  (t) => [primaryKey({ columns: [t.clientId, t.trait] })],
 );
