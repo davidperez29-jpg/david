@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { getExercise, listLibraryTaxonomies } from '@tp/application';
+import { getExercise, listLibraryTaxonomies, listMethods } from '@tp/application';
 import { DomainError } from '@tp/domain';
 import { notFound } from 'next/navigation';
 import { Badge, Card } from '@/components/ui/card';
@@ -9,6 +9,7 @@ import {
   EditExercise,
   ExerciseActions,
   MediaPanel,
+  MethodsPanel,
   ProgressionsPanel,
   SubstitutesPanel,
 } from './panels';
@@ -18,6 +19,7 @@ const TABS = [
   ['medios', 'Vídeo y silueta'],
   ['progresiones', 'Progresiones'],
   ['sustituciones', 'Sustituciones'],
+  ['metodos', 'Métodos'],
 ] as const;
 
 export default async function ExercisePage({
@@ -83,6 +85,7 @@ export default async function ExercisePage({
       {tab === 'medios' ? <MediaPanel exercise={ex} /> : null}
       {tab === 'progresiones' ? <ProgressionsPanel exercise={ex} /> : null}
       {tab === 'sustituciones' ? <SubstitutesPanel exerciseId={ex.id} /> : null}
+      {tab === 'metodos' ? <MethodsPanel exercise={ex} methods={await listMethods(ctx)} /> : null}
       {ex.source !== 'manual' ? (
         <Card>
           <p className="text-xs text-muted">

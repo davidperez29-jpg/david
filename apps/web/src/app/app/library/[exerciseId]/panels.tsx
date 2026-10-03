@@ -555,3 +555,75 @@ export function SubstitutesPanel({ exerciseId }: { exerciseId: string }) {
     </Card>
   );
 }
+
+export function MethodsPanel({
+  exercise,
+  methods,
+}: {
+  exercise: { id: string; isGlobal: boolean; methodIds: string[] };
+  methods: { id: string; name: string; kind: string; status: string; isGlobal: boolean }[];
+}) {
+  const a = useApiAction();
+  const [sel, setSel] = useState<string[]>(exercise.methodIds);
+  const linked = methods.filter((m) => exercise.methodIds.includes(m.id));
+  return (
+    <Card title="Métodos de la biblioteca científica">
+      <p className="mb-3 text-xs text-muted">
+        El ejercicio solo enlaza con el método; la evidencia, sus niveles y sus fuentes viven en la
+        biblioteca científica.
+      </p>
+      {exercise.isGlobal ? (
+        linked.length ? (
+          <ul className="text-sm">
+            {linked.map((m) => (
+              <li key={m.id}>
+                <a className="underline" href={`/app/science/methods/${m.id}`}>
+                  {m.name}
+                </a>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <EmptyState>Sin métodos enlazados.</EmptyState>
+        )
+      ) : methods.length === 0 ? (
+        <EmptyState>No hay métodos en la biblioteca científica.</EmptyState>
+      ) : (
+        <form
+          className="flex flex-col gap-2"
+          onSubmit={(e) => {
+            e.preventDefault();
+            void a.run(`/exercises/${exercise.id}/methods`, 'PUT', { methodIds: sel });
+          }}
+        >
+          <ul className="grid gap-1 sm:grid-cols-2">
+            {methods.map((m) => (
+              <li key={m.id} className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  id={`method-${m.id}`}
+                  checked={sel.includes(m.id)}
+                  onChange={(e) =>
+                    setSel(e.target.checked ? [...sel, m.id] : sel.filter((x) => x !== m.id))
+                  }
+                />
+                <label htmlFor={`method-${m.id}`}>{m.name}</label>
+                <a className="text-xs text-muted underline" href={`/app/science/methods/${m.id}`}>
+                  ver evidencia
+                </a>
+                {m.status !== 'published' ? (
+                  <Badge>{label('scienceStatus', m.status)}</Badge>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+          <FormError error={a.error} />
+          {a.done ? <p className="text-sm text-ok">Métodos guardados.</p> : null}
+          <Button disabled={a.pending} className="self-start">
+            Guardar métodos
+          </Button>
+        </form>
+      )}
+    </Card>
+  );
+}
