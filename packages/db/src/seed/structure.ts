@@ -431,6 +431,8 @@ export const OUTCOMES: [string, string, string][] = [
   ['neuromuscular_fatigue', 'Fatiga neuromuscular (pérdida de velocidad)', 'neuromuscular'],
   ['muscle_activation', 'Activación muscular (EMG)', 'neuromuscular'],
   ['joint_kinematics', 'Cinemática articular (p. ej., valgo de rodilla)', 'biomechanics'],
+  ['training_load_quantification', 'Cuantificación de la carga de entrenamiento', 'monitoring'],
+  ['illness_incidence', 'Incidencia de enfermedades leves', 'clinical'],
 ];
 
 async function insertGlobal<T extends PgTable>(

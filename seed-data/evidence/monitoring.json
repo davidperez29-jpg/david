@@ -1,0 +1,291 @@
+{
+  "topic": "Monitorización de la carga interna (Fase 8)",
+  "sources": [
+    {
+      "key": "foster2001_srpe",
+      "pmid": "11708692",
+      "doi": null,
+      "title": "A new approach to monitoring exercise training.",
+      "journal": "J Strength Cond Res",
+      "volume": "15",
+      "issue": "1",
+      "pages": "109-15",
+      "authors": [
+        "Foster C",
+        "Florhaug JA",
+        "Franklin J",
+        "Gottschall L",
+        "Hrovatin LA",
+        "Parker S",
+        "Doleshal P",
+        "Dodge C"
+      ],
+      "year": 2001,
+      "studyDesign": "cross_sectional",
+      "populationSummary": "Sujetos que realizaron ciclismo continuo e interválico, y jugadores de baloncesto en entrenamiento",
+      "ageRange": "adultos (no especificado en el resumen)",
+      "sex": "mixed",
+      "trainingStatus": "mixed",
+      "sport": "ciclismo, baloncesto",
+      "intervention": "Cuantificación de la sesión con el método sRPE (RPE de la sesión × duración)",
+      "comparison": "Método objetivo basado en la frecuencia cardiaca",
+      "outcomesMeasured": "Puntuación de carga de la sesión",
+      "resultsSummary": "Relación consistente entre el método sRPE y el método de frecuencia cardiaca, aunque la puntuación absoluta fue mayor con sRPE. Los autores lo consideran válido en una amplia variedad de ejercicios.",
+      "limitations": "Muestras pequeñas y dos tipos de ejercicio; la puntuación absoluta difiere del método de frecuencia cardiaca.",
+      "practicalApplication": "Registrar al final de cada sesión el RPE global (CR-10) y multiplicarlo por la duración en minutos para obtener la carga interna de la sesión.",
+      "access": "abstract_only"
+    },
+    {
+      "key": "haddad2017_srpe_review",
+      "pmid": "29163016",
+      "doi": "10.3389/fnins.2017.00612",
+      "title": "Session-RPE Method for Training Load Monitoring: Validity, Ecological Usefulness, and Influencing Factors.",
+      "journal": "Front Neurosci",
+      "volume": "11",
+      "issue": null,
+      "pages": "612",
+      "authors": ["Haddad M", "Stylianides G", "Djaoui L", "Dellal A", "Chamari K"],
+      "year": 2017,
+      "studyDesign": "narrative_review",
+      "populationSummary": "36 estudios de validez y fiabilidad con deportistas de ambos sexos, de niños a adultos y de distintos niveles",
+      "ageRange": "niños, adolescentes y adultos",
+      "sex": "mixed",
+      "trainingStatus": "mixed",
+      "sport": "varios deportes individuales y de equipo",
+      "intervention": "Método sRPE con la escala CR-10 modificada",
+      "comparison": "Criterios fisiológicos (p. ej., frecuencia cardiaca)",
+      "outcomesMeasured": "Validez, fiabilidad y consistencia interna",
+      "resultsSummary": "Los estudios confirmaron la validez, buena fiabilidad y consistencia interna del método sRPE en varios deportes, sexos, edades y niveles.",
+      "limitations": "Revisión no sistemática; solo estudios en inglés; factores psicológicos y ambientales pueden alterar el RPE.",
+      "practicalApplication": "El sRPE puede usarse solo para monitorizar la carga, aunque algunos autores recomiendan combinarlo con la frecuencia cardiaca.",
+      "access": "abstract_only"
+    },
+    {
+      "key": "foster1998_monotony",
+      "pmid": "9662690",
+      "doi": "10.1097/00005768-199807000-00023",
+      "title": "Monitoring training in athletes with reference to overtraining syndrome.",
+      "journal": "Med Sci Sports Exerc",
+      "volume": "30",
+      "issue": "7",
+      "pages": "1164-8",
+      "authors": ["Foster C"],
+      "year": 1998,
+      "studyDesign": "cohort",
+      "populationSummary": "25 deportistas experimentados",
+      "ageRange": "adultos (no especificado en el resumen)",
+      "sex": "mixed",
+      "trainingStatus": "trained",
+      "sport": null,
+      "intervention": "Registro de la carga con sRPE × duración; monotonía (media diaria / desviación típica) y tensión (carga × monotonía)",
+      "comparison": "Ninguno (observacional)",
+      "outcomesMeasured": "Enfermedades leves y lesiones menores",
+      "resultsSummary": "Un alto porcentaje de las enfermedades coincidió con periodos en los que cada deportista superaba umbrales individuales, sobre todo de tensión del entrenamiento.",
+      "limitations": "Observacional, muestra pequeña (25), umbrales individuales; asociación, no causalidad.",
+      "practicalApplication": "Mirar la carga semanal, la monotonía y la tensión como descriptores de cada persona, sin umbrales universales.",
+      "access": "abstract_only"
+    },
+    {
+      "key": "impellizzeri2020_acwr",
+      "pmid": "32502973",
+      "doi": "10.1123/ijspp.2019-0864",
+      "title": "Acute:Chronic Workload Ratio: Conceptual Issues and Fundamental Pitfalls.",
+      "journal": "Int J Sports Physiol Perform",
+      "volume": "15",
+      "issue": "6",
+      "pages": "907-913",
+      "authors": ["Impellizzeri FM", "Tenan MS", "Kempton T", "Novak A", "Coutts AJ"],
+      "year": 2020,
+      "studyDesign": "narrative_review",
+      "populationSummary": "Análisis conceptual y metodológico de la literatura sobre carga y lesiones",
+      "ageRange": "no aplica",
+      "sex": "unknown",
+      "trainingStatus": "mixed",
+      "sport": null,
+      "intervention": "Ratio carga aguda:crónica (ACWR)",
+      "comparison": "No aplica",
+      "outcomesMeasured": "Validez del ACWR como factor pronóstico causal de lesión",
+      "resultsSummary": "No hay evidencia que respalde usar el ACWR en sistemas de gestión de la carga ni para recomendaciones de entrenamiento dirigidas a reducir el riesgo de lesión.",
+      "limitations": "Análisis crítico, no un estudio empírico nuevo.",
+      "practicalApplication": "No usar el ACWR para tomar decisiones ni para emitir alertas de riesgo de lesión.",
+      "access": "abstract_only"
+    }
+  ],
+  "findings": [
+    {
+      "key": "f_foster2001_srpe_valid",
+      "source": "foster2001_srpe",
+      "outcome": "training_load_quantification",
+      "population": "athletes_mixed",
+      "intervention": "Método sRPE",
+      "comparator": "Método de frecuencia cardiaca",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": null,
+      "heterogeneityI2": null,
+      "quote": "We conclude that the session RPE method is a valid method of quantitating exercise training during a wide variety of types of exercise.",
+      "grading": {
+        "design": "cross_sectional",
+        "riskOfBias": "serious",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_haddad2017_srpe_valid",
+      "source": "haddad2017_srpe_review",
+      "outcome": "training_load_quantification",
+      "population": "athletes_mixed",
+      "intervention": "Método sRPE (CR-10 modificada)",
+      "comparator": "Criterios fisiológicos",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": 36,
+      "nParticipants": null,
+      "heterogeneityI2": null,
+      "quote": "These studies confirmed the validity and good reliability and internal consistency of session-RPE method in several sports and physical activities with men and women of different age categories (children, adolescents, and adults) among various expertise levels.",
+      "grading": {
+        "design": "narrative_review",
+        "riskOfBias": "serious",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_foster1998_strain_illness",
+      "source": "foster1998_monotony",
+      "outcome": "illness_incidence",
+      "population": "athletes_mixed",
+      "intervention": "Carga, monotonía y tensión (sRPE × duración)",
+      "comparator": "Ninguno",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": 25,
+      "heterogeneityI2": null,
+      "quote": "It was observed that a high percentage of illnesses could be accounted for when individual athletes exceeded individually identifiable training thresholds, mostly related to the strain of training.",
+      "grading": {
+        "design": "cohort",
+        "riskOfBias": "serious",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_impellizzeri2020_acwr",
+      "source": "impellizzeri2020_acwr",
+      "outcome": "injury_incidence",
+      "population": "athletes_mixed",
+      "intervention": "Ratio carga aguda:crónica",
+      "comparator": "No aplica",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": null,
+      "heterogeneityI2": null,
+      "quote": "There is no evidence supporting the use of ACWR in training-load-management systems or for training recommendations aimed at reducing injury risk.",
+      "grading": {
+        "design": "narrative_review",
+        "riskOfBias": "serious",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    }
+  ],
+  "claims": [
+    {
+      "key": "c_srpe_valido",
+      "statement": "El método sRPE (RPE global de la sesión en escala CR-10 × duración en minutos) es un método válido y fiable para cuantificar la carga interna de la sesión en muchos deportes y actividades.",
+      "scope": "monitorización / carga interna",
+      "epistemicType": "fact",
+      "findings": [
+        {
+          "finding": "f_foster2001_srpe_valid",
+          "role": "supports"
+        },
+        {
+          "finding": "f_haddad2017_srpe_valid",
+          "role": "supports"
+        }
+      ],
+      "confidence": "moderate",
+      "limitations": "Validado sobre todo frente a la frecuencia cardiaca y en deportistas; el RPE se ve influido por factores psicológicos y ambientales. En entrenamiento de fuerza de población general es una extrapolación razonable.",
+      "applicability": {
+        "appliesTo": ["athletes_mixed", "team_sport_athletes", "adults_recreational"],
+        "notFor": []
+      }
+    },
+    {
+      "key": "c_monotonia_descriptiva",
+      "statement": "La monotonía (media / desviación típica de la carga diaria de la semana) y la tensión (carga semanal × monotonía) describen el patrón de carga; en un estudio observacional, superar umbrales individuales de tensión coincidió con más enfermedades leves. Se muestran como descriptores, sin umbrales universales.",
+      "scope": "monitorización / monotonía y tensión",
+      "epistemicType": "inference",
+      "findings": [
+        {
+          "finding": "f_foster1998_strain_illness",
+          "role": "supports"
+        }
+      ],
+      "confidence": "low",
+      "limitations": "Un solo estudio observacional pequeño (25 deportistas); umbrales individuales; asociación, no causalidad.",
+      "applicability": {
+        "appliesTo": ["athletes_mixed"],
+        "notFor": []
+      }
+    },
+    {
+      "key": "c_acwr_no_usar",
+      "statement": "No hay evidencia que respalde usar el ratio carga aguda:crónica (ACWR) para gestionar la carga o reducir lesiones; la plataforma no lo calcula ni emite alertas de riesgo de lesión basadas en la carga.",
+      "scope": "monitorización / ACWR",
+      "epistemicType": "fact",
+      "findings": [
+        {
+          "finding": "f_impellizzeri2020_acwr",
+          "role": "supports"
+        }
+      ],
+      "confidence": "low",
+      "limitations": "Análisis conceptual y metodológico; la literatura sobre carga y lesión sigue evolucionando.",
+      "applicability": {
+        "appliesTo": ["athletes_mixed", "team_sport_athletes"],
+        "notFor": []
+      }
+    }
+  ],
+  "newOutcomes": [
+    {
+      "slug": "training_load_quantification",
+      "name": "Cuantificación de la carga de entrenamiento",
+      "domain": "monitoring"
+    },
+    {
+      "slug": "illness_incidence",
+      "name": "Incidencia de enfermedades leves",
+      "domain": "clinical"
+    }
+  ],
+  "newPopulations": [],
+  "corrections": [],
+  "notFound": []
+}

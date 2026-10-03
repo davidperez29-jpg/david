@@ -12,3 +12,4 @@ export * from './science';
 export * from './assessment';
 export * from './planning';
 export * from './sessions';
+export * from './monitoring';
