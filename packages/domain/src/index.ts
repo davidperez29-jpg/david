@@ -14,3 +14,4 @@ export * from './planning';
 export * from './sessions';
 export * from './monitoring';
 export * from './dashboard';
+export * from './decision';
