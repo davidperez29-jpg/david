@@ -39,7 +39,8 @@ import { assessmentProgressUnsecured } from './assessments';
 import { writeAudit } from './audit';
 import { authorizeClient, requirePermission } from './authz';
 import type { RequestContext } from './context';
-import { afterCommit, secured } from './rls';
+import { clientActivity, onClientActivity } from './client-events';
+import { secured } from './rls';
 import { parse } from './validation';
 
 const {
@@ -252,7 +253,7 @@ async function setClientRuleOverride_(ctx: RequestContext, clientId: string, inp
     changes: [{ field: d.ruleKey, before: !d.enabled, after: d.enabled }],
     reason: d.reason ?? null,
   });
-  afterCommit(ctx, `monitor:${clientId}`, (root) => monitorClient(root, clientId));
+  scheduleMonitoring(ctx, clientId);
 }
 
 // ── Building the monitoring input (system code, no RLS) ───────────────────────
@@ -665,8 +666,9 @@ export async function monitorAllClients(app: { db: Database; now: () => Date }) 
 
 /** Schedules alert evaluation for a client after the current transaction commits. */
 export function scheduleMonitoring(ctx: RequestContext, clientId: string) {
-  afterCommit(ctx, `monitor:${clientId}`, (root) => monitorClient(root, clientId));
+  clientActivity(ctx, clientId);
 }
+onClientActivity((root, clientId) => monitorClient(root, clientId));
 
 async function refreshClientAlerts_(ctx: RequestContext, clientId: string) {
   await authorizeClient(ctx, 'alerts:manage', clientId);

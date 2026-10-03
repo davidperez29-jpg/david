@@ -41,7 +41,8 @@ import type { AnyPgColumn } from 'drizzle-orm/pg-core';
 import { writeAudit } from './audit';
 import { authorizeClient, requirePermission } from './authz';
 import type { RequestContext } from './context';
-import { afterCommit, secured } from './rls';
+import { clientActivity } from './client-events';
+import { secured } from './rls';
 import { parse } from './validation';
 
 const {
@@ -876,9 +877,7 @@ async function setAssessmentStatus_(
     });
   });
   // A completed assessment can reveal a performance drop or close an overdue reassessment.
-  afterCommit(ctx, `monitor:${a.clientId}`, async (root) =>
-    (await import('./monitoring')).monitorClient(root, a.clientId),
-  );
+  clientActivity(ctx, a.clientId);
 }
 
 // ── Interpretation helpers ────────────────────────────────────────────────────
