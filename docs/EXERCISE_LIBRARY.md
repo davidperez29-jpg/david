@@ -136,3 +136,13 @@ Ver `docs/API.md` (sección «Biblioteca de ejercicios»).
 | Comprobación periódica de enlaces de vídeo rotos (job) | 15 (requiere acceso de red a YouTube/Vimeo) |
 | Set de siluetas propio | Decisión D10 |
 | Adaptador S3 en la UE para archivos | Despliegue |
+
+## 7. Biblioteca global (Fase 6)
+
+`seed-data/exercises/global.json` contiene 92 ejercicios **publicados**, de solo lectura para las organizaciones, que usan las plantillas de planificación:
+- taxonomía completa;
+- material obligatorio u opcional (los dispositivos de medida y las alternativas son opcionales);
+- instrucciones técnicas;
+- 63 progresiones sin ciclos.
+
+No tienen vídeo. Se pueden «Copiar a mi organización» para adaptarlos.

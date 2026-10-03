@@ -61,6 +61,7 @@ Las páginas de servidor (React Server Components) llaman a los **mismos** casos
 | ADR-007 | Cifrado de columna AES-256-GCM para teléfono, texto libre de salud y secretos TOTP | Solo cifrado en disco | Datos de salud (art. 9 RGPD) y secretos de 2FA. Claves derivadas por HMAC de `APP_ENCRYPTION_KEY`. |
 | ADR-008 | UUID v7 generados en la aplicación | `gen_random_uuid()` (v4) | Orden temporal → mejor localidad de índices. |
 | ADR-009 | Sin proveedor de email en Fase 1: `Mailer` en memoria y el enlace de invitación se muestra al ADMIN/entrenador | Integrar ya un proveedor | El proveedor (región UE) es una decisión de coste del usuario (D4). El puerto `Mailer` ya existe. |
+| ADR-013 | Plantillas de plan como **definiciones JSON** en `plan_templates` (globales u organizativas) que se expanden al crear el plan | `training_plans.kind = TEMPLATE` con filas completas | Una plantilla global no pertenece a ninguna organización; copiar cientos de filas por organización no escala; la expansión es pura y testeable (`expandTemplate`). |
 | ADR-010 | Cuestionario de cribado: se registra **resultado**, no se reproduce el cuestionario | Reproducir PAR-Q+ en la app | No reproducir un instrumento sin la versión verificada y su licencia. |
 
 ## 4. Modelo de datos

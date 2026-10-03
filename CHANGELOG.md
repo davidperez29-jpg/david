@@ -2,6 +2,24 @@
 
 Formato: fecha · cambio · motivo · archivos · impacto.
 
+## 2026-10-03 — Fase 6: planificación
+
+- **Cambio:** dominio de planificación (§12).
+  - Validación de la prescripción: VBT solo en ejercicios compatibles y no para principiantes; RIR o RPE, nunca ambos.
+  - Texto para el cliente.
+  - Expansión de plantillas con fechas y progresión declarativa por semana: ola de RIR, carga lineal, +serie, descarga.
+  - Propuestas post-sesión: doble progresión y ajuste por RIR. Solo proponen.
+  - Indicadores semanales.
+  - **Archivos:** `packages/domain/src/planning/*`.
+- **Cambio:** tabla `plan_templates` (ADR-013), 17 plantillas por objetivo y frecuencia (12 semanas, métodos enlazados) y 92 ejercicios globales publicados.
+  - **Archivos:** `seed-data/templates/*`, `seed-data/exercises/global.json`, migraciones `0011` y `0012_rls_v2`.
+- **Cambio:** casos de uso, API y UI.
+  - **Incluye:** planes desde plantilla (con % 1RM → kg desde un 1RM medido y conflictos de material y tolerancias) o en blanco; árbol, calendario e indicadores; editor de sesión; overrides auditados con motivo; duplicar sesión, semana y plan; guardar como plantilla anonimizada; activación con revisión y un solo plan activo; revisiones con diferencias.
+  - **Archivos:** `packages/application/src/planning.ts`, `apps/web/src/app/app/plans/*`.
+  - **Impacto:** permisos `plans:read/write/templates`.
+- **Cambio:** demo con 8 planes; tests: 217 unitarios, 91 de integración y 16 E2E.
+- **Cambio:** documentación: `PLANNING.md`; `API.md`, `TESTING.md`, `ROADMAP.md`, `DATABASE.md`, `ARCHITECTURE.md`, `EXERCISE_LIBRARY.md` y `README.md` actualizados.
+
 ## 2026-10-03 — Fase 5: evaluación
 
 - **Cambio:** dominio de evaluación (§11).

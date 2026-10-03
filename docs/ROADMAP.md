@@ -10,8 +10,9 @@ Plan completo y criterios de aceptación: `MASTER_SPECIFICATION.md` §16.
 | 3 Biblioteca de ejercicios | ✅ 2026-10-03 | Alta, edición, publicación con requisitos, búsqueda sin tildes y filtros, vídeos con verificación humana, siluetas, grafo de progresiones sin contradicciones, sustituciones explicadas con material y tolerancias del cliente; banco de los Excel (1 141 ejercicios) importado como borradores para revisar. |
 | 4 Biblioteca científica | ✅ 2026-10-03 | Fuentes, hallazgos, afirmaciones y métodos con niveles A–H calculados, QA científico, revisión con lista de control, publicación solo por administración; trazabilidad método → fuente con DOI/PubMed; 135 fuentes verificadas en PubMed, 80 afirmaciones y 23 métodos globales; enlace ejercicio ↔ método. |
 | 5 Evaluación | ✅ 2026-10-03 | Catálogo de 43 tests con protocolo, fiabilidad (38 filas) y referencias (10 filas) verificadas en PubMed; baterías por objetivo con exclusiones de seguridad; registro por intentos; métricas derivadas; cambio interpretado frente al error típico y el MDC95 (sin veredicto si el error es desconocido); z-score solo con referencia aplicable; gráficos; vista sencilla para el cliente. |
-| 6 Planificación | ⏭ siguiente | Planes de 3/6/9/12 meses, fases, editor de sesión, plantillas. |
-| 7–15 | pendiente | Ver especificación. |
+| 6 Planificación | ✅ 2026-10-03 | Planes de 3/6/9/12 meses (fases → mesociclos → semanas → sesiones → bloques → ejercicios), 17 plantillas por objetivo y frecuencia con métodos enlazados, 92 ejercicios globales publicados, % 1RM → kg desde un 1RM medido, conflictos de material y tolerancias, progresión declarativa, editor de sesión con overrides auditados, duplicaciones, guardar como plantilla, revisiones e indicadores semanales, calendario. |
+| 7 Sesiones | ⏭ siguiente | Publicación, PWA del cliente, registro y sustitución en vivo, offline. |
+| 8–15 | pendiente | Ver especificación. |
 
 ## Criterios de cierre de la Fase 1 (§63)
 
@@ -73,3 +74,16 @@ Plan completo y criterios de aceptación: `MASTER_SPECIFICATION.md` §16.
 | Documentación | ✅ `ASSESSMENT.md`, `research/assessment_seed_report.md`, `API.md`, `TESTING.md` y `DATABASE.md`. |
 | Datos | ✅ Catálogo global en `db:seed`/`db:reset`; demo con 2–3 evaluaciones por cliente (valores ficticios). |
 | Pendiente conocido | Revisión experta de las baterías. Cortes EWGSOP2 y normas por edad pendientes de texto completo **[REQUIERE VERIFICACIÓN]**. La mayoría de los tests necesitarán test-retest propio para emitir veredictos. |
+
+## Criterios de cierre de la Fase 6
+
+| Criterio | Estado |
+|---|---|
+| Funcionalidad | ✅ §12.1–12.8: jerarquía completa, creación manual y desde plantilla, duplicar (sesión, semana, plan), guardar como plantilla, progresiones declarativas, perfiles de prescripción, revisiones, calendario e indicadores. |
+| Criterio de aceptación §16.2 | ✅ Plan de 12 semanas y 3 días desde plantilla, editado y activado en un E2E de pocos segundos (umbral de 20 min). Overrides auditados con motivo (test de integración). |
+| UX | ✅ Revisada con capturas: asistente por objetivo y frecuencia, vistas semanas/calendario/gestión, editor que muestra solo las variables del perfil y el texto para el cliente. |
+| Seguridad | ✅ Permisos `plans:*`; RLS en plantillas (`rls_v2`); tolerancias leídas solo con consentimiento; un solo plan activo; nada automático modifica un plan activo. |
+| Tests | ✅ 217 unitarios, 91 de integración y 16 E2E. |
+| Documentación | ✅ `PLANNING.md`, ADR-013, `API.md`, `TESTING.md` y `DATABASE.md`. |
+| Datos | ✅ 17 plantillas y 92 ejercicios globales en `db:seed`; demo con 8 planes (5 activos). |
+| Pendiente conocido | Publicación al cliente y registro (Fase 7); progresión a partir de registros como recomendaciones (Fases 8–11); plantillas de los Excel tras su revisión. |

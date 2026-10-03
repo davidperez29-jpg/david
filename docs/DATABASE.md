@@ -227,3 +227,9 @@ Auditoría:
   - una métrica por evaluación (`derived_metrics_assessment_metric_uq`).
 - Migración `0010`: `reference_values.sample_size` pasa a `integer` (hay normas con más de 32 767 personas).
 - `pnpm db:seed` importa también `seed-data/assessment`: tests, fiabilidad, referencias y baterías globales. Sus fuentes se importan como evidencia verificada.
+
+## Planificación (Fase 6)
+
+- Migración `0011`: tabla `plan_templates` (globales u organizativas), con definición JSON, métodos enlazados y slug único por ámbito.
+- Migración `0012_rls_v2`: RLS de tipo `catalog` para `plan_templates`, regenerada desde el mapa.
+- `pnpm db:seed` importa además `seed-data/exercises/global.json` (ejercicios globales publicados, progresiones y enlaces a métodos) y `seed-data/templates/*.json`.

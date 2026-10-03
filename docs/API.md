@@ -130,3 +130,23 @@ Detalle de reglas en `ASSESSMENT.md`. Una evaluación de un cliente fuera de alc
 | `POST /assessments/{id}/results` | `assessments:write` | `recordResultSchema` (`testId`, `side`, `attempts`, `measurementMethod?`, `valid`) | Crea o reemplaza el resultado del test y lado; recalcula las métricas derivadas. |
 | `DELETE /assessment-results/{id}` | `assessments:write` | — | |
 | `POST /assessments/{id}/status` | `assessments:write` | `{status}` | Planificada, en curso, completada o cancelada. |
+
+## Planificación (Fase 6)
+
+Detalle en `PLANNING.md`. Lo que queda fuera de ámbito devuelve 404. Las ediciones de prescripción validan rangos, tempo, RIR o RPE (no ambos) y VBT.
+
+| Método y ruta | Permiso | Entrada | Descripción |
+|---|---|---|---|
+| `GET /plan-templates` · `GET /plan-templates/{id}` | `plans:templates` | — | Catálogo y vista previa (estructura, sesiones, métodos). |
+| `GET /clients/{id}/plans` · `POST` | `plans:read` / `plans:write` | `createPlanSchema` (`name`, `durationMonths` 3/6/9/12, `weeks?`, `mesocycleWeeks`, `startDate?`, `weekdays`) | Plan en blanco con su esqueleto y fechas. |
+| `POST /clients/{id}/plans/from-template` | `plans:write` + `plans:templates` | `planFromTemplateSchema` (`templateId`, `startDate`, `weekdays` = sesiones de la plantilla, `name?`) | Devuelve `{id, weeks, conflicts}`. |
+| `GET /plans/{id}` · `PATCH` | `plans:read` / `plans:write` | `updatePlanSchema` | Árbol completo con indicadores semanales. |
+| `POST /plans/{id}/status` | `plans:write` | `{status, reason?}` | Activar exige fecha de inicio y que no haya otro plan activo; crea una revisión. |
+| `GET /plans/{id}/revisions` · `POST` | `plans:read` / `plans:write` | `{reason}` | Instantánea con su diferencia. |
+| `POST /plans/{id}/duplicate` | `plans:write` | `{name, clientId?}` | Copia profunda en borrador. |
+| `POST /plans/{id}/template` | `plans:templates` | `{name, description?}` | Plantilla anonimizada de la organización. |
+| `PATCH /microcycles/{id}` · `POST /microcycles/{id}/duplicate` | `plans:write` | `{weekType}` · `{targetMicrocycleId}` | Tipo de semana · copiar semana (reemplaza). |
+| `GET /plan-sessions/{id}` · `PATCH` | `plans:read` / `plans:write` | `updateSessionSchema` | Sesión con bloques, ejercicios, texto para el cliente y validación. |
+| `POST /plan-sessions/{id}/blocks` · `POST /plan-sessions/{id}/duplicate` | `plans:write` | `blockSchema` · `{targetMicrocycleId}` | |
+| `PATCH/DELETE /session-blocks/{id}` · `POST …/move` · `POST …/exercises` | `plans:write` | `updateBlockSchema` · `{direction}` · `sessionExerciseSchema` | |
+| `PATCH/DELETE /session-exercises/{id}` · `POST …/move` | `plans:write` | `updateSessionExerciseSchema` (`expectedVersion`, `overrideReason?`) | Un override de plantilla o progresión se audita con su motivo. |

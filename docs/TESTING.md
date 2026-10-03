@@ -74,3 +74,18 @@ Pendiente para fases siguientes: evaluación, programa, sesión, ejercicios, fee
   - referencias por rango de edad sin derivar;
   - alcance entre entrenadores, organizaciones y clientes.
 - E2E: 14 tests ✔. Nuevos: el entrenador revisa el progreso, crea y registra una evaluación y la completa; otro entrenador no ve al cliente; el cliente ve su progreso en el móvil.
+
+## 6. Resultado en la entrega de la Fase 6
+
+- Unidad: 217 tests ✔, entre ellos:
+  - textos y validación de la prescripción, fechas, expansión de plantillas, progresión por semana y descarga, propuestas post-sesión e indicadores;
+  - coherencia de `seed-data/exercises` y `seed-data/templates`.
+- Integración: 91 tests ✔. `planning.int.test.ts` cubre:
+  - plantillas y su vista previa;
+  - plan desde plantilla con fechas, kg desde un 1RM medido, conflictos de material, progresión por semana y descarga;
+  - overrides auditados y prescripciones inválidas rechazadas;
+  - bloques y ejercicios: añadir, mover y borrar;
+  - duplicar sesión, semana y plan; plantilla anonimizada;
+  - activación con revisión, plan activo único y diferencias entre revisiones;
+  - esqueleto manual y alcance.
+- E2E: 16 tests ✔. Nuevos: plan de 12 semanas y 3 días desde plantilla, editado y activado; el cliente no accede a la API de plantillas.
