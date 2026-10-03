@@ -49,12 +49,14 @@ import {
   ProfilePanel,
   TolerancesPanel,
 } from './panels';
+import { DecisionTab } from './decision-tab';
 
 const TABS = [
   ['resumen', 'Resumen'],
   ['perfil', 'Perfil'],
   ['objetivos', 'Objetivos'],
   ['evaluaciones', 'Evaluaciones'],
+  ['necesidades', 'Necesidades'],
   ['planificacion', 'Planificación'],
   ['sesiones', 'Sesiones'],
   ['seguimiento', 'Seguimiento'],
@@ -199,6 +201,10 @@ export default async function ClientPage({
       {tab === 'objetivos' && catalog ? <GoalsPanel client={client} catalog={catalog} /> : null}
 
       {tab === 'evaluaciones' ? await assessmentsTab(ctx, client.id, client.progressTestIds) : null}
+
+      {tab === 'necesidades' ? (
+        <DecisionTab ctx={ctx} clientId={client.id} isAdmin={isAdmin} />
+      ) : null}
 
       {tab === 'planificacion' ? await plansTab(ctx, client.id) : null}
 

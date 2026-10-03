@@ -14,7 +14,11 @@ import {
   addHistoryEntry,
   bootstrapOrganization,
   createAssessment,
+  decideRecommendation,
+  getDecision,
   listAssessmentTests,
+  runDecision,
+  updateDecisionRules,
   setProgressMetrics,
   createPlanFromTemplate,
   getPlan,
@@ -740,6 +744,45 @@ async function runSessions(
         comment: 'Semana de exámenes, duermo poco.',
       });
 }
+
+// Decision engine (§13): the centre's thresholds for its footballers (practical, level F — the
+// platform ships none) and a first run for every client. Iker's proposals get a few decisions so
+// the per-rule override metrics are not empty.
+await updateDecisionRules(lucia, {
+  rules: [
+    { key: 'profile.relative_strength_low', enabled: true, parameters: { threshold: 1.5 } },
+    { key: 'profile.cmj_low', enabled: true, parameters: { threshold: 35 } },
+    { key: 'profile.sprint_slow', enabled: true, parameters: { threshold: 1.85 } },
+  ],
+  notes: 'Umbrales del centro para futbolistas (demo)',
+});
+const iker = created[specs.findIndex((s) => s.basics.firstName === 'Iker')]!;
+{
+  // A recent strength test for the footballer (1RM 98 kg at 75 kg → 1.31 × BW, below 1.5).
+  const all = await listAssessmentTests(iker.by);
+  const tid = (slug: string) => all.find((t) => t.slug === slug)!.id;
+  const { id: aid } = await createAssessment(iker.by, iker.id, {
+    assessedOn: addDays(localDate(new Date()), -10),
+    testIds: [tid('one_rm_back_squat'), tid('body_mass')],
+    context: 'Fuerza de pretemporada',
+  });
+  await recordAssessmentResult(iker.by, aid, { testId: tid('one_rm_back_squat'), attempts: [98] });
+  await recordAssessmentResult(iker.by, aid, { testId: tid('body_mass'), attempts: [75] });
+  await setAssessmentStatus(iker.by, aid, { status: 'completed' });
+}
+for (const c of created) await runDecision(c.by, c.id);
+{
+  const recs = (await getDecision(iker.by, iker.id)).recommendations;
+  const [p1, p2] = recs.filter((r) => r.type === 'priority');
+  if (p1) await decideRecommendation(iker.by, p1.id, { action: 'accept' });
+  if (p2)
+    await decideRecommendation(iker.by, p2.id, {
+      action: 'accept_with_changes',
+      changes: { sessionsPerWeek: 1 },
+      reason: 'Dos partidos por semana en este bloque',
+    });
+}
+console.log(`Decision engine: proposals for ${created.length} clients (rules version 1).`);
 
 // Exercise library: the user's methodology bank as reviewable drafts (skip with DEMO_SKIP_BANK=1).
 if (!process.env.DEMO_SKIP_BANK) {

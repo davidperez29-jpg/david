@@ -13,6 +13,9 @@ export default async function SettingsPage() {
       <Link href="/app/settings/alertas" className="text-sm text-accent underline">
         Reglas y umbrales de las alertas de seguimiento
       </Link>
+      <Link href="/app/settings/decision" className="text-sm text-accent underline">
+        Reglas del motor de decisión (necesidades, prioridades, métodos)
+      </Link>
       <ThemeSwitch />
       <SecuritySettings
         totpEnabled={sec.totpEnabled}
