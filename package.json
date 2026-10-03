@@ -1,0 +1,40 @@
+{
+  "name": "training-platform",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.28.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @tp/web dev",
+    "build": "pnpm --filter @tp/web build",
+    "typecheck": "pnpm -r --parallel typecheck",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest run",
+    "test:unit": "vitest run --project unit",
+    "test:integration": "vitest run --project integration",
+    "test:e2e": "pnpm --filter @tp/web test:e2e",
+    "depcruise": "depcruise apps packages --config .dependency-cruiser.cjs",
+    "db:generate": "pnpm --filter @tp/db generate",
+    "db:migrate": "pnpm --filter @tp/db migrate",
+    "db:seed": "pnpm --filter @tp/db seed",
+    "db:seed:demo": "pnpm --filter @tp/db seed:demo",
+    "db:reset": "pnpm --filter @tp/db reset"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^22.20.5",
+    "dependency-cruiser": "^18.5.0",
+    "dotenv": "^17.4.2",
+    "eslint": "^9.39.5",
+    "globals": "^17.13.0",
+    "prettier": "^3.9.9",
+    "tsx": "^4.23.15",
+    "typescript": "5.9.3",
+    "typescript-eslint": "^8.71.0",
+    "vitest": "^4.1.11"
+  }
+}

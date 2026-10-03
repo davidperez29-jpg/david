@@ -1,0 +1,16 @@
+{
+  "name": "@tp/application",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": { ".": "./src/index.ts" },
+  "scripts": { "typecheck": "tsc -p tsconfig.json" },
+  "dependencies": {
+    "@tp/auth": "workspace:*",
+    "@tp/contracts": "workspace:*",
+    "@tp/db": "workspace:*",
+    "@tp/domain": "workspace:*",
+    "drizzle-orm": "^0.45.2",
+    "zod": "^4.1.0"
+  }
+}

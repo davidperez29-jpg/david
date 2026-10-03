@@ -1,0 +1,15 @@
+{
+  "name": "@tp/auth",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": { ".": "./src/index.ts" },
+  "scripts": { "typecheck": "tsc -p tsconfig.json" },
+  "dependencies": {
+    "@tp/db": "workspace:*",
+    "@tp/domain": "workspace:*",
+    "@node-rs/argon2": "^2.0.2",
+    "drizzle-orm": "^0.45.2",
+    "otplib": "^12.0.1"
+  }
+}
