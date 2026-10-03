@@ -87,3 +87,16 @@ Plan completo y criterios de aceptación: `MASTER_SPECIFICATION.md` §16.
 | Documentación | ✅ `PLANNING.md`, ADR-013, `API.md`, `TESTING.md` y `DATABASE.md`. |
 | Datos | ✅ 17 plantillas y 92 ejercicios globales en `db:seed`; demo con 8 planes (5 activos). |
 | Pendiente conocido | Publicación al cliente y registro (Fase 7); progresión a partir de registros como recomendaciones (Fases 8–11); plantillas de los Excel tras su revisión. |
+
+## Criterios de cierre de la Fase 7
+
+| Criterio | Estado |
+|---|---|
+| Funcionalidad | ✅ §9: publicación por sesión, semana o plan; Hoy y calendario del cliente; reproductor con registro de un toque, RIR, descanso, sustitución en vivo y cierre (sRPE, fatiga, motivación, dolor); bienestar diario; modo sala; revisión del entrenador. |
+| Criterio de aceptación §16.2 | ✅ Sesión registrada sin conexión y sincronizada sin duplicados (E2E con `setOffline` y reenvío de las mismas mutaciones). |
+| UX | ✅ Revisada con capturas en Pixel 7: objetivos táctiles de 48 px, estado de sincronización visible y menú inferior Hoy · Calendario · Progreso · Perfil. |
+| Seguridad | ✅ Permisos `sessions:*`; el cliente solo ve lo publicado; dolor solo con consentimiento; avisos mediante una función `SECURITY DEFINER` acotada; caché del service worker sin API y borrada al cerrar sesión. |
+| Tests | ✅ 238 unitarios, 100 de integración y 20 E2E. |
+| Documentación | ✅ `SESSIONS.md`, `API.md`, `TESTING.md` y `DATABASE.md`. |
+| Datos | ✅ Los tres clientes demo con app tienen su plan activo, publicado y con las sesiones pasadas registradas por sincronización: una parcial y una sustitución pendiente. |
+| Pendiente conocido | Llevar el filtro «solo publicadas» también a la RLS de `sessions`. Carga interna, adherencia y alertas (Fase 8). Notificaciones push y por correo. |

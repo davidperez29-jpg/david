@@ -139,7 +139,7 @@ Criterio de aceptación (§16.2): crear un plan de 12 semanas y 3 días desde pl
 
 | Permiso | ADMIN | TRAINER | CLIENT |
 |---|---|---|---|
-| `plans:read` / `plans:write` | Organización | Clientes asignados | ✗ (verá sus sesiones publicadas en la Fase 7) |
+| `plans:read` / `plans:write` | Organización | Clientes asignados | ✗ (ve sus sesiones publicadas: `sessions:read`, ver `SESSIONS.md`) |
 | `plans:templates` | Organización | Organización | ✗ |
 
 Además, RLS: las tablas de planificación son de tipo `client_optional` y las plantillas de tipo `catalog`. Lo que queda fuera de ámbito devuelve 404.
@@ -148,7 +148,7 @@ Además, RLS: las tablas de planificación son de tipo `client_optional` y las p
 
 | Elemento | Fase |
 |---|---|
-| Publicar sesiones al cliente, reproductor, registro y sustitución en vivo | 7 |
+| ~~Publicar sesiones al cliente, reproductor, registro y sustitución en vivo~~ Hecho: ver `SESSIONS.md` | 7 |
 | Propuestas de progresión a partir de los registros (doble progresión, ajuste por RIR) como recomendaciones | 8/11 |
 | Opción por cliente «aplicar progresiones rutinarias sin confirmación» (desactivada por defecto) | 11 |
 | Normalizar las 4 rutinas Excel aportadas como plantillas «3 días / 5 mesociclos / 36 semanas» tras su revisión | Operación (§18.1) |

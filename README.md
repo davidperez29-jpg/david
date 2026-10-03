@@ -2,7 +2,7 @@
 
 Sistema profesional para **evaluar, programar, entrenar y hacer seguimiento** de clientes, presencial y online, con trazabilidad científica y control total del entrenador.
 
-> **Estado actual: Fase 3 completada**: biblioteca de ejercicios con búsqueda, vídeos verificados por personas, siluetas, progresiones y sustituciones explicadas, y el banco de tus Excel importado para revisar. Ya funcionan también la autenticación, los clientes y la base de datos completa con Row Level Security. Siguiente: Fase 4 (biblioteca científica).
+> **Estado actual: Fase 7 completada**: evaluación, biblioteca científica verificada en PubMed, biblioteca de ejercicios, planificación desde plantillas y, ahora, la app del cliente (instalable y **sin conexión**) para registrar sesiones con un toque, sustituciones en vivo, cierre con RPE de la sesión, modo sala y revisión del entrenador. Siguiente: Fase 8 (seguimiento: carga interna, adherencia y alertas).
 
 ## Arranque rápido
 
@@ -25,6 +25,7 @@ Usuario demo: `lucia.moreno@example.com` / `demo-entrenamiento-2026`. Más detal
 | [`docs/SCIENTIFIC_FRAMEWORK.md`](docs/SCIENTIFIC_FRAMEWORK.md) | Biblioteca científica: niveles A–H, QA, trazabilidad y evidencia verificada en PubMed.                                                                                                                    |
 | [`docs/ASSESSMENT.md`](docs/ASSESSMENT.md)                     | Evaluación: tests, fiabilidad, referencias, interpretación del cambio.                                                                                                                                    |
 | [`docs/PLANNING.md`](docs/PLANNING.md)                         | Planificación: plantillas, prescripción, progresión, revisiones.                                                                                                                                          |
+| [`docs/SESSIONS.md`](docs/SESSIONS.md)                         | Sesiones: publicación, reproductor, modo sin conexión, sustituciones, modo sala.                                                                                                                          |
 | [`docs/EXERCISE_LIBRARY.md`](docs/EXERCISE_LIBRARY.md)         | Biblioteca de ejercicios y banco importado.                                                                                                                                                               |
 | [`docs/SECURITY.md`](docs/SECURITY.md)                         | Controles de seguridad y RGPD.                                                                                                                                                                            |
 | [`docs/TESTING.md`](docs/TESTING.md)                           | Cómo ejecutar los tests y qué cubren.                                                                                                                                                                     |

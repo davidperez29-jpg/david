@@ -150,3 +150,24 @@ Detalle en `PLANNING.md`. Lo que queda fuera de ámbito devuelve 404. Las edicio
 | `POST /plan-sessions/{id}/blocks` · `POST /plan-sessions/{id}/duplicate` | `plans:write` | `blockSchema` · `{targetMicrocycleId}` | |
 | `PATCH/DELETE /session-blocks/{id}` · `POST …/move` · `POST …/exercises` | `plans:write` | `updateBlockSchema` · `{direction}` · `sessionExerciseSchema` | |
 | `PATCH/DELETE /session-exercises/{id}` · `POST …/move` | `plans:write` | `updateSessionExerciseSchema` (`expectedVersion`, `overrideReason?`) | Un override de plantilla o progresión se audita con su motivo. |
+
+## Sesiones (Fase 7)
+
+Detalle en `SESSIONS.md`. Para el cliente, una sesión no publicada no existe (404). Las mutaciones de registro son idempotentes por `clientMutationId` (8–100 caracteres `[A-Za-z0-9_-]`).
+
+| Método y ruta | Permiso | Entrada | Descripción |
+|---|---|---|---|
+| `POST /sessions/publish` | `sessions:publish` | `{scope: session\|week\|plan, id, published}` | Solo en planes activos. Devuelve `{count}`. |
+| `GET /clients/{id}/agenda?from&to` | `sessions:read` | — | `{today, next, sessions}`; el cliente solo recibe sesiones publicadas. |
+| `GET /sessions/{id}` | `sessions:read` | — | Datos del reproductor: texto para el cliente, indicaciones, vídeo verificado, última vez, precarga, alternativas, registros, sustituciones, asistencia, valoración y `downloadedAt`. |
+| `POST /set-logs` · `DELETE /set-logs/{id}` | `sessions:log` | `setLogSchema` | Devuelve `{id, status: applied\|duplicate\|flagged, reviewReason}`. El cliente no puede borrar en una sesión cerrada. |
+| `POST /substitutions` | `sessions:log` | `{clientMutationId, sessionExerciseId, reason, chosenExerciseId?, comment?}` | `approved` si es una alternativa preaprobada (o lo decide el personal); si no, `pending` y se avisa al entrenador. |
+| `POST /sessions/{id}/complete` | `sessions:log` | `completeSessionSchema` | Asistencia (calculada si se omite; con motivo si es parcial), sRPE, fatiga, motivación, comentario y dolor (solo con consentimiento). |
+| `POST /sync` | `sessions:log` | `{mutations: [{type: set\|substitution\|complete, clientMutationId, …}]}` (≤ 500) | Reproduce la cola del dispositivo en orden, una mutación por *savepoint*. Devuelve un resultado por mutación (`applied`, `duplicate`, `flagged`, `approved`, `pending` o `rejected`). |
+| `GET /clients/{id}/readiness?on=` · `PUT` | `sessions:read` / `sessions:log` | `readinessSchema` | Bienestar diario (uno por día). |
+| `GET /clients/{id}/session-review` | `sessions:review` | — | Sesiones registradas o pendientes, con contadores de revisión. |
+| `GET /review-inbox` | `sessions:review` | — | Sesiones de hoy, sustituciones pendientes y registros marcados de los clientes accesibles. |
+| `POST /substitutions/{id}/decision` | `sessions:review` | `{approve, chosenExerciseId?, addAsAlternative?, comment?}` | Auditado. |
+| `POST /set-logs/{id}/resolve` | `sessions:review` | `{note?}` | Marca un registro como revisado (auditado). |
+
+`PATCH /session-exercises/{id}` acepta además `alternativeExerciseIds` (hasta 5, visibles para la organización y distintos del ejercicio).

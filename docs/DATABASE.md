@@ -233,3 +233,12 @@ Auditoría:
 - Migración `0011`: tabla `plan_templates` (globales u organizativas), con definición JSON, métodos enlazados y slug único por ámbito.
 - Migración `0012_rls_v2`: RLS de tipo `catalog` para `plan_templates`, regenerada desde el mapa.
 - `pnpm db:seed` importa además `seed-data/exercises/global.json` (ejercicios globales publicados, progresiones y enlaces a métodos) y `seed-data/templates/*.json`.
+
+## Ejecución de sesiones (Fase 7)
+
+- Migración `0013`:
+  - `session_exercises.alternative_exercise_ids`: alternativas preaprobadas;
+  - `set_logs.needs_review` y `review_reason`: conflictos de sincronización que se conservan;
+  - `exercise_substitutions.client_mutation_id` (único): idempotencia.
+- Migración `0014_rls_v3`: función `notify_client_trainers(cliente, tipo, título, cuerpo, enlace)` `SECURITY DEFINER`. Solo admite el propio cliente o personal, solo notifica a los entrenadores activos del cliente y `EXECUTE` se concede únicamente a `app_runtime`. Regenerada desde el mapa.
+- Idempotencia: `set_logs.client_mutation_id` y `exercise_substitutions.client_mutation_id` son únicos; `attendance`, `feedback` y `readiness` usan *upsert* por sesión o por día.

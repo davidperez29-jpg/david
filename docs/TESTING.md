@@ -89,3 +89,18 @@ Pendiente para fases siguientes: evaluación, programa, sesión, ejercicios, fee
   - activación con revisión, plan activo único y diferencias entre revisiones;
   - esqueleto manual y alcance.
 - E2E: 16 tests ✔. Nuevos: plan de 12 semanas y 3 días desde plantilla, editado y activado; el cliente no accede a la API de plantillas.
+
+## 7. Resultado en la entrega de la Fase 7
+
+- Unidad: 238 tests ✔. Nuevos: «hoy» y próxima sesión, validación de series (RIR o RPE), precarga, sustitución en vivo y dolor, conflictos de sincronización, cumplimiento y fecha local española.
+- Integración: 100 tests ✔. `sessions.int.test.ts` cubre:
+  - publicar solo en planes activos; el cliente no ve lo no publicado; aislamiento entre organizaciones y entrenadores;
+  - registro idempotente; cola sin conexión reproducida dos veces sin duplicados; conflictos marcados para revisión; mutaciones inválidas rechazadas sin bloquear las demás;
+  - modo sala (`logged_by_role = trainer`) y corrección de una serie sin duplicarla;
+  - alternativas preaprobadas, sustitución pendiente con aviso solo a los entrenadores asignados, decisión del entrenador; un cliente no puede invocar `notify_client_trainers` para otro cliente;
+  - cierre parcial con motivo obligatorio; dolor guardado solo con consentimiento y sin duplicarse; bienestar diario único.
+- E2E: 20 tests ✔. Nuevos:
+  - **criterio de aceptación §16.2**: el cliente registra series, una sustitución y el cierre **sin conexión** (`context.setOffline`); al volver la conexión se sincroniza sola; reenviar las mismas mutaciones devuelve `duplicate` y no crea registros;
+  - calendario del cliente y API de personal cerrada para el cliente;
+  - revisión del entrenador, decisión sobre una sustitución y modo sala;
+  - publicación visible en el plan.

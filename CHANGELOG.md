@@ -2,6 +2,23 @@
 
 Formato: fecha · cambio · motivo · archivos · impacto.
 
+## 2026-10-03 — Fase 7: sesiones y app del cliente
+
+- **Cambio:** esquema y dominio de ejecución (§9, §4.5).
+  - **Incluye:** alternativas preaprobadas, marcas de revisión en registros, idempotencia de sustituciones, función acotada `notify_client_trainers` y reglas puras (hoy, precarga, validación de series, sustitución en vivo, conflictos de sincronización, cumplimiento).
+  - **Archivos:** migraciones `0013` y `0014_rls_v3`, `packages/domain/src/sessions`.
+- **Cambio:** casos de uso y API.
+  - **Incluye:** publicación (solo planes activos), agenda, reproductor, registro idempotente, `/sync` con _savepoint_ por mutación, sustituciones, cierre con dolor solo con consentimiento, bienestar, modo sala, revisión y bandeja.
+  - **Archivos:** `packages/application/src/sessions.ts`, `apps/web/src/app/api/v1/{sessions,set-logs,substitutions,sync,review-inbox}`.
+  - **Impacto:** permisos `sessions:read/log/publish/review`.
+- **Cambio:** app del cliente como PWA.
+  - **Incluye:** manifiesto, service worker propio, cola en IndexedDB, reproductor de una página, Hoy, Calendario y bienestar.
+  - **Impacto:** el menú inferior pasa a Hoy · Calendario · Progreso · Perfil; Privacidad y Ajustes se abren desde Perfil.
+- **Cambio:** vistas del entrenador: publicar en el plan y en el editor, alternativas en el editor, pestaña Sesiones, revisión de sesión, modo sala y «Sesiones de hoy» y revisión en Hoy.
+- **Cambio:** demo: los clientes con app tienen un plan activo relativo a la fecha, publicado y con las sesiones pasadas registradas.
+- **Cambio:** tests: 238 unitarios, 100 de integración y 20 E2E, incluido el criterio de aceptación sin conexión.
+- **Cambio:** documentación: `SESSIONS.md`; `API.md`, `TESTING.md`, `DATABASE.md`, `ROADMAP.md`, `PLANNING.md`, `MASTER_SPECIFICATION.md` y `README.md` actualizados.
+
 ## 2026-10-03 — Fase 6: planificación
 
 - **Cambio:** dominio de planificación (§12).
