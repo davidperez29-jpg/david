@@ -8,7 +8,7 @@ Formato: fecha · cambio · motivo · archivos · impacto.
   - **Motivo:** arquitectura de §4–§5.
   - **Archivos:** raíz, `.github/workflows/ci.yml`, `.dependency-cruiser.cjs`.
   - **Impacto:** base de todo el desarrollo posterior.
-- **Cambio:** esquema y migraciones de identidad, clientes, catálogos y auditoría *append-only* (trigger).
+- **Cambio:** esquema y migraciones de identidad, clientes, catálogos y auditoría _append-only_ (trigger).
   - **Archivos:** `packages/db`.
   - **Impacto:** 25 tablas; catálogos de 17 objetivos, deportes y material.
 - **Cambio:** autenticación propia en lugar de Better Auth (ADR-002).
