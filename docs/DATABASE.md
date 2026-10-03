@@ -255,3 +255,15 @@ Auditoría:
 ## Dashboards (Fase 9)
 
 - Migración `0016`: `clients.progress_test_ids uuid[]`, los tests que el entrenador muestra en el Progreso del cliente (vacío = todos).
+
+## Motor de decisiones (Fase 10)
+
+- Migración `0017`:
+  - valor `postponed` en `recommendation_status`;
+  - tabla `decision_runs`: `client_id`, `rule_set_version`, `input_hash`, `context` jsonb y `result` jsonb, la entrada y la salida exactas de cada ejecución para reproducirla;
+  - tabla `client_trait_flags`: PK (`client_id`, `trait`), `value` y `note`, la valoración manual de un rasgo.
+- Migración `0018` (RLS v4): las dos tablas son `client_owned` y solo las ve el personal del cliente.
+- `recommendations.inputs_snapshot` guarda `{runId, inputHash}`; `rule_keys` alimenta las métricas por regla.
+- `recommendation_evidence` enlaza cada propuesta con sus afirmaciones.
+- `manual_overrides` guarda los cambios campo a campo de «aceptar con cambios».
+- Las reglas de decisión del centro se guardan en `rules` y `rule_sets`, junto a las de alertas: cada versión copia las del otro dominio.

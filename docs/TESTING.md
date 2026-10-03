@@ -147,3 +147,21 @@ Pendiente para fases siguientes: evaluación, programa, sesión, ejercicios, fee
   - calendario por cliente con fases y evaluaciones;
   - **3 tareas UX cronometradas** con umbrales de interacciones y tiempo (`UX_REVIEW.md`).
 - Repetibilidad: la tarea UX 1 resuelve la alerta roja de dolor de la demo. Para repetirla en local, vuelve a cargar los datos (`pnpm db:reset && pnpm db:seed:demo`); CI siempre parte de datos nuevos.
+
+## 10. Resultado en la entrega de la Fase 10
+
+- Unidad: 288 tests ✔. `decision.unit.test.ts` cubre:
+  - DSL: operadores, datos que faltan, operadores y parámetros desconocidos;
+  - **futbolista de §69** con la explicación completa (datos, regla, evidencia con DOI, aplicabilidad, limitaciones, confianza);
+  - sin umbral → aviso y valoración manual;
+  - determinismo y regla desactivada;
+  - derivación, principiante, avanzado (sin fase de introducción), mayor, adherencia baja con objetivos concurrentes y datos que faltan.
+- Integración: 118 tests ✔. `decision.int.test.ts` cubre:
+  - reglas: por defecto con umbrales pendientes, solo ADMIN, validación, versión nueva;
+  - el futbolista de extremo a extremo desde la base de datos (consentimiento, cribado, evaluación, objetivo con deporte);
+  - persistencia con evidencia enlazada;
+  - determinismo y sustitución de pendientes;
+  - aceptar, aceptar con cambios (`manual_overrides`), rechazar y posponer, con métricas por regla;
+  - rasgos manuales; desactivar una regla para un cliente;
+  - permisos y aislamiento.
+- E2E: 28 tests ✔. Nuevo `decision.spec.ts`: la pestaña Necesidades con el «¿Por qué?» y su DOI, el rechazo con motivo y el editor de reglas con métricas. Modifica la demo (rechaza un método); en local, vuelve a cargar los datos para repetirlo.

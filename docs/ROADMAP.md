@@ -14,8 +14,9 @@ Plan completo y criterios de aceptación: `MASTER_SPECIFICATION.md` §16.
 | 7 Sesiones | ✅ 2026-10-03 | Publicación por sesión, semana o plan; PWA instalable con service worker propio y cola en IndexedDB; reproductor con registro de un toque, RIR, descanso, sustitución en vivo con alternativas preaprobadas y cierre (sRPE, dolor con consentimiento); sincronización idempotente sin duplicados con conflictos marcados; modo sala; revisión del entrenador. |
 | 8 Feedback + adherencia | ✅ 2026-10-03 | Adherencia (24/21 = 87,5 %), carga interna sRPE, monotonía y tensión descriptivas (sin ACWR), bienestar, valoración por ejercicio, 10 reglas de alerta 🟢🟡🔴 configurables por centro y por cliente, evaluación tras cada evento y trabajo diario, página de alertas, Hoy y ficha de seguimiento. |
 | 9 Dashboard | ✅ 2026-10-03 | Hoy del entrenador según §8.2 (cifras, alertas, sesiones de hoy, feedback reciente, evaluaciones pendientes), calendario global (mes, semana, filtros, estados, evaluaciones, fases y descargas), Resumen del cliente, Hoy y Progreso del cliente (vista previa, racha, hitos, métricas elegidas por el entrenador), modo oscuro elegible, revisión UX con 3 tareas cronometradas. |
-| 10 Motor de decisiones | ⏭ siguiente | Context builder, cribado, perfilado, necesidades, priorización, selección de métodos, ejercicios y dosis, explicación. |
-| 11–15 | pendiente | Ver especificación. |
+| 10 Motor de decisiones | ✅ 2026-10-03 | Contexto desde la base de datos (con consentimiento), 10 etapas puras y deterministas, DSL sin `eval`, 24 reglas como datos versionadas por centro, umbrales sin valor por defecto, explicación DATOS → … → CONFIANZA con DOI, decisiones del entrenador auditadas, rasgos manuales, desactivación por cliente, métricas de rechazo por regla, pestaña «Necesidades» y editor de reglas. |
+| 11 Motor de programación | ⏭ siguiente | Propuesta de plan desde plantilla y contexto, progresión semana a semana, ajustes por respuesta. |
+| 12–15 | pendiente | Ver especificación. |
 
 ## Criterios de cierre de la Fase 1 (§63)
 
@@ -129,3 +130,16 @@ Plan completo y criterios de aceptación: `MASTER_SPECIFICATION.md` §16.
 | Documentación | ✅ `DASHBOARD.md`, `UX_REVIEW.md`, `API.md`, `TESTING.md` y `DATABASE.md`. |
 | Datos | ✅ Evaluaciones próximas y vencidas en la demo; Iker con 2 tests visibles. |
 | Pendiente conocido | Prueba UX con personas. Hitos configurables por el entrenador. Arrastrar y soltar en el calendario para reprogramar. |
+
+## Criterios de cierre de la Fase 10
+
+| Criterio | Estado |
+|---|---|
+| Funcionalidad | ✅ Contexto, cribado, perfil, necesidades, priorización, métodos, ejercicios, dosis, fase de introducción, propuesta de plan y explicación; editor de reglas; decisiones del entrenador; rasgos manuales. |
+| Criterio de aceptación §16.2 | ✅ Golden cases: el futbolista de §69 y otros 8 (principiante, avanzado, mayor, derivación, adherencia baja con objetivos concurrentes, datos que faltan, regla desactivada y determinismo), con explicación completa y evidencia trazable (DOI). |
+| UX | ✅ Revisada con capturas en escritorio y en el móvil: «¿Por qué?» plegable, acciones junto a cada propuesta, avisos y reglas pendientes arriba. |
+| Seguridad | ✅ Permisos `decision:read/run/decide` (ADMIN o entrenador asignado) y `decision:rules` (ADMIN); RLS en las tablas nuevas; datos de salud solo con consentimiento; nunca diagnostica. |
+| Tests | ✅ 288 unitarios, 118 de integración y 28 E2E. |
+| Documentación | ✅ `DECISION_ENGINE.md`, `API.md`, `TESTING.md` y `DATABASE.md`. |
+| Datos | ✅ Umbrales de futbolista en el centro demo; propuestas calculadas para los 10 clientes; Iker con decisiones que alimentan las métricas. |
+| Pendiente conocido | Generar el plan desde la propuesta (Fase 11). Editor visual de condiciones. Umbrales por sexo o categoría. |

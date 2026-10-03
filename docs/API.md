@@ -202,3 +202,19 @@ Detalle en `DASHBOARD.md`.
 | `PUT /clients/{id}/progress-metrics` | `assessments:write` | `{testIds}` (hasta 5) | Tests visibles en el Progreso del cliente (auditado). |
 
 `GET /clients/{id}/agenda` incluye además `assessments`.
+
+## Motor de decisiones (Fase 10)
+
+Detalle en `DECISION_ENGINE.md`. Solo personal: ADMIN de la organización o entrenador asignado. El cliente no ve las propuestas internas.
+
+| Método y ruta | Permiso | Entrada | Descripción |
+|---|---|---|---|
+| `POST /clients/{id}/decision/run` | `decision:run` | — | Ejecuta el motor (determinista), guarda la ejecución y las propuestas con su evidencia y sustituye las pendientes. Devuelve `{runId, result}`. |
+| `GET /clients/{id}/decision` | `decision:read` | — | Última ejecución, sus propuestas con estado y explicación, rasgos manuales y reglas desactivadas para el cliente. |
+| `GET /clients/{id}/decision/context` | `decision:read` | — | Los datos que usaría el motor ahora (incluida la lista de datos que faltan). |
+| `POST /recommendations/{id}/decision` | `decision:decide` | `{action: accept\|accept_with_changes\|reject\|postpone, changes?, reason?}` | Decide una propuesta pendiente o pospuesta. Con `accept_with_changes`, `changes` es obligatorio y cada campo se guarda en `manual_overrides`. `409` si ya está decidida. |
+| `PUT /clients/{id}/trait-flags` | `decision:decide` | `{trait, value: boolean\|null, note?}` | Valoración manual de un rasgo (`null` la quita). Auditado. |
+| `GET /decision/rules` | `decision:read` | — | Reglas vigentes con parámetros, pendientes, condición y métricas por regla. |
+| `PUT /decision/rules` | `decision:rules` (ADMIN) | `{rules: [{key, enabled, parameters: {name: number\|null}}], notes?}` | Nueva versión de las reglas (`422` con errores por `regla.parámetro`). |
+
+`PUT /clients/{id}/rule-overrides` (Fase 8) acepta también claves de reglas de decisión.

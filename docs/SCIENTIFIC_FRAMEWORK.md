@@ -1,6 +1,6 @@
 # Biblioteca científica
 
-> Fase 4. Capa A de la arquitectura (`MASTER_SPECIFICATION.md` §4.2 y §10). Guarda **qué dice la evidencia, con qué fuerza y para quién**. No prescribe nada por sí sola: el motor de decisiones (Fase 9) la usará para proponer y explicar, y **el entrenador decide**.
+> Fase 4. Capa A de la arquitectura (`MASTER_SPECIFICATION.md` §4.2 y §10). Guarda **qué dice la evidencia, con qué fuerza y para quién**. No prescribe nada por sí sola: el motor de decisiones (Fase 10, `DECISION_ENGINE.md`) la usa para proponer y explicar, y **el entrenador decide**.
 
 ## 1. Modelo y trazabilidad
 
@@ -69,7 +69,7 @@ La interfaz nunca muestra la letra sola: siempre la acompaña su significado («
 | Una cifra del hallazgo no aparece en la cita | aviso |
 | La afirmación se aplica a poblaciones que los hallazgos no estudiaron (extrapolación) | aviso |
 
-Además, `assessApplicability` (`applicability.ts`) compara a una persona con la población de un estudio (edad, sexo, nivel de entrenamiento y deporte) y devuelve avisos legibles. Ejemplo: «Estudio realizado en "Adultos mayores…", pero se aplica a una persona de 22 años.» El motor de decisiones lo usará en la Fase 9.
+Además, `assessApplicability` (`applicability.ts`) compara a una persona con la población de un estudio (edad, sexo, nivel de entrenamiento y deporte) y devuelve avisos legibles. Ejemplo: «Estudio realizado en "Adultos mayores…", pero se aplica a una persona de 22 años.» El motor de decisiones (Fase 10) aplica la misma idea con las poblaciones `appliesTo`/`notFor` de cada afirmación.
 
 **Revisión humana.** La lista de control tiene seis puntos:
 1. las cifras coinciden con la fuente;

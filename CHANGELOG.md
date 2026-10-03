@@ -2,6 +2,23 @@
 
 Formato: fecha · cambio · motivo · archivos · impacto.
 
+## 2026-10-03 — Fase 10: motor de decisiones
+
+- **Cambio:** dominio del motor (§13).
+  - **Incluye:** DSL de condiciones en JSON sin `eval`; 10 etapas puras y deterministas (hechos, cribado, perfil, necesidades, priorización, métodos, ejercicios, dosis, plan y explicación); fase de introducción por puntuación; 24 reglas por defecto como datos (nivel F) enlazadas a afirmaciones.
+  - **Archivos:** `packages/domain/src/decision/*`.
+- **Cambio:** umbrales del perfil sin valor por defecto.
+  - **Motivo:** no inventar números. El motor avisa y usa una referencia verificada aplicable o la valoración del entrenador.
+- **Cambio:** contexto desde la base de datos, con datos de salud solo con consentimiento.
+  - **Incluye:** ejecuciones guardadas con su huella y versión de reglas; propuestas con evidencia enlazada; decisiones (aceptar, aceptar con cambios auditados en `manual_overrides`, rechazar, posponer); rasgos manuales; editor de reglas versionado (ADMIN) con métricas de rechazo por regla; desactivación por cliente.
+  - **Archivos:** `packages/application/src/decision.ts`, migraciones `0017` y `0018`, rutas `/api/v1/clients/{id}/decision*`, `/recommendations/{id}/decision`, `/clients/{id}/trait-flags` y `/decision/rules`.
+  - **Impacto:** permisos `decision:read`, `decision:run`, `decision:decide` y `decision:rules`.
+- **Cambio:** interfaz.
+  - **Incluye:** pestaña «Necesidades» con «¿Por qué?» (DATOS / INTERPRETACIÓN / REGLA / EVIDENCIA con DOI / APLICABILIDAD / LIMITACIONES / CONFIANZA) y acciones en cada propuesta; «Ajustes → Reglas del motor de decisión».
+- **Cambio:** demo con umbrales de futbolista en el centro, 1RM reciente de Iker y propuestas para todos los clientes.
+- **Cambio:** tests: 288 unitarios (golden case del futbolista de §69 y otros 8), 118 de integración y 28 E2E.
+- **Cambio:** documentación: `DECISION_ENGINE.md`; `API.md`, `TESTING.md`, `DATABASE.md`, `ROADMAP.md`, `SCIENTIFIC_FRAMEWORK.md`, `MASTER_SPECIFICATION.md` y `README.md` actualizados.
+
 ## 2026-10-03 — Fase 9: dashboards y calendario
 
 - **Cambio:** dominio de dashboards: racha, hitos positivos (solo mejoras confirmadas), cuadrícula de mes, fases y descargas como intervalos.
