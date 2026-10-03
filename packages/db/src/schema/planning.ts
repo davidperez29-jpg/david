@@ -254,6 +254,8 @@ export const sessions = pgTable(
     title: text('title'),
     objective: text('objective'),
     estimatedDurationMin: smallint('estimated_duration_min'),
+    /** Planned session RPE (CR-10), compared with the client's sRPE by the monitoring rules. */
+    targetSessionRpe: numeric('target_session_rpe', { precision: 3, scale: 1 }),
     notesForClient: text('notes_for_client'),
     notesForTrainer: text('notes_for_trainer'),
     published: boolean('published').notNull().default(false),

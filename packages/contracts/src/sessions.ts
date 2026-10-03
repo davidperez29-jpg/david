@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { isoDate, optionalText } from './common';
 import { SUBSTITUTION_REASONS } from './library';
+import { exerciseFeedbackSchema } from './monitoring';
 
 /** Offline idempotency key generated on the device (§4.5). */
 const mutationId = z
@@ -107,7 +108,7 @@ export const syncSchema = z.object({
   mutations: z
     .array(
       z.looseObject({
-        type: z.enum(['set', 'substitution', 'complete']),
+        type: z.enum(['set', 'substitution', 'complete', 'exercise_feedback']),
         clientMutationId: z.string().max(100),
       }),
     )
@@ -118,6 +119,7 @@ export const syncItemSchemas = {
   set: setLogSchema,
   substitution: substitutionRequestSchema,
   complete: completeSessionSchema.extend({ clientMutationId: mutationId, sessionId: z.uuid() }),
+  exercise_feedback: exerciseFeedbackSchema.extend({ clientMutationId: mutationId }),
 };
 export type SyncInput = z.infer<typeof syncSchema>;
 

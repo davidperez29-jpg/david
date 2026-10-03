@@ -125,6 +125,8 @@ export const updateSessionSchema = z.object({
   objective: optionalText(500),
   scheduledDate: isoDate.nullable().optional(),
   estimatedDurationMin: int(5, 300),
+  /** Planned session RPE (CR-10, 0–10). */
+  targetSessionRpe: dec(0, 10),
   notesForClient: optionalText(1000),
   notesForTrainer: optionalText(2000),
 });

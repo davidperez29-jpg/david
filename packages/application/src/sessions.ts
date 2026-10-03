@@ -11,6 +11,7 @@
 import {
   completeSessionSchema,
   decideSubstitutionSchema,
+  exerciseFeedbackSchema,
   publishSchema,
   readinessSchema,
   resolveLogSchema,
@@ -45,7 +46,8 @@ import { and, asc, desc, eq, gte, inArray, isNotNull, isNull, lte, ne, or, sql }
 import { writeAudit } from './audit';
 import { authorizeClient, requirePermission } from './authz';
 import type { RequestContext } from './context';
-import { secured } from './rls';
+import { applyExerciseFeedback, scheduleMonitoring } from './monitoring';
+import { secured, withSavepoint } from './rls';
 import { parse } from './validation';
 
 const {
@@ -965,6 +967,7 @@ async function applyComplete(
     changes: [{ field: 'attendance', before: null, after: status }],
     reason: own ? 'Registrada por el cliente' : 'Registrada por el entrenador (modo sala)',
   });
+  scheduleMonitoring(ctx, clientId);
   return {
     status,
     completion: { ...computed, prescribedSets: prescribed, completedSets: done },
@@ -981,7 +984,7 @@ async function completeSession_(ctx: RequestContext, sessionId: string, input: u
 
 export interface SyncResult {
   clientMutationId: string;
-  type: 'set' | 'substitution' | 'complete';
+  type: 'set' | 'substitution' | 'complete' | 'exercise_feedback';
   status: MutationStatus | 'approved' | 'pending' | 'rejected';
   id?: string;
   message?: string | null;
@@ -1001,8 +1004,7 @@ async function syncMutations_(
   const results: SyncResult[] = [];
   for (const m of d.mutations) {
     try {
-      const r = await ctx.db.transaction(async (tx) => {
-        const c: RequestContext = { ...ctx, db: tx as unknown as RequestContext['db'] };
+      const r = await withSavepoint(ctx, async (c) => {
         if (m.type === 'set') {
           const o = await applySetLog(c, parse(syncItemSchemas.set, m));
           return { status: o.status, id: o.id, message: o.reviewReason };
@@ -1010,6 +1012,14 @@ async function syncMutations_(
         if (m.type === 'substitution') {
           const o = await applySubstitution(c, parse(syncItemSchemas.substitution, m));
           return { status: o.status, id: o.id, message: o.message };
+        }
+        if (m.type === 'exercise_feedback') {
+          const o = await applyExerciseFeedback(
+            c,
+            parse(syncItemSchemas.exercise_feedback, m),
+            sessionExerciseFor,
+          );
+          return { status: 'applied' as const, id: m.clientMutationId, message: null, ...o };
         }
         const { sessionId, ...x } = parse(syncItemSchemas.complete, m);
         const o = await applyComplete(c, sessionId, x);
@@ -1058,6 +1068,25 @@ async function saveReadiness_(
       ...values,
     })
     .onConflictDoUpdate({ target: [readiness.clientId, readiness.recordedOn], set: values });
+  scheduleMonitoring(ctx, clientId);
+}
+
+/** Session exercise → its session, authorized for logging (unpublished allowed: offline). */
+async function sessionExerciseFor(ctx: RequestContext, sessionExerciseId: string) {
+  const [row] = await ctx.db
+    .select({ sessionId: sessionBlocks.sessionId })
+    .from(sessionExercises)
+    .innerJoin(sessionBlocks, eq(sessionBlocks.id, sessionExercises.blockId))
+    .where(eq(sessionExercises.id, sessionExerciseId));
+  if (!row) throw new DomainError('not_found', 'Ejercicio no encontrado en la sesión.');
+  const { session, clientId, own } = await loadSession(ctx, row.sessionId, 'sessions:log', {
+    allowUnpublished: true,
+  });
+  return { sessionId: session.id, organizationId: session.organizationId, clientId, own };
+}
+
+async function saveExerciseFeedback_(ctx: RequestContext, input: unknown) {
+  return applyExerciseFeedback(ctx, parse(exerciseFeedbackSchema, input), sessionExerciseFor);
 }
 
 async function getReadiness_(ctx: RequestContext, clientId: string, on: string) {
@@ -1293,6 +1322,7 @@ export const deleteSetLog = secured(deleteSetLog_);
 export const requestSubstitution = secured(requestSubstitution_);
 export const completeSession = secured(completeSession_);
 export const syncMutations = secured(syncMutations_);
+export const saveExerciseFeedback = secured(saveExerciseFeedback_);
 export const saveReadiness = secured(saveReadiness_);
 export const getReadiness = secured(getReadiness_);
 export const clientSessionReview = secured(clientSessionReview_);

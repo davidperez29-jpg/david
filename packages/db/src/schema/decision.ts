@@ -11,6 +11,7 @@ import {
   text,
   timestamp,
   unique,
+  uniqueIndex,
   uuid,
 } from 'drizzle-orm/pg-core';
 import { id, timestamps } from './_common';
@@ -186,6 +187,8 @@ export const alerts = pgTable(
     message: text('message').notNull(),
     data: jsonb('data'),
     ruleKey: text('rule_key'),
+    /** Stable key of the situation (e.g. `pain:rodilla`): one live alert per key and client. */
+    alertKey: text('alert_key'),
     ruleSetVersion: integer('rule_set_version'),
     status: alertStatus('status').notNull().default('open'),
     resolvedBy: uuid('resolved_by'),
@@ -196,6 +199,9 @@ export const alerts = pgTable(
   (t) => [
     index('alerts_org_status_idx').on(t.organizationId, t.status, t.severity),
     index('alerts_client_idx').on(t.clientId),
+    uniqueIndex('alerts_live_key_uq')
+      .on(t.clientId, t.alertKey)
+      .where(sql`${t.status} <> 'resolved' AND ${t.alertKey} IS NOT NULL`),
   ],
 );
 

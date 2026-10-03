@@ -41,7 +41,7 @@ import type { AnyPgColumn } from 'drizzle-orm/pg-core';
 import { writeAudit } from './audit';
 import { authorizeClient, requirePermission } from './authz';
 import type { RequestContext } from './context';
-import { secured } from './rls';
+import { afterCommit, secured } from './rls';
 import { parse } from './validation';
 
 const {
@@ -875,6 +875,10 @@ async function setAssessmentStatus_(
       changes: [{ field: 'status', before: a.status, after: status }],
     });
   });
+  // A completed assessment can reveal a performance drop or close an overdue reassessment.
+  afterCommit(ctx, `monitor:${a.clientId}`, async (root) =>
+    (await import('./monitoring')).monitorClient(root, a.clientId),
+  );
 }
 
 // ── Interpretation helpers ────────────────────────────────────────────────────
@@ -1246,3 +1250,6 @@ export const recordAssessmentResult = secured(recordAssessmentResult_);
 export const deleteAssessmentResult = secured(deleteAssessmentResult_);
 export const setAssessmentStatus = secured(setAssessmentStatus_);
 export const clientAssessmentProgress = secured(clientAssessmentProgress_);
+
+/** Internal (no RLS binding): used by system jobs such as alert evaluation. */
+export const assessmentProgressUnsecured = clientAssessmentProgress_;

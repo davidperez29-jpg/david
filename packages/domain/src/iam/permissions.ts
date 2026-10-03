@@ -43,6 +43,9 @@ export const PERMISSIONS = [
   'sessions:log',
   'sessions:publish',
   'sessions:review',
+  'monitoring:read',
+  'alerts:manage',
+  'monitoring:rules',
   'privacy:export_subject',
 ] as const;
 export type Permission = (typeof PERMISSIONS)[number];
@@ -83,6 +86,10 @@ export const ROLE_PERMISSIONS: Matrix = {
     'sessions:log': 'org',
     'sessions:publish': 'org',
     'sessions:review': 'org',
+    'monitoring:read': 'org',
+    'alerts:manage': 'org',
+    // Alert thresholds are organization policy: ADMIN only (§13.4, rule editor).
+    'monitoring:rules': 'org',
     'privacy:export_subject': 'org',
   },
   TRAINER: {
@@ -120,6 +127,9 @@ export const ROLE_PERMISSIONS: Matrix = {
     'sessions:log': 'assigned',
     'sessions:publish': 'assigned',
     'sessions:review': 'assigned',
+    // Adherence, load and alerts of assigned clients; thresholds are read-only for trainers.
+    'monitoring:read': 'assigned',
+    'alerts:manage': 'assigned',
   },
   CLIENT: {
     'clients:read': 'own',
@@ -132,6 +142,8 @@ export const ROLE_PERMISSIONS: Matrix = {
     // Published sessions only; the client logs sets, substitutions, feedback and readiness.
     'sessions:read': 'own',
     'sessions:log': 'own',
+    // Own adherence and load in plain language; never the trainer's alerts.
+    'monitoring:read': 'own',
     'privacy:export_subject': 'own',
   },
 };

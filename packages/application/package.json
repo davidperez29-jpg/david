@@ -9,6 +9,7 @@
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",
     "seed:demo": "tsx scripts/seed-demo.ts",
+    "monitor:daily": "tsx scripts/monitor-daily.ts",
     "create-org": "tsx scripts/create-org.ts",
     "exercise-bank:normalize": "tsx scripts/exercise-bank/normalize.ts",
     "exercise-bank:import": "tsx scripts/exercise-bank/import.ts"
