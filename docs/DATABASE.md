@@ -251,3 +251,7 @@ Auditoría:
 - Reglas de alerta: filas `rules` de dominio `monitoring_alert` en un `rule_sets` versionado por organización (`published` → `retired`). Sin filas se aplican los valores por defecto del dominio.
 - Desactivación por cliente: `client_rule_overrides`.
 - Catálogo: nuevos resultados `training_load_quantification` e `illness_incidence`.
+
+## Dashboards (Fase 9)
+
+- Migración `0016`: `clients.progress_test_ids uuid[]`, los tests que el entrenador muestra en el Progreso del cliente (vacío = todos).

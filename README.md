@@ -2,7 +2,7 @@
 
 Sistema profesional para **evaluar, programar, entrenar y hacer seguimiento** de clientes, presencial y online, con trazabilidad científica y control total del entrenador.
 
-> **Estado actual: Fase 8 completada**: evaluación, bibliotecas científica (verificada en PubMed) y de ejercicios, planificación desde plantillas, app del cliente sin conexión y, ahora, **seguimiento**: adherencia, carga interna (método sRPE) y alertas 🟢🟡🔴 configurables que describen y nunca diagnostican. Siguiente: Fase 9 (dashboards).
+> **Estado actual: Fase 9 completada**: evaluación, bibliotecas científica (verificada en PubMed) y de ejercicios, planificación, app del cliente sin conexión, seguimiento con alertas y, ahora, **dashboards y calendario global**: Hoy del entrenador ordenado por lo que requiere acción, calendario con sesiones, evaluaciones, fases y descargas, y Hoy y Progreso del cliente con racha e hitos. Siguiente: Fase 10 (motor de decisiones).
 
 ## Arranque rápido
 
@@ -28,6 +28,8 @@ Usuario demo: `lucia.moreno@example.com` / `demo-entrenamiento-2026`. Más detal
 | [`docs/PLANNING.md`](docs/PLANNING.md)                         | Planificación: plantillas, prescripción, progresión, revisiones.                                                                                                                                          |
 | [`docs/SESSIONS.md`](docs/SESSIONS.md)                         | Sesiones: publicación, reproductor, modo sin conexión, sustituciones, modo sala.                                                                                                                          |
 | [`docs/MONITORING.md`](docs/MONITORING.md)                     | Seguimiento: adherencia, carga interna, reglas y ciclo de vida de las alertas.                                                                                                                            |
+| [`docs/DASHBOARD.md`](docs/DASHBOARD.md)                       | Dashboards del entrenador y del cliente, calendario global, apariencia.                                                                                                                                   |
+| [`docs/UX_REVIEW.md`](docs/UX_REVIEW.md)                       | Revisión UX con 3 tareas cronometradas y protocolo con personas.                                                                                                                                          |
 | [`docs/EXERCISE_LIBRARY.md`](docs/EXERCISE_LIBRARY.md)         | Biblioteca de ejercicios y banco importado.                                                                                                                                                               |
 | [`docs/SECURITY.md`](docs/SECURITY.md)                         | Controles de seguridad y RGPD.                                                                                                                                                                            |
 | [`docs/TESTING.md`](docs/TESTING.md)                           | Cómo ejecutar los tests y qué cubren.                                                                                                                                                                     |

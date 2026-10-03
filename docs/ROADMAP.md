@@ -13,8 +13,9 @@ Plan completo y criterios de aceptación: `MASTER_SPECIFICATION.md` §16.
 | 6 Planificación | ✅ 2026-10-03 | Planes de 3/6/9/12 meses (fases → mesociclos → semanas → sesiones → bloques → ejercicios), 17 plantillas por objetivo y frecuencia con métodos enlazados, 92 ejercicios globales publicados, % 1RM → kg desde un 1RM medido, conflictos de material y tolerancias, progresión declarativa, editor de sesión con overrides auditados, duplicaciones, guardar como plantilla, revisiones e indicadores semanales, calendario. |
 | 7 Sesiones | ✅ 2026-10-03 | Publicación por sesión, semana o plan; PWA instalable con service worker propio y cola en IndexedDB; reproductor con registro de un toque, RIR, descanso, sustitución en vivo con alternativas preaprobadas y cierre (sRPE, dolor con consentimiento); sincronización idempotente sin duplicados con conflictos marcados; modo sala; revisión del entrenador. |
 | 8 Feedback + adherencia | ✅ 2026-10-03 | Adherencia (24/21 = 87,5 %), carga interna sRPE, monotonía y tensión descriptivas (sin ACWR), bienestar, valoración por ejercicio, 10 reglas de alerta 🟢🟡🔴 configurables por centro y por cliente, evaluación tras cada evento y trabajo diario, página de alertas, Hoy y ficha de seguimiento. |
-| 9 Dashboard | ⏭ siguiente | Dashboards de entrenador y cliente, calendario global, revisión UX cronometrada. |
-| 10–15 | pendiente | Ver especificación. |
+| 9 Dashboard | ✅ 2026-10-03 | Hoy del entrenador según §8.2 (cifras, alertas, sesiones de hoy, feedback reciente, evaluaciones pendientes), calendario global (mes, semana, filtros, estados, evaluaciones, fases y descargas), Resumen del cliente, Hoy y Progreso del cliente (vista previa, racha, hitos, métricas elegidas por el entrenador), modo oscuro elegible, revisión UX con 3 tareas cronometradas. |
+| 10 Motor de decisiones | ⏭ siguiente | Context builder, cribado, perfilado, necesidades, priorización, selección de métodos, ejercicios y dosis, explicación. |
+| 11–15 | pendiente | Ver especificación. |
 
 ## Criterios de cierre de la Fase 1 (§63)
 
@@ -115,3 +116,16 @@ Plan completo y criterios de aceptación: `MASTER_SPECIFICATION.md` §16.
 | Documentación | ✅ `MONITORING.md`, `API.md`, `TESTING.md`, `DATABASE.md` y `SCIENTIFIC_FRAMEWORK.md`. |
 | Datos | ✅ Demo con adherencias del 45 % al 100 % y alertas de cada color (adherencia, dolor, RPE alto, bienestar, RIR y sesión sin valoración). 4 fuentes nuevas verificadas en PubMed. |
 | Pendiente conocido | Dashboards completos (Fase 9). Aplicar las propuestas de ajuste desde la alerta (Fase 11). Notificaciones push y por correo. |
+
+## Criterios de cierre de la Fase 9
+
+| Criterio | Estado |
+|---|---|
+| Funcionalidad | ✅ Dashboards de entrenador y cliente y calendario global (F18: sesiones, evaluaciones, fases, descansos). |
+| Criterio de aceptación §16.2 | ✅ Revisión UX con 3 tareas cronometradas (4, 6 y 2 interacciones; umbrales en CI). Ver `UX_REVIEW.md`. La prueba con personas reales queda como protocolo pendiente. |
+| UX | ✅ Capturas en escritorio y Pixel 7, claro y oscuro; 4 problemas detectados y corregidos. |
+| Seguridad | ✅ Calendario solo para el personal y con alcance por RLS; filtro por entrenador solo para ADMIN; tests visibles editables solo por el personal asignado (auditado). |
+| Tests | ✅ 270 unitarios, 110 de integración y 27 E2E. |
+| Documentación | ✅ `DASHBOARD.md`, `UX_REVIEW.md`, `API.md`, `TESTING.md` y `DATABASE.md`. |
+| Datos | ✅ Evaluaciones próximas y vencidas en la demo; Iker con 2 tests visibles. |
+| Pendiente conocido | Prueba UX con personas. Hitos configurables por el entrenador. Arrastrar y soltar en el calendario para reprogramar. |

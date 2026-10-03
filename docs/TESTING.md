@@ -130,3 +130,20 @@ Pendiente para fases siguientes: evaluación, programa, sesión, ejercicios, fee
   - resolver una alerta;
   - umbrales de solo lectura para el entrenador (y 403 en la API) y nueva versión guardada por ADMIN;
   - «Tu constancia» del cliente.
+
+## 9. Resultado en la entrega de la Fase 9
+
+- Unidad: 270 tests ✔. `dashboard.unit.test.ts` cubre:
+  - racha: la sesión de hoy no la rompe; las reprogramadas no cuentan;
+  - hitos: solo mejoras confirmadas;
+  - cuadrícula de mes que empieza en lunes;
+  - fases y descargas como intervalos.
+- Integración: 110 tests ✔. `dashboard.int.test.ts` cubre:
+  - calendario: alcance por RLS, filtro por cliente, intervalos, rango máximo, cliente rechazado;
+  - dashboard del entrenador;
+  - resumen con la semana del plan;
+  - dashboard del cliente: vista previa, racha, hitos, próxima evaluación y tests visibles (máximo 5, solo personal asignado).
+- E2E: 27 tests ✔. Nuevos:
+  - calendario por cliente con fases y evaluaciones;
+  - **3 tareas UX cronometradas** con umbrales de interacciones y tiempo (`UX_REVIEW.md`).
+- Repetibilidad: la tarea UX 1 resuelve la alerta roja de dolor de la demo. Para repetirla en local, vuelve a cargar los datos (`pnpm db:reset && pnpm db:seed:demo`); CI siempre parte de datos nuevos.

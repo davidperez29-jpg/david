@@ -188,3 +188,17 @@ Detalle en `MONITORING.md`. Las alertas nunca son visibles para el cliente.
 | `POST /exercise-feedback` | `sessions:log` | `{sessionExerciseId, difficulty?, pain?, comment?}` | También en `/sync` como `type: exercise_feedback`. |
 
 `PATCH /plan-sessions/{id}` acepta `targetSessionRpe` (0–10).
+
+## Dashboards y calendario (Fase 9)
+
+Detalle en `DASHBOARD.md`.
+
+| Método y ruta | Permiso | Entrada | Descripción |
+|---|---|---|---|
+| `GET /calendar?from&to&clientId&trainerId` | `sessions:read` (solo personal) | Rango de 9 semanas como máximo | Sesiones, evaluaciones y, con `clientId`, fases y semanas de descarga (`spans`). `trainerId` es el filtro de ADMIN. |
+| `GET /dashboard/trainer` | `sessions:review` | — | Clientes activos, evaluaciones pendientes o vencidas y feedback reciente. |
+| `GET /clients/{id}/summary` | `monitoring:read` (personal) | — | Plan activo con fase y semana, próxima sesión, adherencia, alertas y métricas clave. |
+| `GET /clients/{id}/dashboard` | `sessions:read` | — | Próxima sesión con vista previa, racha, adherencia, hitos, próxima evaluación y tests visibles. |
+| `PUT /clients/{id}/progress-metrics` | `assessments:write` | `{testIds}` (hasta 5) | Tests visibles en el Progreso del cliente (auditado). |
+
+`GET /clients/{id}/agenda` incluye además `assessments`.

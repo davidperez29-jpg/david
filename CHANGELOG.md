@@ -2,6 +2,20 @@
 
 Formato: fecha · cambio · motivo · archivos · impacto.
 
+## 2026-10-03 — Fase 9: dashboards y calendario
+
+- **Cambio:** dominio de dashboards: racha, hitos positivos (solo mejoras confirmadas), cuadrícula de mes, fases y descargas como intervalos.
+  - **Archivos:** `packages/domain/src/dashboard`.
+- **Cambio:** casos de uso: calendario global (alcance por RLS, filtro por entrenador para ADMIN), dashboard del entrenador, Resumen del cliente, dashboard del cliente, tests visibles en el Progreso del cliente; la agenda del cliente incluye evaluaciones.
+  - **Archivos:** `packages/application/src/dashboard.ts`, migración `0016`.
+- **Cambio:** interfaz del entrenador.
+  - **Incluye:** «Calendario» (mes y semana, filtros, estados con icono y texto, evaluaciones, fases y descargas, agenda en el móvil); Hoy según §8.2 (feedback reciente, evaluaciones pendientes); Resumen del cliente; selector de tests visibles.
+- **Cambio:** interfaz del cliente: Hoy con los ejercicios de la sesión, racha y próxima evaluación; Progreso con hitos y los tests elegidos; Calendario con evaluaciones.
+- **Cambio:** tema claro, oscuro o del sistema en Ajustes, aplicado antes de pintar (§9.7).
+- **Cambio:** revisión UX con 3 tareas cronometradas en E2E (`UX_REVIEW.md`); 4 problemas detectados y corregidos.
+- **Cambio:** tests: 270 unitarios, 110 de integración y 27 E2E.
+- **Cambio:** documentación: `DASHBOARD.md` y `UX_REVIEW.md`; `API.md`, `TESTING.md`, `DATABASE.md`, `ROADMAP.md`, `MASTER_SPECIFICATION.md` y `README.md` actualizados.
+
 ## 2026-10-03 — Fase 8: seguimiento y alertas
 
 - **Cambio:** dominio de seguimiento (§13.7).
