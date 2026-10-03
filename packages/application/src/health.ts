@@ -17,6 +17,7 @@ import { writeAudit } from './audit';
 import { authorizeClient, requirePermission } from './authz';
 import type { RequestContext } from './context';
 import { parse } from './validation';
+import { secured } from './rls';
 
 const { healthDeclarations, screeningResponses, consents } = schema;
 
@@ -69,7 +70,7 @@ async function requireHealthConsent(db: Executor, clientId: string): Promise<voi
 }
 
 /** Reading health data is audited as a sensitive view (§14.6). */
-export async function listHealthDeclarations(ctx: RequestContext, clientId: string) {
+async function listHealthDeclarations_(ctx: RequestContext, clientId: string) {
   await authorizeClient(ctx, 'health:read', clientId);
   const rows = await ctx.db
     .select()
@@ -116,7 +117,7 @@ function staffOnly(ctx: RequestContext, resource: Awaited<ReturnType<typeof auth
   }
 }
 
-export async function addHealthDeclaration(
+async function addHealthDeclaration_(
   ctx: RequestContext,
   clientId: string,
   input: unknown,
@@ -156,7 +157,7 @@ export async function addHealthDeclaration(
 }
 
 /** Records that a health professional has assessed the issue (the system never decides this). */
-export async function clearHealthDeclaration(
+async function clearHealthDeclaration_(
   ctx: RequestContext,
   clientId: string,
   declarationId: string,
@@ -189,7 +190,7 @@ export async function clearHealthDeclaration(
   });
 }
 
-export async function recordScreening(
+async function recordScreening_(
   ctx: RequestContext,
   clientId: string,
   input: unknown,
@@ -220,3 +221,9 @@ export async function recordScreening(
     return { id: row!.id };
   });
 }
+
+// Use cases run under Row Level Security (see rls.ts).
+export const listHealthDeclarations = secured(listHealthDeclarations_);
+export const addHealthDeclaration = secured(addHealthDeclaration_);
+export const clearHealthDeclaration = secured(clearHealthDeclaration_);
+export const recordScreening = secured(recordScreening_);

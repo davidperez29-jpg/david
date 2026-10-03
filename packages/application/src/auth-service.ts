@@ -31,6 +31,7 @@ import { loadActor, rolesOf } from './actor';
 import { writeAudit } from './audit';
 import type { AppContext, RequestContext } from './context';
 import { parse } from './validation';
+import { secured } from './rls';
 
 const { users, passwordResetTokens } = schema;
 
@@ -180,9 +181,7 @@ export async function logout(ctx: AppContext, token: string | undefined): Promis
   if (s) await revokeSession(ctx.db, s.sessionId, ctx.now());
 }
 
-export async function beginTotpEnrollment(
-  ctx: RequestContext,
-): Promise<{ secret: string; uri: string }> {
+async function beginTotpEnrollment_(ctx: RequestContext): Promise<{ secret: string; uri: string }> {
   const [u] = await ctx.db.select().from(users).where(eq(users.id, ctx.actor.userId));
   if (!u) throw new DomainError('not_found', 'Usuario no encontrado.');
   if (u.totpEnabledAt)
@@ -195,7 +194,7 @@ export async function beginTotpEnrollment(
   return { secret, uri: totpUri(secret, u.email) };
 }
 
-export async function confirmTotpEnrollment(ctx: RequestContext, code: string): Promise<void> {
+async function confirmTotpEnrollment_(ctx: RequestContext, code: string): Promise<void> {
   const [u] = await ctx.db.select().from(users).where(eq(users.id, ctx.actor.userId));
   if (!u?.totpSecretEnc || u.totpEnabledAt) {
     throw new DomainError('conflict', 'No hay una activación pendiente.');
@@ -209,7 +208,7 @@ export async function confirmTotpEnrollment(ctx: RequestContext, code: string): 
   });
 }
 
-export async function changePassword(
+async function changePassword_(
   ctx: RequestContext,
   input: unknown,
   currentSessionId: string,
@@ -298,7 +297,7 @@ export async function resetPassword(ctx: AppContext, input: unknown): Promise<vo
 
 export { assertPasswordPolicy };
 
-export async function getSecurityStatus(
+async function getSecurityStatus_(
   ctx: RequestContext,
 ): Promise<{ totpEnabled: boolean; email: string }> {
   const [u] = await ctx.db
@@ -308,3 +307,9 @@ export async function getSecurityStatus(
   if (!u) throw new DomainError('not_found', 'Usuario no encontrado.');
   return { totpEnabled: u.totp != null, email: u.email };
 }
+
+// Use cases run under Row Level Security (see rls.ts).
+export const beginTotpEnrollment = secured(beginTotpEnrollment_);
+export const confirmTotpEnrollment = secured(confirmTotpEnrollment_);
+export const changePassword = secured(changePassword_);
+export const getSecurityStatus = secured(getSecurityStatus_);

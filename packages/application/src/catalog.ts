@@ -2,11 +2,12 @@ import { schema } from '@tp/db';
 import { asc, eq, isNull, or } from 'drizzle-orm';
 import { requirePermission } from './authz';
 import type { RequestContext } from './context';
+import { secured } from './rls';
 
 const { goals, sports, equipment } = schema;
 
 /** Global catalogue + organization-owned entries. */
-export async function listCatalog(ctx: RequestContext) {
+async function listCatalog_(ctx: RequestContext) {
   requirePermission(ctx, 'catalog:read');
   const org = ctx.actor.organizationId;
   const [g, s, e] = await Promise.all([
@@ -39,3 +40,6 @@ export async function listCatalog(ctx: RequestContext) {
   ]);
   return { goals: g, sports: s, equipment: e };
 }
+
+// Use cases run under Row Level Security (see rls.ts).
+export const listCatalog = secured(listCatalog_);

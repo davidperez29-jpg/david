@@ -12,10 +12,11 @@ import { writeAudit } from './audit';
 import { authorizeClient, requirePermission } from './authz';
 import type { RequestContext } from './context';
 import { parse } from './validation';
+import { secured } from './rls';
 
 const { consents } = schema;
 
-export async function listConsents(ctx: RequestContext, clientId: string) {
+async function listConsents_(ctx: RequestContext, clientId: string) {
   await authorizeClient(ctx, 'consents:read', clientId);
   const rows = await ctx.db
     .select()
@@ -38,11 +39,7 @@ export async function listConsents(ctx: RequestContext, clientId: string) {
   };
 }
 
-export async function grantConsent(
-  ctx: RequestContext,
-  clientId: string,
-  input: unknown,
-): Promise<void> {
+async function grantConsent_(ctx: RequestContext, clientId: string, input: unknown): Promise<void> {
   const data = parse(consentGrantSchema, input);
   const resource = await authorizeClient(ctx, 'consents:write', clientId);
   const scope = requirePermission(ctx, 'consents:write', resource);
@@ -90,7 +87,7 @@ export async function grantConsent(
   });
 }
 
-export async function revokeConsent(
+async function revokeConsent_(
   ctx: RequestContext,
   clientId: string,
   purpose: string,
@@ -119,3 +116,8 @@ export async function revokeConsent(
     });
   });
 }
+
+// Use cases run under Row Level Security (see rls.ts).
+export const listConsents = secured(listConsents_);
+export const grantConsent = secured(grantConsent_);
+export const revokeConsent = secured(revokeConsent_);

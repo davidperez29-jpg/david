@@ -8,12 +8,13 @@ import { authorizeClient, requirePermission } from './authz';
 import { assertPasswordPolicy, type LoginResult } from './auth-service';
 import type { AppContext, RequestContext } from './context';
 import { parse } from './validation';
+import { secured } from './rls';
 
 const { invitations, users, userRoles, roles, trainers, clients } = schema;
 
 const INVITATION_TTL_MS = 7 * 24 * 3600_000;
 
-export async function createInvitation(
+async function createInvitation_(
   ctx: RequestContext,
   input: unknown,
 ): Promise<{ invitationId: string; link: string; expiresAt: Date }> {
@@ -26,11 +27,11 @@ export async function createInvitation(
     // Staff invitations are an ADMIN capability.
     requirePermission(ctx, 'users:manage', { organizationId: ctx.actor.organizationId });
   }
-  const existing = await ctx.db
-    .select({ id: users.id })
-    .from(users)
-    .where(sql`lower(${users.email}) = ${data.email.toLowerCase()}`);
-  if (existing.length > 0) throw new DomainError('conflict', 'Ya existe un usuario con ese email.');
+  // Global check across organizations without exposing them (SECURITY DEFINER function).
+  const [{ inUse } = { inUse: false }] = (await ctx.db.execute(
+    sql`SELECT email_in_use(${data.email}) AS "inUse"`,
+  )) as unknown as { inUse: boolean }[];
+  if (inUse) throw new DomainError('conflict', 'Ya existe un usuario con ese email.');
 
   const token = randomToken();
   const expiresAt = new Date(ctx.now().getTime() + INVITATION_TTL_MS);
@@ -172,3 +173,6 @@ export async function acceptInvitation(ctx: AppContext, input: unknown): Promise
     return { token: s.token, expiresAt: s.expiresAt, requiresSecondFactor: false };
   });
 }
+
+// Use cases run under Row Level Security (see rls.ts).
+export const createInvitation = secured(createInvitation_);

@@ -12,3 +12,4 @@ export * from './users';
 export * from './catalog';
 export * from './audit-queries';
 export * from './validation';
+export * from './rls';

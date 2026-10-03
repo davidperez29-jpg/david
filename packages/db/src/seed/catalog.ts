@@ -1,6 +1,7 @@
 import { PERMISSIONS, ROLE_PERMISSIONS, ROLES } from '@tp/domain';
 import { and, eq, isNull } from 'drizzle-orm';
 import type { Database } from '../client';
+import { seedStructure } from './structure';
 import { equipment, goals, permissions, rolePermissions, roles, sports } from '../schema';
 
 const ROLE_NAMES = { ADMIN: 'Administración', TRAINER: 'Entrenador/a', CLIENT: 'Cliente' } as const;
@@ -139,4 +140,5 @@ export async function seedCatalog(db: Database): Promise<void> {
       if (existing.length === 0) await tx.insert(equipment).values({ slug, name, category });
     }
   });
+  await seedStructure(db);
 }

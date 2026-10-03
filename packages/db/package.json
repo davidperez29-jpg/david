@@ -13,7 +13,8 @@
     "generate": "drizzle-kit generate",
     "migrate": "tsx scripts/migrate.ts",
     "seed": "tsx scripts/seed.ts",
-    "reset": "tsx scripts/reset.ts"
+    "reset": "tsx scripts/reset.ts",
+    "rls:generate": "tsx scripts/generate-rls.ts"
   },
   "dependencies": {
     "@tp/domain": "workspace:*",

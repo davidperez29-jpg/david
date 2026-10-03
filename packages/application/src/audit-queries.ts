@@ -2,10 +2,11 @@ import { schema } from '@tp/db';
 import { desc, eq, inArray } from 'drizzle-orm';
 import { authorizeClient } from './authz';
 import type { RequestContext } from './context';
+import { secured } from './rls';
 
 const { auditLogs, users } = schema;
 
-export async function listClientAudit(ctx: RequestContext, clientId: string, limit = 100) {
+async function listClientAudit_(ctx: RequestContext, clientId: string, limit = 100) {
   await authorizeClient(ctx, 'audit:read', clientId);
   const rows = await ctx.db
     .select()
@@ -30,3 +31,6 @@ export async function listClientAudit(ctx: RequestContext, clientId: string, lim
     reason: r.reason,
   }));
 }
+
+// Use cases run under Row Level Security (see rls.ts).
+export const listClientAudit = secured(listClientAudit_);

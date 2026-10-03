@@ -6,10 +6,11 @@ import { rolesOf } from './actor';
 import { writeAudit } from './audit';
 import { requirePermission } from './authz';
 import type { RequestContext } from './context';
+import { secured } from './rls';
 
 const { users, trainers, invitations } = schema;
 
-export async function listUsers(ctx: RequestContext) {
+async function listUsers_(ctx: RequestContext) {
   requirePermission(ctx, 'users:read', { organizationId: ctx.actor.organizationId });
   const rows = await ctx.db
     .select({
@@ -45,7 +46,7 @@ export async function listUsers(ctx: RequestContext) {
   return { users: withRoles, pendingInvitations: pending };
 }
 
-export async function listTrainers(ctx: RequestContext) {
+async function listTrainers_(ctx: RequestContext) {
   requirePermission(ctx, 'clients:read');
   return ctx.db
     .select({ id: trainers.id, firstName: trainers.firstName, lastName: trainers.lastName })
@@ -54,11 +55,7 @@ export async function listTrainers(ctx: RequestContext) {
     .orderBy(asc(trainers.lastName));
 }
 
-export async function setUserActive(
-  ctx: RequestContext,
-  userId: string,
-  active: boolean,
-): Promise<void> {
+async function setUserActive_(ctx: RequestContext, userId: string, active: boolean): Promise<void> {
   requirePermission(ctx, 'users:manage', { organizationId: ctx.actor.organizationId });
   if (userId === ctx.actor.userId)
     throw new DomainError('conflict', 'No puedes desactivar tu propia cuenta.');
@@ -82,3 +79,8 @@ export async function setUserActive(
     });
   });
 }
+
+// Use cases run under Row Level Security (see rls.ts).
+export const listUsers = secured(listUsers_);
+export const listTrainers = secured(listTrainers_);
+export const setUserActive = secured(setUserActive_);

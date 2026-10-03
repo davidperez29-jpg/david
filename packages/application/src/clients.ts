@@ -11,7 +11,7 @@ import {
   historyEntrySchema,
   type Page,
 } from '@tp/contracts';
-import { schema, type Executor } from '@tp/db';
+import { schema, uuidv7, type Executor } from '@tp/db';
 import {
   ageAt,
   CLIENT_SELF_EDITABLE_FIELDS,
@@ -26,6 +26,7 @@ import { authorizeClient, requirePermission } from './authz';
 import type { RequestContext } from './context';
 import { referralStatus } from './health';
 import { parse } from './validation';
+import { secured } from './rls';
 
 const {
   clients,
@@ -86,10 +87,7 @@ function scopeCondition(ctx: RequestContext, scope: 'org' | 'assigned' | 'own'):
   );
 }
 
-export async function listClients(
-  ctx: RequestContext,
-  query: unknown,
-): Promise<Page<ClientSummary>> {
+async function listClients_(ctx: RequestContext, query: unknown): Promise<Page<ClientSummary>> {
   const q = parse(listClientsSchema, query ?? {});
   const scope = requirePermission(ctx, 'clients:read');
   const conds: (SQL | undefined)[] = [scopeCondition(ctx, scope)];
@@ -174,7 +172,7 @@ export async function listClients(
   };
 }
 
-export async function getClient(ctx: RequestContext, clientId: string) {
+async function getClient_(ctx: RequestContext, clientId: string) {
   await authorizeClient(ctx, 'clients:read', clientId);
   const [c] = await ctx.db.select().from(clients).where(eq(clients.id, clientId));
   if (!c) throw new DomainError('not_found', 'Cliente no encontrado.');
@@ -274,7 +272,7 @@ export async function getClient(ctx: RequestContext, clientId: string) {
     referral: await referralStatus(ctx.db, clientId),
   };
 }
-export type ClientDetail = Awaited<ReturnType<typeof getClient>>;
+export type ClientDetail = Awaited<ReturnType<typeof getClient_>>;
 
 async function insertGoals(
   tx: Executor,
@@ -395,30 +393,30 @@ async function resolveTrainerForNewClient(
   });
 }
 
-export async function createClient(ctx: RequestContext, input: unknown): Promise<{ id: string }> {
+async function createClient_(ctx: RequestContext, input: unknown): Promise<{ id: string }> {
   const data = parse(createClientSchema, input);
   requirePermission(ctx, 'clients:create', { organizationId: ctx.actor.organizationId });
   const trainerId = await resolveTrainerForNewClient(ctx, data.trainerId);
   const b = data.basics;
   return ctx.db.transaction(async (tx) => {
-    const [c] = await tx
-      .insert(clients)
-      .values({
-        organizationId: ctx.actor.organizationId,
-        firstName: b.firstName,
-        lastName: b.lastName,
-        birthDate: b.birthDate ?? null,
-        sex: b.sex,
-        email: b.email ?? null,
-        phoneEnc: b.phone ? encrypt(ctx.keys.encryptionKey, b.phone) : null,
-        modality: b.modality,
-        status: b.status,
-        preferences: b.preferences ?? null,
-        createdBy: ctx.actor.userId,
-        updatedBy: ctx.actor.userId,
-      })
-      .returning({ id: clients.id });
-    const clientId = c!.id;
+    // Id generated here (no RETURNING): under RLS a trainer cannot see the row until the
+    // assignment below exists.
+    const clientId = uuidv7();
+    await tx.insert(clients).values({
+      id: clientId,
+      organizationId: ctx.actor.organizationId,
+      firstName: b.firstName,
+      lastName: b.lastName,
+      birthDate: b.birthDate ?? null,
+      sex: b.sex,
+      email: b.email ?? null,
+      phoneEnc: b.phone ? encrypt(ctx.keys.encryptionKey, b.phone) : null,
+      modality: b.modality,
+      status: b.status,
+      preferences: b.preferences ?? null,
+      createdBy: ctx.actor.userId,
+      updatedBy: ctx.actor.userId,
+    });
     await tx.insert(trainerClientAssignments).values({
       organizationId: ctx.actor.organizationId,
       trainerId,
@@ -451,7 +449,7 @@ export async function createClient(ctx: RequestContext, input: unknown): Promise
   });
 }
 
-export async function updateClient(
+async function updateClient_(
   ctx: RequestContext,
   clientId: string,
   input: unknown,
@@ -519,7 +517,7 @@ export async function updateClient(
   });
 }
 
-export async function setClientArchived(
+async function setClientArchived_(
   ctx: RequestContext,
   clientId: string,
   archived: boolean,
@@ -561,7 +559,7 @@ function denyOwnScope(
   }
 }
 
-export async function updateTrainingProfile(
+async function updateTrainingProfile_(
   ctx: RequestContext,
   clientId: string,
   input: unknown,
@@ -613,7 +611,7 @@ export async function updateTrainingProfile(
   });
 }
 
-export async function setClientGoals(
+async function setClientGoals_(
   ctx: RequestContext,
   clientId: string,
   input: unknown,
@@ -660,7 +658,7 @@ export async function setClientGoals(
   });
 }
 
-export async function setClientAvailability(
+async function setClientAvailability_(
   ctx: RequestContext,
   clientId: string,
   input: unknown,
@@ -680,7 +678,7 @@ export async function setClientAvailability(
   });
 }
 
-export async function setClientEquipment(
+async function setClientEquipment_(
   ctx: RequestContext,
   clientId: string,
   input: unknown,
@@ -700,7 +698,7 @@ export async function setClientEquipment(
   });
 }
 
-export async function addHistoryEntry(
+async function addHistoryEntry_(
   ctx: RequestContext,
   clientId: string,
   input: unknown,
@@ -729,7 +727,7 @@ export async function addHistoryEntry(
   });
 }
 
-export async function deleteHistoryEntry(
+async function deleteHistoryEntry_(
   ctx: RequestContext,
   clientId: string,
   entryId: string,
@@ -752,7 +750,7 @@ export async function deleteHistoryEntry(
   });
 }
 
-export async function assignTrainer(
+async function assignTrainer_(
   ctx: RequestContext,
   clientId: string,
   input: unknown,
@@ -794,7 +792,7 @@ export async function assignTrainer(
   });
 }
 
-export async function unassignTrainer(
+async function unassignTrainer_(
   ctx: RequestContext,
   clientId: string,
   assignmentId: string,
@@ -834,7 +832,7 @@ export async function unassignTrainer(
  * Clients within the actor's scope that currently show the referral banner. Single pass over
  * declarations/screenings instead of one detail load per client.
  */
-export async function listClientsNeedingReferral(
+async function listClientsNeedingReferral_(
   ctx: RequestContext,
 ): Promise<{ id: string; firstName: string; lastName: string }[]> {
   const scope = requirePermission(ctx, 'clients:read');
@@ -856,3 +854,19 @@ export async function listClientsNeedingReferral(
     .orderBy(asc(clients.lastName));
   return rows;
 }
+
+// Use cases run under Row Level Security (see rls.ts).
+export const listClients = secured(listClients_);
+export const getClient = secured(getClient_);
+export const createClient = secured(createClient_);
+export const updateClient = secured(updateClient_);
+export const setClientArchived = secured(setClientArchived_);
+export const updateTrainingProfile = secured(updateTrainingProfile_);
+export const setClientGoals = secured(setClientGoals_);
+export const setClientAvailability = secured(setClientAvailability_);
+export const setClientEquipment = secured(setClientEquipment_);
+export const addHistoryEntry = secured(addHistoryEntry_);
+export const deleteHistoryEntry = secured(deleteHistoryEntry_);
+export const assignTrainer = secured(assignTrainer_);
+export const unassignTrainer = secured(unassignTrainer_);
+export const listClientsNeedingReferral = secured(listClientsNeedingReferral_);
