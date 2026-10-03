@@ -1,0 +1,675 @@
+{
+  "_comment": "Global methods catalogue (MASTER_SPECIFICATION §10.7). Every dose variable cites a claim key whose statement contains that range. Notes without `claim` are practical recommendations (level F) and are shown as such. Population slugs come from the structure seed.",
+  "methods": [
+    {
+      "slug": "fuerza-maxima",
+      "name": "Fuerza máxima (cargas altas)",
+      "kind": "training_method",
+      "definition": "Series con cargas altas (en torno al 80 % del 1RM o más), pocas repeticiones y descansos completos, para mejorar la fuerza máxima dinámica.",
+      "summaryForTrainer": "La fuerza máxima (1RM) mejora más con cargas altas y se beneficia de repartir el volumen en varias sesiones. El volumen tiene rendimientos decrecientes. No es necesario llegar al fallo. La periodización (sobre todo ondulante en entrenados) se asocia a más 1RM.",
+      "summaryForClient": "Trabajamos con cargas pesadas y pocas repeticiones para que ganes fuerza. No hace falta llegar al agotamiento.",
+      "notes": [
+        {
+          "kind": "indication",
+          "text": "Objetivo de fuerza máxima en adultos sanos con técnica estable.",
+          "claim": "c_load_spectrum"
+        },
+        {
+          "kind": "progression",
+          "text": "Repartir el volumen semanal en más sesiones cuando el objetivo es la fuerza.",
+          "claim": "c_frequency"
+        },
+        {
+          "kind": "progression",
+          "text": "Variar cargas de forma planificada (periodización).",
+          "claim": "c_periodization"
+        },
+        {
+          "kind": "indication",
+          "text": "No es necesario entrenar al fallo para mejorar el 1RM.",
+          "claim": "c_failure_strength"
+        },
+        {
+          "kind": "precaution",
+          "text": "Introducir las cargas altas de forma progresiva y con técnica supervisada; la tolerancia individual manda."
+        },
+        {
+          "kind": "limitation",
+          "text": "Muchos estudios se hicieron en hombres jóvenes; aplicar con cautela fuera de esa población."
+        }
+      ],
+      "variables": [
+        {
+          "variableKey": "pct_1rm",
+          "min": 80,
+          "max": 100,
+          "unit": "%1RM",
+          "claim": "c_load_spectrum",
+          "notes": "≈>80 % 1RM para 1RM; el límite superior es el propio 1RM."
+        }
+      ]
+    },
+    {
+      "slug": "hipertrofia",
+      "name": "Hipertrofia",
+      "kind": "training_method",
+      "definition": "Entrenamiento de fuerza orientado a aumentar el tamaño muscular: volumen semanal suficiente por grupo muscular y series cercanas al fallo, en un amplio rango de cargas.",
+      "summaryForTrainer": "Más volumen semanal se asocia a más hipertrofia, con rendimientos decrecientes. Con el volumen igualado, la frecuencia apenas importa. La proximidad al fallo importa, pero llegar al fallo no aporta una ventaja clara. Con esfuerzo alto vale un amplio rango de cargas. Los descansos de más de ~60 s ofrecen un pequeño beneficio.",
+      "summaryForClient": "Hacemos suficientes series por músculo y las terminamos cerca del esfuerzo máximo, sin necesidad de llegar al fallo.",
+      "notes": [
+        {
+          "kind": "indication",
+          "text": "El volumen semanal por grupo muscular es la variable principal.",
+          "claim": "c_volume_dose_response"
+        },
+        {
+          "kind": "indication",
+          "text": "Con el volumen igualado, la frecuencia se elige por logística y preferencia.",
+          "claim": "c_frequency"
+        },
+        {
+          "kind": "indication",
+          "text": "Terminar las series cerca del fallo; no hace falta alcanzarlo.",
+          "claim": "c_failure_hypertrophy"
+        },
+        {
+          "kind": "indication",
+          "text": "Con esfuerzo alto, las cargas ligeras y las pesadas producen una hipertrofia similar.",
+          "claim": "c_load_spectrum"
+        },
+        {
+          "kind": "limitation",
+          "text": "No hay una ventaja clara de entrenar en longitudes musculares largas para la hipertrofia regional.",
+          "claim": "c_muscle_length"
+        },
+        {
+          "kind": "limitation",
+          "text": "La estimación de las repeticiones en reserva es imprecisa; es más fiable cerca del fallo.",
+          "claim": "c_rir_accuracy"
+        }
+      ],
+      "variables": [
+        {
+          "variableKey": "rest",
+          "min": 60,
+          "max": 90,
+          "unit": "s",
+          "claim": "c_rest_intervals",
+          "notes": "Por encima de ~60 s hay un pequeño beneficio; sin diferencias apreciables por encima de ~90 s (mínimo práctico, no máximo)."
+        }
+      ]
+    },
+    {
+      "slug": "fuerza-mayores",
+      "name": "Fuerza en personas mayores",
+      "kind": "training_method",
+      "definition": "Entrenamiento de fuerza progresivo adaptado a personas mayores para mejorar la fuerza y la función física.",
+      "summaryForTrainer": "En mayores, el entrenamiento de fuerza progresivo mejora de forma consistente la fuerza y, en menor medida, la función. En mayores sanos, las mayores ganancias se asociaron a cargas del 70–79 % 1RM, 2 sesiones/semana y 2–3 series de 7–9 repeticiones (orientativo). El trabajo de potencia añade una mejora modesta de la función.",
+      "summaryForClient": "Ejercicios de fuerza progresivos para ganar fuerza y facilitar las tareas del día a día.",
+      "notes": [
+        {
+          "kind": "indication",
+          "text": "Mejora de la fuerza y de la función física en mayores.",
+          "claim": "c_older_rt_effective"
+        },
+        {
+          "kind": "progression",
+          "text": "Introducir la fase concéntrica rápida (potencia) cuando la técnica es estable.",
+          "claim": "c_older_power_function"
+        },
+        {
+          "kind": "precaution",
+          "text": "Ante enfermedad, dolor o síntomas: requiere valoración por profesional sanitario antes de progresar."
+        }
+      ],
+      "variables": [
+        {
+          "variableKey": "pct_1rm",
+          "population": "older_adults",
+          "min": 70,
+          "max": 79,
+          "unit": "%1RM",
+          "claim": "c_older_rt_dose"
+        },
+        {
+          "variableKey": "sets",
+          "population": "older_adults",
+          "min": 2,
+          "max": 3,
+          "claim": "c_older_rt_dose"
+        },
+        {
+          "variableKey": "reps",
+          "population": "older_adults",
+          "min": 7,
+          "max": 9,
+          "claim": "c_older_rt_dose"
+        }
+      ]
+    },
+    {
+      "slug": "dosis-minima",
+      "name": "Dosis mínima de fuerza",
+      "kind": "organization_method",
+      "definition": "Programa de bajo volumen (series únicas cerca del fallo, 1–3 sesiones por semana) para cuando el tiempo o la adherencia son el límite.",
+      "summaryForTrainer": "Las dosis bajas pueden producir ganancias de fuerza significativas, probablemente menores que con volúmenes mayores.",
+      "summaryForClient": "Un plan corto y eficaz para cuando tienes poco tiempo.",
+      "notes": [
+        {
+          "kind": "indication",
+          "text": "Cuando el tiempo o la adherencia son el factor limitante.",
+          "claim": "c_minimal_dose"
+        }
+      ],
+      "variables": [
+        {
+          "variableKey": "sets",
+          "min": 1,
+          "max": 1,
+          "claim": "c_minimal_dose",
+          "notes": "Series únicas por ejercicio, 1–3 sesiones por semana."
+        }
+      ]
+    },
+    {
+      "slug": "potencia",
+      "name": "Potencia (cargas moderadas, intención máxima)",
+      "kind": "training_method",
+      "definition": "Ejercicios con cargas moderadas ejecutados con la máxima velocidad concéntrica intencional.",
+      "summaryForTrainer": "Para la potencia, la prescripción con más respaldo usa cargas del 30–70 % 1RM, volumen bajo-moderado y fase concéntrica rápida. Limitar la pérdida de velocidad (≈20 %) mantiene la fuerza con menos repeticiones y favorece el salto.",
+      "summaryForClient": "Levantamos cargas moderadas lo más rápido posible, sin llegar a cansarnos del todo.",
+      "notes": [
+        {
+          "kind": "indication",
+          "text": "Mejora de la potencia y del salto.",
+          "claim": "c_power_prescription"
+        },
+        {
+          "kind": "precaution",
+          "text": "Detener la serie cuando la velocidad cae claramente; la calidad del movimiento es prioritaria."
+        }
+      ],
+      "variables": [
+        {
+          "variableKey": "pct_1rm",
+          "min": 30,
+          "max": 70,
+          "unit": "%1RM",
+          "claim": "c_power_prescription"
+        },
+        {
+          "variableKey": "velocity_loss",
+          "min": 0,
+          "max": 20,
+          "unit": "%",
+          "claim": "c_velocity_loss_explosive"
+        }
+      ]
+    },
+    {
+      "slug": "pliometria",
+      "name": "Pliometría",
+      "kind": "training_method",
+      "definition": "Saltos y ejercicios con ciclo de estiramiento-acortamiento rápido para mejorar el salto, el sprint y la fuerza reactiva.",
+      "summaryForTrainer": "La pliometría mejora la altura de salto y la mayoría de las cualidades. Los programas de más de 10 semanas y más de 20 sesiones que combinan tipos de salto se asocian a mayores mejoras; añadir lastre no aporta beneficio. En jóvenes funciona antes y después del pico de crecimiento. En futbolistas también mejora la fuerza máxima.",
+      "summaryForClient": "Saltos progresivos para ser más explosivo.",
+      "notes": [
+        {
+          "kind": "indication",
+          "text": "Mejora del salto y del rendimiento físico general.",
+          "claim": "c_plyo_jump_dose"
+        },
+        {
+          "kind": "indication",
+          "text": "Aplicable en jóvenes en cualquier estado madurativo, con supervisión.",
+          "claim": "c_plyo_maturation"
+        },
+        {
+          "kind": "indication",
+          "text": "En futbolistas, también mejora la fuerza máxima.",
+          "claim": "c_plyo_soccer_strength"
+        },
+        {
+          "kind": "progression",
+          "text": "Progresar de saltos de baja intensidad (bajos, bilaterales) a alta intensidad (caídas, unilaterales) según la técnica de aterrizaje."
+        },
+        {
+          "kind": "precaution",
+          "text": "Controlar el volumen de contactos e impactos si hay dolor articular o tendinoso; ante dolor: requiere valoración por profesional sanitario."
+        }
+      ],
+      "variables": []
+    },
+    {
+      "slug": "pape-complex-contrast",
+      "name": "PAPE, complex y contrast",
+      "kind": "organization_method",
+      "definition": "Una actividad acondicionante pesada antes de una acción explosiva (en el mismo bloque o en series alternas) para aprovechar la potenciación aguda.",
+      "summaryForTrainer": "El efecto agudo es pequeño en salto y potencia y moderado en sprint, mayor en personas fuertes y experimentadas. Los descansos de unos 7–10 min parecen más eficaces (dato de comparaciones entre estudios). De forma crónica, en deportes de equipo, complex y contrast mejoran el salto y el sprint frente a control.",
+      "summaryForClient": "Combinamos un ejercicio pesado con uno explosivo para aprovechar el efecto del primero.",
+      "notes": [
+        {
+          "kind": "indication",
+          "text": "Deportistas con base de fuerza y técnica estable.",
+          "claim": "c_pape_acute_effect"
+        },
+        {
+          "kind": "indication",
+          "text": "Bloques de complex o contrast en deportes de equipo.",
+          "claim": "c_complex_contrast"
+        },
+        {
+          "kind": "precaution",
+          "text": "Desactivado por defecto en principiantes (decisión práctica, nivel F)."
+        }
+      ],
+      "variables": [
+        {
+          "variableKey": "rest",
+          "min": 420,
+          "max": 600,
+          "unit": "s",
+          "claim": "c_pape_acute_effect",
+          "notes": "Alrededor de 7–10 min entre la actividad acondicionante y la acción explosiva; dato procedente de comparaciones entre estudios."
+        }
+      ]
+    },
+    {
+      "slug": "halterofilia-derivados",
+      "name": "Halterofilia y derivados",
+      "kind": "training_method",
+      "definition": "Cargadas, arrancadas, tirones y sus derivados para desarrollar la potencia del tren inferior.",
+      "summaryForTrainer": "Mejoran más el salto vertical que el entrenamiento de fuerza tradicional y lo hacen de forma similar a la pliometría.",
+      "summaryForClient": "Ejercicios olímpicos adaptados para ganar potencia.",
+      "notes": [
+        {
+          "kind": "indication",
+          "text": "Mejora del salto vertical.",
+          "claim": "c_weightlifting_jump"
+        },
+        {
+          "kind": "precaution",
+          "text": "Opcional y condicionada a la competencia técnica; los derivados (tirones, desde colgado) facilitan el aprendizaje."
+        }
+      ],
+      "variables": []
+    },
+    {
+      "slug": "isometricos",
+      "name": "Isométricos",
+      "kind": "contraction_type",
+      "definition": "Contracciones sin cambio de longitud muscular apreciable, mantenidas a una intensidad y duración definidas.",
+      "summaryForTrainer": "El tendón se adapta al ejercicio de 8 semanas o más según la intensidad de la carga. En isométricos, las contracciones de al menos el 70 % parecen preferibles para el tendón. Un ensayo mostró más rigidez tendinosa con 4 × 20 s al 70 % MVC durante 12 semanas que con contracciones de 1 s. En tendinopatía, el isométrico no ha demostrado ser superior al isotónico para el dolor.",
+      "summaryForClient": "Mantener posiciones con tensión para fortalecer músculo y tendón.",
+      "notes": [
+        {
+          "kind": "mechanism",
+          "text": "Adaptación del tendón (rigidez) dependiente de la intensidad de la carga.",
+          "claim": "c_isometric_tendon"
+        },
+        {
+          "kind": "limitation",
+          "text": "Para el dolor en tendinopatía no ha demostrado ser superior al isotónico. La tendinopatía es ámbito clínico: requiere valoración por profesional sanitario.",
+          "claim": "c_isometric_tendinopathy_pain"
+        }
+      ],
+      "variables": [
+        {
+          "variableKey": "pct_mvc",
+          "min": 70,
+          "max": 70,
+          "unit": "%MVC",
+          "claim": "c_isometria_tendon",
+          "notes": "Protocolo del ensayo: 4 × 20 s al 70 % MVC durante 12 semanas."
+        },
+        {
+          "variableKey": "duration",
+          "min": 20,
+          "max": 20,
+          "unit": "s",
+          "claim": "c_isometria_tendon"
+        }
+      ]
+    },
+    {
+      "slug": "excentricos-flywheel",
+      "name": "Excéntricos y sobrecarga excéntrica (inercial)",
+      "kind": "contraction_type",
+      "definition": "Entrenamiento que enfatiza la fase excéntrica, con cargas supramáximas, tempo lento o dispositivos inerciales.",
+      "summaryForTrainer": "Produce ganancias de fuerza iguales o mayores que el entrenamiento convencional. La mejora es bastante específica del modo en que se evalúa.",
+      "summaryForClient": "Controlamos la bajada del movimiento para ganar fuerza.",
+      "notes": [
+        {
+          "kind": "indication",
+          "text": "Fuerza y arquitectura muscular.",
+          "claim": "c_eccentric_flywheel"
+        },
+        {
+          "kind": "precaution",
+          "text": "Agujetas intensas en las primeras sesiones: introducirlo de forma gradual (práctica, F)."
+        }
+      ],
+      "variables": []
+    },
+    {
+      "slug": "nordic-hamstring",
+      "name": "Nordic hamstring",
+      "kind": "training_method",
+      "definition": "Ejercicio excéntrico de isquiosurales por gravedad con los tobillos fijados.",
+      "summaryForTrainer": "La evidencia sobre la reducción de lesiones es contradictoria en su magnitud: comunicar «puede reducir», nunca como hecho. Volúmenes bajos (≥6 semanas) mejoran la fuerza excéntrica y la longitud de fascículo de forma comparable a volúmenes altos.",
+      "summaryForClient": "Ejercicio para fortalecer la parte posterior del muslo.",
+      "notes": [
+        {
+          "kind": "limitation",
+          "text": "El efecto sobre las lesiones es incierto en su magnitud.",
+          "claim": "c_nhe_injury_uncertain"
+        },
+        {
+          "kind": "progression",
+          "text": "Volúmenes bajos son suficientes para la adaptación y facilitan la adherencia.",
+          "claim": "c_nhe_low_volume"
+        }
+      ],
+      "variables": []
+    },
+    {
+      "slug": "sprint-aceleracion",
+      "name": "Sprint y aceleración",
+      "kind": "training_method",
+      "definition": "Sprints máximos con recuperación completa, libres o con resistencia (trineo, arrastre).",
+      "summaryForTrainer": "El sprint libre es el núcleo. El trineo mejora la aceleración pero no ha demostrado ser superior al sprint sin carga. Las mejoras de fuerza del tren inferior se acompañan de mejoras en sprint.",
+      "summaryForClient": "Sprints cortos a máxima velocidad con descansos completos.",
+      "notes": [
+        {
+          "kind": "indication",
+          "text": "El sprint resistido mejora la aceleración en 10 m, pero no la velocidad máxima.",
+          "claim": "c_sprint_resistido_10m"
+        },
+        {
+          "kind": "limitation",
+          "text": "El trineo no ha demostrado ser superior al sprint libre con el mismo volumen.",
+          "claim": "c_resisted_sled"
+        },
+        {
+          "kind": "indication",
+          "text": "La fuerza del tren inferior acompaña la mejora del sprint.",
+          "claim": "c_strength_sprint_transfer"
+        }
+      ],
+      "variables": []
+    },
+    {
+      "slug": "cod-agilidad",
+      "name": "Cambio de dirección y agilidad",
+      "kind": "training_method",
+      "definition": "Cambios de dirección preplanificados (COD) y reactivos a un estímulo (agilidad).",
+      "summaryForTrainer": "El COD y la agilidad son constructos distintos. El déficit de COD aísla la capacidad de cambiar de dirección de la velocidad lineal.",
+      "summaryForClient": "Ejercicios para frenar y cambiar de dirección con control.",
+      "notes": [
+        {
+          "kind": "indication",
+          "text": "Evaluar y entrenar por separado el COD preplanificado y la agilidad reactiva.",
+          "claim": "c_cod_vs_agility"
+        }
+      ],
+      "variables": []
+    },
+    {
+      "slug": "resistencia-variable",
+      "name": "Resistencia variable (bandas y cadenas)",
+      "kind": "training_method",
+      "definition": "Bandas elásticas o cadenas, solas o añadidas a una carga constante, para modificar la resistencia a lo largo del recorrido.",
+      "summaryForTrainer": "Añadidas a la barra en personas entrenadas, superan a la resistencia constante en fuerza máxima con cargas de al menos el 80 % 1RM. Como medio aislado, con la carga equiparada, producen ganancias similares a máquinas y mancuernas, no superiores. En mayores mejoran la fuerza y la función. El metaanálisis de Soria-Gila (2015) está retractado.",
+      "summaryForClient": "Usamos bandas o cadenas para que el ejercicio sea más exigente donde eres más fuerte.",
+      "notes": [
+        {
+          "kind": "indication",
+          "text": "Personas entrenadas, como añadido a la barra con cargas altas.",
+          "claim": "c_vrt_entrenados_80"
+        },
+        {
+          "kind": "indication",
+          "text": "Como alternativa a máquinas o mancuernas cuando no hay material.",
+          "claim": "c_bandas_equivalentes_fuerza"
+        },
+        {
+          "kind": "indication",
+          "text": "Personas mayores: fuerza y función.",
+          "claim": "c_bandas_mayores"
+        },
+        {
+          "kind": "precaution",
+          "text": "No prescribir las bandas solo por color: cuantificar la tensión o la elongación.",
+          "claim": "c_banda_color"
+        },
+        {
+          "kind": "precaution",
+          "text": "Una banda alrededor de las rodillas en la sentadilla aumentó el valgo: usarla con un objetivo concreto.",
+          "claim": "c_banda_rodillas_valgo"
+        }
+      ],
+      "variables": [
+        {
+          "variableKey": "pct_1rm",
+          "population": "adults_resistance_trained",
+          "min": 80,
+          "max": 100,
+          "unit": "%1RM",
+          "claim": "c_vrt_entrenados_80",
+          "notes": "Carga total en la parte más exigente; por debajo del 80 % no se observó diferencia."
+        }
+      ]
+    },
+    {
+      "slug": "vbt-perdida-velocidad",
+      "name": "Entrenamiento basado en la velocidad (pérdida de velocidad)",
+      "kind": "autoregulation_method",
+      "definition": "Se mide la velocidad de cada repetición y la serie termina al alcanzar un porcentaje de pérdida de velocidad.",
+      "summaryForTrainer": "Una pérdida de ~20 % mantiene la fuerza con menos repeticiones y mejora más el salto que el 40 %, que favorece algo más la hipertrofia. El 1RM estimado con el perfil carga-velocidad tiene validez moderada y tiende a sobrestimar: úsalo para seguir tendencias.",
+      "summaryForClient": "Medimos la velocidad de cada repetición para saber cuándo parar.",
+      "notes": [
+        {
+          "kind": "indication",
+          "text": "Pérdida de velocidad baja para fuerza y salto; alta si se prioriza la hipertrofia.",
+          "claim": "c_perdida_velocidad"
+        },
+        {
+          "kind": "limitation",
+          "text": "La predicción del 1RM por velocidad sobrestima; no sustituye a un test directo cuando importa la precisión.",
+          "claim": "c_lv_1rm_prediction"
+        }
+      ],
+      "variables": [
+        {
+          "variableKey": "velocity_loss",
+          "min": 20,
+          "max": 40,
+          "unit": "%",
+          "claim": "c_perdida_velocidad",
+          "notes": "≈20 % para fuerza y salto; ≈40 % favorece más la hipertrofia."
+        }
+      ]
+    },
+    {
+      "slug": "rir-rpe",
+      "name": "Autorregulación por RIR/RPE",
+      "kind": "autoregulation_method",
+      "definition": "La carga y el final de la serie se ajustan según las repeticiones en reserva estimadas por la persona.",
+      "summaryForTrainer": "La escala RPE basada en RIR se relaciona con la velocidad. La estimación es imprecisa (error medio ≈1 repetición) y más fiable cerca del fallo.",
+      "summaryForClient": "Me dices cuántas repeticiones más podrías hacer y ajustamos el peso.",
+      "notes": [
+        {
+          "kind": "limitation",
+          "text": "Estimación imprecisa, sobre todo lejos del fallo y en personas sin experiencia.",
+          "claim": "c_rir_accuracy"
+        },
+        {
+          "kind": "mechanism",
+          "text": "La RPE basada en RIR se relaciona inversamente con la velocidad media.",
+          "claim": "c_rir"
+        }
+      ],
+      "variables": []
+    },
+    {
+      "slug": "estiramientos-movilidad",
+      "name": "Estiramientos y movilidad",
+      "kind": "training_method",
+      "definition": "Estiramiento estático, dinámico o entrenamiento de fuerza en rango completo para mejorar el rango de movimiento.",
+      "summaryForTrainer": "El estiramiento crónico y la fuerza con carga externa aumentan el rango de movimiento sin diferencias claras entre ambos. Justo antes del esfuerzo, ≥60 s de estático por grupo muscular se asocian a pequeños descensos del rendimiento. El estiramiento crónico no perjudica la fuerza.",
+      "summaryForClient": "Trabajamos la movilidad con estiramientos o con fuerza en todo el recorrido.",
+      "notes": [
+        {
+          "kind": "indication",
+          "text": "Mejora del rango de movimiento; la fuerza en rango completo es una alternativa válida.",
+          "claim": "c_rom_strength_equals_stretch"
+        },
+        {
+          "kind": "precaution",
+          "text": "En el calentamiento previo a esfuerzos explosivos, evitar el estático largo (≥60 s por grupo muscular).",
+          "claim": "c_acute_static_stretch_warmup"
+        },
+        {
+          "kind": "limitation",
+          "text": "El estiramiento crónico no perjudica la fuerza a largo plazo.",
+          "claim": "c_chronic_stretch_strength"
+        }
+      ],
+      "variables": [
+        {
+          "variableKey": "duration",
+          "min": 0,
+          "max": 59,
+          "unit": "s",
+          "claim": "c_acute_static_stretch_warmup",
+          "notes": "Estático por grupo muscular justo antes del esfuerzo, seguido de actividad dinámica."
+        }
+      ]
+    },
+    {
+      "slug": "core",
+      "name": "Entrenamiento del core",
+      "kind": "training_method",
+      "definition": "Ejercicios de estabilidad y fuerza del tronco.",
+      "summaryForTrainer": "Mejora claramente la fuerza del tronco, pero su transferencia al rendimiento atlético es pequeña o moderada: complemento, no sustituto.",
+      "summaryForClient": "Ejercicios para el tronco como complemento del resto del entrenamiento.",
+      "notes": [
+        {
+          "kind": "limitation",
+          "text": "Transferencia limitada al rendimiento.",
+          "claim": "c_core_limited_transfer"
+        }
+      ],
+      "variables": []
+    },
+    {
+      "slug": "concurrente",
+      "name": "Entrenamiento concurrente (fuerza y resistencia)",
+      "kind": "organization_method",
+      "definition": "Combinar en el mismo programa entrenamiento de fuerza y aeróbico.",
+      "summaryForTrainer": "En general no compromete la fuerza máxima ni la hipertrofia del músculo completo, pero puede atenuar la potencia. En corredores, la fuerza pesada y la pliometría mejoran la economía de carrera.",
+      "summaryForClient": "Combinamos fuerza y cardio de forma compatible.",
+      "notes": [
+        {
+          "kind": "limitation",
+          "text": "Puede atenuar las ganancias de potencia.",
+          "claim": "c_concurrent"
+        },
+        {
+          "kind": "indication",
+          "text": "En corredores de fondo, añadir fuerza pesada o pliometría.",
+          "claim": "c_endurance_strength_re"
+        }
+      ],
+      "variables": []
+    },
+    {
+      "slug": "perfil-fuerza-velocidad",
+      "name": "Perfil fuerza-velocidad",
+      "kind": "autoregulation_method",
+      "definition": "Evaluación del perfil fuerza-velocidad en salto (método de Samozino) e individualización del entrenamiento según el desequilibrio.",
+      "summaryForTrainer": "El método de Samozino estima fuerza, velocidad y potencia con diferencias <3 % frente a la plataforma de fuerzas. El entrenamiento según el desequilibrio mejoró el salto en estudios no aleatorizados de sus proponentes; la evidencia está discutida.",
+      "summaryForClient": "Medimos cómo saltas para ajustar el entrenamiento.",
+      "notes": [
+        {
+          "kind": "mechanism",
+          "text": "Validez del método de estimación en el squat jump.",
+          "claim": "c_metodo_samozino"
+        },
+        {
+          "kind": "limitation",
+          "text": "La individualización por el desequilibrio F-V es una práctica discutida.",
+          "claim": "c_fv_profiling_contested"
+        }
+      ],
+      "variables": []
+    },
+    {
+      "slug": "sprint-repetido",
+      "name": "Capacidad de sprint repetido (RSA)",
+      "kind": "conditioning_method",
+      "definition": "Mejora de la capacidad de repetir sprints con recuperaciones cortas en deportes de equipo.",
+      "summaryForTrainer": "Parece útil combinar trabajo que mejore el sprint aislado con trabajo aeróbico o de sprints repetidos.",
+      "summaryForClient": "Series de sprints para aguantar mejor los esfuerzos repetidos del partido.",
+      "notes": [{ "kind": "indication", "text": "Deportes de equipo.", "claim": "c_rsa_training" }],
+      "variables": []
+    },
+    {
+      "slug": "calentamiento-preventivo",
+      "name": "Calentamientos y programas preventivos",
+      "kind": "organization_method",
+      "definition": "Programas estructurados de calentamiento y fuerza (FIFA 11+, Copenhagen, OSTRC de hombro) que se asocian a menos lesiones en poblaciones concretas.",
+      "summaryForTrainer": "Con una implementación regular se asocian a un menor riesgo de lesión en las poblaciones estudiadas. Nunca presentar la prevención como un hecho ni como una garantía.",
+      "summaryForClient": "Un calentamiento con ejercicios de fuerza y control que se asocia a menos lesiones en tu deporte.",
+      "notes": [
+        {
+          "kind": "indication",
+          "text": "FIFA 11+ en fútbol recreativo y subélite.",
+          "claim": "c_fifa11plus"
+        },
+        {
+          "kind": "indication",
+          "text": "Programa de aductores basado en el Copenhagen en fútbol.",
+          "claim": "c_copenhagen"
+        },
+        {
+          "kind": "indication",
+          "text": "OSTRC de hombro en balonmano.",
+          "claim": "c_ostrc_hombro"
+        },
+        {
+          "kind": "limitation",
+          "text": "Los programas con fuerza o propiocepción se asocian a menos lesiones; el estiramiento aislado, no.",
+          "claim": "c_strength_injury_risk"
+        },
+        {
+          "kind": "limitation",
+          "text": "La adherencia determina el efecto; se asocia a la supervisión y al feedback.",
+          "claim": "c_adherence_factors"
+        }
+      ],
+      "variables": []
+    },
+    {
+      "slug": "fuerza-jovenes",
+      "name": "Fuerza en niños y adolescentes",
+      "kind": "training_method",
+      "definition": "Entrenamiento de fuerza adecuadamente prescrito y supervisado para niños y adolescentes.",
+      "summaryForTrainer": "Aumenta la fuerza en niños y adolescentes y, en jóvenes deportistas, también mejora el rendimiento. El entrenamiento de equilibrio mejora el equilibrio con efectos moderados o grandes.",
+      "summaryForClient": "Ejercicios de fuerza adaptados a tu edad y siempre supervisados.",
+      "notes": [
+        { "kind": "indication", "text": "Fuerza supervisada en jóvenes.", "claim": "c_youth_rt" },
+        {
+          "kind": "indication",
+          "text": "Trabajo de equilibrio en jóvenes.",
+          "claim": "c_youth_balance"
+        },
+        {
+          "kind": "precaution",
+          "text": "Supervisión cualificada obligatoria y progresión por técnica antes que por carga."
+        }
+      ],
+      "variables": []
+    }
+  ]
+}

@@ -1,0 +1,3663 @@
+{
+  "topic": "user_documents",
+  "sources": [
+    {
+      "key": "lopes2019_elastic_vs_conventional",
+      "pmid": "30815258",
+      "doi": "10.1177/2050312119831116",
+      "title": "Effects of training with elastic resistance versus conventional resistance on muscular strength: A systematic review and meta-analysis.",
+      "journal": "SAGE Open Med",
+      "volume": "7",
+      "issue": null,
+      "pages": "2050312119831116",
+      "authors": [
+        "Lopes JSS",
+        "Machado AF",
+        "Micheletti JK",
+        "de Almeida AC",
+        "Cavina AP",
+        "Pastre CM"
+      ],
+      "year": 2019,
+      "studyDesign": "meta_analysis",
+      "populationSummary": "Ocho estudios con poblaciones diversas (perfiles poblacionales distintos según el resumen)",
+      "ageRange": "no especificado en el resumen",
+      "sex": "mixed",
+      "trainingStatus": "mixed",
+      "sport": null,
+      "intervention": "Entrenamiento de fuerza con dispositivos elásticos (tubos y Thera-Band)",
+      "comparison": "Entrenamiento con máquinas y mancuernas",
+      "outcomesMeasured": "Fuerza muscular de miembros inferiores y superiores",
+      "resultsSummary": "Sin superioridad entre métodos: miembro inferior DME −0,11 (IC95 % −0,40 a 0,19) y miembro superior DME 0,09 (IC95 % −0,18 a 0,35), valor corregido por el corrigendum (PMID 32953119).",
+      "limitations": "Solo 8 estudios; protocolos y poblaciones heterogéneos; búsqueda hasta 2017; un corrigendum modifica el valor del miembro superior.",
+      "practicalApplication": "Con la carga equiparada, las bandas pueden sustituir a pesos libres o máquinas para ganar fuerza; no son superiores.",
+      "access": "abstract_only"
+    },
+    {
+      "key": "stankovic2025_elastic_team_sports",
+      "pmid": "41133592",
+      "doi": "10.3390/jfmk10040402",
+      "title": "Effects of Elastic Band Training on Physical Performance in Team Sports: A Systematic Review and Meta-Analysis.",
+      "journal": "J Funct Morphol Kinesiol",
+      "volume": "10",
+      "issue": "4",
+      "pages": null,
+      "authors": [
+        "Stanković D",
+        "Lazić A",
+        "Trajković N",
+        "Okičić M",
+        "Bubanj A",
+        "Vencúrik T",
+        "Gašić T",
+        "Bubanj S"
+      ],
+      "year": 2025,
+      "studyDesign": "meta_analysis",
+      "populationSummary": "729 deportistas de deportes de equipo (ECA y estudios cuasiexperimentales)",
+      "ageRange": "no especificado en el resumen",
+      "sex": "unknown",
+      "trainingStatus": "trained",
+      "sport": "deportes de equipo",
+      "intervention": "Entrenamiento con bandas elásticas",
+      "comparison": "Grupos control con entrenamiento habitual, actividad física habitual o sin entrenamiento de fuerza adicional",
+      "outcomesMeasured": "Potencia explosiva de miembro inferior, cambio de dirección, sprint, salto",
+      "resultsSummary": "Efecto positivo frente a control: potencia explosiva DME 1,43; COD DME −2,54; sprint DME −1,64.",
+      "limitations": "Comparador débil (sin fuerza adicional), no un entrenamiento convencional equiparado; incluye estudios cuasiexperimentales; el resumen no aporta IC ni heterogeneidad.",
+      "practicalApplication": "Añadir bandas al entrenamiento habitual mejora el rendimiento frente a no añadir nada; no demuestra superioridad sobre los pesos libres.",
+      "access": "abstract_only"
+    },
+    {
+      "key": "meng2025_elastic_older",
+      "pmid": "41278596",
+      "doi": "10.3389/fspor.2025.1649305",
+      "title": "Effects of elastic band resistance training on lower limb strength and balance function in older adults: a systematic review and meta-analysis.",
+      "journal": "Front Sports Act Living",
+      "volume": "7",
+      "issue": null,
+      "pages": "1649305",
+      "authors": ["Meng Y", "Hu Y", "Yang W", "Xue Y", "Yang S"],
+      "year": 2025,
+      "studyDesign": "meta_analysis",
+      "populationSummary": "25 ECA con 1.318 personas mayores con distintos estados de salud",
+      "ageRange": "mayores (rango no especificado en el resumen)",
+      "sex": "mixed",
+      "trainingStatus": "untrained",
+      "sport": null,
+      "intervention": "Entrenamiento con bandas elásticas añadido al protocolo control",
+      "comparison": "Sin intervención o tratamiento básico",
+      "outcomesMeasured": "Extensión de pierna, test de levantarse de la silla, Timed Up and Go, alcance funcional",
+      "resultsSummary": "Mejoras frente a control: extensión de pierna DME 1,01 (0,36–1,66); chair stand DME 2,04 (0,60–3,48); TUG DME −1,41 (−2,33 a −0,49); alcance funcional DME 1,63 (0,36–2,90).",
+      "limitations": "IC amplios; poblaciones con distintas condiciones de salud; comparador sin ejercicio.",
+      "practicalApplication": "Las bandas son una opción válida para la fuerza de miembro inferior y el equilibrio en mayores.",
+      "access": "abstract_only"
+    },
+    {
+      "key": "seguin2022_upper_elastic",
+      "pmid": "35202063",
+      "doi": "10.3390/sports10020024",
+      "title": "The Efficacy of Upper-Extremity Elastic Resistance Training on Shoulder Strength and Performance: A Systematic Review.",
+      "journal": "Sports (Basel)",
+      "volume": "10",
+      "issue": "2",
+      "pages": null,
+      "authors": ["Seguin RC", "Cudlip AC", "Holmes MWR"],
+      "year": 2022,
+      "studyDesign": "systematic_review",
+      "populationSummary": "24 estudios longitudinales con intervenciones elásticas de hombro",
+      "ageRange": "no especificado",
+      "sex": "mixed",
+      "trainingStatus": "mixed",
+      "sport": null,
+      "intervention": "Entrenamiento elástico de miembro superior de 4–12 semanas",
+      "comparison": "Pre-post (y controles según el estudio)",
+      "outcomesMeasured": "Fuerza isométrica, isocinética, 1RM, fuerza-velocidad, velocidad de lanzamiento/saque",
+      "resultsSummary": "Aumentos de fuerza isométrica (RI 11–13 %, RE 11–42 %, flexión 14–36 %, extensión 4–17 %, abducción 8–16 %), 1RM ~24 % en press de banca y velocidad de lanzamiento/saque 12 %.",
+      "limitations": "Revisión sin metaanálisis; protocolos heterogéneos; no permite determinar la dosis óptima.",
+      "practicalApplication": "Las bandas mejoran la fuerza de hombro; esta revisión no respalda una dosificación concreta.",
+      "access": "abstract_only"
+    },
+    {
+      "key": "deoliveira2017_elastic_healthy",
+      "pmid": "28032811",
+      "doi": "10.1123/jpah.2016-0415",
+      "title": "Effects of Elastic Resistance Exercise on Muscle Strength and Functional Performance in Healthy Adults: A Systematic Review and Meta-Analysis.",
+      "journal": "J Phys Act Health",
+      "volume": "14",
+      "issue": "4",
+      "pages": "317-327",
+      "authors": [
+        "de Oliveira PA",
+        "Blasczyk JC",
+        "Souza Junior G",
+        "Lagoa KF",
+        "Soares M",
+        "de Oliveira RJ",
+        "Filho PJBG",
+        "Carregaro RL",
+        "Martins WR"
+      ],
+      "year": 2017,
+      "studyDesign": "meta_analysis",
+      "populationSummary": "Adultos sanos; 5 ensayos controlados incluidos",
+      "ageRange": "adultos",
+      "sex": "mixed",
+      "trainingStatus": "mixed",
+      "sport": null,
+      "intervention": "Ejercicio con resistencia elástica como método aislado",
+      "comparison": "Control pasivo y controles activos",
+      "outcomesMeasured": "Fuerza muscular y rendimiento funcional",
+      "resultsSummary": "Superior al control pasivo; frente a controles activos, inferior en rendimiento funcional y similar en fuerza.",
+      "limitations": "Solo 5 estudios (3 de alta calidad); solo en inglés.",
+      "practicalApplication": "Las bandas son eficaces frente a no entrenar, pero no superiores a otros métodos de fuerza.",
+      "access": "abstract_only"
+    },
+    {
+      "key": "thorborg2016_hip_flexor",
+      "pmid": "25796586",
+      "doi": "10.1007/s00167-015-3583-y",
+      "title": "Large strengthening effect of a hip-flexor training programme: a randomized controlled trial.",
+      "journal": "Knee Surg Sports Traumatol Arthrosc",
+      "volume": "24",
+      "issue": "7",
+      "pages": "2346-52",
+      "authors": ["Thorborg K", "Bandholm T", "Zebis M", "Andersen LL", "Jensen J", "Hölmich P"],
+      "year": 2016,
+      "studyDesign": "rct",
+      "populationSummary": "33 sujetos sanos (45 % mujeres), 24 (5) años",
+      "ageRange": "24 ± 5 años",
+      "sex": "mixed",
+      "trainingStatus": "unknown",
+      "sport": null,
+      "intervention": "Entrenamiento de flexores de cadera con bandas elásticas, 3 × 10 min/semana, 6 semanas, de 15RM a 8RM",
+      "comparison": "Control sin entrenamiento de fuerza",
+      "outcomesMeasured": "Fuerza isométrica de flexión de cadera",
+      "resultsSummary": "Fuerza isométrica +17 % en la pierna entrenada; diferencia entre grupos de 0,34 Nm/kg (IC95 % 0,17–0,52).",
+      "limitations": "Muestra pequeña; el desenlace es fuerza, no lesiones; el papel preventivo es hipotético.",
+      "practicalApplication": "Programa sencillo con bandas para fortalecer los flexores de cadera; no demuestra prevención de lesiones.",
+      "access": "abstract_only"
+    },
+    {
+      "key": "li2024_elastic_elderly_mixed",
+      "pmid": "38739588",
+      "doi": "10.1371/journal.pone.0303372",
+      "title": "Effects of elastic band resistance training on the physical and mental health of elderly individuals: A mixed methods systematic review.",
+      "journal": "PLoS One",
+      "volume": "19",
+      "issue": "5",
+      "pages": "e0303372",
+      "authors": ["Li A", "Sun Y", "Li M", "Wang D", "Ma X"],
+      "year": 2024,
+      "studyDesign": "systematic_review",
+      "populationSummary": "28 estudios (25 cuantitativos, 2 cualitativos, 1 mixto), 1.697 personas mayores",
+      "ageRange": "mayores",
+      "sex": "mixed",
+      "trainingStatus": "untrained",
+      "sport": null,
+      "intervention": "Entrenamiento con bandas elásticas",
+      "comparison": "Variable según el estudio",
+      "outcomesMeasured": "Flexibilidad, resistencia, fuerza, equilibrio, función cardiopulmonar, salud mental, preferencias y barreras",
+      "resultsSummary": "La evidencia cuantitativa apoya mejoras en flexibilidad, resistencia, fuerza de tren superior, equilibrio, función cardiopulmonar y salud mental; en los estudios cualitativos, los participantes refieren preferencias, obstáculos y beneficios.",
+      "limitations": "Heterogeneidad entre estudios; síntesis sin metaanálisis.",
+      "practicalApplication": "Tener en cuenta las preferencias y barreras de los mayores para la adherencia a programas con bandas.",
+      "access": "abstract_only"
+    },
+    {
+      "key": "lin2022_vrt_vs_crt",
+      "pmid": "35886409",
+      "doi": "10.3390/ijerph19148559",
+      "title": "Effects of Variable-Resistance Training Versus Constant-Resistance Training on Maximum Strength: A Systematic Review and Meta-Analysis.",
+      "journal": "Int J Environ Res Public Health",
+      "volume": "19",
+      "issue": "14",
+      "pages": null,
+      "authors": ["Lin Y", "Xu Y", "Hong F", "Li J", "Ye W", "Korivi M"],
+      "year": 2022,
+      "studyDesign": "meta_analysis",
+      "populationSummary": "14 estudios en sujetos entrenados y no entrenados",
+      "ageRange": "no especificado",
+      "sex": "mixed",
+      "trainingStatus": "mixed",
+      "sport": null,
+      "intervention": "Entrenamiento con resistencia variable (cadenas/bandas)",
+      "comparison": "Entrenamiento con resistencia constante",
+      "outcomesMeasured": "Fuerza máxima",
+      "resultsSummary": "VRT > CRT en global (TE 0,80; 0,42–1,19); entrenados TE 0,57 (0,22–0,93); entrenados con ≥80 % 1RM TE 0,76 (0,37–1,16) y sin diferencias con <80 % (0,00); no entrenados TE 1,34 (0,28–2,40), con <80 % TE 2,38 (1,39–3,36) y sin diferencias con ≥80 % (−0,04).",
+      "limitations": "Solo 14 estudios; subgrupos pequeños con IC amplios; el resumen no aporta I².",
+      "practicalApplication": "En personas entrenadas, la resistencia variable parece aportar más con cargas ≥80 % 1RM.",
+      "access": "abstract_only"
+    },
+    {
+      "key": "soriagila2015_vrt_retracted",
+      "pmid": "25968227",
+      "doi": "10.1519/JSC.0000000000000971",
+      "title": "Effects of Variable Resistance Training on Maximal Strength: A Meta-Analysis.",
+      "journal": "J Strength Cond Res",
+      "volume": "29",
+      "issue": "11",
+      "pages": "3260-70",
+      "authors": ["Soria-Gila MA", "Chirosa IJ", "Bautista IJ", "Baena S", "Chirosa LJ"],
+      "year": 2015,
+      "studyDesign": "meta_analysis",
+      "populationSummary": "7 estudios con 235 sujetos entrenados y no entrenados",
+      "ageRange": "adultos",
+      "sex": "unknown",
+      "trainingStatus": "mixed",
+      "sport": null,
+      "intervention": "VRT con cadenas o bandas durante ≥7 semanas",
+      "comparison": "Entrenamiento con resistencia constante",
+      "outcomesMeasured": "1RM",
+      "resultsSummary": "ARTÍCULO RETRACTADO (Retraction: J Strength Cond Res 2018;32(11):e56, PMID 30540286). El resumen original declaraba una diferencia media ponderada de 5,03 kg a favor de VRT.",
+      "limitations": "Retractado; no debe usarse como evidencia.",
+      "practicalApplication": "No citarlo como apoyo; sustituirlo por Lin et al. 2022.",
+      "access": "abstract_only",
+      "verificationStatus": "retracted"
+    },
+    {
+      "key": "xu2026_vrt_explosive",
+      "pmid": "41660069",
+      "doi": "10.7717/peerj.20644",
+      "title": "Effects of variable resistance training on lower limb explosive power in athletes: a systematic review and meta-analysis.",
+      "journal": "PeerJ",
+      "volume": "14",
+      "issue": null,
+      "pages": "e20644",
+      "authors": ["Xu Z", "Su S", "Xu Z"],
+      "year": 2026,
+      "studyDesign": "meta_analysis",
+      "populationSummary": "15 artículos con 442 deportistas",
+      "ageRange": "no especificado",
+      "sex": "unknown",
+      "trainingStatus": "trained",
+      "sport": "varios",
+      "intervention": "Entrenamiento con resistencia variable (cadenas, bandas)",
+      "comparison": "Según el estudio (entrenamiento tradicional u otros)",
+      "outcomesMeasured": "Salto, sprint, cambio de dirección",
+      "resultsSummary": "VRT eficaz en salto (DME 0,81), sprint (DME −1,13) y COD (DME −1,66); subgrupos: VJ 0,31, SJ 0,94, CMJ 1,01, 5 m −1,18, 10 m −1,18, 30 m −1,08, T-test −2,01, RCOD −2,01, Illinois −1,85.",
+      "limitations": "Los autores declaran heterogeneidad significativa y posible sesgo de publicación.",
+      "practicalApplication": "Herramienta plausible para la potencia de miembro inferior en deportistas; evidencia de certeza limitada.",
+      "access": "abstract_only"
+    },
+    {
+      "key": "tsuruike2020_9090_double_band",
+      "pmid": "32720852",
+      "doi": "10.1177/1941738120935441",
+      "title": "The Application of Double Elastic Band Exercise in the 90/90 Arm Position for Overhead Athletes.",
+      "journal": "Sports Health",
+      "volume": "12",
+      "issue": "5",
+      "pages": "495-500",
+      "authors": ["Tsuruike M", "Ellenbecker TS", "Lauffenburger C"],
+      "year": 2020,
+      "studyDesign": "mechanistic",
+      "populationSummary": "21 jugadores universitarios de béisbol",
+      "ageRange": "universitarios",
+      "sex": "unknown",
+      "trainingStatus": "trained",
+      "sport": "béisbol",
+      "intervention": "Rotación externa 90/90 con dos bandas elásticas en los planos frontal y escapular",
+      "comparison": "Banda simple; plano frontal frente a escapular",
+      "outcomesMeasured": "EMG de redondo menor, infraespinoso, trapecio inferior, serrato, redondo mayor, deltoides y trapecio superior",
+      "resultsSummary": "Con doble banda en el plano frontal aumentó la EMG de redondo menor y trapecio inferior con mínima actividad de trapecio superior y deltoides medio; en el plano escapular aumentó la de infraespinoso, serrato y redondo mayor.",
+      "limitations": "Estudio agudo de EMG (nivel 4); sin resultados de entrenamiento ni de lesión.",
+      "practicalApplication": "Elegir el plano frontal o el escapular según el músculo objetivo.",
+      "access": "abstract_only"
+    },
+    {
+      "key": "myrvang2024_resisted_sprint",
+      "pmid": "39392558",
+      "doi": "10.1186/s40798-024-00777-7",
+      "title": "The Longitudinal Effects of Resisted and Assisted Sprint Training on Sprint Kinematics, Acceleration, and Maximum Velocity: A Systematic Review and Meta-analysis.",
+      "journal": "Sports Med Open",
+      "volume": "10",
+      "issue": "1",
+      "pages": "110",
+      "authors": ["Myrvang S", "van den Tillaar R"],
+      "year": 2024,
+      "studyDesign": "meta_analysis",
+      "populationSummary": "21 estudios de intervención de ≥4 semanas",
+      "ageRange": "no especificado",
+      "sex": "unknown",
+      "trainingStatus": "mixed",
+      "sport": null,
+      "intervention": "Sprint resistido (trineos, paracaídas, cuesta arriba, arrastre), asistido o combinado",
+      "comparison": "Sprint normal",
+      "outcomesMeasured": "Aceleración en 10 m, tiempo en 20 m, velocidad máxima, cinemática",
+      "resultsSummary": "Solo el sprint resistido mejoró significativamente la aceleración en 10 m frente al sprint normal (Z = 2,01, P = 0,04); sin cambios significativos en cinemática, 20 m ni velocidad máxima.",
+      "limitations": "Búsqueda en una sola base (SPORTDiscus); pocos estudios de sprint asistido.",
+      "practicalApplication": "Reservar el sprint resistido para la aceleración inicial (10 m).",
+      "access": "abstract_only"
+    },
+    {
+      "key": "moore2019_gmed_segments_emg",
+      "pmid": "30747561",
+      "doi": "10.1123/jsr.2018-0340",
+      "title": "Rehabilitation Exercises for the Gluteus Medius Muscle Segments: An Electromyography Study.",
+      "journal": "J Sport Rehabil",
+      "volume": "28",
+      "issue": "8",
+      "pages": null,
+      "authors": ["Moore D", "Pizzari T", "McClelland J", "Semciw AI"],
+      "year": 2019,
+      "studyDesign": "mechanistic",
+      "populationSummary": "10 adultos jóvenes sanos",
+      "ageRange": "adultos jóvenes",
+      "sex": "mixed",
+      "trainingStatus": "unknown",
+      "sport": null,
+      "intervention": "6 ejercicios de rehabilitación de miembro inferior (EMG intramuscular)",
+      "comparison": "Entre ejercicios (clamshell como referencia)",
+      "outcomesMeasured": "Activación de los segmentos anterior, medio y posterior del glúteo medio (%MVIC)",
+      "resultsSummary": "Segmento anterior: sentadilla unipodal 48 %, puente unipodal 44 % y abducción-extensión resistida 41 % MVIC; segmento posterior: abducción-extensión resistida 69 %, sentadilla unipodal 48 % y abducción en decúbito lateral 43 %; el clamshell fue poco eficaz.",
+      "limitations": "n = 10; estudio agudo de EMG.",
+      "practicalApplication": "Priorizar la abducción-extensión resistida y los ejercicios unipodales frente al clamshell para el glúteo medio.",
+      "access": "abstract_only"
+    },
+    {
+      "key": "bishop2018_glute_tfl_emg",
+      "pmid": "30140560",
+      "doi": null,
+      "title": "Electromyographic Analysis of Gluteus Maximus, Gluteus Medius, and Tensor Fascia Latae During Therapeutic Exercises With and Without Elastic Resistance.",
+      "journal": "Int J Sports Phys Ther",
+      "volume": "13",
+      "issue": "4",
+      "pages": "668-675",
+      "authors": ["Bishop BN", "Greenstein J", "Etnoyer-Slaski JL", "Sterling H", "Topp R"],
+      "year": 2018,
+      "studyDesign": "mechanistic",
+      "populationSummary": "11 hombres y mujeres sanos y físicamente activos",
+      "ageRange": "no especificado",
+      "sex": "mixed",
+      "trainingStatus": "recreational",
+      "sport": null,
+      "intervention": "13 ejercicios, 3 de ellos con y sin resistencia elástica",
+      "comparison": "Mismos ejercicios sin banda",
+      "outcomesMeasured": "EMG de glúteo mayor, glúteo medio y TFL; índice GTA",
+      "resultsSummary": "El clam con y sin resistencia, el running man sobre stability trainer y el puente con resistencia generaron el mayor índice GTA; la activación del TFL difirió entre el clam con y sin resistencia.",
+      "limitations": "n = 11; diseño de medidas repetidas; EMG de superficie.",
+      "practicalApplication": "El clam y el puente con banda favorecen la activación de los glúteos frente al TFL.",
+      "access": "abstract_only"
+    },
+    {
+      "key": "kubo2018_bands_squat_power",
+      "pmid": "30469523",
+      "doi": "10.3390/sports6040151",
+      "title": "Effect of Accommodating Elastic Bands on Mechanical Power Output during Back Squats.",
+      "journal": "Sports (Basel)",
+      "volume": "6",
+      "issue": "4",
+      "pages": null,
+      "authors": ["Kubo T", "Hirayama K", "Nakamura N", "Higuchi M"],
+      "year": 2018,
+      "studyDesign": "mechanistic",
+      "populationSummary": "10 hombres sanos de 23 ± 2 años; 1RM en sentadilla 105 ± 23,1 kg (1,6 ± 0,3 × MC)",
+      "ageRange": "23 ± 2 años",
+      "sex": "male",
+      "trainingStatus": "recreational",
+      "sport": null,
+      "intervention": "Sentadilla paralela con bandas elásticas (5 condiciones)",
+      "comparison": "Peso libre tradicional",
+      "outcomesMeasured": "Potencia, velocidad y fuerza en las subfases de aceleración y desaceleración",
+      "resultsSummary": "Con bandas: mayor potencia, velocidad y fuerza en la desaceleración; mayor potencia y velocidad en la aceleración, pero menor fuerza en la aceleración que con peso libre.",
+      "limitations": "n = 10; estudio agudo; el resumen no describe a los sujetos como entrenados en fuerza.",
+      "practicalApplication": "Las bandas modifican el perfil mecánico de la sentadilla; pueden ser útiles para la potencia, pero no se han demostrado ganancias crónicas.",
+      "access": "abstract_only"
+    },
+    {
+      "key": "reece2020_band_squat_knee",
+      "pmid": "32095265",
+      "doi": "10.1136/bmjsem-2019-000610",
+      "title": "Barbell back squat: how do resistance bands affect muscle activation and knee kinematics?",
+      "journal": "BMJ Open Sport Exerc Med",
+      "volume": "6",
+      "issue": "1",
+      "pages": "e000610",
+      "authors": ["Reece MB", "Arnold GP", "Nasir S", "Wang WW", "Abboud R"],
+      "year": 2020,
+      "studyDesign": "mechanistic",
+      "populationSummary": "26 participantes sanos (13 mujeres, 13 hombres)",
+      "ageRange": "no especificado",
+      "sex": "mixed",
+      "trainingStatus": "unknown",
+      "sport": null,
+      "intervention": "Sentadilla al 40 % y al 80 % 1RM con banda ligera o extrapesada alrededor de las rodillas",
+      "comparison": "Sin banda",
+      "outcomesMeasured": "EMG (vastos, glúteos, bíceps femoral); valgo de rodilla y rotación tibial",
+      "resultsSummary": "La banda aumentó la activación del glúteo mayor, pero también el valgo de rodilla y la rotación tibial máxima, en relación directa con la resistencia de la banda.",
+      "limitations": "Estudio agudo; el mayor riesgo de lesión es una inferencia de los autores, no un resultado medido.",
+      "practicalApplication": "Usar con precaución la banda alrededor de las rodillas en la sentadilla con barra.",
+      "access": "abstract_only"
+    },
+    {
+      "key": "ebben2002_chain_band_squat",
+      "pmid": "12423183",
+      "doi": null,
+      "title": "Electromyographic and kinetic analysis of traditional, chain, and elastic band squats.",
+      "journal": "J Strength Cond Res",
+      "volume": "16",
+      "issue": "4",
+      "pages": "547-50",
+      "authors": ["Ebben WP", "Jensen RL"],
+      "year": 2002,
+      "studyDesign": "mechanistic",
+      "populationSummary": "11 deportistas NCAA División I con experiencia en estos tipos de sentadilla",
+      "ageRange": "no especificado",
+      "sex": "mixed",
+      "trainingStatus": "trained",
+      "sport": "varios",
+      "intervention": "Sentadilla con cadenas o bandas que sustituyen ~10 % de la carga",
+      "comparison": "Sentadilla tradicional con barra y discos",
+      "outcomesMeasured": "I-EMG de cuádriceps e isquiotibiales; fuerzas de reacción verticales",
+      "resultsSummary": "Sin diferencias en I-EMG ni en GRF en las fases excéntrica o concéntrica entre las tres condiciones.",
+      "limitations": "n = 11; solo ~10 % de carga variable; estudio agudo.",
+      "practicalApplication": "Sustituir ~10 % de la carga por cadenas o bandas no cambia de forma aguda la activación ni la fuerza de reacción.",
+      "access": "abstract_only"
+    },
+    {
+      "key": "guzmanmunoz2026_elastic_narrative",
+      "pmid": "42795858",
+      "doi": "10.3390/jcm15187086",
+      "title": "Elastic Resistance Bands in Sports Medicine and Rehabilitation: A Narrative Review of Neuromuscular Mechanisms, Prescription, and Functional Applications.",
+      "journal": "J Clin Med",
+      "volume": "15",
+      "issue": "18",
+      "pages": null,
+      "authors": [
+        "Guzmán-Muñoz E",
+        "Garcia-Carrillo E",
+        "Castillo-Paredes A",
+        "Montalva-Valenzuela F",
+        "Molina-Márquez I",
+        "Narrea Vargas JJ",
+        "Villaseca-Vicuña R",
+        "Jofré-Saldía E",
+        "Yáñez-Sepúlveda R",
+        "Barrera-González D"
+      ],
+      "year": 2026,
+      "studyDesign": "narrative_review",
+      "populationSummary": "Estudios en humanos y revisiones sobre resistencia elástica",
+      "ageRange": "no aplica",
+      "sex": "mixed",
+      "trainingStatus": "mixed",
+      "sport": null,
+      "intervention": "Ejercicio con bandas elásticas",
+      "comparison": "Resistencia convencional",
+      "outcomesMeasured": "Mecanismos, prescripción, aplicaciones funcionales",
+      "resultsSummary": "La prescripción basada solo en el color de la banda es inadecuada; la evidencia es más sólida para la fuerza y el rendimiento funcional que para la reducción directa de lesiones o el retorno al deporte.",
+      "limitations": "Revisión narrativa (estructurada); no cuantitativa.",
+      "practicalApplication": "Cuantificar la carga de la banda (tensión, elongación) en lugar de prescribir por color.",
+      "access": "abstract_only"
+    },
+    {
+      "key": "gonzalezbadillo2010_velocity_bench",
+      "pmid": "20180176",
+      "doi": "10.1055/s-0030-1248333",
+      "title": "Movement velocity as a measure of loading intensity in resistance training.",
+      "journal": "Int J Sports Med",
+      "volume": "31",
+      "issue": "5",
+      "pages": "347-52",
+      "authors": ["González-Badillo JJ", "Sánchez-Medina L"],
+      "year": 2010,
+      "studyDesign": "cross_sectional",
+      "populationSummary": "120 hombres entrenados en fuerza (56 repitieron el test tras 6 semanas)",
+      "ageRange": "adultos jóvenes",
+      "sex": "male",
+      "trainingStatus": "trained",
+      "sport": null,
+      "intervention": "Test de cargas progresivas en press de banca hasta el 1RM",
+      "comparison": "T1 frente a T2 tras 6 semanas de entrenamiento",
+      "outcomesMeasured": "Relación velocidad media propulsiva–%1RM; velocidad con el 1RM",
+      "resultsSummary": "Relación MPV–%1RM con R² = 0,98; velocidad media con el 1RM de 0,16 ± 0,04 m/s; la MPV de cada %1RM se mantuvo estable pese a un aumento del 9,3 % en el 1RM.",
+      "limitations": "Solo hombres entrenados; press de banca (el resumen no detalla si se hizo en máquina Smith).",
+      "practicalApplication": "Estimar el %1RM a partir de la velocidad en press de banca en hombres entrenados.",
+      "access": "abstract_only"
+    },
+    {
+      "key": "sanchezmedina2017_squat_velocity",
+      "pmid": "30539090",
+      "doi": "10.1055/s-0043-102933",
+      "title": "Estimation of Relative Load From Bar Velocity in the Full Back Squat Exercise",
+      "journal": "Sports Med Int Open",
+      "volume": "1",
+      "issue": "2",
+      "pages": "E80-E88",
+      "authors": [
+        "Sánchez-Medina L",
+        "Pallarés JG",
+        "Pérez CE",
+        "Morán-Navarro R",
+        "González-Badillo JJ"
+      ],
+      "year": 2017,
+      "studyDesign": "cross_sectional",
+      "populationSummary": "80 hombres deportistas de nivel nacional entrenados en fuerza (hockey hierba, atletismo, voleibol, lucha), RSR >1,00",
+      "ageRange": "23,6 ± 4,7 años",
+      "sex": "male",
+      "trainingStatus": "highly_trained",
+      "sport": "varios",
+      "intervention": "Test de cargas progresivas en sentadilla completa en máquina Smith",
+      "comparison": "Subgrupos de distinta fuerza relativa",
+      "outcomesMeasured": "Relación velocidad–%1RM; velocidad con el 1RM",
+      "resultsSummary": "MV y MPV muy relacionadas con el %1RM (R² = 0,96); MV con el 1RM de 0,32 ± 0,03 m/s; sin diferencias de MPV por %1RM entre subgrupos de fuerza relativa.",
+      "limitations": "Solo hombres jóvenes entrenados (RSR 1,00–2,00); sentadilla en máquina Smith; los autores advierten que no se extrapole a mujeres, no entrenados, mayores ni personas con enfermedad.",
+      "practicalApplication": "Estimar el %1RM a partir de la velocidad en sentadilla completa en Smith; considerar válido un 1RM con MV ≤ ~0,35 m/s.",
+      "access": "full_text"
+    },
+    {
+      "key": "moran2021_deadlift_lv",
+      "pmid": "32552373",
+      "doi": "10.1080/17461391.2020.1785017",
+      "title": "Load-velocity relationship of the deadlift exercise.",
+      "journal": "Eur J Sport Sci",
+      "volume": "21",
+      "issue": "5",
+      "pages": "678-684",
+      "authors": ["Morán-Navarro R", "Martínez-Cava A", "Escribano-Peñas P", "Courel-Ibáñez J"],
+      "year": 2021,
+      "studyDesign": "cross_sectional",
+      "populationSummary": "20 hombres entrenados en fuerza",
+      "ageRange": "adultos",
+      "sex": "male",
+      "trainingStatus": "trained",
+      "sport": null,
+      "intervention": "Test de cargas progresivas en peso muerto",
+      "comparison": "Ninguna",
+      "outcomesMeasured": "Relación velocidad–%1RM; velocidad con el 1RM; potencia",
+      "resultsSummary": "MV y MPV muy relacionadas con el %1RM (R² 0,971 y 0,963; SEE 0,08 y 0,09 m/s); MV con el 1RM de 0,24 ± 0,03 m/s; potencia máxima en torno al 60 % 1RM.",
+      "limitations": "n = 20; solo hombres.",
+      "practicalApplication": "Estimar el %1RM a partir de la velocidad en peso muerto en hombres entrenados.",
+      "access": "abstract_only"
+    },
+    {
+      "key": "sanchezmedina2014_benchpull",
+      "pmid": "23900903",
+      "doi": "10.1055/s-0033-1351252",
+      "title": "Velocity- and power-load relationships of the bench pull vs. bench press exercises.",
+      "journal": "Int J Sports Med",
+      "volume": "35",
+      "issue": "3",
+      "pages": "209-16",
+      "authors": ["Sánchez-Medina L", "González-Badillo JJ", "Pérez CE", "Pallarés JG"],
+      "year": 2014,
+      "studyDesign": "cross_sectional",
+      "populationSummary": "75 deportistas entrenados en fuerza (MeSH: Male)",
+      "ageRange": "adultos",
+      "sex": "male",
+      "trainingStatus": "trained",
+      "sport": null,
+      "intervention": "Test de cargas progresivas hasta el 1RM en remo tumbado (prone bench pull) y press de banca",
+      "comparison": "Press de banca frente a remo tumbado",
+      "outcomesMeasured": "Relaciones velocidad–%1RM y potencia–carga",
+      "resultsSummary": "Velocidad y potencia mayores en el remo tumbado entre el 30 y el 100 % 1RM; relación %1RM–MPV con R² = 0,97 (banca) y 0,94 (remo tumbado); Pmax medida como MP en el 56 % (banca) y el 70 % (remo).",
+      "limitations": "Población entrenada; ecuaciones específicas de cada ejercicio.",
+      "practicalApplication": "Usar ecuaciones distintas para el remo tumbado y el press de banca.",
+      "access": "abstract_only"
+    },
+    {
+      "key": "greig2023_lv_1rm_ipd",
+      "pmid": "37493929",
+      "doi": "10.1007/s40279-023-01854-9",
+      "title": "The Predictive Validity of Individualised Load-Velocity Relationships for Predicting 1RM: A Systematic Review and Individual Participant Data Meta-analysis.",
+      "journal": "Sports Med",
+      "volume": "53",
+      "issue": "9",
+      "pages": "1693-1708",
+      "authors": ["Greig L", "Aspe RR", "Hall A", "Comfort P", "Cooper K", "Swinton PA"],
+      "year": 2023,
+      "studyDesign": "meta_analysis",
+      "populationSummary": "26 estudios (20, con 434 participantes, en el metaanálisis); sentadilla, banca, peso muerto, cargada y arrancada",
+      "ageRange": "no especificado",
+      "sex": "mixed",
+      "trainingStatus": "mixed",
+      "sport": null,
+      "intervention": "Predicción del 1RM mediante relaciones carga-velocidad individualizadas",
+      "comparison": "1RM medido",
+      "outcomesMeasured": "Error de estimación (SEE%) y sesgo de predicción",
+      "resultsSummary": "SEE% de 9,8 (IC95 % 7,4–12,2); las predicciones tienden a sobrestimar en 4,5 kg (1,5–7,4), equivalente al 3,7 % del 1RM (0,5–6,9).",
+      "limitations": "Estudios con riesgo de sesgo bajo, incierto o alto; datos individuales de solo 8 estudios.",
+      "practicalApplication": "Medir el 1RM directamente cuando sea posible; usar la relación carga-velocidad para seguir tendencias.",
+      "access": "abstract_only"
+    },
+    {
+      "key": "folland2008_allometric",
+      "pmid": "18172672",
+      "doi": "10.1007/s00421-007-0654-x",
+      "title": "Allometric scaling of strength measurements to body size.",
+      "journal": "Eur J Appl Physiol",
+      "volume": "102",
+      "issue": "6",
+      "pages": "739-45",
+      "authors": ["Folland JP", "Mc Cauley TM", "Williams AG"],
+      "year": 2008,
+      "studyDesign": "cross_sectional",
+      "populationSummary": "86 hombres jóvenes",
+      "ageRange": "jóvenes",
+      "sex": "male",
+      "trainingStatus": "unknown",
+      "sport": null,
+      "intervention": "Fuerza isométrica y par isocinético de extensores de rodilla",
+      "comparison": "Distintas variables de tamaño corporal",
+      "outcomesMeasured": "Exponentes alométricos de escalado",
+      "resultsSummary": "Para normalizar por masa corporal en poblaciones magras (grasa <20 %): exponentes 0,66 (fuerza) y 1,0 (par); con grasa >20 %: 0,45 (F) y 0,68 (T); por masa libre de grasa: 0,76 (F) y 1,12 (T).",
+      "limitations": "Solo hombres jóvenes y extensores de rodilla; no incluye levantamientos libres.",
+      "practicalApplication": "Exponente de ~0,66 para la fuerza isométrica en hombres magros; no es universal.",
+      "access": "abstract_only"
+    },
+    {
+      "key": "vandenhoek2024_powerlifting_norms",
+      "pmid": "39060209",
+      "doi": "10.1016/j.jsams.2024.07.005",
+      "title": "Normative data for the squat, bench press and deadlift exercises in powerlifting: Data from 809,986 competition entries.",
+      "journal": "J Sci Med Sport",
+      "volume": "27",
+      "issue": "10",
+      "pages": "734-742",
+      "authors": [
+        "van den Hoek DJ",
+        "Beaumont PL",
+        "van den Hoek AK",
+        "Owen PJ",
+        "Garrett JM",
+        "Buhmann R",
+        "Latella C"
+      ],
+      "year": 2024,
+      "studyDesign": "cross_sectional",
+      "populationSummary": "809.986 inscripciones en competiciones de powerlifting sin equipo y con control antidopaje (571.650 hombres, 238.336 mujeres)",
+      "ageRange": "de adolescentes a >80 años",
+      "sex": "mixed",
+      "trainingStatus": "highly_trained",
+      "sport": "powerlifting",
+      "intervention": "Ninguna (análisis retrospectivo)",
+      "comparison": "Sexo, edad, categoría de peso",
+      "outcomesMeasured": "Fuerza relativa (carga/masa corporal), percentiles 10–90",
+      "resultsSummary": "Percentil 90 en adultos jóvenes (18–35 años): sentadilla H 2,83 / M 2,26; banca H 1,95 / M 1,35; peso muerto H 3,25 / M 2,66 × MC; descenso posterior con la edad.",
+      "limitations": "Población de powerlifters de competición; no representativa de la población general.",
+      "practicalApplication": "Usarlo como referencia superior para personas entrenadas, no como norma de la población general.",
+      "access": "abstract_only"
+    },
+    {
+      "key": "kubo2001_isometric_tendon",
+      "pmid": "11600697",
+      "doi": "10.1111/j.1469-7793.2001.0649c.xd",
+      "title": "Effects of different duration isometric contractions on tendon elasticity in human quadriceps muscles.",
+      "journal": "J Physiol",
+      "volume": "536",
+      "issue": "Pt 2",
+      "pages": "649-55",
+      "authors": ["Kubo K", "Kanehisa H", "Fukunaga T"],
+      "year": 2001,
+      "studyDesign": "non_randomized_trial",
+      "populationSummary": "8 hombres jóvenes; diseño intrasujeto (una pierna por protocolo)",
+      "ageRange": "jóvenes",
+      "sex": "male",
+      "trainingStatus": "unknown",
+      "sport": null,
+      "intervention": "Isometría al 70 % MVC durante 12 semanas, 4 días/semana: protocolo largo (4 × 20 s con 1 min de pausa)",
+      "comparison": "Protocolo corto (3 × 50 × 1 s) con el mismo volumen de par integrado",
+      "outcomesMeasured": "Rigidez de las estructuras tendinosas; MVC; volumen muscular",
+      "resultsSummary": "MVC +31,8 % (corto) y +33,9 % (largo); volumen muscular +7,4 % y +7,6 %; la rigidez tendinosa solo aumentó con las contracciones largas.",
+      "limitations": "n = 8; solo hombres jóvenes; el resumen no describe la asignación de piernas como aleatoria.",
+      "practicalApplication": "Usar contracciones isométricas largas (≈20 s) para aumentar la rigidez tendinosa.",
+      "access": "abstract_only"
+    },
+    {
+      "key": "rio2015_isometric_analgesia",
+      "pmid": "25979840",
+      "doi": "10.1136/bjsports-2014-094386",
+      "title": "Isometric exercise induces analgesia and reduces inhibition in patellar tendinopathy.",
+      "journal": "Br J Sports Med",
+      "volume": "49",
+      "issue": "19",
+      "pages": "1277-83",
+      "authors": ["Rio E", "Kidgell D", "Purdam C", "Gaida J", "Moseley GL", "Pearce AJ", "Cook J"],
+      "year": 2015,
+      "studyDesign": "rct",
+      "populationSummary": "6 jugadores de voleibol con tendinopatía rotuliana",
+      "ageRange": "adolescentes y adultos jóvenes (MeSH)",
+      "sex": "male",
+      "trainingStatus": "trained",
+      "sport": "voleibol",
+      "intervention": "Una sesión de contracciones isométricas de cuádriceps",
+      "comparison": "Contracciones isotónicas (diseño cruzado, simple ciego)",
+      "outcomesMeasured": "Dolor en sentadilla declinada unipodal (0–10), MVIC, inhibición cortical",
+      "resultsSummary": "La isometría redujo el dolor de 7,0 a 0,17, frente a una reducción de 6,33 a 3,75 con isotónicos; el efecto se mantuvo a los 45 min; MVIC +18,7 %.",
+      "limitations": "n = 6; efecto agudo de una sola sesión; el protocolo exacto (series × duración × %) no figura en el resumen.",
+      "practicalApplication": "La isometría puede usarse para el alivio agudo del dolor de la tendinopatía rotuliana en deportistas.",
+      "access": "abstract_only"
+    },
+    {
+      "key": "haroy2019_copenhagen",
+      "pmid": "29891614",
+      "doi": "10.1136/bjsports-2017-098937",
+      "title": "The Adductor Strengthening Programme prevents groin problems among male football players: a cluster-randomised controlled trial.",
+      "journal": "Br J Sports Med",
+      "volume": "53",
+      "issue": "3",
+      "pages": "150-157",
+      "authors": [
+        "Harøy J",
+        "Clarsen B",
+        "Wiger EG",
+        "Øyen MG",
+        "Serner A",
+        "Thorborg K",
+        "Hölmich P",
+        "Andersen TE",
+        "Bahr R"
+      ],
+      "year": 2019,
+      "studyDesign": "rct",
+      "populationSummary": "35 equipos semiprofesionales noruegos de fútbol masculino (652 jugadores)",
+      "ageRange": "adultos",
+      "sex": "male",
+      "trainingStatus": "highly_trained",
+      "sport": "fútbol",
+      "intervention": "Programa de fortalecimiento de aductores con el ejercicio Copenhagen (3 niveles), 3 veces/semana en pretemporada y 1 vez/semana en temporada",
+      "comparison": "Entrenamiento habitual",
+      "outcomesMeasured": "Prevalencia de problemas inguinales (OSTRC)",
+      "resultsSummary": "Prevalencia media del 13,5 % (intervención) frente al 21,3 % (control); riesgo un 41 % menor (OR 0,59; IC95 % 0,40–0,86).",
+      "limitations": "El desenlace es la prevalencia de problemas autorreportados, no la incidencia de lesiones diagnosticadas; solo hombres semiprofesionales.",
+      "practicalApplication": "Incluir el Copenhagen en futbolistas masculinos para reducir los problemas inguinales.",
+      "access": "abstract_only"
+    },
+    {
+      "key": "andersson2017_ostrc_shoulder",
+      "pmid": "27313171",
+      "doi": "10.1136/bjsports-2016-096226",
+      "title": "Preventing overuse shoulder injuries among throwing athletes: a cluster-randomised controlled trial in 660 elite handball players.",
+      "journal": "Br J Sports Med",
+      "volume": "51",
+      "issue": "14",
+      "pages": "1073-1080",
+      "authors": ["Andersson SH", "Bahr R", "Clarsen B", "Myklebust G"],
+      "year": 2017,
+      "studyDesign": "rct",
+      "populationSummary": "45 equipos de balonmano de élite (22 femeninos y 23 masculinos; 660 jugadores)",
+      "ageRange": "adultos",
+      "sex": "mixed",
+      "trainingStatus": "elite",
+      "sport": "balonmano",
+      "intervention": "Programa OSTRC de prevención de hombro 3 veces/semana durante el calentamiento",
+      "comparison": "Calentamiento habitual",
+      "outcomesMeasured": "Prevalencia de problemas de hombro y de problemas sustanciales",
+      "resultsSummary": "Prevalencia del 17 % frente al 23 %; riesgo de problemas de hombro un 28 % menor (OR 0,72; IC95 % 0,52–0,98); problemas sustanciales OR 0,78 (0,53–1,16), no significativo.",
+      "limitations": "Desenlace de prevalencia autorreportada; efecto no significativo en los problemas sustanciales.",
+      "practicalApplication": "Incluir el programa OSTRC en el calentamiento del balonmano de élite.",
+      "access": "abstract_only"
+    },
+    {
+      "key": "jones1999_chair_stand",
+      "pmid": "10380242",
+      "doi": "10.1080/02701367.1999.10608028",
+      "title": "A 30-s chair-stand test as a measure of lower body strength in community-residing older adults.",
+      "journal": "Res Q Exerc Sport",
+      "volume": "70",
+      "issue": "2",
+      "pages": "113-9",
+      "authors": ["Jones CJ", "Rikli RE", "Beam WC"],
+      "year": 1999,
+      "studyDesign": "cross_sectional",
+      "populationSummary": "76 mayores que viven en la comunidad (edad media de 70,5 años)",
+      "ageRange": ">60 años",
+      "sex": "mixed",
+      "trainingStatus": "mixed",
+      "sport": null,
+      "intervention": "Test de levantarse de la silla en 30 s (dos veces) y prensa de piernas máxima",
+      "comparison": "Ninguna",
+      "outcomesMeasured": "Fiabilidad test-retest y validez de criterio y de constructo",
+      "resultsSummary": "ICC de 0,84 (hombres) y 0,92 (mujeres); correlación con la prensa ajustada por peso de r = 0,78 y 0,71; discrimina por décadas de edad y por nivel de actividad.",
+      "limitations": "Mayores generalmente activos; muestra moderada.",
+      "practicalApplication": "Usar el test de la silla de 30 s como indicador de la fuerza del tren inferior en mayores.",
+      "access": "abstract_only"
+    },
+    {
+      "key": "suchomel2016_strength_performance",
+      "pmid": "26838985",
+      "doi": "10.1007/s40279-016-0486-0",
+      "title": "The Importance of Muscular Strength in Athletic Performance.",
+      "journal": "Sports Med",
+      "volume": "46",
+      "issue": "10",
+      "pages": "1419-49",
+      "authors": ["Suchomel TJ", "Nimphius S", "Stone MH"],
+      "year": 2016,
+      "studyDesign": "narrative_review",
+      "populationSummary": "Literatura sobre fuerza y rendimiento deportivo",
+      "ageRange": "no aplica",
+      "sex": "mixed",
+      "trainingStatus": "mixed",
+      "sport": null,
+      "intervention": "Mayor fuerza muscular",
+      "comparison": "Menor fuerza",
+      "outcomesMeasured": "Características fuerza-tiempo, salto, sprint, COD, riesgo de lesión",
+      "resultsSummary": "Una mayor fuerza se asocia a mejores características fuerza-tiempo y habilidades generales (saltar, esprintar, cambiar de dirección); propone las fases de déficit, asociación y reserva de fuerza.",
+      "limitations": "Revisión narrativa; el resumen no da umbrales numéricos (p. ej., sentadilla de 2 × MC).",
+      "practicalApplication": "Priorizar el desarrollo de la fuerza máxima a largo plazo en deportistas.",
+      "access": "abstract_only"
+    },
+    {
+      "key": "styles2016_squat_sprint",
+      "pmid": "26473518",
+      "doi": "10.1519/JSC.0000000000001243",
+      "title": "Effects of Strength Training on Squat and Sprint Performance in Soccer Players.",
+      "journal": "J Strength Cond Res",
+      "volume": "30",
+      "issue": "6",
+      "pages": "1534-9",
+      "authors": ["Styles WJ", "Matthews MJ", "Comfort P"],
+      "year": 2016,
+      "studyDesign": "non_randomized_trial",
+      "populationSummary": "17 futbolistas profesionales de 18,3 ± 1,2 años",
+      "ageRange": "18,3 ± 1,2 años",
+      "sex": "male",
+      "trainingStatus": "highly_trained",
+      "sport": "fútbol",
+      "intervention": "Fuerza en temporada durante 6 semanas (2 veces/semana) al 85–90 % 1RM",
+      "comparison": "Pre frente a post (sin grupo control)",
+      "outcomesMeasured": "1RM en sentadilla; sprint en 5, 10 y 20 m",
+      "resultsSummary": "1RM 125,4 → 149,3 kg; 1RM/MC 1,66 → 1,96; 5 m 1,11 → 1,05 s; 10 m 1,83 → 1,78 s; 20 m 3,09 → 3,05 s.",
+      "limitations": "Sin grupo control; n = 17; jugadores profesionales jóvenes.",
+      "practicalApplication": "Mantener el trabajo de fuerza máxima en temporada en futbolistas; los valores sirven de referencia.",
+      "access": "abstract_only"
+    },
+    {
+      "key": "wisloff2004_squat_sprint",
+      "pmid": "15155427",
+      "doi": "10.1136/bjsm.2002.002071",
+      "title": "Strong correlation of maximal squat strength with sprint performance and vertical jump height in elite soccer players.",
+      "journal": "Br J Sports Med",
+      "volume": "38",
+      "issue": "3",
+      "pages": "285-8",
+      "authors": ["Wisløff U", "Castagna C", "Helgerud J", "Jones R", "Hoff J"],
+      "year": 2004,
+      "studyDesign": "cross_sectional",
+      "populationSummary": "17 futbolistas internacionales masculinos de 25,8 (2,9) años",
+      "ageRange": "25,8 ± 2,9 años",
+      "sex": "male",
+      "trainingStatus": "elite",
+      "sport": "fútbol",
+      "intervention": "Ninguna",
+      "comparison": "Ninguna",
+      "outcomesMeasured": "Media sentadilla máxima, sprint 0–30 m, sprint de ida y vuelta de 10 m, salto vertical",
+      "resultsSummary": "Correlación fuerte entre la fuerza máxima en media sentadilla y el sprint y la altura de salto.",
+      "limitations": "Estudio correlacional con n = 17; los valores concretos de sentadilla y sprint no aparecen en el resumen.",
+      "practicalApplication": "La fuerza máxima se asocia con el sprint y el salto en futbolistas de élite (asociación, no causalidad).",
+      "access": "abstract_only"
+    },
+    {
+      "key": "samozino2008_sj_method",
+      "pmid": "18789803",
+      "doi": "10.1016/j.jbiomech.2008.07.028",
+      "title": "A simple method for measuring force, velocity and power output during squat jump.",
+      "journal": "J Biomech",
+      "volume": "41",
+      "issue": "14",
+      "pages": "2940-5",
+      "authors": ["Samozino P", "Morin JB", "Hintzy F", "Belli A"],
+      "year": 2008,
+      "studyDesign": "cross_sectional",
+      "populationSummary": "11 hombres físicamente activos",
+      "ageRange": "adultos",
+      "sex": "male",
+      "trainingStatus": "recreational",
+      "sport": null,
+      "intervention": "Cálculo de fuerza, velocidad y potencia a partir de la masa, la altura de salto y la distancia de empuje",
+      "comparison": "Plataforma de fuerzas",
+      "outcomesMeasured": "Validez y fiabilidad del método",
+      "resultsSummary": "Diferencias con la plataforma no significativas e inferiores al 3 % para fuerza, velocidad y potencia.",
+      "limitations": "n = 11; solo squat jump.",
+      "practicalApplication": "Estimar F, v y P en el squat jump con la masa, la altura de salto y la distancia de empuje.",
+      "access": "abstract_only"
+    },
+    {
+      "key": "samozino2012_optimal_fv",
+      "pmid": "21775909",
+      "doi": "10.1249/MSS.0b013e31822d757a",
+      "title": "Optimal force-velocity profile in ballistic movements--altius: citius or fortius?",
+      "journal": "Med Sci Sports Exerc",
+      "volume": "44",
+      "issue": "2",
+      "pages": "313-22",
+      "authors": ["Samozino P", "Rejc E", "Di Prampero PE", "Belli A", "Morin JB"],
+      "year": 2012,
+      "studyDesign": "mechanistic",
+      "populationSummary": "14 sujetos (validación) más simulaciones",
+      "ageRange": "adultos",
+      "sex": "male",
+      "trainingStatus": "unknown",
+      "sport": null,
+      "intervention": "Modelo teórico del rendimiento balístico en función de Pmax y del perfil F-v",
+      "comparison": "Datos experimentales",
+      "outcomesMeasured": "Rendimiento balístico; perfil F-v óptimo",
+      "resultsSummary": "Sesgo del 4–7 % entre la predicción y la medición; perfiles F-v desfavorables producen diferencias de rendimiento de hasta el 30 % para una misma Pmax.",
+      "limitations": "Modelo teórico validado en 14 sujetos.",
+      "practicalApplication": "Considerar en la prescripción tanto la Pmax como el equilibrio fuerza-velocidad.",
+      "access": "abstract_only"
+    },
+    {
+      "key": "jimenezreyes2017_fv_training",
+      "pmid": "28119624",
+      "doi": "10.3389/fphys.2016.00677",
+      "title": "Effectiveness of an Individualized Training Based on Force-Velocity Profiling during Jumping.",
+      "journal": "Front Physiol",
+      "volume": "7",
+      "issue": null,
+      "pages": "677",
+      "authors": ["Jiménez-Reyes P", "Samozino P", "Brughelli M", "Morin JB"],
+      "year": 2017,
+      "studyDesign": "non_randomized_trial",
+      "populationSummary": "84 sujetos",
+      "ageRange": "no especificado",
+      "sex": "unknown",
+      "trainingStatus": "unknown",
+      "sport": null,
+      "intervention": "Entrenamiento individualizado de 9 semanas según el desequilibrio F-v",
+      "comparison": "Programa no individualizado y grupo control",
+      "outcomesMeasured": "Altura de squat jump; FVimb",
+      "resultsSummary": "Los subgrupos optimizados mejoraron el salto (12,7 %, 14,2 % y 7,2 %); los resultados del grupo no optimizado fueron más variables.",
+      "limitations": "Según el resumen, la asignación se hizo por perfil y no aleatoriamente entre optimizado y no optimizado; no se aportan datos de sexo.",
+      "practicalApplication": "Individualizar el entrenamiento según el desequilibrio F-v para mejorar el salto.",
+      "access": "abstract_only"
+    },
+    {
+      "key": "jimenezreyes2019_fv_kinetics",
+      "pmid": "31091259",
+      "doi": "10.1371/journal.pone.0216681",
+      "title": "Optimized training for jumping performance using the force-velocity imbalance: Individual adaptation kinetics.",
+      "journal": "PLoS One",
+      "volume": "14",
+      "issue": "5",
+      "pages": "e0216681",
+      "authors": ["Jiménez-Reyes P", "Samozino P", "Morin JB"],
+      "year": 2019,
+      "studyDesign": "non_randomized_trial",
+      "populationSummary": "60 sujetos en 4 subgrupos según el déficit de fuerza o de velocidad",
+      "ageRange": "adultos",
+      "sex": "mixed",
+      "trainingStatus": "unknown",
+      "sport": null,
+      "intervention": "Programa individualizado hasta alcanzar el perfil F-v óptimo, con evaluación cada 3 semanas",
+      "comparison": "Pre-post; 3 semanas de desentrenamiento",
+      "outcomesMeasured": "F0, V0, FVimb, altura de salto",
+      "resultsSummary": "Se necesitaron 12,6 ± 4,6 semanas para alcanzar el perfil óptimo, en correlación con el FVimb inicial (r = 0,82); salto +12,4 % (FD) y +10,1 % (VD); sin cambios tras 3 semanas de desentrenamiento.",
+      "limitations": "Sin grupo control; el resumen no detalla la población.",
+      "practicalApplication": "Reevaluar el perfil F-v cada ~3 semanas y ajustar la duración al desequilibrio inicial.",
+      "access": "abstract_only"
+    },
+    {
+      "key": "pareja2017_velocity_loss",
+      "pmid": "27038416",
+      "doi": "10.1111/sms.12678",
+      "title": "Effects of velocity loss during resistance training on athletic performance, strength gains and muscle adaptations.",
+      "journal": "Scand J Med Sci Sports",
+      "volume": "27",
+      "issue": "7",
+      "pages": "724-735",
+      "authors": [
+        "Pareja-Blanco F",
+        "Rodríguez-Rosell D",
+        "Sánchez-Medina L",
+        "Sanchis-Moysi J",
+        "Dorado C",
+        "Mora-Custodio R",
+        "Yáñez-García JM",
+        "Morales-Alamo D",
+        "Pérez-Suárez I",
+        "Calbet JAL",
+        "González-Badillo JJ"
+      ],
+      "year": 2017,
+      "studyDesign": "rct",
+      "populationSummary": "22 hombres jóvenes",
+      "ageRange": "jóvenes",
+      "sex": "male",
+      "trainingStatus": "unknown",
+      "sport": null,
+      "intervention": "Sentadilla durante 8 semanas con una pérdida de velocidad del 20 % por serie (VL20)",
+      "comparison": "Pérdida de velocidad del 40 % (VL40)",
+      "outcomesMeasured": "1RM, CMJ, sprint de 20 m, CSA, volumen del cuádriceps, tipo de fibra",
+      "resultsSummary": "Ganancias de fuerza similares; VL20 mejoró más el CMJ (9,5 % frente a 3,5 %) con un 40 % menos de repeticiones; VL40 produjo mayor hipertrofia del vasto lateral y del intermedio y redujo el porcentaje de MHC IIX.",
+      "limitations": "n = 22; solo hombres jóvenes; solo sentadilla.",
+      "practicalApplication": "Usar pérdidas de velocidad bajas (~20 %) para fuerza y salto, y mayores (~40 %) si se prioriza la hipertrofia.",
+      "access": "abstract_only"
+    },
+    {
+      "key": "sanchezmedina2011_vl_fatigue",
+      "pmid": "21311352",
+      "doi": "10.1249/MSS.0b013e318213f880",
+      "title": "Velocity loss as an indicator of neuromuscular fatigue during resistance training.",
+      "journal": "Med Sci Sports Exerc",
+      "volume": "43",
+      "issue": "9",
+      "pages": "1725-34",
+      "authors": ["Sánchez-Medina L", "González-Badillo JJ"],
+      "year": 2011,
+      "studyDesign": "mechanistic",
+      "populationSummary": "18 hombres entrenados en fuerza (10 en banca, 8 en sentadilla)",
+      "ageRange": "adultos",
+      "sex": "male",
+      "trainingStatus": "trained",
+      "sport": null,
+      "intervention": "15 protocolos con distinto número de repeticiones respecto al máximo posible",
+      "comparison": "Entre protocolos",
+      "outcomesMeasured": "Pérdida de velocidad, pérdida de CMJ, lactato, amonio",
+      "resultsSummary": "La pérdida de velocidad, la pérdida frente a la carga de 1 m/s y la pérdida de CMJ se correlacionaron mucho entre sí (r = 0,91–0,97); la pérdida de velocidad se correlacionó mucho con el lactato (r = 0,93–0,97).",
+      "limitations": "n = 18; estudio agudo; hombres entrenados.",
+      "practicalApplication": "Usar la pérdida de velocidad intraserie para cuantificar la fatiga.",
+      "access": "abstract_only"
+    },
+    {
+      "key": "zourdos2016_rir_rpe",
+      "pmid": "26049792",
+      "doi": "10.1519/JSC.0000000000001049",
+      "title": "Novel Resistance Training-Specific Rating of Perceived Exertion Scale Measuring Repetitions in Reserve.",
+      "journal": "J Strength Cond Res",
+      "volume": "30",
+      "issue": "1",
+      "pages": "267-75",
+      "authors": [
+        "Zourdos MC",
+        "Klemp A",
+        "Dolan C",
+        "Quiles JM",
+        "Schau KA",
+        "Jo E",
+        "Helms E",
+        "Esgro B",
+        "Duncan S",
+        "Garcia Merino S",
+        "Blanco R"
+      ],
+      "year": 2016,
+      "studyDesign": "cross_sectional",
+      "populationSummary": "29 personas (15 con experiencia y 14 noveles en sentadilla)",
+      "ageRange": "24,0 ± 3,4 años",
+      "sex": "mixed",
+      "trainingStatus": "mixed",
+      "sport": null,
+      "intervention": "Escala RPE basada en repeticiones en reserva durante la sentadilla",
+      "comparison": "Experimentados frente a noveles",
+      "outcomesMeasured": "RPE/RIR, velocidad media",
+      "resultsSummary": "Relación inversa fuerte entre la velocidad media y la RPE (r = −0,88 en experimentados; r = −0,77 en noveles); los experimentados tuvieron menor velocidad y mayor RPE en el 1RM.",
+      "limitations": "n = 29; estudio agudo; solo sentadilla.",
+      "practicalApplication": "La escala RIR es práctica para autorregular, y más precisa en levantadores experimentados.",
+      "access": "abstract_only"
+    },
+    {
+      "key": "sole2018_rsimod_reference",
+      "pmid": "30380639",
+      "doi": "10.3390/sports6040133",
+      "title": "Preliminary Scale of Reference Values for Evaluating Reactive Strength Index-Modified in Male and Female NCAA Division I Athletes.",
+      "journal": "Sports (Basel)",
+      "volume": "6",
+      "issue": "4",
+      "pages": null,
+      "authors": ["Sole CJ", "Suchomel TJ", "Stone MH"],
+      "year": 2018,
+      "studyDesign": "cross_sectional",
+      "populationSummary": "151 deportistas NCAA División I (76 hombres, 75 mujeres)",
+      "ageRange": "universitarios",
+      "sex": "mixed",
+      "trainingStatus": "highly_trained",
+      "sport": "varios",
+      "intervention": "Ninguna",
+      "comparison": "Hombres frente a mujeres",
+      "outcomesMeasured": "RSImod, altura de salto, tiempo hasta el despegue",
+      "resultsSummary": "RSImod de 0,208 a 0,704 (hombres) y de 0,135 a 0,553 (mujeres); mayor en hombres (ES 1,15).",
+      "limitations": "Escala preliminar; deportistas universitarios de EE. UU.; los percentiles concretos no figuran en el resumen.",
+      "practicalApplication": "Referencia preliminar para interpretar el RSImod en deportistas universitarios.",
+      "access": "abstract_only"
+    },
+    {
+      "key": "petridis2019_jump_juniors",
+      "pmid": "30901527",
+      "doi": "10.1080/02701367.2019.1588934",
+      "title": "Vertical Jump Performance in Hungarian Male Elite Junior Soccer Players.",
+      "journal": "Res Q Exerc Sport",
+      "volume": "90",
+      "issue": "2",
+      "pages": "251-257",
+      "authors": ["Petridis L", "Utczás K", "Tróznai Z", "Kalabiska I", "Pálinkás G", "Szabó T"],
+      "year": 2019,
+      "studyDesign": "cross_sectional",
+      "populationSummary": "365 futbolistas junior de élite húngaros (U16–U18)",
+      "ageRange": "16,4 ± 0,8 años",
+      "sex": "male",
+      "trainingStatus": "highly_trained",
+      "sport": "fútbol",
+      "intervention": "Ninguna",
+      "comparison": "Grupos de edad",
+      "outcomesMeasured": "Altura de SJ y CMJ; fuerza y potencia en plataforma",
+      "resultsSummary": "SJ de 32,9 / 33,5 / 33,9 cm y CMJ de 36,3 / 37,5 / 38,6 cm en U16 / U17 / U18.",
+      "limitations": "Solo hombres húngaros; medición en plataforma de fuerzas.",
+      "practicalApplication": "Valores normativos de salto en futbolistas junior masculinos.",
+      "access": "abstract_only"
+    },
+    {
+      "key": "ruizrios2024_female_soccer",
+      "pmid": "39179220",
+      "doi": "10.1123/ijspp.2023-0463",
+      "title": "Physical Conditioning and Functional Injury-Screening Profile of Elite Female Soccer Players: A Systematic Review.",
+      "journal": "Int J Sports Physiol Perform",
+      "volume": "19",
+      "issue": "12",
+      "pages": "1355-1366",
+      "authors": ["Ruiz-Rios M", "Setuain I", "Cadore EL", "Izquierdo M", "Garcia-Tabar I"],
+      "year": 2024,
+      "studyDesign": "systematic_review",
+      "populationSummary": "10 estudios en futbolistas femeninas de élite",
+      "ageRange": "adultas",
+      "sex": "female",
+      "trainingStatus": "elite",
+      "sport": "fútbol",
+      "intervention": "Ninguna",
+      "comparison": "Pretemporada frente a temporada",
+      "outcomesMeasured": "VO2max, sprint de 20 m, CMJ, par isocinético",
+      "resultsSummary": "VO2max de 52,6 (4,5) mL/kg/min; 20 m en 3,58 (0,18) s; CMJ de 31,0 (2,9) cm; CMJ unilateral de 14,4 (2,1) cm.",
+      "limitations": "Solo 10 estudios.",
+      "practicalApplication": "Valores de referencia para futbolistas femeninas de élite.",
+      "access": "abstract_only"
+    },
+    {
+      "key": "covic2016_3015ift_female",
+      "pmid": "27909408",
+      "doi": "10.3389/fphys.2016.00510",
+      "title": "Reliability, Validity and Usefulness of 30-15 Intermittent Fitness Test in Female Soccer Players.",
+      "journal": "Front Physiol",
+      "volume": "7",
+      "issue": null,
+      "pages": "510",
+      "authors": [
+        "Čović N",
+        "Jelešković E",
+        "Alić H",
+        "Rađo I",
+        "Kafedžić E",
+        "Sporiš G",
+        "McMaster DT",
+        "Milanović Z"
+      ],
+      "year": 2016,
+      "studyDesign": "cross_sectional",
+      "populationSummary": "17 futbolistas femeninas de élite",
+      "ageRange": "adultas",
+      "sex": "female",
+      "trainingStatus": "elite",
+      "sport": "fútbol",
+      "intervention": "30-15 IFT (test-retest)",
+      "comparison": "Test continuo en laboratorio",
+      "outcomesMeasured": "Fiabilidad y validez de VIFT, FCpico y VO2max",
+      "resultsSummary": "VIFT con ICC 0,91 y CV 1,8 %; permite detectar como cambio individual relevante 0,5 km/h (1 etapa) y 2 lpm.",
+      "limitations": "n = 17; el valor medio de VIFT no figura en el resumen.",
+      "practicalApplication": "Usar el 30-15 IFT en futbolistas femeninas, con 0,5 km/h como cambio relevante.",
+      "access": "abstract_only"
+    },
+    {
+      "key": "dunnick2015_unstable_bench",
+      "pmid": "26540024",
+      "doi": "10.1519/JSC.0000000000001198",
+      "title": "Bench Press Upper-Body Muscle Activation Between Stable and Unstable Loads.",
+      "journal": "J Strength Cond Res",
+      "volume": "29",
+      "issue": "12",
+      "pages": "3279-83",
+      "authors": ["Dunnick DD", "Brown LE", "Coburn JW", "Lynn SK", "Barillas SR"],
+      "year": 2015,
+      "studyDesign": "mechanistic",
+      "populationSummary": "20 hombres entrenados en fuerza de 24,1 ± 2 años",
+      "ageRange": "24,1 ± 2 años",
+      "sex": "male",
+      "trainingStatus": "trained",
+      "sport": null,
+      "intervention": "Press de banca con carga inestable (kettlebells de 16 kg colgados de la barra con bandas)",
+      "comparison": "Carga estable",
+      "outcomesMeasured": "EMG de 5 músculos al 60 % y al 80 % 1RM",
+      "resultsSummary": "La activación no difirió entre la carga estable y la inestable.",
+      "limitations": "Estudio agudo; n = 20.",
+      "practicalApplication": "La carga pendular no aumenta la activación en press de banca; usarla según preferencia.",
+      "access": "abstract_only"
+    },
+    {
+      "key": "asimakidis2024_strength_power_soccer",
+      "pmid": "39026085",
+      "doi": "10.1007/s40279-024-02071-8",
+      "title": "Assessment of Strength and Power Capacities in Elite Male Soccer: A Systematic Review of Test Protocols Used in Practice and Research.",
+      "journal": "Sports Med",
+      "volume": "54",
+      "issue": "10",
+      "pages": "2607-2644",
+      "authors": ["Asimakidis ND", "Mukandi IN", "Beato M", "Bishop C", "Turner AN"],
+      "year": 2024,
+      "studyDesign": "systematic_review",
+      "populationSummary": "Estudios en futbolistas masculinos de élite mayores de 17 años",
+      "ageRange": ">17 años",
+      "sex": "male",
+      "trainingStatus": "elite",
+      "sport": "fútbol",
+      "intervention": "Ninguna",
+      "comparison": "Ninguna",
+      "outcomesMeasured": "Tests de fuerza y potencia; fiabilidad",
+      "resultsSummary": "Tests más frecuentes: isocinético de extensores (58 estudios) y de flexores (55) de rodilla y nórdico (13); CMJ con manos en la cadera (99), SJ (48) y salto con brazos (29); escasa información de fiabilidad.",
+      "limitations": "Los rangos normativos citados en los libros (p. ej., CMJ 33,6–57,2 cm) no figuran en el resumen.",
+      "practicalApplication": "Usar CMJ y SJ estandarizados y establecer la fiabilidad propia.",
+      "access": "abstract_only"
+    }
+  ],
+  "findings": [
+    {
+      "key": "f_lopes_lower",
+      "source": "lopes2019_elastic_vs_conventional",
+      "outcome": "max_strength_1rm",
+      "population": "adults_recreational",
+      "intervention": "Entrenamiento con resistencia elástica",
+      "comparator": "Entrenamiento con máquinas/mancuernas",
+      "effectMetric": "SMD",
+      "effectValue": -0.11,
+      "ciLow": -0.4,
+      "ciHigh": 0.19,
+      "nStudies": 8,
+      "nParticipants": null,
+      "heterogeneityI2": null,
+      "quote": "The results of the meta-analysis demonstrated no superiority between the methods analyzed for lower limb (SMD = -0.11, 95% CI -0.40, 0.19, p = 0.48) or upper limb muscular strength (SMD=0.09; 95% CI -0.18, 0.35; p = 0.52) [corrected].",
+      "grading": {
+        "design": "meta_analysis",
+        "riskOfBias": "no",
+        "inconsistency": "serious",
+        "indirectness": "serious",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_lopes_upper",
+      "source": "lopes2019_elastic_vs_conventional",
+      "outcome": "max_strength_1rm",
+      "population": "adults_recreational",
+      "intervention": "Entrenamiento con resistencia elástica (miembro superior)",
+      "comparator": "Entrenamiento con máquinas/mancuernas",
+      "effectMetric": "SMD",
+      "effectValue": 0.09,
+      "ciLow": -0.18,
+      "ciHigh": 0.35,
+      "nStudies": 8,
+      "nParticipants": null,
+      "heterogeneityI2": null,
+      "quote": "upper limb muscular strength (SMD=0.09; 95% CI -0.18, 0.35; p = 0.52) [corrected]",
+      "grading": {
+        "design": "meta_analysis",
+        "riskOfBias": "no",
+        "inconsistency": "serious",
+        "indirectness": "serious",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_stankovic_power",
+      "source": "stankovic2025_elastic_team_sports",
+      "outcome": "power_output",
+      "population": "team_sport_athletes",
+      "intervention": "Entrenamiento con bandas elásticas",
+      "comparator": "Entrenamiento habitual / sin fuerza adicional",
+      "effectMetric": "SMD",
+      "effectValue": 1.43,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": 729,
+      "heterogeneityI2": null,
+      "quote": "The meta-analysis showed a statistically significant positive effect of elastic band training on lower limb explosive power (SMD = 1.43,= 0.01), change of direction performance (SMD = -2.54,= 0.01), and sprint performance (SMD = -1.64,= 0.01).",
+      "grading": {
+        "design": "meta_analysis",
+        "riskOfBias": "serious",
+        "inconsistency": "no",
+        "indirectness": "serious",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_stankovic_cod",
+      "source": "stankovic2025_elastic_team_sports",
+      "outcome": "cod_performance",
+      "population": "team_sport_athletes",
+      "intervention": "Entrenamiento con bandas elásticas",
+      "comparator": "Entrenamiento habitual / sin fuerza adicional",
+      "effectMetric": "SMD",
+      "effectValue": -2.54,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": 729,
+      "heterogeneityI2": null,
+      "quote": "change of direction performance (SMD = -2.54,= 0.01)",
+      "grading": {
+        "design": "meta_analysis",
+        "riskOfBias": "serious",
+        "inconsistency": "no",
+        "indirectness": "serious",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_stankovic_sprint",
+      "source": "stankovic2025_elastic_team_sports",
+      "outcome": "sprint_short",
+      "population": "team_sport_athletes",
+      "intervention": "Entrenamiento con bandas elásticas",
+      "comparator": "Entrenamiento habitual / sin fuerza adicional",
+      "effectMetric": "SMD",
+      "effectValue": -1.64,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": 729,
+      "heterogeneityI2": null,
+      "quote": "and sprint performance (SMD = -1.64,= 0.01).",
+      "grading": {
+        "design": "meta_analysis",
+        "riskOfBias": "serious",
+        "inconsistency": "no",
+        "indirectness": "serious",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_meng_strength",
+      "source": "meng2025_elastic_older",
+      "outcome": "physical_function",
+      "population": "older_adults",
+      "intervention": "Bandas elásticas añadidas al control",
+      "comparator": "Sin intervención o tratamiento básico",
+      "effectMetric": "SMD",
+      "effectValue": 2.04,
+      "ciLow": 0.6,
+      "ciHigh": 3.48,
+      "nStudies": 25,
+      "nParticipants": 1318,
+      "heterogeneityI2": null,
+      "quote": "chair stand test [SMD = 2.04, 95% CI (0.60, 3.48), = 0.006], timed up and go test [SMD = -1.41, 95% CI (-2.33, -0.49), = 0.003]",
+      "grading": {
+        "design": "meta_analysis",
+        "riskOfBias": "no",
+        "inconsistency": "serious",
+        "indirectness": "no",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_meng_legext",
+      "source": "meng2025_elastic_older",
+      "outcome": "max_strength_1rm",
+      "population": "older_adults",
+      "intervention": "Bandas elásticas añadidas al control",
+      "comparator": "Sin intervención o tratamiento básico",
+      "effectMetric": "SMD",
+      "effectValue": 1.01,
+      "ciLow": 0.36,
+      "ciHigh": 1.66,
+      "nStudies": 25,
+      "nParticipants": 1318,
+      "heterogeneityI2": null,
+      "quote": "leg extension test [SMD = 1.01, 95% CI (0.36, 1.66), = 0.002]",
+      "grading": {
+        "design": "meta_analysis",
+        "riskOfBias": "no",
+        "inconsistency": "serious",
+        "indirectness": "no",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_meng_balance",
+      "source": "meng2025_elastic_older",
+      "outcome": "balance",
+      "population": "older_adults",
+      "intervention": "Bandas elásticas añadidas al control",
+      "comparator": "Sin intervención o tratamiento básico",
+      "effectMetric": "SMD",
+      "effectValue": 1.63,
+      "ciLow": 0.36,
+      "ciHigh": 2.9,
+      "nStudies": 25,
+      "nParticipants": 1318,
+      "heterogeneityI2": null,
+      "quote": "functional reach test [SMD = 1.63, 95% CI (0.36, 2.90), = 0.012]",
+      "grading": {
+        "design": "meta_analysis",
+        "riskOfBias": "no",
+        "inconsistency": "serious",
+        "indirectness": "no",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_seguin_shoulder",
+      "source": "seguin2022_upper_elastic",
+      "outcome": "isometric_strength",
+      "population": "adults_recreational",
+      "intervention": "Entrenamiento elástico de miembro superior de 4–12 semanas",
+      "comparator": "Pre-post",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": 24,
+      "nParticipants": null,
+      "heterogeneityI2": null,
+      "quote": "Significant increases in various isometric strength measures (IR:11-13%, ER:11-42%, FL: 14-36%, EXT: 4-17%, ABD: 8-16%), 1RM strength (~24% in bench press), force-velocities, throwing- and serve-velocities (12%) were all observed.",
+      "grading": {
+        "design": "systematic_review",
+        "riskOfBias": "serious",
+        "inconsistency": "serious",
+        "indirectness": "serious",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_deoliveira_active",
+      "source": "deoliveira2017_elastic_healthy",
+      "outcome": "max_strength_1rm",
+      "population": "adults_recreational",
+      "intervention": "Ejercicio elástico aislado",
+      "comparator": "Controles activos (otros métodos de fuerza)",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": 5,
+      "nParticipants": null,
+      "heterogeneityI2": null,
+      "quote": "When compared with active controls, the effect of ERE was inferior on function performance and with similar effect on muscle strength.",
+      "grading": {
+        "design": "meta_analysis",
+        "riskOfBias": "no",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_thorborg_hipflex",
+      "source": "thorborg2016_hip_flexor",
+      "outcome": "isometric_strength",
+      "population": "adults_recreational",
+      "intervention": "Flexores de cadera con bandas durante 6 semanas",
+      "comparator": "Control sin fuerza",
+      "effectMetric": "mean_difference_Nm_per_kg",
+      "effectValue": 0.34,
+      "ciLow": 0.17,
+      "ciHigh": 0.52,
+      "nStudies": null,
+      "nParticipants": 33,
+      "heterogeneityI2": null,
+      "quote": "corresponding to a mean change of 0.34 (95 % CI 0.17-0.52) Nm/kg, in favour of the strength training group (p < 0.001).",
+      "grading": {
+        "design": "rct",
+        "riskOfBias": "no",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_li_elderly",
+      "source": "li2024_elastic_elderly_mixed",
+      "outcome": "physical_function",
+      "population": "older_adults",
+      "intervention": "Bandas elásticas",
+      "comparator": "Variable",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": 28,
+      "nParticipants": 1697,
+      "heterogeneityI2": null,
+      "quote": "Quantitative evidence supports the notion that elastic band resistance training can improve upper and lower limb flexibility, endurance, upper strength, physical balance, and cardiopulmonary function and enhance the mental health of elderly individuals.",
+      "grading": {
+        "design": "systematic_review",
+        "riskOfBias": "no",
+        "inconsistency": "serious",
+        "indirectness": "no",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_lin_trained80",
+      "source": "lin2022_vrt_vs_crt",
+      "outcome": "max_strength_1rm",
+      "population": "adults_resistance_trained",
+      "intervention": "Resistencia variable con ≥80 % 1RM",
+      "comparator": "Resistencia constante",
+      "effectMetric": "ES",
+      "effectValue": 0.76,
+      "ciLow": 0.37,
+      "ciHigh": 1.16,
+      "nStudies": 14,
+      "nParticipants": null,
+      "heterogeneityI2": null,
+      "quote": "maximum-strength improvement with a VRT load of ≥80% of 1 repetition maximum (1RM) was significantly higher than that with CRT (ES = 0.76; 95% CI: 0.37−1.16) in trained subjects",
+      "grading": {
+        "design": "meta_analysis",
+        "riskOfBias": "no",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_lin_trained_below80",
+      "source": "lin2022_vrt_vs_crt",
+      "outcome": "max_strength_1rm",
+      "population": "adults_resistance_trained",
+      "intervention": "Resistencia variable con <80 % 1RM",
+      "comparator": "Resistencia constante",
+      "effectMetric": "ES",
+      "effectValue": 0.0,
+      "ciLow": -0.55,
+      "ciHigh": 0.55,
+      "nStudies": 14,
+      "nParticipants": null,
+      "heterogeneityI2": null,
+      "quote": "while no significant differences were found between VRT and CRT for maximum-strength improvement when the load was <80% (ES = 0.00; 95% CI: −0.55−0.55).",
+      "grading": {
+        "design": "meta_analysis",
+        "riskOfBias": "no",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_lin_untrained",
+      "source": "lin2022_vrt_vs_crt",
+      "outcome": "max_strength_1rm",
+      "population": "adults_untrained",
+      "intervention": "Resistencia variable",
+      "comparator": "Resistencia constante",
+      "effectMetric": "ES",
+      "effectValue": 1.34,
+      "ciLow": 0.28,
+      "ciHigh": 2.4,
+      "nStudies": 14,
+      "nParticipants": null,
+      "heterogeneityI2": null,
+      "quote": "The untrained subjects also achieved greater maximum strength with VRT than with CRT (ES = 1.34; 95% CI: 0.28−2.40).",
+      "grading": {
+        "design": "meta_analysis",
+        "riskOfBias": "no",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_xu_jump",
+      "source": "xu2026_vrt_explosive",
+      "outcome": "jump_height",
+      "population": "team_sport_athletes",
+      "intervention": "Resistencia variable",
+      "comparator": "Según el estudio",
+      "effectMetric": "SMD",
+      "effectValue": 0.81,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": 15,
+      "nParticipants": 442,
+      "heterogeneityI2": null,
+      "quote": "VRT was an effective method for enhancing athletes' jumping performance (SMD = 0.81 cm, < 0.001), sprint performance (SMD = -1.13 s, < 0.001), and COD performance (SMD = -1.66 s, < 0.001).",
+      "grading": {
+        "design": "meta_analysis",
+        "riskOfBias": "serious",
+        "inconsistency": "serious",
+        "indirectness": "no",
+        "imprecision": "no",
+        "publicationBias": "serious"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_xu_sprint",
+      "source": "xu2026_vrt_explosive",
+      "outcome": "sprint_short",
+      "population": "team_sport_athletes",
+      "intervention": "Resistencia variable",
+      "comparator": "Según el estudio",
+      "effectMetric": "SMD",
+      "effectValue": -1.13,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": 15,
+      "nParticipants": 442,
+      "heterogeneityI2": null,
+      "quote": "sprint performance (SMD = -1.13 s, < 0.001)",
+      "grading": {
+        "design": "meta_analysis",
+        "riskOfBias": "serious",
+        "inconsistency": "serious",
+        "indirectness": "no",
+        "imprecision": "no",
+        "publicationBias": "serious"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_xu_cod",
+      "source": "xu2026_vrt_explosive",
+      "outcome": "cod_performance",
+      "population": "team_sport_athletes",
+      "intervention": "Resistencia variable",
+      "comparator": "Según el estudio",
+      "effectMetric": "SMD",
+      "effectValue": -1.66,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": 15,
+      "nParticipants": 442,
+      "heterogeneityI2": null,
+      "quote": "COD performance (SMD = -1.66 s, < 0.001)",
+      "grading": {
+        "design": "meta_analysis",
+        "riskOfBias": "serious",
+        "inconsistency": "serious",
+        "indirectness": "no",
+        "imprecision": "no",
+        "publicationBias": "serious"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_tsuruike_emg",
+      "source": "tsuruike2020_9090_double_band",
+      "outcome": "muscle_activation",
+      "population": "overhead_athletes",
+      "intervention": "Doble banda 90/90 en el plano frontal",
+      "comparator": "Banda simple / plano escapular",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": 21,
+      "heterogeneityI2": null,
+      "quote": "The standing 90/90 position effectively increased both TMi and LT muscle EMG activity with the double elastic band in the frontal plane while minimizing UT and MD muscle activity.",
+      "grading": {
+        "design": "mechanistic",
+        "riskOfBias": "no",
+        "inconsistency": "no",
+        "indirectness": "serious",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_myrvang_10m",
+      "source": "myrvang2024_resisted_sprint",
+      "outcome": "sprint_short",
+      "population": "team_sport_athletes",
+      "intervention": "Sprint resistido",
+      "comparator": "Sprint normal",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": 21,
+      "nParticipants": null,
+      "heterogeneityI2": null,
+      "quote": "Only resisted sprint training was associated with a significant improvement in 10-m acceleration compared to normal (i.e. without assistance or resistance) sprinting (Z = 2.01, P = 0.04).",
+      "grading": {
+        "design": "meta_analysis",
+        "riskOfBias": "serious",
+        "inconsistency": "no",
+        "indirectness": "serious",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_myrvang_vmax",
+      "source": "myrvang2024_resisted_sprint",
+      "outcome": "max_sprint_speed",
+      "population": "team_sport_athletes",
+      "intervention": "Sprint resistido, asistido o combinado",
+      "comparator": "Sprint normal",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": 21,
+      "nParticipants": null,
+      "heterogeneityI2": null,
+      "quote": "With resisted, assisted and combined sprint training no significant changes in kinematics, 20-m times or maximum velocity were found when compared to normal sprint training.",
+      "grading": {
+        "design": "meta_analysis",
+        "riskOfBias": "serious",
+        "inconsistency": "no",
+        "indirectness": "serious",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_moore_gmed",
+      "source": "moore2019_gmed_segments_emg",
+      "outcome": "muscle_activation",
+      "population": "adults_recreational",
+      "intervention": "Abducción-extensión resistida, ejercicios unipodales",
+      "comparator": "Clamshell en decúbito lateral",
+      "effectMetric": "%MVIC",
+      "effectValue": 69,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": 10,
+      "heterogeneityI2": null,
+      "quote": "for the posterior GMed segment very high activity was recorded by the resisted hip abduction-extension exercise (69% MVIC), and high activity was generated by the single-leg squat (48% MVIC) and side-lie hip abduction (43% MVIC).",
+      "grading": {
+        "design": "mechanistic",
+        "riskOfBias": "no",
+        "inconsistency": "no",
+        "indirectness": "serious",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_bishop_gta",
+      "source": "bishop2018_glute_tfl_emg",
+      "outcome": "muscle_activation",
+      "population": "adults_recreational",
+      "intervention": "Clam, running man y puente con banda",
+      "comparator": "Otros ejercicios / sin banda",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": 11,
+      "heterogeneityI2": null,
+      "quote": "Clams with and without resistance, running man gluteus maximus exercise on the stability trainer, and bridge with resistance, generated the highest GTA index respectively.",
+      "grading": {
+        "design": "mechanistic",
+        "riskOfBias": "no",
+        "inconsistency": "no",
+        "indirectness": "serious",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_kubo2018_power",
+      "source": "kubo2018_bands_squat_power",
+      "outcome": "power_output",
+      "population": "adults_recreational",
+      "intervention": "Sentadilla con bandas acomodadas",
+      "comparator": "Peso libre",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": 10,
+      "heterogeneityI2": null,
+      "quote": "BSQ with elastic bands elicited greater mechanical power output, velocity, and force during the deceleration subphase, in contrast to that elicited with traditional free weight (< 0.05).",
+      "grading": {
+        "design": "mechanistic",
+        "riskOfBias": "no",
+        "inconsistency": "no",
+        "indirectness": "serious",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_kubo2018_force_acc",
+      "source": "kubo2018_bands_squat_power",
+      "outcome": "power_output",
+      "population": "adults_recreational",
+      "intervention": "Sentadilla con bandas acomodadas",
+      "comparator": "Peso libre",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": 10,
+      "heterogeneityI2": null,
+      "quote": "However, the force output during the acceleration subphase using an elastic band was lesser than that using a traditional free weight (< 0.05).",
+      "grading": {
+        "design": "mechanistic",
+        "riskOfBias": "no",
+        "inconsistency": "no",
+        "indirectness": "serious",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_reece_valgus",
+      "source": "reece2020_band_squat_knee",
+      "outcome": "joint_kinematics",
+      "population": "adults_recreational",
+      "intervention": "Banda alrededor de las rodillas en sentadilla",
+      "comparator": "Sin banda",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": 26,
+      "heterogeneityI2": null,
+      "quote": "squatting with a resistance band is detrimental to knee kinematics as it leads to an increase in knee valgus angle and maximum tibial rotation angle.",
+      "grading": {
+        "design": "mechanistic",
+        "riskOfBias": "no",
+        "inconsistency": "no",
+        "indirectness": "serious",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_ebben_nodiff",
+      "source": "ebben2002_chain_band_squat",
+      "outcome": "muscle_activation",
+      "population": "adults_resistance_trained",
+      "intervention": "Cadenas o bandas (~10 % de la carga)",
+      "comparator": "Sentadilla tradicional",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": 11,
+      "heterogeneityI2": null,
+      "quote": "A repeated measures analysis of covariance revealed no differences in I-EMG and GRF during the eccentric or concentric phase for any of the 3 squat conditions.",
+      "grading": {
+        "design": "mechanistic",
+        "riskOfBias": "no",
+        "inconsistency": "no",
+        "indirectness": "serious",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_guzman_color",
+      "source": "guzmanmunoz2026_elastic_narrative",
+      "outcome": "max_strength_1rm",
+      "population": "adults_recreational",
+      "intervention": "Bandas elásticas",
+      "comparator": "Resistencia convencional",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": null,
+      "heterogeneityI2": null,
+      "quote": "Nevertheless, prescription based on band color alone is inadequate, and inconsistent reporting limits reproducibility and study comparisons.",
+      "grading": {
+        "design": "narrative_review",
+        "riskOfBias": "serious",
+        "inconsistency": "no",
+        "indirectness": "serious",
+        "imprecision": "no",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_gb2010_v1rm",
+      "source": "gonzalezbadillo2010_velocity_bench",
+      "outcome": "load_velocity_relationship",
+      "population": "adults_resistance_trained",
+      "intervention": "Test de cargas progresivas en press de banca",
+      "comparator": "Ninguno",
+      "effectMetric": "mean_velocity_at_1RM_m_s",
+      "effectValue": 0.16,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": 120,
+      "heterogeneityI2": null,
+      "quote": "A very close relationship between mean propulsive velocity (MPV) and load (%1RM) was observed (R (2)=0.98). Mean velocity attained with 1RM was 0.16+/-0.04 m x s(-1)",
+      "grading": {
+        "design": "cross_sectional",
+        "riskOfBias": "no",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "no",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_sm2017_v1rm",
+      "source": "sanchezmedina2017_squat_velocity",
+      "outcome": "load_velocity_relationship",
+      "population": "adults_resistance_trained",
+      "intervention": "Test de cargas progresivas en sentadilla completa (Smith)",
+      "comparator": "Subgrupos de fuerza relativa",
+      "effectMetric": "mean_velocity_at_1RM_m_s",
+      "effectValue": 0.32,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": 80,
+      "heterogeneityI2": null,
+      "quote": "When dividing the sample into 3 groups of different relative strength (1RM/body mass), no differences were found between groups for the MPV attained against each %1RM. MV attained with the 1RM was 0.32±0.03 m·s.",
+      "grading": {
+        "design": "cross_sectional",
+        "riskOfBias": "no",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "no",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_moran_v1rm",
+      "source": "moran2021_deadlift_lv",
+      "outcome": "load_velocity_relationship",
+      "population": "adults_resistance_trained",
+      "intervention": "Test de cargas progresivas en peso muerto",
+      "comparator": "Ninguno",
+      "effectMetric": "mean_velocity_at_1RM_m_s",
+      "effectValue": 0.24,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": 20,
+      "heterogeneityI2": null,
+      "quote": "MV attained with the 1RM was 0.24 ± 0.03 m·sand consistent between participants with different relative strengths. The load that maximized the power output was identified at ∼60% 1RM.",
+      "grading": {
+        "design": "cross_sectional",
+        "riskOfBias": "no",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_sm2014_benchpull",
+      "source": "sanchezmedina2014_benchpull",
+      "outcome": "load_velocity_relationship",
+      "population": "adults_resistance_trained",
+      "intervention": "Remo tumbado (prone bench pull)",
+      "comparator": "Press de banca",
+      "effectMetric": "R2",
+      "effectValue": 0.94,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": 75,
+      "heterogeneityI2": null,
+      "quote": "A very close relationship was observed between relative load and mean propulsive velocity for both BP (R2=0.97) and PBP (R2=0.94) which enables us to estimate %1RM from velocity using the obtained prediction equations.",
+      "grading": {
+        "design": "cross_sectional",
+        "riskOfBias": "no",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "no",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_greig_see",
+      "source": "greig2023_lv_1rm_ipd",
+      "outcome": "load_velocity_relationship",
+      "population": "adults_resistance_trained",
+      "intervention": "Predicción del 1RM con relación carga-velocidad individual",
+      "comparator": "1RM medido",
+      "effectMetric": "SEE_percent",
+      "effectValue": 9.8,
+      "ciLow": 7.4,
+      "ciHigh": 12.2,
+      "nStudies": 20,
+      "nParticipants": 434,
+      "heterogeneityI2": null,
+      "quote": "Two-stage analyses identified moderate predictive validity [SEE% 9.8, 95% CI 7.4% to 12.2%",
+      "grading": {
+        "design": "meta_analysis",
+        "riskOfBias": "serious",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "no",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_greig_overestimate",
+      "source": "greig2023_lv_1rm_ipd",
+      "outcome": "load_velocity_relationship",
+      "population": "adults_resistance_trained",
+      "intervention": "Predicción del 1RM con relación carga-velocidad individual",
+      "comparator": "1RM medido",
+      "effectMetric": "overestimation_percent_1RM",
+      "effectValue": 3.7,
+      "ciLow": 0.5,
+      "ciHigh": 6.9,
+      "nStudies": 20,
+      "nParticipants": 434,
+      "heterogeneityI2": null,
+      "quote": "One-stage analyses identified that predictions tended to be overestimations (4.5, 95% CI 1.5 to 7.4 kg), which expressed as a percentage of measured 1RM was equal to 3.7 (95% CI 0.5 to 6.9% 1RM).",
+      "grading": {
+        "design": "meta_analysis",
+        "riskOfBias": "serious",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "no",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_folland_exponent",
+      "source": "folland2008_allometric",
+      "outcome": "isometric_strength",
+      "population": "adults_recreational",
+      "intervention": "Escalado alométrico de la fuerza",
+      "comparator": "Ninguno",
+      "effectMetric": "allometric_exponent",
+      "effectValue": 0.66,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": 86,
+      "heterogeneityI2": null,
+      "quote": "To normalise strength measurements to body mass, for relatively homogenous lean populations (body fat <20%), exponents of 0.66 (F) and 1.0 (T) are appropriate. For more adipose populations (body fat >20%) lower body mass exponents appear more suitable (F, 0.45; T, 0.68).",
+      "grading": {
+        "design": "cross_sectional",
+        "riskOfBias": "no",
+        "inconsistency": "no",
+        "indirectness": "serious",
+        "imprecision": "no",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_vdh_norms",
+      "source": "vandenhoek2024_powerlifting_norms",
+      "outcome": "max_strength_1rm",
+      "population": "powerlifters",
+      "intervention": "Ninguna",
+      "comparator": "Ninguno",
+      "effectMetric": "P90_relative_strength_squat_male",
+      "effectValue": 2.83,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": 809986,
+      "heterogeneityI2": null,
+      "quote": "Relative strength was greatest for young adults (18-35 years; 90th percentile for squat [male: 2.83 × bodyweight, female: 2.26], bench press [male: 1.95, female: 1.35], deadlift [male: 3.25, female: 2.66])",
+      "grading": {
+        "design": "cross_sectional",
+        "riskOfBias": "no",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "no",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_kubo2001_stiffness",
+      "source": "kubo2001_isometric_tendon",
+      "outcome": "tendon_properties",
+      "population": "adults_untrained",
+      "intervention": "Isometría larga (4 × 20 s) al 70 % MVC durante 12 semanas",
+      "comparator": "Isometría corta (1 s) con igual volumen",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": 8,
+      "heterogeneityI2": null,
+      "quote": "Stiffness increased significantly for the long-duration protocol, but not for the short-duration protocol.",
+      "grading": {
+        "design": "non_randomized_trial",
+        "riskOfBias": "serious",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_rio_pain",
+      "source": "rio2015_isometric_analgesia",
+      "outcome": "pain",
+      "population": "athletes_patellar_tendinopathy",
+      "intervention": "Contracciones isométricas (una sesión)",
+      "comparator": "Contracciones isotónicas",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": 6,
+      "heterogeneityI2": null,
+      "quote": "isometric contractions reduced SLDS (mean±SD) from 7.0±2.04 to 0.17±0.41, and isotonic contractions reduced SLDS (mean±SD) from 6.33±2.80 to 3.75±3.28 (p<0.001).",
+      "grading": {
+        "design": "rct",
+        "riskOfBias": "no",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_haroy_groin",
+      "source": "haroy2019_copenhagen",
+      "outcome": "injury_incidence",
+      "population": "football_players",
+      "intervention": "Programa de aductores (Copenhagen)",
+      "comparator": "Entrenamiento habitual",
+      "effectMetric": "OR",
+      "effectValue": 0.59,
+      "ciLow": 0.4,
+      "ciHigh": 0.86,
+      "nStudies": null,
+      "nParticipants": 652,
+      "heterogeneityI2": null,
+      "quote": "The risk of reporting groin problems was 41% lower in the intervention group (OR 0.59, 95% CI 0.40 to 0.86, p=0.008).",
+      "grading": {
+        "design": "rct",
+        "riskOfBias": "no",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "no",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_andersson_shoulder",
+      "source": "andersson2017_ostrc_shoulder",
+      "outcome": "injury_incidence",
+      "population": "handball_players",
+      "intervention": "Programa OSTRC de hombro",
+      "comparator": "Calentamiento habitual",
+      "effectMetric": "OR",
+      "effectValue": 0.72,
+      "ciLow": 0.52,
+      "ciHigh": 0.98,
+      "nStudies": null,
+      "nParticipants": 660,
+      "heterogeneityI2": null,
+      "quote": "a 28% lower risk of shoulder problems (OR 0.72, 95% CI 0.52 to 0.98, p=0.038) and 22% lower risk of substantial shoulder problems (OR 0.78, 95% CI 0.53 to 1.16, p=0.23)",
+      "grading": {
+        "design": "rct",
+        "riskOfBias": "no",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_jones_validity",
+      "source": "jones1999_chair_stand",
+      "outcome": "physical_function",
+      "population": "older_adults",
+      "intervention": "Test de la silla de 30 s",
+      "comparator": "Prensa de piernas máxima",
+      "effectMetric": "ICC",
+      "effectValue": 0.84,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": 76,
+      "heterogeneityI2": null,
+      "quote": "Test-retest intraclass correlations of .84 for men and .92 for women",
+      "grading": {
+        "design": "cross_sectional",
+        "riskOfBias": "no",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "no",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_suchomel_strength",
+      "source": "suchomel2016_strength_performance",
+      "outcome": "sprint_short",
+      "population": "team_sport_athletes",
+      "intervention": "Mayor fuerza muscular",
+      "comparator": "Menor fuerza",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": null,
+      "heterogeneityI2": null,
+      "quote": "Much research supports the notion that greater muscular strength can enhance the ability to perform general sport skills such as jumping, sprinting, and change of direction tasks.",
+      "grading": {
+        "design": "narrative_review",
+        "riskOfBias": "serious",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "no",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_styles_squat",
+      "source": "styles2016_squat_sprint",
+      "outcome": "max_strength_1rm",
+      "population": "football_players",
+      "intervention": "Fuerza en temporada al 85–90 % 1RM durante 6 semanas",
+      "comparator": "Pre-intervención",
+      "effectMetric": "Cohen_d",
+      "effectValue": 0.45,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": 17,
+      "heterogeneityI2": null,
+      "quote": "1RM/BM before: 1.66 ± 0.24 kg·kg, after = 1.96 ± 0.29 kg·kg, p ≤ 0.001, Cohen's d = 0.45",
+      "grading": {
+        "design": "non_randomized_trial",
+        "riskOfBias": "serious",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_styles_sprint",
+      "source": "styles2016_squat_sprint",
+      "outcome": "sprint_short",
+      "population": "football_players",
+      "intervention": "Fuerza en temporada al 85–90 % 1RM durante 6 semanas",
+      "comparator": "Pre-intervención",
+      "effectMetric": "Cohen_d",
+      "effectValue": 0.45,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": 17,
+      "heterogeneityI2": null,
+      "quote": "10 m (before = 1.83 ± 0.05 seconds, after = 1.78 ± 0.05 seconds, p ≤ 0.001, Cohen's d = 0.45), and 20 m (before = 3.09 ± 0.07 seconds, after = 3.05 ± 0.05 seconds, p ≤ 0.001, Cohen's d = 0.31)",
+      "grading": {
+        "design": "non_randomized_trial",
+        "riskOfBias": "serious",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_wisloff_corr",
+      "source": "wisloff2004_squat_sprint",
+      "outcome": "sprint_short",
+      "population": "football_players",
+      "intervention": "Fuerza máxima en media sentadilla",
+      "comparator": "Ninguno",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": 17,
+      "heterogeneityI2": null,
+      "quote": "There was a strong correlation between maximal strength in half squats and sprint performance and jumping height.",
+      "grading": {
+        "design": "cross_sectional",
+        "riskOfBias": "no",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_samozino2008_validity",
+      "source": "samozino2008_sj_method",
+      "outcome": "power_output",
+      "population": "adults_recreational",
+      "intervention": "Método de cálculo simple",
+      "comparator": "Plataforma de fuerzas",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": 11,
+      "heterogeneityI2": null,
+      "quote": "Differences between the two methods were not significant and lower than 3% for force, velocity and power.",
+      "grading": {
+        "design": "cross_sectional",
+        "riskOfBias": "no",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_samozino2012_fv",
+      "source": "samozino2012_optimal_fv",
+      "outcome": "jump_height",
+      "population": "adults_recreational",
+      "intervention": "Perfil F-v óptimo",
+      "comparator": "Perfil F-v desfavorable",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": 14,
+      "heterogeneityI2": null,
+      "quote": "For each individual, there is an optimal F-v profile that maximizes performance, whereas unfavorable F-v balances lead to differences in performance up to 30% for a given Pmax.",
+      "grading": {
+        "design": "mechanistic",
+        "riskOfBias": "no",
+        "inconsistency": "no",
+        "indirectness": "serious",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_jr2017_jump",
+      "source": "jimenezreyes2017_fv_training",
+      "outcome": "jump_height",
+      "population": "adults_recreational",
+      "intervention": "Entrenamiento individualizado según el FVimb",
+      "comparator": "Programa común no individualizado",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": 84,
+      "heterogeneityI2": null,
+      "quote": "All subjects in the three optimized training sub-groups (velocity-deficit, force-deficit, and well-balanced) increased their jumping performance (12.7 ± 5.7% ES = 0.93 ± 0.09, 14.2 ± 7.3% ES = 1.00 ± 0.17, and 7.2 ± 4.5% ES = 0.70 ± 0.36, respectively)",
+      "grading": {
+        "design": "non_randomized_trial",
+        "riskOfBias": "serious",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_jr2019_weeks",
+      "source": "jimenezreyes2019_fv_kinetics",
+      "outcome": "jump_height",
+      "population": "adults_recreational",
+      "intervention": "Entrenamiento individualizado hasta el perfil óptimo",
+      "comparator": "Pre-post",
+      "effectMetric": "weeks_to_optimal_profile",
+      "effectValue": 12.6,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": 60,
+      "heterogeneityI2": null,
+      "quote": "The number of weeks needed to reach the optimal F-v profile (12.6 ± 4.6) was correlated to the magnitude of initial FVimb (r = 0.82, p<0.01) for all participants regardless of their initial subgroup.",
+      "grading": {
+        "design": "non_randomized_trial",
+        "riskOfBias": "serious",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_pareja_cmj",
+      "source": "pareja2017_velocity_loss",
+      "outcome": "jump_height",
+      "population": "adults_recreational",
+      "intervention": "Pérdida de velocidad del 20 %",
+      "comparator": "Pérdida de velocidad del 40 %",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": 22,
+      "heterogeneityI2": null,
+      "quote": "VL20 resulted in similar squat strength gains than VL40 and greater improvements in CMJ (9.5% vs 3.5%, P < 0.05), despite VL20 performing 40% fewer repetitions.",
+      "grading": {
+        "design": "rct",
+        "riskOfBias": "no",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_pareja_hyp",
+      "source": "pareja2017_velocity_loss",
+      "outcome": "muscle_hypertrophy",
+      "population": "adults_recreational",
+      "intervention": "Pérdida de velocidad del 40 %",
+      "comparator": "Pérdida de velocidad del 20 %",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": 22,
+      "heterogeneityI2": null,
+      "quote": "VL40 training elicited a greater hypertrophy of vastus lateralis and intermedius than VL20.",
+      "grading": {
+        "design": "rct",
+        "riskOfBias": "no",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_sm2011_vl",
+      "source": "sanchezmedina2011_vl_fatigue",
+      "outcome": "neuromuscular_fatigue",
+      "population": "adults_resistance_trained",
+      "intervention": "Protocolos con distinto carácter del esfuerzo",
+      "comparator": "Entre protocolos",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": 18,
+      "heterogeneityI2": null,
+      "quote": "Velocity loss was significantly greater for BP compared with SQ and strongly correlated to peak postexercise lactate (r = 0.93-0.97) for both SQ and BP.",
+      "grading": {
+        "design": "mechanistic",
+        "riskOfBias": "no",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_zourdos_rir",
+      "source": "zourdos2016_rir_rpe",
+      "outcome": "perceived_exertion_rir",
+      "population": "adults_resistance_trained",
+      "intervention": "Escala RPE-RIR",
+      "comparator": "Velocidad media",
+      "effectMetric": "r",
+      "effectValue": -0.88,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": 29,
+      "heterogeneityI2": null,
+      "quote": "In ES, there was a strong inverse relationship between average velocity and RPE at all percentages (r = -0.88, p < 0.001), and a strong inverse correlation in NS between average velocity and RPE at all intensities (r = -0.77, p = 0.001).",
+      "grading": {
+        "design": "cross_sectional",
+        "riskOfBias": "no",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_sole_rsimod",
+      "source": "sole2018_rsimod_reference",
+      "outcome": "reactive_strength",
+      "population": "collegiate_athletes",
+      "intervention": "Ninguna",
+      "comparator": "Hombres frente a mujeres",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": 151,
+      "heterogeneityI2": null,
+      "quote": "RSIvalues ranged from 0.208 to 0.704 and 0.135 to 0.553 in males and females, respectively.",
+      "grading": {
+        "design": "cross_sectional",
+        "riskOfBias": "no",
+        "inconsistency": "no",
+        "indirectness": "serious",
+        "imprecision": "no",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_petridis_cmj",
+      "source": "petridis2019_jump_juniors",
+      "outcome": "jump_height",
+      "population": "youth",
+      "intervention": "Ninguna",
+      "comparator": "Grupos de edad",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": 365,
+      "heterogeneityI2": null,
+      "quote": "Mean values ± SD of jump height were 32.9 ± 4.1, 33.5 ± 4.0, and 33.9 ± 4.2 cm for the three age groups respectively in SJ and 36.3 ± 3.8, 37.5 ± 3.9, and 38.6 ± 4.4 cm in the CMJ.",
+      "grading": {
+        "design": "cross_sectional",
+        "riskOfBias": "no",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "no",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_ruizrios_profile",
+      "source": "ruizrios2024_female_soccer",
+      "outcome": "sprint_short",
+      "population": "football_players",
+      "intervention": "Ninguna",
+      "comparator": "Ninguno",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": 10,
+      "nParticipants": null,
+      "heterogeneityI2": null,
+      "quote": "Players exhibited mean maximal oxygen uptake of 52.6 (4.5) mL·min-1·kg-1, 20-m linear-sprint performance of 3.58 (0.18) seconds, countermovement jump of 31.0 (2.9) cm",
+      "grading": {
+        "design": "systematic_review",
+        "riskOfBias": "no",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_covic_ift",
+      "source": "covic2016_3015ift_female",
+      "outcome": "vo2max",
+      "population": "football_players",
+      "intervention": "30-15 IFT",
+      "comparator": "Test continuo de laboratorio",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": 17,
+      "heterogeneityI2": null,
+      "quote": "The findings have also provided practitioners with evidence to support the accurate detection of meaningful individual changes in Vof 0.5 km/h (1 stage) and HRpeak of 2 bpm.",
+      "grading": {
+        "design": "cross_sectional",
+        "riskOfBias": "no",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_dunnick_ul",
+      "source": "dunnick2015_unstable_bench",
+      "outcome": "muscle_activation",
+      "population": "adults_resistance_trained",
+      "intervention": "Carga inestable (kettlebells colgados con bandas)",
+      "comparator": "Carga estable",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": 20,
+      "heterogeneityI2": null,
+      "quote": "These results suggest that upper body muscle activation is not different in the bench press between UL and SL.",
+      "grading": {
+        "design": "mechanistic",
+        "riskOfBias": "no",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_asimakidis_tests",
+      "source": "asimakidis2024_strength_power_soccer",
+      "outcome": "jump_height",
+      "population": "football_players",
+      "intervention": "Ninguna",
+      "comparator": "Ninguno",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": 127,
+      "nParticipants": null,
+      "heterogeneityI2": null,
+      "quote": "The three most frequent power tests were the countermovement jump with hands fixed on hips (99 studies), the squat jump (48 studies) and the vertical jump with arm swing (29 studies).",
+      "grading": {
+        "design": "systematic_review",
+        "riskOfBias": "no",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "no",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    }
+  ],
+  "claims": [
+    {
+      "key": "c_bandas_equivalentes_fuerza",
+      "statement": "Con la carga equiparada, el entrenamiento con bandas elásticas produce ganancias de fuerza similares a las de máquinas o mancuernas, pero no superiores.",
+      "scope": "bandas elásticas / fuerza máxima",
+      "epistemicType": "fact",
+      "findings": [
+        {
+          "finding": "f_lopes_lower",
+          "role": "supports"
+        },
+        {
+          "finding": "f_lopes_upper",
+          "role": "supports"
+        },
+        {
+          "finding": "f_deoliveira_active",
+          "role": "supports"
+        }
+      ],
+      "confidence": "moderate",
+      "limitations": "Pocos estudios (8 y 5) y heterogéneos; el valor del miembro superior procede de un corrigendum.",
+      "applicability": {
+        "appliesTo": ["adults_recreational", "adults_untrained"],
+        "notFor": ["powerlifters"]
+      }
+    },
+    {
+      "key": "c_bandas_equipo_vs_control",
+      "statement": "En deportes de equipo, añadir bandas elásticas al entrenamiento habitual mejora la potencia, el sprint y el cambio de dirección frente a no añadir fuerza; no demuestra superioridad frente a las pesas.",
+      "scope": "bandas elásticas / rendimiento en deportes de equipo",
+      "epistemicType": "fact",
+      "findings": [
+        {
+          "finding": "f_stankovic_power",
+          "role": "supports"
+        },
+        {
+          "finding": "f_stankovic_cod",
+          "role": "supports"
+        },
+        {
+          "finding": "f_stankovic_sprint",
+          "role": "supports"
+        }
+      ],
+      "confidence": "low",
+      "limitations": "Comparador débil; incluye estudios cuasiexperimentales; tamaños del efecto muy grandes que sugieren sesgo.",
+      "applicability": {
+        "appliesTo": ["team_sport_athletes"],
+        "notFor": ["older_adults"]
+      }
+    },
+    {
+      "key": "c_bandas_mayores",
+      "statement": "En personas mayores, las bandas elásticas mejoran la fuerza de miembro inferior, el test de la silla, el TUG y el alcance funcional frente a no hacer ejercicio.",
+      "scope": "bandas elásticas / función física en mayores",
+      "epistemicType": "fact",
+      "findings": [
+        {
+          "finding": "f_meng_legext",
+          "role": "supports"
+        },
+        {
+          "finding": "f_meng_strength",
+          "role": "supports"
+        },
+        {
+          "finding": "f_meng_balance",
+          "role": "supports"
+        },
+        {
+          "finding": "f_li_elderly",
+          "role": "supports"
+        }
+      ],
+      "confidence": "moderate",
+      "limitations": "IC amplios; comparador sin ejercicio; distintos estados de salud.",
+      "applicability": {
+        "appliesTo": ["older_adults"],
+        "notFor": ["team_sport_athletes"]
+      }
+    },
+    {
+      "key": "c_bandas_hombro",
+      "statement": "El entrenamiento elástico de miembro superior se asocia a aumentos de la fuerza de hombro (p. ej., rotación externa 11–42 %) y de la velocidad de lanzamiento (~12 %), sin una dosis óptima definida.",
+      "scope": "bandas elásticas / hombro",
+      "epistemicType": "fact",
+      "findings": [
+        {
+          "finding": "f_seguin_shoulder",
+          "role": "supports"
+        }
+      ],
+      "confidence": "low",
+      "limitations": "Revisión sistemática sin metaanálisis; protocolos heterogéneos.",
+      "applicability": {
+        "appliesTo": ["adults_recreational", "overhead_athletes"],
+        "notFor": []
+      }
+    },
+    {
+      "key": "c_vrt_entrenados_80",
+      "statement": "En personas entrenadas, la resistencia variable (cadenas/bandas) supera a la resistencia constante en fuerza máxima cuando la carga es ≥80 % 1RM; con <80 % no se observó diferencia.",
+      "scope": "resistencia variable / fuerza máxima / intensidad",
+      "epistemicType": "fact",
+      "findings": [
+        {
+          "finding": "f_lin_trained80",
+          "role": "supports"
+        },
+        {
+          "finding": "f_lin_trained_below80",
+          "role": "supports"
+        },
+        {
+          "finding": "f_lin_untrained",
+          "role": "context"
+        }
+      ],
+      "confidence": "low",
+      "limitations": "Un solo metaanálisis de 14 estudios con subgrupos pequeños; no usar el metaanálisis de Soria-Gila 2015 (retractado).",
+      "applicability": {
+        "appliesTo": ["adults_resistance_trained"],
+        "notFor": ["older_adults", "youth"]
+      }
+    },
+    {
+      "key": "c_vrt_explosiva",
+      "statement": "La resistencia variable puede mejorar el salto, el sprint y el cambio de dirección en deportistas, pero la evidencia es heterogénea y con posible sesgo de publicación.",
+      "scope": "resistencia variable / potencia de miembro inferior",
+      "epistemicType": "inference",
+      "findings": [
+        {
+          "finding": "f_xu_jump",
+          "role": "supports"
+        },
+        {
+          "finding": "f_xu_sprint",
+          "role": "supports"
+        },
+        {
+          "finding": "f_xu_cod",
+          "role": "supports"
+        }
+      ],
+      "confidence": "low",
+      "limitations": "Los autores declaran heterogeneidad significativa y posible sesgo de publicación.",
+      "applicability": {
+        "appliesTo": ["team_sport_athletes"],
+        "notFor": ["older_adults"]
+      }
+    },
+    {
+      "key": "c_bandas_sentadilla_mecanica",
+      "statement": "Añadir bandas a la sentadilla con barra modifica el perfil mecánico en hombres jóvenes (más potencia y velocidad, menos fuerza en la aceleración); sustituir ~10 % de la carga por cadenas o bandas no cambió de forma aguda la EMG ni la fuerza de reacción.",
+      "scope": "resistencia acomodada / sentadilla / respuesta aguda",
+      "epistemicType": "fact",
+      "findings": [
+        {
+          "finding": "f_kubo2018_power",
+          "role": "supports"
+        },
+        {
+          "finding": "f_kubo2018_force_acc",
+          "role": "supports"
+        },
+        {
+          "finding": "f_ebben_nodiff",
+          "role": "contradicts"
+        }
+      ],
+      "confidence": "low",
+      "limitations": "Estudios agudos con n de 10–11; no informan de adaptaciones crónicas.",
+      "applicability": {
+        "appliesTo": ["adults_recreational", "adults_resistance_trained"],
+        "notFor": ["older_adults", "youth"]
+      }
+    },
+    {
+      "key": "c_banda_rodillas_valgo",
+      "statement": "Colocar una banda alrededor de las rodillas en la sentadilla con barra aumentó el valgo y la rotación tibial (además de la activación del glúteo mayor); que esto aumente el riesgo de lesión es una hipótesis de los autores, no un resultado medido.",
+      "scope": "banda en rodillas / cinemática de rodilla",
+      "epistemicType": "fact",
+      "findings": [
+        {
+          "finding": "f_reece_valgus",
+          "role": "supports"
+        }
+      ],
+      "confidence": "low",
+      "limitations": "Estudio agudo, n = 26; no se midieron lesiones.",
+      "applicability": {
+        "appliesTo": ["adults_recreational"],
+        "notFor": []
+      }
+    },
+    {
+      "key": "c_gluteo_medio_ejercicios",
+      "statement": "Para activar el glúteo medio, la abducción-extensión resistida y los ejercicios unipodales generan más actividad EMG que el clamshell; el clamshell y el puente con banda dan un buen índice glúteo/TFL.",
+      "scope": "selección de ejercicios / glúteos",
+      "epistemicType": "fact",
+      "findings": [
+        {
+          "finding": "f_moore_gmed",
+          "role": "supports"
+        },
+        {
+          "finding": "f_bishop_gta",
+          "role": "context"
+        }
+      ],
+      "confidence": "low",
+      "limitations": "Estudios agudos de EMG con n = 10–11; la EMG no equivale a adaptación.",
+      "applicability": {
+        "appliesTo": ["adults_recreational"],
+        "notFor": []
+      }
+    },
+    {
+      "key": "c_9090_doble_banda",
+      "statement": "En jugadores de béisbol, la rotación externa 90/90 con doble banda en el plano frontal aumentó la EMG del redondo menor y del trapecio inferior con mínima actividad del trapecio superior y del deltoides medio.",
+      "scope": "hombro / ejercicios con bandas",
+      "epistemicType": "fact",
+      "findings": [
+        {
+          "finding": "f_tsuruike_emg",
+          "role": "supports"
+        }
+      ],
+      "confidence": "very_low",
+      "limitations": "EMG aguda (nivel 4), n = 21; sin desenlaces de lesión.",
+      "applicability": {
+        "appliesTo": ["overhead_athletes"],
+        "notFor": ["older_adults"]
+      }
+    },
+    {
+      "key": "c_sprint_resistido_10m",
+      "statement": "El sprint resistido mejora la aceleración en 10 m frente al sprint normal, pero no la velocidad máxima ni el tiempo en 20 m.",
+      "scope": "sprint resistido / aceleración",
+      "epistemicType": "fact",
+      "findings": [
+        {
+          "finding": "f_myrvang_10m",
+          "role": "supports"
+        },
+        {
+          "finding": "f_myrvang_vmax",
+          "role": "supports"
+        }
+      ],
+      "confidence": "low",
+      "limitations": "La mayoría de los estudios usan trineo; una sola base de datos; no es específico de bandas.",
+      "applicability": {
+        "appliesTo": ["team_sport_athletes", "sprinters"],
+        "notFor": []
+      }
+    },
+    {
+      "key": "c_flexores_cadera_bandas",
+      "statement": "Seis semanas de entrenamiento de flexores de cadera con bandas aumentaron la fuerza isométrica un 17 % en adultos jóvenes sanos; su efecto preventivo no está demostrado.",
+      "scope": "flexores de cadera / fuerza",
+      "epistemicType": "fact",
+      "findings": [
+        {
+          "finding": "f_thorborg_hipflex",
+          "role": "supports"
+        }
+      ],
+      "confidence": "moderate",
+      "limitations": "ECA pequeño; el desenlace es fuerza, no lesión.",
+      "applicability": {
+        "appliesTo": ["adults_recreational"],
+        "notFor": []
+      }
+    },
+    {
+      "key": "c_banda_color",
+      "statement": "Prescribir las bandas solo por color es inadecuado; conviene cuantificar la tensión o la elongación de la banda.",
+      "scope": "prescripción con bandas",
+      "epistemicType": "inference",
+      "findings": [
+        {
+          "finding": "f_guzman_color",
+          "role": "supports"
+        }
+      ],
+      "confidence": "low",
+      "limitations": "Revisión narrativa.",
+      "applicability": {
+        "appliesTo": ["adults_recreational", "older_adults", "team_sport_athletes"],
+        "notFor": []
+      }
+    },
+    {
+      "key": "c_v1rm_banca",
+      "statement": "La velocidad media con el 1RM en press de banca fue ≈0,16 m/s (±0,04) en hombres entrenados, con una relación MPV–%1RM muy estrecha (R² = 0,98); no extrapolar a otros ejercicios ni poblaciones.",
+      "scope": "VBT / press de banca",
+      "epistemicType": "fact",
+      "findings": [
+        {
+          "finding": "f_gb2010_v1rm",
+          "role": "supports"
+        }
+      ],
+      "confidence": "moderate",
+      "limitations": "Solo hombres entrenados; un solo laboratorio.",
+      "applicability": {
+        "appliesTo": ["adults_resistance_trained"],
+        "notFor": ["older_adults", "youth", "adults_untrained"]
+      }
+    },
+    {
+      "key": "c_v1rm_sentadilla",
+      "statement": "La velocidad media con el 1RM en sentadilla completa en máquina Smith fue de 0,32 ± 0,03 m/s en hombres deportistas entrenados (RSR 1,00–2,00); los autores advierten que no se extrapole a mujeres, no entrenados ni mayores.",
+      "scope": "VBT / sentadilla completa",
+      "epistemicType": "fact",
+      "findings": [
+        {
+          "finding": "f_sm2017_v1rm",
+          "role": "supports"
+        }
+      ],
+      "confidence": "moderate",
+      "limitations": "Sentadilla en Smith; solo hombres jóvenes.",
+      "applicability": {
+        "appliesTo": ["adults_resistance_trained"],
+        "notFor": ["older_adults", "adults_untrained", "youth"]
+      }
+    },
+    {
+      "key": "c_v1rm_peso_muerto",
+      "statement": "La velocidad media con el 1RM en peso muerto fue de 0,24 ± 0,03 m/s en 20 hombres entrenados, y la potencia máxima se alcanzó en torno al 60 % 1RM.",
+      "scope": "VBT / peso muerto",
+      "epistemicType": "fact",
+      "findings": [
+        {
+          "finding": "f_moran_v1rm",
+          "role": "supports"
+        }
+      ],
+      "confidence": "low",
+      "limitations": "n = 20; solo hombres.",
+      "applicability": {
+        "appliesTo": ["adults_resistance_trained"],
+        "notFor": ["older_adults", "adults_untrained"]
+      }
+    },
+    {
+      "key": "c_lv_remo_tumbado",
+      "statement": "El remo tumbado tiene su propia relación carga-velocidad (R² = 0,94), con velocidades mayores que el press de banca para el mismo %1RM; conviene usar ecuaciones específicas de cada ejercicio.",
+      "scope": "VBT / especificidad del ejercicio",
+      "epistemicType": "fact",
+      "findings": [
+        {
+          "finding": "f_sm2014_benchpull",
+          "role": "supports"
+        }
+      ],
+      "confidence": "moderate",
+      "limitations": "Deportistas entrenados; las ecuaciones no se transfieren a otras variantes de remo.",
+      "applicability": {
+        "appliesTo": ["adults_resistance_trained"],
+        "notFor": ["older_adults"]
+      }
+    },
+    {
+      "key": "c_lv_prediccion_1rm",
+      "statement": "La predicción del 1RM con perfiles carga-velocidad individuales tiene un error típico de ≈9,8 % y tiende a sobrestimar (≈3,7 % del 1RM); usarla para seguir tendencias y medir el 1RM directamente cuando sea posible.",
+      "scope": "VBT / estimación del 1RM",
+      "epistemicType": "fact",
+      "findings": [
+        {
+          "finding": "f_greig_see",
+          "role": "supports"
+        },
+        {
+          "finding": "f_greig_overestimate",
+          "role": "supports"
+        }
+      ],
+      "confidence": "moderate",
+      "limitations": "Riesgo de sesgo variable en los estudios primarios.",
+      "applicability": {
+        "appliesTo": ["adults_resistance_trained"],
+        "notFor": []
+      }
+    },
+    {
+      "key": "c_ecuaciones_reps_no_verificadas",
+      "statement": "Las ecuaciones de estimación del 1RM por repeticiones (Epley, Brzycki, O'Connor, LeSuer) no se pudieron verificar en PubMed; tratarlas como convención práctica y no como dato validado en esta base.",
+      "scope": "estimación del 1RM por repeticiones",
+      "epistemicType": "hypothesis",
+      "findings": [
+        {
+          "finding": "f_greig_see",
+          "role": "context"
+        }
+      ],
+      "confidence": "very_low",
+      "limitations": "Fuentes no indexadas en PubMed.",
+      "applicability": {
+        "appliesTo": ["adults_resistance_trained", "adults_recreational"],
+        "notFor": []
+      }
+    },
+    {
+      "key": "c_alometria_066",
+      "statement": "Para normalizar la fuerza isométrica por masa corporal en hombres jóvenes magros (<20 % de grasa) es apropiado un exponente de ≈0,66; con más grasa conviene un exponente menor (≈0,45) o escalar por masa libre de grasa.",
+      "scope": "normalización de la fuerza / escalado alométrico",
+      "epistemicType": "fact",
+      "findings": [
+        {
+          "finding": "f_folland_exponent",
+          "role": "supports"
+        }
+      ],
+      "confidence": "low",
+      "limitations": "Solo extensores de rodilla en 86 hombres; aplicarlo al 1RM en levantamientos libres es una inferencia.",
+      "applicability": {
+        "appliesTo": ["adults_recreational"],
+        "notFor": ["older_adults", "youth"]
+      }
+    },
+    {
+      "key": "c_normas_powerlifting",
+      "statement": "En powerlifters de competición de 18 a 35 años, sin equipo y con control antidopaje, el percentil 90 de fuerza relativa fue: sentadilla 2,83 (H) / 2,26 (M), banca 1,95 / 1,35 y peso muerto 3,25 / 2,66 × MC; son referencias de población entrenada, no de la población general.",
+      "scope": "normas de fuerza relativa",
+      "epistemicType": "fact",
+      "findings": [
+        {
+          "finding": "f_vdh_norms",
+          "role": "supports"
+        }
+      ],
+      "confidence": "high",
+      "limitations": "Población muy seleccionada.",
+      "applicability": {
+        "appliesTo": ["powerlifters"],
+        "notFor": ["adults_untrained", "older_adults"]
+      }
+    },
+    {
+      "key": "c_isometria_tendon",
+      "statement": "Las contracciones isométricas largas (4 × 20 s al 70 % MVC durante 12 semanas) aumentaron la rigidez tendinosa del cuádriceps; con contracciones de 1 s no aumentó, aunque la fuerza y el volumen muscular mejoraron por igual.",
+      "scope": "isometría / propiedades del tendón",
+      "epistemicType": "fact",
+      "findings": [
+        {
+          "finding": "f_kubo2001_stiffness",
+          "role": "supports"
+        }
+      ],
+      "confidence": "low",
+      "limitations": "n = 8 hombres jóvenes.",
+      "applicability": {
+        "appliesTo": ["adults_untrained", "adults_recreational"],
+        "notFor": ["older_adults"]
+      }
+    },
+    {
+      "key": "c_isometria_analgesia",
+      "statement": "Una sesión de isometría de cuádriceps redujo de inmediato el dolor de la tendinopatía rotuliana durante al menos 45 min en 6 jugadores de voleibol; el protocolo concreto (5 × 45 s al 70 %) no se verifica en el resumen.",
+      "scope": "isometría / dolor tendinoso",
+      "epistemicType": "fact",
+      "findings": [
+        {
+          "finding": "f_rio_pain",
+          "role": "supports"
+        }
+      ],
+      "confidence": "low",
+      "limitations": "n = 6; efecto agudo.",
+      "applicability": {
+        "appliesTo": ["athletes_patellar_tendinopathy"],
+        "notFor": []
+      }
+    },
+    {
+      "key": "c_copenhagen",
+      "statement": "El programa de aductores basado en el Copenhagen se asoció a un riesgo un 41 % menor de problemas inguinales (OR 0,59) en futbolistas semiprofesionales masculinos; el desenlace son problemas autorreportados, no lesiones diagnosticadas.",
+      "scope": "Copenhagen / problemas inguinales",
+      "epistemicType": "fact",
+      "findings": [
+        {
+          "finding": "f_haroy_groin",
+          "role": "supports"
+        }
+      ],
+      "confidence": "moderate",
+      "limitations": "Solo hombres; desenlace de prevalencia autorreportada.",
+      "applicability": {
+        "appliesTo": ["football_players"],
+        "notFor": ["older_adults"]
+      }
+    },
+    {
+      "key": "c_ostrc_hombro",
+      "statement": "El programa OSTRC de hombro en el calentamiento se asoció a un riesgo un 28 % menor de problemas de hombro (OR 0,72) en balonmano de élite; la reducción de los problemas sustanciales no fue significativa.",
+      "scope": "OSTRC / problemas de hombro",
+      "epistemicType": "fact",
+      "findings": [
+        {
+          "finding": "f_andersson_shoulder",
+          "role": "supports"
+        }
+      ],
+      "confidence": "moderate",
+      "limitations": "Desenlace autorreportado.",
+      "applicability": {
+        "appliesTo": ["handball_players"],
+        "notFor": []
+      }
+    },
+    {
+      "key": "c_chair_stand",
+      "statement": "El test de levantarse de la silla en 30 s es fiable (ICC 0,84–0,92) y se correlaciona moderadamente con la prensa de piernas máxima en mayores activos que viven en la comunidad.",
+      "scope": "evaluación / mayores",
+      "epistemicType": "fact",
+      "findings": [
+        {
+          "finding": "f_jones_validity",
+          "role": "supports"
+        }
+      ],
+      "confidence": "moderate",
+      "limitations": "Mayores generalmente activos.",
+      "applicability": {
+        "appliesTo": ["older_adults"],
+        "notFor": ["team_sport_athletes"]
+      }
+    },
+    {
+      "key": "c_fuerza_rendimiento",
+      "statement": "Una mayor fuerza máxima se asocia a un mejor sprint y salto en futbolistas; en jugadores profesionales jóvenes, 6 semanas de fuerza en temporada aumentaron la sentadilla relativa de 1,66 a 1,96 × MC y redujeron ligeramente los tiempos en 10 y 20 m.",
+      "scope": "fuerza máxima / sprint",
+      "epistemicType": "inference",
+      "findings": [
+        {
+          "finding": "f_wisloff_corr",
+          "role": "supports"
+        },
+        {
+          "finding": "f_styles_squat",
+          "role": "supports"
+        },
+        {
+          "finding": "f_styles_sprint",
+          "role": "supports"
+        },
+        {
+          "finding": "f_suchomel_strength",
+          "role": "context"
+        }
+      ],
+      "confidence": "low",
+      "limitations": "Estudios correlacionales o sin grupo control; el umbral de 2 × MC no figura en los resúmenes.",
+      "applicability": {
+        "appliesTo": ["football_players"],
+        "notFor": ["older_adults"]
+      }
+    },
+    {
+      "key": "c_fv_individualizado",
+      "statement": "El entrenamiento individualizado según el desequilibrio fuerza-velocidad mejoró el salto; se tardó 12,6 ± 4,6 semanas en alcanzar el perfil óptimo, según el desequilibrio inicial.",
+      "scope": "perfil F-v / salto",
+      "epistemicType": "fact",
+      "findings": [
+        {
+          "finding": "f_jr2017_jump",
+          "role": "supports"
+        },
+        {
+          "finding": "f_jr2019_weeks",
+          "role": "supports"
+        },
+        {
+          "finding": "f_samozino2012_fv",
+          "role": "context"
+        }
+      ],
+      "confidence": "low",
+      "limitations": "Diseños no aleatorizados o sin control.",
+      "applicability": {
+        "appliesTo": ["adults_recreational", "team_sport_athletes"],
+        "notFor": ["older_adults"]
+      }
+    },
+    {
+      "key": "c_metodo_samozino",
+      "statement": "El método de Samozino estima la fuerza, la velocidad y la potencia en el squat jump con diferencias <3 % frente a la plataforma de fuerzas.",
+      "scope": "evaluación / perfil F-v",
+      "epistemicType": "fact",
+      "findings": [
+        {
+          "finding": "f_samozino2008_validity",
+          "role": "supports"
+        }
+      ],
+      "confidence": "low",
+      "limitations": "n = 11 hombres activos.",
+      "applicability": {
+        "appliesTo": ["adults_recreational"],
+        "notFor": []
+      }
+    },
+    {
+      "key": "c_perdida_velocidad",
+      "statement": "Con una pérdida de velocidad del 20 % por serie se logró una fuerza similar y una mayor mejora del CMJ que con un 40 %, mientras que el 40 % produjo más hipertrofia del vasto lateral y del intermedio; la pérdida de velocidad refleja la fatiga metabólica.",
+      "scope": "VBT / pérdida de velocidad",
+      "epistemicType": "fact",
+      "findings": [
+        {
+          "finding": "f_pareja_cmj",
+          "role": "supports"
+        },
+        {
+          "finding": "f_pareja_hyp",
+          "role": "supports"
+        },
+        {
+          "finding": "f_sm2011_vl",
+          "role": "context"
+        }
+      ],
+      "confidence": "low",
+      "limitations": "n = 22 hombres jóvenes; solo sentadilla.",
+      "applicability": {
+        "appliesTo": ["adults_recreational", "adults_resistance_trained"],
+        "notFor": ["older_adults"]
+      }
+    },
+    {
+      "key": "c_rir",
+      "statement": "La escala RPE basada en repeticiones en reserva se relaciona inversamente con la velocidad media en sentadilla, de forma más estrecha en levantadores experimentados.",
+      "scope": "autorregulación / RIR",
+      "epistemicType": "fact",
+      "findings": [
+        {
+          "finding": "f_zourdos_rir",
+          "role": "supports"
+        }
+      ],
+      "confidence": "low",
+      "limitations": "n = 29; estudio agudo.",
+      "applicability": {
+        "appliesTo": ["adults_resistance_trained"],
+        "notFor": []
+      }
+    },
+    {
+      "key": "c_referencias_salto_futbol",
+      "statement": "Valores de referencia: CMJ de 36,3–38,6 cm en futbolistas junior húngaros (U16–U18); CMJ de 31,0 cm y 20 m en 3,58 s en futbolistas femeninas de élite; RSImod entre 0,208 y 0,704 (H) y entre 0,135 y 0,553 (M) en deportistas NCAA.",
+      "scope": "normas de rendimiento",
+      "epistemicType": "fact",
+      "findings": [
+        {
+          "finding": "f_petridis_cmj",
+          "role": "supports"
+        },
+        {
+          "finding": "f_ruizrios_profile",
+          "role": "supports"
+        },
+        {
+          "finding": "f_sole_rsimod",
+          "role": "supports"
+        },
+        {
+          "finding": "f_asimakidis_tests",
+          "role": "context"
+        }
+      ],
+      "confidence": "moderate",
+      "limitations": "Poblaciones específicas; los percentiles concretos de RSImod y los rangos de Asimakidis no figuran en los resúmenes.",
+      "applicability": {
+        "appliesTo": ["youth", "football_players", "collegiate_athletes"],
+        "notFor": ["older_adults"]
+      }
+    },
+    {
+      "key": "c_3015ift",
+      "statement": "En futbolistas femeninas de élite, el 30-15 IFT es fiable (VIFT con CV 1,8 %) y un cambio de 0,5 km/h (una etapa) es detectable como cambio individual relevante.",
+      "scope": "evaluación aeróbica",
+      "epistemicType": "fact",
+      "findings": [
+        {
+          "finding": "f_covic_ift",
+          "role": "supports"
+        }
+      ],
+      "confidence": "low",
+      "limitations": "n = 17.",
+      "applicability": {
+        "appliesTo": ["football_players"],
+        "notFor": []
+      }
+    },
+    {
+      "key": "c_carga_pendular",
+      "statement": "Colgar kettlebells de la barra con bandas en el press de banca no cambió la activación muscular frente a la carga estable en hombres entrenados.",
+      "scope": "cargas inestables",
+      "epistemicType": "fact",
+      "findings": [
+        {
+          "finding": "f_dunnick_ul",
+          "role": "supports"
+        }
+      ],
+      "confidence": "low",
+      "limitations": "Estudio agudo, n = 20.",
+      "applicability": {
+        "appliesTo": ["adults_resistance_trained"],
+        "notFor": []
+      }
+    }
+  ],
+  "newOutcomes": [
+    {
+      "slug": "load_velocity_relationship",
+      "name": "Relación carga-velocidad y velocidad en el 1RM",
+      "domain": "strength"
+    },
+    {
+      "slug": "muscle_activation",
+      "name": "Activación muscular (EMG)",
+      "domain": "neuromuscular"
+    },
+    {
+      "slug": "joint_kinematics",
+      "name": "Cinemática articular (p. ej., valgo de rodilla)",
+      "domain": "biomechanics"
+    },
+    {
+      "slug": "neuromuscular_fatigue",
+      "name": "Fatiga neuromuscular (pérdida de velocidad)",
+      "domain": "neuromuscular"
+    },
+    {
+      "slug": "perceived_exertion_rir",
+      "name": "Esfuerzo percibido / repeticiones en reserva",
+      "domain": "monitoring"
+    }
+  ],
+  "newPopulations": [
+    {
+      "slug": "overhead_athletes",
+      "name": "Deportistas de lanzamiento por encima de la cabeza",
+      "trainingStatus": "trained"
+    },
+    {
+      "slug": "athletes_patellar_tendinopathy",
+      "name": "Deportistas con tendinopatía rotuliana",
+      "trainingStatus": "trained"
+    },
+    {
+      "slug": "collegiate_athletes",
+      "name": "Deportistas universitarios (NCAA)",
+      "ageMin": 18,
+      "ageMax": 25,
+      "trainingStatus": "highly_trained"
+    }
+  ],
+  "corrections": [
+    {
+      "citedAs": "Lopes 2019 (SAGE Open Med): DME −0,11 / −0,011",
+      "correct": "Miembro inferior DME −0,11 (−0,40 a 0,19); miembro superior DME 0,09 (−0,18 a 0,35) [corregido]",
+      "note": "El valor −0,011 no figura; el resumen de PubMed muestra 0,09 marcado como 'corrected' (corrigendum PMID 32953119, doi 10.1177/2050312120961220)."
+    },
+    {
+      "citedAs": "de Oliveira PA ... Gonçalves Filho P ... 2017, DOI no verificado",
+      "correct": "Autor 'Filho PJBG' en PubMed; DOI 10.1123/jpah.2016-0415; PMID 28032811",
+      "note": "Publicado online el 29-12-2016; volumen 14(4):317-327 (2017)."
+    },
+    {
+      "citedAs": "Seguin 2022 Sports (Basel) 10(2):24, DOI no verificado",
+      "correct": "DOI 10.3390/sports10020024; PMID 35202063",
+      "note": "Verificado."
+    },
+    {
+      "citedAs": "Thorborg K et al. 2016, revista y DOI pendientes",
+      "correct": "Knee Surg Sports Traumatol Arthrosc 2016;24(7):2346-52; doi 10.1007/s00167-015-3583-y; PMID 25796586",
+      "note": "Publicado online en 2015."
+    },
+    {
+      "citedAs": "Autoría no verificada 2024 PLOS One e0303372",
+      "correct": "Li A, Sun Y, Li M, Wang D, Ma X. PLoS One 2024;19(5):e0303372; PMID 38739588",
+      "note": "Autoría completada."
+    },
+    {
+      "citedAs": "Autoría y DOI no verificados 2022 IJERPH 19(14):8559",
+      "correct": "Lin Y, Xu Y, Hong F, Li J, Ye W, Korivi M. doi 10.3390/ijerph19148559; PMID 35886409",
+      "note": "Autoría y DOI completados."
+    },
+    {
+      "citedAs": "Soria-Gila MA et al. 2015 J Strength Cond Res 29(11):3260-3270",
+      "correct": "ARTÍCULO RETRACTADO. doi 10.1519/JSC.0000000000000971; PMID 25968227; nota de retractación en J Strength Cond Res 2018;32(11):e56 (PMID 30540286)",
+      "note": "Retirarlo como apoyo del apartado de mitos."
+    },
+    {
+      "citedAs": "Autoría y DOI no verificados 2026 PeerJ 14:e20644",
+      "correct": "Xu Z, Su S, Xu Z. doi 10.7717/peerj.20644; PMID 41660069",
+      "note": "Cifras de DME verificadas en el resumen."
+    },
+    {
+      "citedAs": "Myrvang & van den Tillaar 2024 Sports Med Open 10(1)",
+      "correct": "Sports Med Open 2024;10(1):110; PMID 39392558",
+      "note": "Se añade el número de artículo."
+    },
+    {
+      "citedAs": "Autoría/año no verificados, Rehabilitation exercises for the gluteus medius (PMID 30747561)",
+      "correct": "Moore D, Pizzari T, McClelland J, Semciw AI. J Sport Rehabil 2019;28(8); doi 10.1123/jsr.2018-0340",
+      "note": "n = 10; EMG intramuscular."
+    },
+    {
+      "citedAs": "Bishop 2018 Int J Sports Phys Ther, DOI no verificado",
+      "correct": "PMID 30140560, PMC6088126; el registro de PubMed no contiene DOI",
+      "note": "n = 11 sujetos activos."
+    },
+    {
+      "citedAs": "Kubo T 2018: 10 hombres entrenados",
+      "correct": "'Ten healthy men' (1RM 105 ± 23,1 kg; 1,6 ± 0,3 × MC)",
+      "note": "El resumen no los describe como entrenados en fuerza."
+    },
+    {
+      "citedAs": "Arnold GP, Nasir S, Wang WW, Abboud R, Reece MB 2020",
+      "correct": "Reece MB, Arnold GP, Nasir S, Wang WW, Abboud R. BMJ Open Sport Exerc Med 2020;6(1):e000610; PMID 32095265",
+      "note": "Orden de autores incorrecto: Reece es la primera autora."
+    },
+    {
+      "citedAs": "Ebben & Jensen 2002, no verificado",
+      "correct": "J Strength Cond Res 2002;16(4):547-50; PMID 12423183 (sin DOI en PubMed)",
+      "note": "Verificado; 11 deportistas NCAA DI."
+    },
+    {
+      "citedAs": "Autoría no verificada 2026 J Clin Med 15(18):7086",
+      "correct": "Guzmán-Muñoz E et al. doi 10.3390/jcm15187086; PMID 42795858",
+      "note": "Revisión narrativa estructurada."
+    },
+    {
+      "citedAs": "Folland JP et al. 2008 'Allometric scaling of strength measurements to body mass'; Fuerza ∝ masa^0,67",
+      "correct": "Título: 'Allometric scaling of strength measurements to body size'; doi 10.1007/s00421-007-0654-x",
+      "note": "El exponente 0,66 solo vale para fuerza en poblaciones magras (<20 % de grasa); 0,45 con >20 % de grasa; 1,0 para el par."
+    },
+    {
+      "citedAs": "Sánchez-Medina 2014 Int J Sports Med 35(3):209-216 (sin DOI)",
+      "correct": "doi 10.1055/s-0033-1351252; PMID 23900903",
+      "note": "Publicado online en 2013; 75 deportistas entrenados; R² = 0,94 verificado."
+    },
+    {
+      "citedAs": "Sánchez-Medina L, et al. 2017 Sports Med Int Open 1:E80-E88",
+      "correct": "Sánchez-Medina L, Pallarés JG, Pérez CE, Morán-Navarro R, González-Badillo JJ. Sports Med Int Open 2017;1(2):E80-E88; doi 10.1055/s-0043-102933; PMID 30539090",
+      "note": "Sentadilla en máquina Smith; 80 hombres; 0,32 ± 0,03 m/s verificado en el texto completo de PMC."
+    },
+    {
+      "citedAs": "Morán-Navarro 2021 Eur J Sport Sci 21(5):678-684",
+      "correct": "Igual; PMID 32552373",
+      "note": "Publicado online en 2020; V1RM de 0,24 ± 0,03 m/s verificado."
+    },
+    {
+      "citedAs": "van den Hoek D, et al. 2024 'Normative data for relative strength in drug-tested, unequipped powerlifting across the lifespan'",
+      "correct": "'Normative data for the squat, bench press and deadlift exercises in powerlifting: Data from 809,986 competition entries.' J Sci Med Sport 2024;27(10):734-742; PMID 39060209",
+      "note": "Título incorrecto; n y DOI correctos."
+    },
+    {
+      "citedAs": "Greig L, et al. 2023 Sports Med 53:1693-1708",
+      "correct": "Sports Med 2023;53(9):1693-1708; doi 10.1007/s40279-023-01854-9; PMID 37493929",
+      "note": "SEE% de 9,8 verificado."
+    },
+    {
+      "citedAs": "Rio 2015: 5 × 45 s al 70 % CVM, analgesia ≥45 min",
+      "correct": "El resumen confirma una analgesia de al menos 45 min en 6 jugadores de voleibol",
+      "note": "El protocolo 5 × 45 s al 70 % no figura en el resumen."
+    },
+    {
+      "citedAs": "Harøy J, Clarsen B, Wiger EG, et al. 2019",
+      "correct": "Br J Sports Med 2019;53(3):150-157; PMID 29891614",
+      "note": "Publicado online en 2018; el desenlace es la prevalencia de problemas inguinales."
+    },
+    {
+      "citedAs": "Andersson SH et al. 2017",
+      "correct": "Br J Sports Med 2017;51(14):1073-1080; PMID 27313171",
+      "note": "Publicado online en 2016."
+    },
+    {
+      "citedAs": "Wisløff 2004: sentadilla ≈2,2 × MC; 10 m 1,82 s",
+      "correct": "El resumen solo informa de una correlación fuerte",
+      "note": "Las cifras no figuran en el resumen; requieren el texto completo (PMC1724821)."
+    },
+    {
+      "citedAs": "Ruiz-Rios M et al. 2024 IJSPP 19(12)",
+      "correct": "Int J Sports Physiol Perform 2024;19(12):1355-1366; PMID 39179220",
+      "note": "CMJ de 31,0 cm y 20 m en 3,58 s verificados."
+    },
+    {
+      "citedAs": "Suchomel 2016: sentadilla ≈2 × MC",
+      "correct": "El resumen describe las fases de déficit, asociación y reserva de fuerza sin umbrales numéricos",
+      "note": "El umbral de 2 × MC no se verifica en el resumen."
+    },
+    {
+      "citedAs": "Hammami M et al. 2022 Int J Sports Sci Coach 17(5):1147-1157",
+      "correct": "No indexado en PubMed",
+      "note": "Existe otro estudio del mismo primer autor (Hammami M, Zmijewski P. Biol Sport 2024;41(3):119-127, PMID 38952902) que no es la referencia citada; no se ha sustituido."
+    }
+  ],
+  "notFound": [
+    {
+      "citedAs": "Sousa H, Abade Maia F, Costa JA, Marcelino R. 2025. Sport Sci Health 21(1):69-82. doi 10.1007/s11332-024-01310-9",
+      "reason": "No indexado en PubMed (sin resultados en la búsqueda)."
+    },
+    {
+      "citedAs": "Hammami M, Gaamouri N, Cherni Y, Chelly MS, Hill L, Knechtle B. 2022. Int J Sports Sci Coach 17(5):1147-1157",
+      "reason": "Revista no indexada en PubMed."
+    },
+    {
+      "citedAs": "LeSuer DA, McCormick JH, Mayhew JL, Wasserstein RL, Arnold MD. 1997. J Strength Cond Res 11(4):211-213",
+      "reason": "Sin coincidencia en PubMed (búsqueda por cita y por autor)."
+    },
+    {
+      "citedAs": "Brzycki M. 1993. JOPERD 64(1):88-90",
+      "reason": "Revista no biomédica; no indexada en PubMed."
+    },
+    {
+      "citedAs": "Epley B. 1985. Poundage chart",
+      "reason": "Material comercial; no indexado."
+    },
+    {
+      "citedAs": "O'Connor B, Simmons J, O'Shea P. 1989. Weight training today",
+      "reason": "Libro; no indexado."
+    },
+    {
+      "citedAs": "Strength Level / Strength Calculator (webs)",
+      "reason": "Bases de datos web; no son literatura científica."
+    }
+  ]
+}

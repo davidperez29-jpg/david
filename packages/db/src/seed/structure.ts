@@ -354,6 +354,25 @@ export const POPULATIONS: {
   { slug: 'endurance_athletes', name: 'Deportistas de resistencia', status: 'trained' },
   { slug: 'sprinters', name: 'Velocistas', status: 'highly_trained', sport: 'sprint_athletics' },
   { slug: 'powerlifters', name: 'Powerlifters de competición', status: 'highly_trained' },
+  {
+    slug: 'overhead_athletes',
+    name: 'Deportistas de lanzamiento por encima de la cabeza',
+    status: 'trained',
+  },
+  {
+    slug: 'collegiate_athletes',
+    name: 'Deportistas universitarios (NCAA)',
+    ageMin: 18,
+    ageMax: 25,
+    status: 'highly_trained',
+  },
+  // Clinical populations: evidence is shown for context only, never used for automatic prescription.
+  { slug: 'tendinopathy_patients', name: 'Personas con tendinopatía', status: 'mixed' },
+  {
+    slug: 'athletes_patellar_tendinopathy',
+    name: 'Deportistas con tendinopatía rotuliana',
+    status: 'trained',
+  },
 ];
 
 export const OUTCOMES: [string, string, string][] = [
@@ -378,6 +397,22 @@ export const OUTCOMES: [string, string, string][] = [
   ['pain', 'Dolor', 'clinical'],
   ['injury_incidence', 'Incidencia de lesiones', 'clinical'],
   ['adherence', 'Adherencia', 'behaviour'],
+  ['eccentric_strength', 'Fuerza excéntrica', 'strength'],
+  ['load_velocity_relationship', 'Relación carga-velocidad y velocidad en el 1RM', 'strength'],
+  [
+    'lv_1rm_prediction_validity',
+    'Validez de la predicción del 1RM por perfil carga-velocidad',
+    'assessment',
+  ],
+  [
+    'effort_prediction_accuracy',
+    'Precisión en la estimación del esfuerzo (RIR/RPE)',
+    'autoregulation',
+  ],
+  ['perceived_exertion_rir', 'Esfuerzo percibido / repeticiones en reserva', 'monitoring'],
+  ['neuromuscular_fatigue', 'Fatiga neuromuscular (pérdida de velocidad)', 'neuromuscular'],
+  ['muscle_activation', 'Activación muscular (EMG)', 'neuromuscular'],
+  ['joint_kinematics', 'Cinemática articular (p. ej., valgo de rodilla)', 'biomechanics'],
 ];
 
 async function insertGlobal<T extends PgTable>(
