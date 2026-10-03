@@ -345,9 +345,7 @@ async function deleteLocalReliability_(ctx: RequestContext, id: string): Promise
 
 // ── Batteries ─────────────────────────────────────────────────────────────────
 
-async function batteryTemplates(
-  ctx: RequestContext,
-): Promise<
+async function batteryTemplates(ctx: RequestContext): Promise<
   (BatteryTemplate & {
     id: string;
     isGlobal: boolean;
@@ -434,17 +432,15 @@ async function createBattery_(ctx: RequestContext, input: unknown): Promise<{ id
       .returning({ id: assessmentBatteries.id });
     const seen = new Set<string>();
     const rows = d.tests.filter((t) => !seen.has(t.testId) && seen.add(t.testId));
-    await tx
-      .insert(batteryTests)
-      .values(
-        rows.map((t, i) => ({
-          batteryId: b!.id,
-          testId: t.testId,
-          position: i + 1,
-          isCore: t.isCore,
-          notes: t.notes ?? null,
-        })),
-      );
+    await tx.insert(batteryTests).values(
+      rows.map((t, i) => ({
+        batteryId: b!.id,
+        testId: t.testId,
+        position: i + 1,
+        isCore: t.isCore,
+        notes: t.notes ?? null,
+      })),
+    );
     await writeAudit(tx, ctx, {
       action: 'create',
       entityType: 'assessment_battery',
@@ -727,22 +723,20 @@ async function recomputeDerived(
   }
   await tx.delete(derivedMetrics).where(eq(derivedMetrics.assessmentId, assessmentId));
   if (metrics.length) {
-    await tx
-      .insert(derivedMetrics)
-      .values(
-        metrics.map((m) => ({
-          organizationId: ctx.actor.organizationId,
-          clientId,
-          assessmentId,
-          resultId: m.resultId,
-          metric: m.metric,
-          formula: m.formula,
-          value: String(m.value),
-          unit: m.unit,
-          isEstimate: m.isEstimate,
-          inputs: m.inputs,
-        })),
-      );
+    await tx.insert(derivedMetrics).values(
+      metrics.map((m) => ({
+        organizationId: ctx.actor.organizationId,
+        clientId,
+        assessmentId,
+        resultId: m.resultId,
+        metric: m.metric,
+        formula: m.formula,
+        value: String(m.value),
+        unit: m.unit,
+        isEstimate: m.isEstimate,
+        inputs: m.inputs,
+      })),
+    );
   }
 }
 

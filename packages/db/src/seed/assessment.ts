@@ -297,17 +297,15 @@ export async function seedAssessment(
           .returning({ id: assessmentBatteries.id });
         id = row!.id;
       }
-      await tx
-        .insert(batteryTests)
-        .values(
-          b.tests.map((t, i) => ({
-            batteryId: id,
-            testId: test(t.test),
-            position: i + 1,
-            isCore: t.core,
-            notes: t.notes ?? null,
-          })),
-        );
+      await tx.insert(batteryTests).values(
+        b.tests.map((t, i) => ({
+          batteryId: id,
+          testId: test(t.test),
+          position: i + 1,
+          isCore: t.core,
+          notes: t.notes ?? null,
+        })),
+      );
     }
     return {
       tests: testId.size,
