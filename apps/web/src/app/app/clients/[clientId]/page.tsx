@@ -4,7 +4,9 @@ import {
   listCatalog,
   listClientAudit,
   listConsents,
+  listExerciseTolerances,
   listHealthDeclarations,
+  listLibraryTaxonomies,
   listTrainers,
 } from '@tp/application';
 import { DomainError } from '@tp/domain';
@@ -23,6 +25,7 @@ import {
   HealthPanel,
   HistoryPanel,
   ProfilePanel,
+  TolerancesPanel,
 } from './panels';
 
 const TABS = [
@@ -155,11 +158,22 @@ export default async function ClientPage({
       {tab === 'objetivos' && catalog ? <GoalsPanel client={client} catalog={catalog} /> : null}
 
       {tab === 'salud' ? (
-        <HealthPanel
-          clientId={client.id}
-          data={await listHealthDeclarations(ctx, client.id)}
-          consents={await listConsents(ctx, client.id)}
-        />
+        <div className="flex flex-col gap-4">
+          <HealthPanel
+            clientId={client.id}
+            data={await listHealthDeclarations(ctx, client.id)}
+            consents={await listConsents(ctx, client.id)}
+          />
+          <TolerancesPanel
+            clientId={client.id}
+            rows={await listExerciseTolerances(ctx, client.id)}
+            patterns={(await listLibraryTaxonomies(ctx)).patterns}
+            hasConsent={
+              (await listConsents(ctx, client.id)).status.find((s) => s.purpose === 'health_data')
+                ?.active ?? false
+            }
+          />
+        </div>
       ) : null}
 
       {tab === 'privacidad' ? (

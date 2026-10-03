@@ -7,8 +7,11 @@ export const RATE_LIMITS = {
   windowMs: 15 * 60_000,
   /** Failed attempts per account (email) inside the window before lockout. */
   maxFailuresPerEmail: 5,
-  /** Attempts (any result) per IP inside the window. */
-  maxAttemptsPerIp: 30,
+  /**
+   * Failed attempts per IP inside the window. Successful logins are not counted: many clients
+   * of the same gym share one public IP.
+   */
+  maxFailuresPerIp: 50,
   lockoutMs: 15 * 60_000,
 } as const;
 
@@ -44,8 +47,14 @@ export async function isRateLimited(
     const [byIp] = await db
       .select({ n: count() })
       .from(loginAttempts)
-      .where(and(eq(loginAttempts.ipHash, ipHash), gt(loginAttempts.occurredAt, since)));
-    if ((byIp?.n ?? 0) >= RATE_LIMITS.maxAttemptsPerIp) return true;
+      .where(
+        and(
+          eq(loginAttempts.ipHash, ipHash),
+          eq(loginAttempts.success, false),
+          gt(loginAttempts.occurredAt, since),
+        ),
+      );
+    if ((byIp?.n ?? 0) >= RATE_LIMITS.maxFailuresPerIp) return true;
   }
   return false;
 }

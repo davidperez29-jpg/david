@@ -1,5 +1,11 @@
 import 'server-only';
-import { MemoryMailer, type AppContext, type Mailer } from '@tp/application';
+import {
+  LocalDiskStorage,
+  MemoryMailer,
+  type AppContext,
+  type FileStorage,
+  type Mailer,
+} from '@tp/application';
 import { keyedHash, keyRingFromBase64, type KeyRing } from '@tp/auth';
 import { createDb, type DbHandle } from '@tp/db';
 import { randomUUID } from 'node:crypto';
@@ -8,7 +14,9 @@ import { randomUUID } from 'node:crypto';
  * Process-wide singletons. Kept on globalThis so Next.js dev hot-reload does not open a new
  * connection pool on every change.
  */
-const g = globalThis as unknown as { __tp?: { db: DbHandle; keys: KeyRing; mailer: Mailer } };
+const g = globalThis as unknown as {
+  __tp?: { db: DbHandle; keys: KeyRing; mailer: Mailer; storage: FileStorage };
+};
 
 function singletons() {
   if (!g.__tp) {
@@ -19,6 +27,8 @@ function singletons() {
       keys: keyRingFromBase64(process.env.APP_ENCRYPTION_KEY),
       // No email provider configured yet (Phase 1): messages are kept in memory and logged in dev.
       mailer: new DevMailer(),
+      // Local disk until an S3-compatible bucket in the EU is configured.
+      storage: new LocalDiskStorage(process.env.FILE_STORAGE_DIR || `${process.cwd()}/.data/files`),
     };
   }
   return g.__tp;
@@ -39,6 +49,7 @@ export function baseContext(meta: { ip?: string | null; requestId?: string } = {
     db: s.db.db,
     keys: s.keys,
     mailer: s.mailer,
+    storage: s.storage,
     baseUrl: process.env.APP_BASE_URL ?? 'http://localhost:3000',
     now: () => new Date(),
     requestId: meta.requestId ?? randomUUID(),

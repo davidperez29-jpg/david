@@ -1,6 +1,7 @@
 import type { Database } from '@tp/db';
 import type { KeyRing } from '@tp/auth';
 import type { Actor } from '@tp/domain';
+import type { FileStorage } from './storage';
 
 export interface Mailer {
   send(message: { to: string; subject: string; text: string }): Promise<void>;
@@ -18,6 +19,7 @@ export interface AppContext {
   db: Database;
   keys: KeyRing;
   mailer: Mailer;
+  storage: FileStorage;
   baseUrl: string;
   now: () => Date;
   requestId?: string;

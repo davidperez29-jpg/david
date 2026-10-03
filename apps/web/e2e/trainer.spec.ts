@@ -30,7 +30,11 @@ test('trainer creates a client with goals and records consent + screening', asyn
   await page.getByRole('button', { name: 'Registrar consentimiento' }).click();
   await expect(page.getByRole('button', { name: 'Registrar declaración' })).toBeEnabled();
   await page.getByLabel('Resultado').selectOption('refer');
-  await page.getByRole('button', { name: 'Registrar', exact: true }).click();
+  await page
+    .locator('section')
+    .filter({ hasText: 'Cribado previo a la participación' })
+    .getByRole('button', { name: 'Registrar', exact: true })
+    .click();
   await expect(
     page.getByRole('alert').filter({ hasText: 'Requiere valoración por profesional sanitario.' }),
   ).toBeVisible();

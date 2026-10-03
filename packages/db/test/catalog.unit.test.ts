@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { RLS_POLICIES, INHERIT_SCOPE, CHECK_CLIENT_ORG } from '../src/rls/policies';
 import {
+  MUSCLE_GROUP_NAMES,
   PRESCRIPTION_PROFILES,
   PRESCRIPTION_VARIABLES,
   MUSCLES,
@@ -20,6 +21,9 @@ describe('structural catalogues', () => {
     ]) {
       expect(new Set(list).size).toBe(list.length);
     }
+  });
+  it('every muscle group has a display name', () => {
+    for (const m of MUSCLES) expect(MUSCLE_GROUP_NAMES[m[2]]).toBeDefined();
   });
   it('RIR range is 0–10 as required (§18)', () => {
     const rir = PRESCRIPTION_VARIABLES.find((v) => v.key === 'rir')!;

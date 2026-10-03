@@ -13,3 +13,6 @@ export * from './catalog';
 export * from './audit-queries';
 export * from './validation';
 export * from './rls';
+export * from './storage';
+export * from './library';
+export * from './library-import';

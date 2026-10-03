@@ -10,6 +10,8 @@ const csp = [
   "img-src 'self' data: blob:",
   "font-src 'self'",
   "connect-src 'self'",
+  // Exercise videos are embedded only from privacy-friendly players (§28).
+  'frame-src https://www.youtube-nocookie.com https://player.vimeo.com',
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",

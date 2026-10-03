@@ -164,3 +164,10 @@ describe('password reset and change', () => {
     );
   });
 });
+
+describe('IP rate limiting', () => {
+  it('does not block many successful logins from the same IP (shared gym wifi)', async () => {
+    const ctx = appContext({ ipHash: 'shared-gym-ip' });
+    for (let i = 0; i < 35; i++) await login(ctx, { email: adminEmail(), password: PASSWORD });
+  });
+});

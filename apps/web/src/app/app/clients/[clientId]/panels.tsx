@@ -24,6 +24,7 @@ import { Badge, Card, EmptyState } from '@/components/ui/card';
 import { Field, Input, Select, Textarea } from '@/components/ui/field';
 import { FormError, useApiAction } from '@/components/use-form';
 import { formatDate, label, LABELS } from '@/lib/labels';
+import { ExercisePicker } from '@/components/library/exercise-picker';
 
 const Saved = ({ show }: { show: boolean }) =>
   show ? (
@@ -776,6 +777,123 @@ export function HistoryPanel({
         </Button>
       </form>
       <FormError error={error} />
+    </Card>
+  );
+}
+
+interface ToleranceRow {
+  id: string;
+  kind: string;
+  reason: string | null;
+  exerciseName: string | null;
+  patternName: string | null;
+}
+
+/** [SALUD] Exercises or patterns the client does or does not tolerate (§10 del encargo). */
+export function TolerancesPanel({
+  clientId,
+  rows,
+  patterns,
+  hasConsent,
+}: {
+  clientId: string;
+  rows: ToleranceRow[];
+  patterns: { id: string; name: string }[];
+  hasConsent: boolean;
+}) {
+  const { run, pending, error } = useApiAction();
+  const [target, setTarget] = useState<{
+    type: 'exercise' | 'pattern';
+    id: string;
+    name: string;
+  } | null>(null);
+  const [kind, setKind] = useState('not_tolerated');
+  const [reason, setReason] = useState('');
+  return (
+    <Card title="Ejercicios tolerados y no tolerados">
+      {rows.length === 0 ? (
+        <EmptyState>Sin registros.</EmptyState>
+      ) : (
+        <ul className="divide-y divide-border text-sm">
+          {rows.map((r) => (
+            <li key={r.id} className="flex items-center justify-between gap-2 py-2">
+              <span>
+                <Badge
+                  tone={r.kind === 'tolerated' ? 'ok' : r.kind === 'restricted' ? 'warn' : 'danger'}
+                >
+                  {label('toleranceKind', r.kind)}
+                </Badge>{' '}
+                {r.exerciseName ?? `Patrón: ${r.patternName}`}
+                {r.reason ? <span className="text-muted"> · {r.reason}</span> : null}
+              </span>
+              <Button
+                size="sm"
+                variant="ghost"
+                disabled={pending}
+                onClick={() => run(`/clients/${clientId}/tolerances/${r.id}`, 'DELETE')}
+              >
+                Quitar
+              </Button>
+            </li>
+          ))}
+        </ul>
+      )}
+      <div className="mt-3 grid gap-2 md:grid-cols-4">
+        <ExercisePicker
+          ariaLabel="Ejercicio"
+          onPick={(h) => setTarget({ type: 'exercise', id: h.id, name: h.name })}
+        />
+        <Select
+          aria-label="o patrón"
+          placeholder="…o un patrón completo"
+          value={target?.type === 'pattern' ? target.id : ''}
+          onChange={(e) =>
+            setTarget(
+              e.target.value
+                ? {
+                    type: 'pattern',
+                    id: e.target.value,
+                    name: patterns.find((p) => p.id === e.target.value)!.name,
+                  }
+                : null,
+            )
+          }
+          options={patterns.map((p) => ({ value: p.id, label: p.name }))}
+        />
+        <Select
+          aria-label="Tolerancia"
+          value={kind}
+          onChange={(e) => setKind(e.target.value)}
+          options={Object.entries(LABELS.toleranceKind).map(([v, l]) => ({ value: v, label: l }))}
+        />
+        <Input
+          aria-label="Motivo"
+          placeholder="Motivo (sin datos médicos innecesarios)"
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+        />
+      </div>
+      {target ? <p className="mt-1 text-xs text-muted">Seleccionado: {target.name}</p> : null}
+      <FormError error={error} />
+      <Button
+        className="mt-2"
+        disabled={!target || pending || !hasConsent}
+        onClick={async () => {
+          if (!target) return;
+          if (
+            await run(`/clients/${clientId}/tolerances`, 'POST', {
+              [target.type === 'exercise' ? 'exerciseId' : 'movementPatternId']: target.id,
+              kind,
+              reason,
+            })
+          ) {
+            setTarget(null);
+            setReason('');
+          }
+        }}
+      >
+        Registrar
+      </Button>
     </Card>
   );
 }

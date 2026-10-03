@@ -217,13 +217,23 @@ export const exercises = pgTable(
     /** Plyometric contacts per repetition (for weekly contact counts). */
     contactsPerRep: smallint('contacts_per_rep'),
     status: pubStatus('status').notNull().default('draft'),
+    /** Provenance, e.g. 'excel:Rutina_General_1' or 'manual'. */
+    source: text('source').notNull().default('manual'),
+    sourceRef: text('source_ref'),
+    /** Imported or auto-classified data that a trainer must check before publishing. */
+    needsReview: boolean('needs_review').notNull().default(false),
+    reviewNotes: text('review_notes'),
     ...timestamps(),
     ...authorship(),
     version: version(),
   },
   (t) => [
     unique('exercises_org_slug_uq').on(t.organizationId, t.slug).nullsNotDistinct(),
-    index('exercises_name_trgm_idx').using('gin', sql`${t.name} gin_trgm_ops`),
+    index('exercises_name_trgm_idx').using(
+      'gin',
+      sql`lower(immutable_unaccent(${t.name})) gin_trgm_ops`,
+    ),
+    index('exercises_status_idx').on(t.organizationId, t.status),
     index('exercises_pattern_idx').on(t.movementPatternId),
     check(
       'exercises_complexity_ck',

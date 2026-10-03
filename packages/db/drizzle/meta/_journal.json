@@ -36,6 +36,20 @@
       "when": 1791035696441,
       "tag": "0004_rls",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1791036801683,
+      "tag": "0005_search_functions",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1791036803441,
+      "tag": "0006_library_provenance",
+      "breakpoints": true
     }
   ]
 }

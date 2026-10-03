@@ -14,9 +14,12 @@ import {
   createClient,
   createInvitation,
   grantConsent,
+  importExerciseBank,
+  type ImportedBankEntry,
   listCatalog,
   loadActor,
   MemoryMailer,
+  MemoryStorage,
   recordScreening,
   resolveSession,
   type AppContext,
@@ -29,6 +32,7 @@ const ctx: AppContext = {
   db,
   keys: keyRingFromBase64(process.env.APP_ENCRYPTION_KEY),
   mailer: new MemoryMailer(),
+  storage: new MemoryStorage(),
   baseUrl: process.env.APP_BASE_URL ?? 'http://localhost:3000',
   now: () => new Date(),
 };
@@ -420,6 +424,18 @@ for (const s of specs) {
     });
     await acceptAs(inv.link, String(s.basics.firstName));
   }
+}
+
+// Exercise library: the user's methodology bank as reviewable drafts (skip with DEMO_SKIP_BANK=1).
+if (!process.env.DEMO_SKIP_BANK) {
+  const { readFileSync } = await import('node:fs');
+  const path = await import('node:path');
+  const file = path.resolve(import.meta.dirname, '../../../seed-data/exercise-bank/bank.json');
+  const { entries } = JSON.parse(readFileSync(file, 'utf8')) as { entries: ImportedBankEntry[] };
+  const report = await importExerciseBank(lucia, entries);
+  console.log(
+    `Exercise bank: ${report.created} drafts, ${report.videos} videos pending verification.`,
+  );
 }
 
 await close();

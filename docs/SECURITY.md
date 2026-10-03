@@ -8,7 +8,7 @@
 |---|---|---|
 | Contraseñas | argon2id (m = 19 MiB, t = 2, p = 1); mínimo 12 caracteres, máximo 128; rechazo de triviales y de las que contienen el email | `packages/auth/src/password.ts`, `packages/domain/src/iam/password-policy.ts` |
 | Enumeración de cuentas | Mismo mensaje y tiempo similar (verificación contra hash ficticio) para usuario inexistente y contraseña errónea; la recuperación de contraseña siempre responde OK | `auth-service.ts` |
-| Fuerza bruta | Bloqueo de la cuenta 15 min tras 5 fallos; límite por email (5 fallos / 15 min) y por IP (30 intentos / 15 min); claves seudonimizadas con HMAC | `rate-limit.ts`, `auth-service.ts` |
+| Fuerza bruta | Bloqueo de la cuenta 15 min tras 5 fallos; límite por email (5 fallos / 15 min) y por IP (50 fallos / 15 min; los inicios de sesión correctos no cuentan, porque muchos clientes de un mismo gimnasio comparten IP); claves seudonimizadas con HMAC | `rate-limit.ts`, `auth-service.ts` |
 | Sesiones | Token opaco de 256 bits; en BD solo el SHA-256; cookie `HttpOnly`, `Secure` (prod), `SameSite=Lax`; inactividad 12 h / máximo 7 d para staff y 30 d / 90 d para clientes; revocación al desactivar usuario, cambiar o restablecer contraseña | `session.ts`, `server/session.ts` |
 | 2FA | TOTP (RFC 6238) opcional para todos, recomendado para staff; secreto cifrado; la sesión queda en `second_factor_required` hasta verificar | `totp.ts`, `/login/2fa`, `/app/settings` |
 | Invitaciones | Únicas, de 7 días, de un solo uso, token hasheado; una nueva anula las pendientes del mismo email; solo ADMIN invita a staff | `invitations.ts` |

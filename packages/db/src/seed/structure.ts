@@ -68,6 +68,28 @@ export const MUSCLES: [string, string, string, 'lower' | 'upper' | 'trunk'][] = 
   ['erector_spinae', 'Erectores espinales', 'lower_back', 'trunk'],
 ];
 
+/** Display names of muscle groups (used to count weekly sets per group). */
+export const MUSCLE_GROUP_NAMES: Record<string, string> = {
+  quadriceps: 'Cuádriceps',
+  glutes: 'Glúteos',
+  hamstrings: 'Isquiosurales',
+  adductors: 'Aductores',
+  hip_flexors: 'Flexores de cadera',
+  calves: 'Gemelo-sóleo',
+  lower_leg: 'Tibial anterior',
+  foot: 'Pie',
+  chest: 'Pectoral',
+  back: 'Espalda',
+  deltoids: 'Deltoides',
+  rotator_cuff: 'Manguito rotador',
+  scapular: 'Escápula',
+  biceps: 'Bíceps',
+  triceps: 'Tríceps',
+  forearm: 'Antebrazo',
+  core: 'Core',
+  lower_back: 'Zona lumbar',
+};
+
 /** Exercise categories (§15). An exercise may carry several. */
 export const EXERCISE_CATEGORIES: [string, string][] = [
   ['strength', 'Fuerza'],

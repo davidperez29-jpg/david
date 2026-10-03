@@ -7,3 +7,4 @@ export * from './clients/consents';
 export * from './clients/health';
 export * from './audit/diff';
 export * from './shared/errors';
+export * from './library';

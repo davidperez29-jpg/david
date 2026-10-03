@@ -6,8 +6,16 @@ test('client sees today screen and manages consent on mobile', async ({ page }) 
   await expect(page.getByText('Entrenamiento de hoy')).toBeVisible();
   await page.getByRole('link', { name: 'Privacidad' }).click();
   const photo = page.locator('li').filter({ hasText: 'Fotografías' });
-  await photo.getByRole('button', { name: 'Otorgar consentimiento' }).click();
-  await expect(photo.getByRole('button', { name: 'Retirar consentimiento' })).toBeVisible();
+  // Idempotent across runs: toggle whatever the current state is, then toggle back.
+  const grant = photo.getByRole('button', { name: 'Otorgar consentimiento' });
+  const revoke = photo.getByRole('button', { name: 'Retirar consentimiento' });
+  await expect(grant.or(revoke)).toBeVisible();
+  if (await revoke.isVisible()) {
+    await revoke.click();
+    await expect(grant).toBeVisible();
+  }
+  await grant.click();
+  await expect(revoke).toBeVisible();
   await page.getByRole('link', { name: 'Perfil' }).click();
   await page.getByLabel('Preferencias').fill('Prefiero entrenar por la mañana');
   await page.getByRole('button', { name: 'Guardar', exact: true }).click();

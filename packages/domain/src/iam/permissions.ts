@@ -27,6 +27,9 @@ export const PERMISSIONS = [
   'users:manage',
   'invitations:create',
   'catalog:read',
+  'library:read',
+  'library:write',
+  'library:publish',
   'privacy:export_subject',
 ] as const;
 export type Permission = (typeof PERMISSIONS)[number];
@@ -50,6 +53,9 @@ export const ROLE_PERMISSIONS: Matrix = {
     'users:manage': 'org',
     'invitations:create': 'org',
     'catalog:read': 'org',
+    'library:read': 'org',
+    'library:write': 'org',
+    'library:publish': 'org',
     'privacy:export_subject': 'org',
   },
   TRAINER: {
@@ -67,6 +73,10 @@ export const ROLE_PERMISSIONS: Matrix = {
     'audit:read': 'assigned',
     'invitations:create': 'assigned',
     'catalog:read': 'org',
+    // Shared library of the organization (§45: el entrenador gestiona ejercicios).
+    'library:read': 'org',
+    'library:write': 'org',
+    'library:publish': 'org',
   },
   CLIENT: {
     'clients:read': 'own',
