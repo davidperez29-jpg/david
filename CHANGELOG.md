@@ -2,6 +2,25 @@
 
 Formato: fecha · cambio · motivo · archivos · impacto.
 
+## 2026-10-03 — Fase 8: seguimiento y alertas
+
+- **Cambio:** dominio de seguimiento (§13.7).
+  - **Incluye:** adherencia (24/21 = 87,5 %), carga interna sRPE, monotonía y tensión descriptivas (sin ACWR), bienestar y 10 reglas de alerta configurables que describen y nunca diagnostican.
+  - **Archivos:** `packages/domain/src/monitoring/*`.
+- **Cambio:** evidencia nueva verificada en PubMed.
+  - **Datos:** Foster 2001, Haddad 2017, Foster 1998 e Impellizzeri 2020; 3 afirmaciones.
+  - **Archivos:** `seed-data/evidence/monitoring.json`.
+- **Cambio:** evaluación de alertas como código de sistema tras confirmar (`afterCommit`) y en el trabajo diario (`pnpm monitor:daily`).
+  - **Incluye:** una alerta viva por situación, escalado en el mismo registro, resolución automática, 7 días de espera tras resolver una persona, notificación de las rojas.
+  - **Archivos:** `packages/application/src/monitoring.ts`, migración `0015`.
+- **Cambio:** reglas por centro versionadas y auditadas (solo ADMIN); desactivación por cliente; valoración por ejercicio (también sin conexión); RPE previsto de la sesión.
+  - **Impacto:** permisos `monitoring:read`, `alerts:manage` y `monitoring:rules`.
+- **Cambio:** interfaz.
+  - **Incluye:** menú «Alertas •N», página de alertas, Hoy con adherencia y alertas, pestaña Seguimiento con gráfico, tabla y evidencia, editor de reglas y «Tu constancia» en la app del cliente.
+- **Cambio:** demo con adherencias del 45 % al 100 % y alertas de cada color.
+- **Cambio:** tests: 261 unitarios, 107 de integración y 23 E2E.
+- **Cambio:** documentación: `MONITORING.md`; `API.md`, `TESTING.md`, `DATABASE.md`, `ROADMAP.md`, `SCIENTIFIC_FRAMEWORK.md`, `SESSIONS.md`, `MASTER_SPECIFICATION.md` y `README.md` actualizados.
+
 ## 2026-10-03 — Fase 7: sesiones y app del cliente
 
 - **Cambio:** esquema y dominio de ejecución (§9, §4.5).

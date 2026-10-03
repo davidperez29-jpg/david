@@ -242,3 +242,12 @@ Auditoría:
   - `exercise_substitutions.client_mutation_id` (único): idempotencia.
 - Migración `0014_rls_v3`: función `notify_client_trainers(cliente, tipo, título, cuerpo, enlace)` `SECURITY DEFINER`. Solo admite el propio cliente o personal, solo notifica a los entrenadores activos del cliente y `EXECUTE` se concede únicamente a `app_runtime`. Regenerada desde el mapa.
 - Idempotencia: `set_logs.client_mutation_id` y `exercise_substitutions.client_mutation_id` son únicos; `attendance`, `feedback` y `readiness` usan *upsert* por sesión o por día.
+
+## Seguimiento (Fase 8)
+
+- Migración `0015`:
+  - `sessions.target_session_rpe`: RPE previsto de la sesión;
+  - `alerts.alert_key` con el índice único parcial `alerts_live_key_uq (client_id, alert_key) WHERE status <> 'resolved'`: una alerta viva por situación.
+- Reglas de alerta: filas `rules` de dominio `monitoring_alert` en un `rule_sets` versionado por organización (`published` → `retired`). Sin filas se aplican los valores por defecto del dominio.
+- Desactivación por cliente: `client_rule_overrides`.
+- Catálogo: nuevos resultados `training_load_quantification` e `illness_incidence`.

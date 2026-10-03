@@ -171,3 +171,20 @@ Detalle en `SESSIONS.md`. Para el cliente, una sesión no publicada no existe (4
 | `POST /set-logs/{id}/resolve` | `sessions:review` | `{note?}` | Marca un registro como revisado (auditado). |
 
 `PATCH /session-exercises/{id}` acepta además `alternativeExerciseIds` (hasta 5, visibles para la organización y distintos del ejercicio).
+
+## Seguimiento (Fase 8)
+
+Detalle en `MONITORING.md`. Las alertas nunca son visibles para el cliente.
+
+| Método y ruta | Permiso | Entrada | Descripción |
+|---|---|---|---|
+| `GET /clients/{id}/monitoring` | `monitoring:read` | — | Adherencia de 28 y 84 días, semanas (carga, monotonía, tensión, adherencia), últimas sesiones, bienestar y, solo para el personal, alertas vivas y reglas desactivadas. |
+| `GET /alerts?status=live\|open\|seen\|resolved&severity=&clientId=&limit=` | `alerts:manage` | — | Ordenadas por gravedad y fecha. |
+| `POST /alerts/{id}/status` | `alerts:manage` | `{status: seen\|resolved, note?}` | Auditado. |
+| `POST /clients/{id}/alerts/refresh` | `alerts:manage` | — | Recalcula tras confirmar. |
+| `PUT /clients/{id}/rule-overrides` | `alerts:manage` | `{ruleKey, enabled, reason?}` | Desactiva o reactiva una regla para el cliente (auditado). |
+| `GET /monitoring/rules` · `PUT` | `monitoring:read` / `monitoring:rules` | `{rules: [{key, enabled, parameters}], notes?}` | El `PUT` crea una nueva versión de reglas; valida los rangos y la coherencia (rojo ≤ amarillo). |
+| `GET /monitoring/overview` | `alerts:manage` | — | Adherencia de 28 días y recuento de alertas por color de los clientes accesibles. |
+| `POST /exercise-feedback` | `sessions:log` | `{sessionExerciseId, difficulty?, pain?, comment?}` | También en `/sync` como `type: exercise_feedback`. |
+
+`PATCH /plan-sessions/{id}` acepta `targetSessionRpe` (0–10).

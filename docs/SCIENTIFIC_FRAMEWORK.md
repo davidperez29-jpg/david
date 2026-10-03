@@ -128,9 +128,9 @@ Para cada fuente se copiaron del registro de PubMed (con el año de publicación
 
 | Elemento | Cantidad |
 |---|---|
-| Fuentes (deduplicadas por PMID/DOI) | 135, todas con PMID; 134 verificadas y 1 retractada |
-| Hallazgos | 218 |
-| Afirmaciones | 80, de las cuales 79 publicadas |
+| Fuentes (deduplicadas por PMID/DOI) | 139, todas con PMID; 138 verificadas y 1 retractada |
+| Hallazgos | 222 |
+| Afirmaciones | 83, de las cuales 82 publicadas |
 | Métodos | 23, todos publicados |
 
 | Nivel de las afirmaciones | A | B | C | D | E | F | G | H |
@@ -184,3 +184,21 @@ La comprobación encontró **28 correcciones** a referencias de los Excel y del 
 | Uso de afirmaciones y aplicabilidad en el motor de decisiones | 9 |
 | Base de tests de evaluación con valores de referencia verificados | 5 |
 | Alertas de retracción y revisión periódica de fuentes | 15 |
+
+## Monitorización (Fase 8)
+
+`seed-data/evidence/monitoring.json` añade 4 fuentes verificadas en PubMed el 2026-10-03:
+- **Foster 2001:** validez del método sRPE (PMID 11708692; sin DOI en PubMed).
+- **Haddad 2017:** revisión de validez y fiabilidad del sRPE ([10.3389/fnins.2017.00612](https://doi.org/10.3389/fnins.2017.00612)).
+- **Foster 1998:** monotonía y tensión, observacional ([10.1097/00005768-199807000-00023](https://doi.org/10.1097/00005768-199807000-00023)).
+- **Impellizzeri 2020:** límites del ACWR ([10.1123/ijspp.2019-0864](https://doi.org/10.1123/ijspp.2019-0864)).
+
+Afirmaciones:
+
+| Afirmación | Tipo | Confianza | Uso |
+|---|---|---|---|
+| `c_srpe_valido` | Hecho | Moderada | Respalda la carga interna. |
+| `c_monotonia_descriptiva` | Inferencia | Baja | Monotonía y tensión, solo como descriptores. |
+| `c_acwr_no_usar` | Hecho | Baja | Justifica no calcular el ACWR. |
+
+Ver `MONITORING.md`.

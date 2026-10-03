@@ -104,3 +104,29 @@ Pendiente para fases siguientes: evaluación, programa, sesión, ejercicios, fee
   - calendario del cliente y API de personal cerrada para el cliente;
   - revisión del entrenador, decisión sobre una sustitución y modo sala;
   - publicación visible en el plan.
+
+## 8. Resultado en la entrega de la Fase 8
+
+- Unidad: 261 tests ✔. `monitoring.unit.test.ts` cubre:
+  - **24 planificadas / 21 realizadas = 87,5 %** (criterio de aceptación);
+  - exclusiones de la adherencia;
+  - carga sRPE, monotonía y tensión semanales;
+  - bienestar;
+  - las 10 reglas, con sus casos que no deben disparar;
+  - el dolor nunca usa lenguaje diagnóstico;
+  - validación y valores por defecto de la configuración.
+- Integración: 107 tests ✔. `monitoring.int.test.ts` cubre:
+  - 87,5 % de extremo a extremo con 24 sesiones reales;
+  - el cliente ve sus números y no las alertas; aislamiento entre organizaciones;
+  - alertas tras los eventos, sin duplicados;
+  - dolor solo con consentimiento; roja con derivación y notificación al entrenador asignado;
+  - una alerta resuelta por una persona no reaparece; desactivar una regla para un cliente la resuelve;
+  - trabajo diario;
+  - reglas solo para ADMIN, validadas, versionadas y aplicadas (amarilla → roja en el mismo registro);
+  - valoración por ejercicio idempotente desde la cola.
+- E2E: 23 tests ✔. Nuevos:
+  - Hoy con alertas de los tres colores;
+  - la ficha de seguimiento con su evidencia;
+  - resolver una alerta;
+  - umbrales de solo lectura para el entrenador (y 403 en la API) y nueva versión guardada por ADMIN;
+  - «Tu constancia» del cliente.

@@ -2,7 +2,7 @@
 
 Sistema profesional para **evaluar, programar, entrenar y hacer seguimiento** de clientes, presencial y online, con trazabilidad científica y control total del entrenador.
 
-> **Estado actual: Fase 7 completada**: evaluación, biblioteca científica verificada en PubMed, biblioteca de ejercicios, planificación desde plantillas y, ahora, la app del cliente (instalable y **sin conexión**) para registrar sesiones con un toque, sustituciones en vivo, cierre con RPE de la sesión, modo sala y revisión del entrenador. Siguiente: Fase 8 (seguimiento: carga interna, adherencia y alertas).
+> **Estado actual: Fase 8 completada**: evaluación, bibliotecas científica (verificada en PubMed) y de ejercicios, planificación desde plantillas, app del cliente sin conexión y, ahora, **seguimiento**: adherencia, carga interna (método sRPE) y alertas 🟢🟡🔴 configurables que describen y nunca diagnostican. Siguiente: Fase 9 (dashboards).
 
 ## Arranque rápido
 
@@ -11,6 +11,7 @@ pnpm install
 cp .env.example .env            # APP_ENCRYPTION_KEY: openssl rand -base64 32
 pnpm db:reset && pnpm db:seed:demo
 pnpm dev                        # http://localhost:3000
+pnpm monitor:daily              # alertas diarias (programar con cron)
 ```
 
 Usuario demo: `lucia.moreno@example.com` / `demo-entrenamiento-2026`. Más detalles en [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
@@ -26,6 +27,7 @@ Usuario demo: `lucia.moreno@example.com` / `demo-entrenamiento-2026`. Más detal
 | [`docs/ASSESSMENT.md`](docs/ASSESSMENT.md)                     | Evaluación: tests, fiabilidad, referencias, interpretación del cambio.                                                                                                                                    |
 | [`docs/PLANNING.md`](docs/PLANNING.md)                         | Planificación: plantillas, prescripción, progresión, revisiones.                                                                                                                                          |
 | [`docs/SESSIONS.md`](docs/SESSIONS.md)                         | Sesiones: publicación, reproductor, modo sin conexión, sustituciones, modo sala.                                                                                                                          |
+| [`docs/MONITORING.md`](docs/MONITORING.md)                     | Seguimiento: adherencia, carga interna, reglas y ciclo de vida de las alertas.                                                                                                                            |
 | [`docs/EXERCISE_LIBRARY.md`](docs/EXERCISE_LIBRARY.md)         | Biblioteca de ejercicios y banco importado.                                                                                                                                                               |
 | [`docs/SECURITY.md`](docs/SECURITY.md)                         | Controles de seguridad y RGPD.                                                                                                                                                                            |
 | [`docs/TESTING.md`](docs/TESTING.md)                           | Cómo ejecutar los tests y qué cubren.                                                                                                                                                                     |

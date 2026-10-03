@@ -811,7 +811,7 @@ async function clientMonitoring_(ctx: RequestContext, clientId: string) {
         sessionRpe: s.sessionRpe,
         targetRpe: s.targetRpe,
         durationMin: s.durationMin,
-        load: sessionLoad(s.sessionRpe, s.durationMin),
+        load: sessionLoad(s.sessionRpe, s.durationMin ?? s.estimatedMin),
         fatigue: s.fatigue,
         comment: s.comment,
       })),

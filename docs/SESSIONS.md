@@ -100,7 +100,7 @@ Las tablas de seguimiento son de tipo `client_owned`, con escritura del cliente.
 
 | Elemento | Fase |
 |---|---|
-| Carga interna (sRPE × duración), adherencia y alertas a partir de los registros | 8 |
+| ~~Carga interna (sRPE × duración), adherencia y alertas a partir de los registros~~ Hecho: ver `MONITORING.md` | 8 |
 | Propuestas de progresión (doble progresión, ajuste por RIR) a partir de los registros, como recomendaciones | 8–11 |
 | Notificaciones push y por correo (ahora solo dentro de la app) | 13 |
 | Reabrir una sesión cerrada desde el móvil del cliente (ahora la corrige el entrenador) | Según uso |
