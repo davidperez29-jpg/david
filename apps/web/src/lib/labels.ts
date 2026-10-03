@@ -161,6 +161,23 @@ export const LABELS = {
     preference: 'Preferencia',
     fatigue: 'Fatiga',
   },
+  attendance: {
+    completed: 'Completada',
+    partial: 'Parcial',
+    missed: 'No realizada',
+    rescheduled: 'Reprogramada',
+    cancelled_by_trainer: 'Cancelada por el entrenador',
+  },
+  absenceReason: {
+    illness: 'Enfermedad',
+    injury_or_pain: 'Lesión o dolor',
+    work: 'Trabajo',
+    travel: 'Viaje',
+    fatigue: 'Cansancio',
+    motivation: 'Falta de motivación',
+    schedule: 'Horario',
+    other: 'Otro motivo',
+  },
   toleranceKind: {
     tolerated: 'Tolerado',
     not_tolerated: 'No tolerado',

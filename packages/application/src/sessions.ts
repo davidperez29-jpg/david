@@ -26,6 +26,7 @@ import {
   DomainError,
   hasActiveConsent,
   localDate,
+  parseVideoUrl,
   PAIN_ALERT_THRESHOLD,
   PAIN_MESSAGE,
   pickToday,
@@ -417,6 +418,19 @@ async function getPlayerSession_(ctx: RequestContext, sessionId: string) {
     ctx.db.select().from(feedback).where(eq(feedback.sessionId, sessionId)),
   ]);
   const nameOf = new Map(names.map((x) => [x.id, x.name]));
+  const extra = [
+    ...new Set(
+      subs.flatMap((x) =>
+        x.chosenExerciseId && !nameOf.has(x.chosenExerciseId) ? [x.chosenExerciseId] : [],
+      ),
+    ),
+  ];
+  if (extra.length)
+    for (const x of await ctx.db
+      .select({ id: exercises.id, name: exercises.name })
+      .from(exercises)
+      .where(inArray(exercises.id, extra)))
+      nameOf.set(x.id, x.name);
   /** Last time each exercise was done: all sets of that most recent session. */
   const last = new Map<
     string,
@@ -502,9 +516,11 @@ async function getPlayerSession_(ctx: RequestContext, sessionId: string) {
             cues: cues
               .filter((c) => c.exerciseId === r.se.exerciseId)
               .map((c) => ({ kind: c.kind, text: c.text })),
-            media: m
-              ? { type: m.type, provider: m.provider, url: m.urlOrKey, title: m.title }
-              : null,
+            /** Only verified videos, embedded with privacy-friendly players (§28). */
+            video:
+              m && m.type === 'video'
+                ? { embedUrl: parseVideoUrl(m.urlOrKey)?.embedUrl ?? null, title: m.title }
+                : null,
             alternatives: r.se.alternativeExerciseIds.map((id) => ({
               id,
               name: nameOf.get(id) ?? '—',
@@ -533,6 +549,7 @@ async function getPlayerSession_(ctx: RequestContext, sessionId: string) {
               reason: x.reason,
               status: x.decidedAt ? (x.chosenExerciseId ? 'approved' : 'rejected') : 'pending',
               chosenExerciseId: x.chosenExerciseId,
+              chosenName: x.chosenExerciseId ? (nameOf.get(x.chosenExerciseId) ?? null) : null,
               comment: x.comment,
             })),
             logs: logs
@@ -1119,7 +1136,8 @@ async function clientSessionReview_(ctx: RequestContext, clientId: string) {
 /** Pending items across the trainer's clients (RLS keeps it to assigned clients). */
 async function reviewInbox_(ctx: RequestContext) {
   requirePermission(ctx, 'sessions:review');
-  const [subs, logs] = await Promise.all([
+  const today = localDate(ctx.now());
+  const [subs, logs, todays] = await Promise.all([
     ctx.db
       .select({
         id: exerciseSubstitutions.id,
@@ -1151,8 +1169,30 @@ async function reviewInbox_(ctx: RequestContext) {
       .where(eq(setLogs.needsReview, true))
       .groupBy(setLogs.sessionId, setLogs.clientId, clients.firstName, clients.lastName)
       .limit(50),
+    ctx.db
+      .select({
+        id: sessions.id,
+        clientId: sessions.clientId,
+        title: sessions.title,
+        dayLabel: sessions.dayLabel,
+        time: sessions.scheduledTime,
+        published: sessions.published,
+        attendance: attendance.status,
+        firstName: clients.firstName,
+        lastName: clients.lastName,
+      })
+      .from(sessions)
+      .innerJoin(clients, eq(clients.id, sessions.clientId))
+      .innerJoin(microcycles, eq(microcycles.id, sessions.microcycleId))
+      .innerJoin(mesocycles, eq(mesocycles.id, microcycles.mesocycleId))
+      .innerJoin(phases, eq(phases.id, mesocycles.phaseId))
+      .innerJoin(trainingPlans, eq(trainingPlans.id, phases.planId))
+      .leftJoin(attendance, eq(attendance.sessionId, sessions.id))
+      .where(and(eq(sessions.scheduledDate, today), eq(trainingPlans.status, 'active')))
+      .orderBy(asc(sessions.scheduledTime), asc(clients.lastName))
+      .limit(100),
   ]);
-  return { substitutions: subs, flaggedLogs: logs };
+  return { today, substitutions: subs, flaggedLogs: logs, sessionsToday: todays };
 }
 
 async function decideSubstitution_(ctx: RequestContext, id: string, input: unknown): Promise<void> {

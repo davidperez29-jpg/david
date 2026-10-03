@@ -73,3 +73,12 @@ describe('session execution rules', () => {
     expect(sessionCompletion(12, 6)).toEqual({ percent: 50, status: 'partial' });
   });
 });
+
+describe('localDate', () => {
+  it('uses the Spanish calendar day, not UTC', async () => {
+    const { localDate } = await import('../src/sessions');
+    // 23:30 UTC on 3 Oct is already 4 Oct in Madrid (CEST, UTC+2).
+    expect(localDate(new Date('2026-10-03T23:30:00Z'))).toBe('2026-10-04');
+    expect(localDate(new Date('2026-10-03T10:00:00Z'))).toBe('2026-10-03');
+  });
+});

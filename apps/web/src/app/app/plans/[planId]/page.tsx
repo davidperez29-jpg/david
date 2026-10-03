@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 import { Badge, Card } from '@/components/ui/card';
 import { formatDate, formatDateTime, label } from '@/lib/labels';
 import { requireStaff } from '@/server/session';
+import { PublishButton } from '@/components/sessions/publish-button';
 import { CopyWeekButton, PlanActions, WeekTypeSelect } from '../forms';
 
 type SP = { view?: string };
@@ -116,6 +117,19 @@ export default async function PlanPage({
           {` · revisión ${p.currentRevision}`}
         </span>
       </div>
+      <div className="flex flex-wrap items-center gap-2 text-sm">
+        <span className="text-muted">
+          {allWeeks.flatMap((w) => w.sessions).filter((s) => s.published).length} de{' '}
+          {allWeeks.flatMap((w) => w.sessions).length} sesiones publicadas al cliente
+        </span>
+        <PublishButton
+          scope="plan"
+          id={planId}
+          published={false}
+          disabled={p.status !== 'active'}
+          label="Publicar todo el plan"
+        />
+      </div>
       <p className="text-xs text-muted">
         El sistema no modifica un plan activo por su cuenta: los cambios automáticos llegarán como
         propuestas que aceptas o rechazas. Tus cambios quedan auditados.
@@ -176,6 +190,19 @@ export default async function PlanPage({
                             microcycleId={w.id}
                             weeks={allWeeks.map((x) => ({ id: x.id, weekIndex: x.weekIndex }))}
                           />
+                          {w.sessions.length ? (
+                            <PublishButton
+                              scope="week"
+                              id={w.id}
+                              published={w.sessions.every((s) => s.published)}
+                              disabled={p.status !== 'active'}
+                              label={
+                                w.sessions.every((s) => s.published)
+                                  ? `Retirar semana ${w.weekIndex}`
+                                  : `Publicar semana ${w.weekIndex}`
+                              }
+                            />
+                          ) : null}
                         </div>
                         <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
                           {w.sessions.map((s) => (
@@ -187,6 +214,9 @@ export default async function PlanPage({
                               <span className="font-medium">
                                 {s.dayLabel} · {s.title}
                               </span>
+                              {s.published ? (
+                                <span className="ml-1 text-xs text-ok">· publicada</span>
+                              ) : null}
                               <span className="block text-xs text-muted">
                                 {s.scheduledDate ? formatDate(s.scheduledDate) : 'Sin fecha'} ·{' '}
                                 {s.exercises} ejercicios

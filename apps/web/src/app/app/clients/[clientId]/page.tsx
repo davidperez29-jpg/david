@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import {
+  clientSessionReview,
   clientAssessmentProgress,
   getClient,
   listAssessmentTests,
@@ -44,6 +45,7 @@ const TABS = [
   ['objetivos', 'Objetivos'],
   ['evaluaciones', 'Evaluaciones'],
   ['planificacion', 'Planificación'],
+  ['sesiones', 'Sesiones'],
   ['salud', 'Salud declarada'],
   ['privacidad', 'Consentimientos'],
   ['equipo', 'Entrenadores'],
@@ -170,6 +172,8 @@ export default async function ClientPage({
       {tab === 'evaluaciones' ? await assessmentsTab(ctx, client.id) : null}
 
       {tab === 'planificacion' ? await plansTab(ctx, client.id) : null}
+
+      {tab === 'sesiones' ? await sessionsTab(ctx, client.id) : null}
 
       {tab === 'salud' ? (
         <div className="flex flex-col gap-4">
@@ -366,5 +370,49 @@ async function plansTab(ctx: Awaited<ReturnType<typeof requireStaff>>, clientId:
         <NewPlanForm clientId={clientId} templates={templates} />
       </Card>
     </div>
+  );
+}
+
+async function sessionsTab(ctx: Awaited<ReturnType<typeof requireStaff>>, clientId: string) {
+  const rows = await clientSessionReview(ctx, clientId);
+  return (
+    <Card title="Sesiones realizadas y pendientes de registro">
+      {rows.length === 0 ? (
+        <EmptyState>Sin sesiones publicadas ni registradas todavía.</EmptyState>
+      ) : (
+        <ul className="divide-y divide-border">
+          {rows.map((r) => (
+            <li key={r.id} className="flex flex-wrap items-center gap-2 py-2 text-sm">
+              <span className="w-24 text-muted tabular-nums">
+                {r.date ? formatDate(r.date) : '—'}
+              </span>
+              <Link
+                href={`/app/clients/${clientId}/sessions/${r.id}`}
+                className="font-medium hover:underline"
+              >
+                {r.dayLabel} · {r.title}
+              </Link>
+              {r.status ? (
+                <Badge tone={r.status === 'completed' ? 'ok' : 'warn'}>
+                  {label('attendance', r.status)}
+                </Badge>
+              ) : (
+                <Badge>Sin registrar</Badge>
+              )}
+              {r.sessionRpe != null ? (
+                <span className="text-xs text-muted">RPE sesión {r.sessionRpe}</span>
+              ) : null}
+              {r.pain != null ? <Badge tone="warn">Dolor {r.pain}/10</Badge> : null}
+              {r.flaggedLogs ? (
+                <Badge tone="warn">{r.flaggedLogs} registros a revisar</Badge>
+              ) : null}
+              {r.pendingSubstitutions ? (
+                <Badge tone="danger">{r.pendingSubstitutions} sustituciones pendientes</Badge>
+              ) : null}
+            </li>
+          ))}
+        </ul>
+      )}
+    </Card>
   );
 }

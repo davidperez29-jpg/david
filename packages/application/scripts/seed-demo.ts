@@ -6,6 +6,8 @@
 import 'dotenv/config';
 import { keyRingFromBase64 } from '@tp/auth';
 import { createDb } from '@tp/db';
+import { addDays, isoWeekday, localDate } from '@tp/domain';
+import { sql } from 'drizzle-orm';
 import {
   acceptInvitation,
   addHealthDeclaration,
@@ -13,7 +15,11 @@ import {
   bootstrapOrganization,
   createAssessment,
   createPlanFromTemplate,
+  getPlan,
+  getPlayerSession,
   listPlanTemplates,
+  publishSessions,
+  syncMutations,
   setPlanStatus,
   getAssessment,
   proposeAssessmentBattery,
@@ -400,7 +406,13 @@ const specs: Spec[] = [
   },
 ];
 
-const created: { id: string; by: RequestContext; age: number; sex: string }[] = [];
+const created: {
+  id: string;
+  by: RequestContext;
+  age: number;
+  sex: string;
+  user?: RequestContext;
+}[] = [];
 for (const s of specs) {
   const { id } = await createClient(s.by, {
     basics: s.basics,
@@ -437,7 +449,7 @@ for (const s of specs) {
       email: String(s.basics.email),
       clientId: id,
     });
-    await acceptAs(inv.link, String(s.basics.firstName));
+    created.at(-1)!.user = await acceptAs(inv.link, String(s.basics.firstName));
   }
 }
 
@@ -543,15 +555,87 @@ for (const [i, c] of created.entries()) {
   const main = goals.find((g) => g.primary)?.slug ?? goals[0]?.slug;
   const t = templates.find((x) => x.slug === GOAL_TEMPLATE[main ?? '']);
   if (!t) continue;
+  // Clients with the app train "now": their plan started last Monday-week, relative to today.
+  const today = localDate(new Date());
+  const lastWeekMonday = addDays(today, 1 - isoWeekday(today) - 7);
   const plan = await createPlanFromTemplate(c.by, c.id, {
     templateId: t.id,
-    startDate: '2026-09-28',
+    startDate: c.user ? lastWeekMonday : '2026-09-28',
     weekdays: WEEKDAYS[t.sessionsPerWeek] ?? [1, 2, 4, 5],
   });
-  if (i % 2 === 0) await setPlanStatus(c.by, plan.id, { status: 'active' });
+  if (i % 2 === 0 || c.user) await setPlanStatus(c.by, plan.id, { status: 'active' });
   plansCreated++;
+  if (c.user) await runSessions(c, plan.id, today);
 }
 console.log(`Plans: ${plansCreated} demo plans from templates.`);
+
+/**
+ * Session execution demo (Fase 7): the plan is published, regressions/variants of the progression
+ * graph are pre-approved alternatives, and past sessions are logged through the offline sync
+ * endpoint (as the app does). One session is partial, one has a pending substitution.
+ */
+async function runSessions(c: (typeof created)[number], planId: string, today: string) {
+  await publishSessions(c.by, { scope: 'plan', id: planId, published: true });
+  await db.execute(sql`
+    UPDATE session_exercises se SET alternative_exercise_ids = coalesce((
+      SELECT array_agg(alt) FROM (
+        SELECT DISTINCT CASE WHEN p.to_exercise_id = se.exercise_id THEN p.from_exercise_id ELSE p.to_exercise_id END AS alt
+        FROM exercise_progressions p
+        WHERE (p.to_exercise_id = se.exercise_id OR (p.relation = 'variant' AND p.from_exercise_id = se.exercise_id))
+        LIMIT 2) x), '{}'::uuid[])
+    WHERE se.client_id = ${c.id}`);
+  const p = await getPlan(c.by, planId);
+  const past = p.phases
+    .flatMap((ph) => ph.mesocycles.flatMap((m) => m.weeks.flatMap((w) => w.sessions)))
+    .filter((s) => s.scheduledDate && s.scheduledDate < today);
+  for (const [k, s] of past.entries()) {
+    const player = await getPlayerSession(c.user!, s.id);
+    const exs = player.blocks.flatMap((b) => b.exercises);
+    const partial = k === 1;
+    const mutations: Record<string, unknown>[] = [];
+    for (const [j, e] of exs.entries()) {
+      if (partial && j >= exs.length - 1) continue;
+      for (let set = 1; set <= e.sets; set++)
+        mutations.push({
+          type: 'set',
+          clientMutationId: `demo-${s.id}-${e.id}-${set}`,
+          sessionId: s.id,
+          sessionExerciseId: e.id,
+          exerciseId: e.exerciseId,
+          setIndex: set,
+          side: e.side === 'each' ? 'left' : null,
+          loadKg: e.preload.loadKg ?? (e.prescription.loadPct1rm ? 40 : null),
+          reps: e.preload.reps,
+          rir: e.preload.durationS != null ? null : (e.preload.rir ?? 2),
+          durationS: e.preload.durationS,
+          loggedAt: `${s.scheduledDate}T18:${String(10 + set).padStart(2, '0')}:00+02:00`,
+        });
+    }
+    const last = exs.at(-1);
+    if (partial && last)
+      mutations.push({
+        type: 'substitution',
+        clientMutationId: `demo-sub-${s.id}`,
+        sessionExerciseId: last.id,
+        reason: 'missing_equipment',
+        chosenExerciseId: null,
+        comment: 'La máquina estaba ocupada.',
+      });
+    mutations.push({
+      type: 'complete',
+      clientMutationId: `demo-done-${s.id}`,
+      sessionId: s.id,
+      performedDate: s.scheduledDate,
+      durationMin: 55,
+      sessionRpe: partial ? 8 : 6,
+      fatigue: partial ? 7 : 4,
+      motivation: 7,
+      ...(partial ? { status: 'partial', reasonCode: 'fatigue' } : { status: 'completed' }),
+      comment: partial ? 'Día largo de trabajo; corté antes.' : null,
+    });
+    await syncMutations(c.user!, { mutations });
+  }
+}
 
 // Exercise library: the user's methodology bank as reviewable drafts (skip with DEMO_SKIP_BANK=1).
 if (!process.env.DEMO_SKIP_BANK) {

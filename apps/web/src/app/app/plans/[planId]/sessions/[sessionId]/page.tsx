@@ -4,6 +4,7 @@ import { DomainError } from '@tp/domain';
 import { notFound } from 'next/navigation';
 import { Badge, Card, EmptyState } from '@/components/ui/card';
 import { formatDate, label } from '@/lib/labels';
+import { PublishButton } from '@/components/sessions/publish-button';
 import { requireStaff } from '@/server/session';
 import { AddBlock, AddExercise, BlockActions, ExerciseRow, SessionMetaForm } from '../../../forms';
 
@@ -35,6 +36,21 @@ export default async function SessionEditorPage({
         </Badge>
         {s.scheduledDate ? (
           <span className="text-sm text-muted">{formatDate(s.scheduledDate)}</span>
+        ) : null}
+        {s.published ? <Badge tone="ok">Publicada al cliente</Badge> : <Badge>No publicada</Badge>}
+        <PublishButton
+          scope="session"
+          id={s.id}
+          published={s.published}
+          disabled={!s.published && s.plan.status !== 'active'}
+        />
+        {s.plan.clientId ? (
+          <Link
+            href={`/app/clients/${s.plan.clientId}/sessions/${s.id}`}
+            className="text-sm text-accent underline"
+          >
+            Registro y modo sala
+          </Link>
         ) : null}
       </div>
       {s.plan.status === 'active' ? (

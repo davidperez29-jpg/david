@@ -524,6 +524,7 @@ export function ExerciseRow({ e, editable }: { e: Ex; editable: boolean }) {
             {m}
           </p>
         ))}
+      <AlternativesEditor e={e} editable={editable} />
       {editable ? (
         <form
           className="flex flex-col gap-2"
@@ -589,6 +590,50 @@ export function ExerciseRow({ e, editable }: { e: Ex; editable: boolean }) {
       ) : null}
       <FormError error={a.error} />
     </li>
+  );
+}
+
+/** Pre-approved alternatives the client may switch to during the session (§9.3). */
+function AlternativesEditor({ e, editable }: { e: Ex; editable: boolean }) {
+  const a = useApiAction();
+  const ids = e.alternatives.map((x) => x.id);
+  const save = (next: string[]) =>
+    void a.run(`/session-exercises/${e.id}`, 'PATCH', {
+      expectedVersion: e.version,
+      alternativeExerciseIds: next,
+    });
+  if (!editable && !ids.length) return null;
+  return (
+    <div className="flex flex-wrap items-center gap-2 text-xs">
+      <span className="text-muted">Alternativas aprobadas para el cliente:</span>
+      {e.alternatives.length ? null : <span className="text-muted">ninguna</span>}
+      {e.alternatives.map((x) => (
+        <span
+          key={x.id}
+          className="inline-flex items-center gap-1 rounded-full border border-border px-2 py-0.5"
+        >
+          {x.name}
+          {editable ? (
+            <button
+              type="button"
+              aria-label={`Quitar alternativa ${x.name}`}
+              onClick={() => save(ids.filter((i) => i !== x.id))}
+            >
+              ×
+            </button>
+          ) : null}
+        </span>
+      ))}
+      {editable && ids.length < 5 ? (
+        <span className="w-64">
+          <ExercisePicker
+            ariaLabel={`Añadir alternativa a ${e.exercise.name}`}
+            onPick={(hit) => save([...ids, hit.id])}
+          />
+        </span>
+      ) : null}
+      <FormError error={a.error} />
+    </div>
   );
 }
 

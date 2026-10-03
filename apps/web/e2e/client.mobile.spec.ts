@@ -3,7 +3,9 @@ import { login } from './helpers';
 
 test('client sees today screen and manages consent on mobile', async ({ page }) => {
   await login(page, 'marcos.villalba@example.com');
-  await expect(page.getByText('Entrenamiento de hoy')).toBeVisible();
+  await expect(page.getByText(/Entrenamiento de hoy|Próximo entrenamiento/)).toBeVisible();
+  // Privacy and settings live under Perfil (bottom bar: Hoy · Calendario · Progreso · Perfil).
+  await page.getByRole('link', { name: 'Perfil' }).click();
   await page.getByRole('link', { name: 'Privacidad' }).click();
   const photo = page.locator('li').filter({ hasText: 'Fotografías' });
   // Idempotent across runs: toggle whatever the current state is, then toggle back.

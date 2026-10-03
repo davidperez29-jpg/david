@@ -3,7 +3,7 @@ import { login } from './helpers';
 
 test('trainer creates a client with goals and records consent + screening', async ({ page }) => {
   await login(page, 'pablo.ibarra@example.com');
-  await expect(page.getByRole('heading', { name: 'Hoy' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Hoy', exact: true })).toBeVisible();
   // referral alert for a demo client with an uncleared declaration
   await expect(
     page.getByText('Requiere valoración por profesional sanitario').first(),
