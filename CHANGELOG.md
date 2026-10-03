@@ -2,6 +2,25 @@
 
 Formato: fecha · cambio · motivo · archivos · impacto.
 
+## 2026-10-03 — Fase 2: base de datos y estructura
+
+- **Cambio:** esquema completo de §6.
+  - **Tablas:** 66 nuevas para biblioteca de ejercicios, biblioteca científica, evaluación, planificación, seguimiento, motor de decisiones y plataforma.
+  - **Restricciones:** 53 `CHECK` (RIR 0–10, RPE en pasos de 0,5, tempo, duración 3/6/9/12 meses, fuente obligatoria en valores de referencia…).
+  - **Motivo:** preparar las Fases 3–12 sin rehacer el modelo.
+  - **Archivos:** `packages/db/src/schema/{library,science,assessment,planning,tracking,decision,platform}.ts`, `drizzle/0002`, `drizzle/0003`.
+  - **Impacto:** 91 tablas en total.
+- **Cambio:** triggers `inherit_scope` y `check_client_org`.
+  - **Motivo:** imposibilitar que un dato apunte a otra organización u otro cliente.
+- **Cambio:** Row Level Security en todas las tablas (168 políticas), generada desde un mapa declarativo; `secured()` ejecuta cada caso de uso como `app_runtime` con el actor ligado.
+  - **Motivo:** defensa en profundidad (§14.3).
+  - **Archivos:** `packages/db/src/rls/*`, `drizzle/0004_rls.sql`, `packages/application/src/rls.ts`.
+  - **Impacto:** el usuario de BD de la aplicación debe ser miembro de `app_runtime`.
+- **Cambio:** `email_in_use()` (SECURITY DEFINER) para comprobar emails en todas las organizaciones sin revelarlas.
+- **Cambio:** catálogos estructurales: 17 patrones, 26 músculos, 24 categorías, 28 variables y 10 perfiles de prescripción, 11 poblaciones y 21 desenlaces.
+- **Cambio:** tests de RLS con SQL directo, de cobertura de tablas y de desviación de la migración: 66 unitarios, 49 de integración y 6 E2E.
+- **Cambio:** `docs/DATABASE.md` y actualización de la arquitectura, la seguridad, los tests y el roadmap.
+
 ## 2026-10-03 — Fase 1: autenticación, usuarios y clientes
 
 - **Cambio:** monorepo TypeScript (`apps/web`, `packages/{domain,contracts,db,auth,application}`) con CI, lint, formato y reglas de capas.
