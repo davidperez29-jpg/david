@@ -2,7 +2,18 @@
 
 Sistema profesional para **evaluar, programar, entrenar y hacer seguimiento** de clientes, presencial y online, con trazabilidad científica y control total del entrenador.
 
-> **Estado actual: Fase 0 — investigación y arquitectura.** Todavía no hay código de aplicación.
+> **Estado actual: Fase 1 completada** — autenticación, usuarios, organizaciones y ficha de cliente, con experiencias de entrenador y cliente. Siguiente: Fase 2 (estructura completa de BD + RLS).
+
+## Arranque rápido
+
+```bash
+pnpm install
+cp .env.example .env            # APP_ENCRYPTION_KEY: openssl rand -base64 32
+pnpm db:reset && pnpm db:seed:demo
+pnpm dev                        # http://localhost:3000
+```
+
+Usuario demo: `lucia.moreno@example.com` / `demo-entrenamiento-2026`. Más detalles en [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
 ## Documentación
 

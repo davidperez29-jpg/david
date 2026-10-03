@@ -1,6 +1,6 @@
 # MASTER SPECIFICATION — Plataforma de evaluación, programación, entrenamiento y seguimiento
 
-> **Estado:** Fase 0 completada (investigación + arquitectura). Documento vivo.
+> **Estado:** Fases 0 y 1 completadas. Documento vivo; lo implementado se detalla en `ARCHITECTURE.md`.
 > **Versión:** 0.1.0 · **Fecha:** 2026-10-03
 > **Ámbito:** fuente única de verdad del diseño. Los documentos `/docs/ARCHITECTURE.md`, `/docs/DATABASE.md`, etc. se derivarán de este documento al inicio de cada fase (ver §16.4) para evitar dos versiones divergentes del mismo diseño.
 > **Anexos de investigación (Fase 0):** `/docs/research/` — análisis de los documentos aportados, registro de evidencia verificada, base de tests y QA de referencias.
@@ -294,7 +294,7 @@ Python (B) sería preferible si el núcleo fuera ciencia de datos pesada; no es 
 | Validación / contratos | **Zod** → OpenAPI 3.1 generado | Una sola definición para validar entrada, tipar y documentar (`/docs/API.md`). |
 | Base de datos | **PostgreSQL 16+** | Relacional (dominio muy relacional), JSONB para reglas/configuración, RLS, `pg_trgm`, transacciones. |
 | ORM / migraciones | **Drizzle ORM** + drizzle-kit | SQL explícito, migraciones versionadas en Git, compatible con RLS. |
-| Autenticación | **Better Auth** (sesiones en BD, argon2id, 2FA TOTP para staff, verificación de email, reset seguro) | Autohospedado (datos en UE), sin dependencia de terceros para identidades. *Alternativa evaluada:* Auth.js. Decisión revisable en Fase 1 tras spike (§19). |
+| Autenticación | **Módulo propio** (`packages/auth`) sobre primitivas probadas: argon2id, sesiones opacas en BD, 2FA TOTP, reset seguro | Decidido en la Fase 1 (ADR-002 en `ARCHITECTURE.md`); se evaluaron Better Auth y Auth.js. Autohospedado (datos en la UE). |
 | Autorización | Capa propia `policy` (RBAC + ámbito) + **RLS de PostgreSQL** como defensa en profundidad | Ver §14. |
 | UI | **React** + **Tailwind CSS** + **shadcn/ui (Radix)** | Accesible, sobrio, sin dependencia visual de una librería pesada. |
 | Estado servidor en cliente | TanStack Query | Caché, reintentos, soporte offline. |
@@ -1556,7 +1556,7 @@ La tabla completa (56 afirmaciones) está en el anexo §9.
 |---|---|---|---|---|
 | D1 | **Segunda verificación científica** con acceso directo a Crossref/PubMed (bloqueados por la política de red del entorno en la Fase 0) | Habilitar `api.crossref.org`, `eutils.ncbi.nlm.nih.gov`, `pubmed.ncbi.nlm.nih.gov`, `doi.org` en la red del entorno · o ampliar el límite de búsquedas · o verificación manual | Habilitar dominios y ejecutar una pasada automática al inicio de la Fase 4 | Usuario |
 | D2 | Temas sin evidencia verificada: core, movilidad/estiramientos, concurrente, perfil F-V, RSA, fuerza en deportes de equipo, RIR/VBT (precisión y pérdida de velocidad), periodización y *deload* | Verificar antes de la Fase 4 · o lanzar Fases 1–3 en paralelo | Paralelo: las Fases 1–3 no dependen de esa evidencia | Usuario |
-| D3 | Librería de autenticación | Better Auth · Auth.js | Spike de 1 día en Fase 1 | Equipo técnico |
+| D3 | ~~Librería de autenticación~~ **Resuelta en Fase 1**: módulo propio (ADR-002) | — | — | — |
 | D4 | Hosting UE | PaaS (p. ej. con PostgreSQL gestionado en UE) · VPS gestionado | PaaS al inicio (menos operación) | Usuario (coste) |
 | D5 | Umbrales por defecto de alertas y de necesidades | Valores sugeridos (F) · dejar vacíos hasta que el entrenador los fije | Sugeridos para alertas de adherencia/dolor (seguridad); **vacíos** para umbrales normativos (fuerza relativa, CMJ…) | Usuario |
 | D6 | ¿Aplicar progresiones rutinarias sin confirmación? | Nunca · opcional por cliente | Opcional por cliente, desactivado por defecto | Usuario |
