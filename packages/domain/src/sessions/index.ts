@@ -147,3 +147,16 @@ export function sessionCompletion(prescribedSets: number, completedSets: number)
   const percent = Math.min(100, Math.round((completedSets / prescribedSets) * 100));
   return { percent, status: percent >= 100 ? ('completed' as const) : ('partial' as const) };
 }
+
+/** Calendar date (YYYY-MM-DD) in the organization's time zone (Spain by default). */
+export function localDate(now: Date, timeZone = 'Europe/Madrid'): string {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(now);
+}
+
+/** Pain at or above this intensity (0–10) alerts the trainer. Practical default (F), configurable. */
+export const PAIN_ALERT_THRESHOLD = 4;

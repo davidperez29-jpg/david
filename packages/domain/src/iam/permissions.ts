@@ -39,6 +39,10 @@ export const PERMISSIONS = [
   'plans:read',
   'plans:write',
   'plans:templates',
+  'sessions:read',
+  'sessions:log',
+  'sessions:publish',
+  'sessions:review',
   'privacy:export_subject',
 ] as const;
 export type Permission = (typeof PERMISSIONS)[number];
@@ -75,6 +79,10 @@ export const ROLE_PERMISSIONS: Matrix = {
     'plans:read': 'org',
     'plans:write': 'org',
     'plans:templates': 'org',
+    'sessions:read': 'org',
+    'sessions:log': 'org',
+    'sessions:publish': 'org',
+    'sessions:review': 'org',
     'privacy:export_subject': 'org',
   },
   TRAINER: {
@@ -107,6 +115,11 @@ export const ROLE_PERMISSIONS: Matrix = {
     'plans:write': 'assigned',
     // Templates are shared by the organization's staff.
     'plans:templates': 'org',
+    // Session execution: publish to the client, log in room mode, review logs/substitutions.
+    'sessions:read': 'assigned',
+    'sessions:log': 'assigned',
+    'sessions:publish': 'assigned',
+    'sessions:review': 'assigned',
   },
   CLIENT: {
     'clients:read': 'own',
@@ -116,6 +129,9 @@ export const ROLE_PERMISSIONS: Matrix = {
     'consents:write': 'own',
     'catalog:read': 'org',
     'assessments:read': 'own',
+    // Published sessions only; the client logs sets, substitutions, feedback and readiness.
+    'sessions:read': 'own',
+    'sessions:log': 'own',
     'privacy:export_subject': 'own',
   },
 };

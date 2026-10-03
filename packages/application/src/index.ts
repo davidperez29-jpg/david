@@ -19,3 +19,4 @@ export * from './library-import';
 export * from './science';
 export * from './assessments';
 export * from './planning';
+export * from './sessions';

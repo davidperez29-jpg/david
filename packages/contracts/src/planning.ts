@@ -150,12 +150,15 @@ const sessionExerciseFields = {
   notesForClient: optionalText(500),
   coachNotes: optionalText(1000),
   methodIds: z.array(z.uuid()).max(10),
+  /** Pre-approved alternatives the client may switch to during the session (§9.3). */
+  alternativeExerciseIds: z.array(z.uuid()).max(5),
 };
 export const sessionExerciseSchema = z.object({
   ...sessionExerciseFields,
   prescription: prescriptionSchema.default({}),
   side: sessionExerciseFields.side.default('both'),
   methodIds: sessionExerciseFields.methodIds.default([]),
+  alternativeExerciseIds: sessionExerciseFields.alternativeExerciseIds.default([]),
 });
 export const updateSessionExerciseSchema = z
   .object(sessionExerciseFields)

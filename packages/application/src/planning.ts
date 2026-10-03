@@ -1106,6 +1106,13 @@ async function getSession_(ctx: RequestContext, id: string) {
         .from(methods)
         .where(inArray(methods.id, methodIds))
     : [];
+  const altIds = [...new Set(rows.flatMap((r) => r.se.alternativeExerciseIds))];
+  const alts = altIds.length
+    ? await ctx.db
+        .select({ id: exercises.id, name: exercises.name })
+        .from(exercises)
+        .where(inArray(exercises.id, altIds))
+    : [];
   const experience = await clientExperience(ctx.db, plan.clientId!);
   const siblings = await ctx.db
     .select({ id: microcycles.id, weekIndex: microcycles.weekIndex })
@@ -1138,6 +1145,7 @@ async function getSession_(ctx: RequestContext, id: string) {
               clientExperience: experience,
             }),
             methods: ms.filter((m) => r.se.methodIds.includes(m.id)),
+            alternatives: alts.filter((a) => r.se.alternativeExerciseIds.includes(a.id)),
           };
         }),
     })),
@@ -1327,6 +1335,22 @@ async function checkMethods(ctx: RequestContext, ids: string[]) {
     throw new DomainError('validation', 'Método desconocido.', { methodIds: ['unknown'] });
 }
 
+async function checkAlternatives(ctx: RequestContext, exerciseId: string, ids: string[]) {
+  if (!ids.length) return;
+  if (ids.includes(exerciseId))
+    throw new DomainError('validation', 'La alternativa no puede ser el mismo ejercicio.', {
+      alternativeExerciseIds: ['same_exercise'],
+    });
+  const ok = await ctx.db
+    .select({ id: exercises.id })
+    .from(exercises)
+    .where(and(inArray(exercises.id, ids), visible(ctx, exercises.organizationId)));
+  if (ok.length !== new Set(ids).size)
+    throw new DomainError('validation', 'Alternativa desconocida.', {
+      alternativeExerciseIds: ['unknown'],
+    });
+}
+
 function assertValid(
   p: Prescription,
   supportsVbt: boolean,
@@ -1346,6 +1370,7 @@ async function addSessionExercise_(
   const { block, plan } = await sessionOfBlock(ctx, blockId, 'plans:write');
   const ex = await checkExercise(ctx, d.exerciseId);
   await checkMethods(ctx, d.methodIds);
+  await checkAlternatives(ctx, d.exerciseId, d.alternativeExerciseIds);
   assertValid(d.prescription, ex.supportsVbt, await clientExperience(ctx.db, plan.clientId!));
   return ctx.db.transaction(async (tx) => {
     const [{ max } = { max: 0 }] = await tx
@@ -1362,6 +1387,7 @@ async function addSessionExercise_(
         position: max + 1,
         pairingLabel: d.pairingLabel ?? null,
         methodIds: d.methodIds,
+        alternativeExerciseIds: [...new Set(d.alternativeExerciseIds)],
         ...toColumns(d.prescription),
         loadBasisMetric: d.loadBasisMetric ?? null,
         side: d.side,
@@ -1401,6 +1427,10 @@ async function updateSessionExercise_(
   const exId = d.exerciseId ?? row.exerciseId;
   const ex = await checkExercise(ctx, exId);
   if (d.methodIds) await checkMethods(ctx, d.methodIds);
+  if (d.alternativeExerciseIds) {
+    await checkAlternatives(ctx, exId, d.alternativeExerciseIds);
+    d.alternativeExerciseIds = [...new Set(d.alternativeExerciseIds)];
+  }
   const before = toPrescription(row);
   const after = prescription ? { ...before, ...prescription } : before;
   assertValid(after, ex.supportsVbt, await clientExperience(ctx.db, plan.clientId!));
