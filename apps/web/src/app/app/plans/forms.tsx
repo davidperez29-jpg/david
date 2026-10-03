@@ -740,6 +740,7 @@ export function SessionMetaForm({ s }: { s: SessionDetail }) {
     scheduledDate: s.scheduledDate ?? '',
     objective: s.objective ?? '',
     notesForClient: s.notesForClient ?? '',
+    targetSessionRpe: s.targetSessionRpe ?? '',
   });
   const [target, setTarget] = useState('');
   return (
@@ -754,6 +755,7 @@ export function SessionMetaForm({ s }: { s: SessionDetail }) {
             scheduledDate: f.scheduledDate || null,
             objective: nul(f.objective),
             notesForClient: nul(f.notesForClient),
+            targetSessionRpe: numOrNull(String(f.targetSessionRpe)),
           });
         }}
       >
@@ -777,6 +779,18 @@ export function SessionMetaForm({ s }: { s: SessionDetail }) {
             id="sm-obj"
             value={f.objective}
             onChange={(e) => setF({ ...f, objective: e.target.value })}
+          />
+        </Field>
+        <Field
+          label="RPE previsto de la sesión (0–10)"
+          htmlFor="sm-srpe"
+          error={a.fieldError('targetSessionRpe')}
+        >
+          <Input
+            id="sm-srpe"
+            inputMode="decimal"
+            value={String(f.targetSessionRpe)}
+            onChange={(e) => setF({ ...f, targetSessionRpe: e.target.value })}
           />
         </Field>
         <div className="sm:col-span-3">

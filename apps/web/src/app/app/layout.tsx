@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { LogoutButton } from '@/components/logout-button';
 import { NavLink } from '@/components/nav-link';
+import { monitoringOverview } from '@tp/application';
 import { requireStaff } from '@/server/session';
 
 export const dynamic = 'force-dynamic';
@@ -8,6 +9,8 @@ export const dynamic = 'force-dynamic';
 export default async function StaffLayout({ children }: { children: ReactNode }) {
   const ctx = await requireStaff();
   const isAdmin = ctx.actor.roles.includes('ADMIN');
+  const overview = await monitoringOverview(ctx);
+  const urgent = overview.alerts.red + overview.alerts.yellow;
   return (
     <div className="min-h-screen bg-surface">
       <header className="border-b border-border bg-bg">
@@ -18,6 +21,17 @@ export default async function StaffLayout({ children }: { children: ReactNode })
               Hoy
             </NavLink>
             <NavLink href="/app/clients">Clientes</NavLink>
+            <NavLink href="/app/alerts">
+              Alertas
+              {urgent ? (
+                <span
+                  aria-label={`${urgent} alertas pendientes`}
+                  className={`ml-1 rounded-full px-1.5 text-xs text-white ${overview.alerts.red ? 'bg-danger' : 'bg-warn'}`}
+                >
+                  {urgent}
+                </span>
+              ) : null}
+            </NavLink>
             <NavLink href="/app/library">Ejercicios</NavLink>
             <NavLink href="/app/assessments">Evaluación</NavLink>
             <NavLink href="/app/plans">Planificación</NavLink>

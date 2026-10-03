@@ -10,7 +10,8 @@
 export type Mutation =
   | ({ type: 'set'; clientMutationId: string; sessionId: string } & Record<string, unknown>)
   | ({ type: 'substitution'; clientMutationId: string } & Record<string, unknown>)
-  | ({ type: 'complete'; clientMutationId: string; sessionId: string } & Record<string, unknown>);
+  | ({ type: 'complete'; clientMutationId: string; sessionId: string } & Record<string, unknown>)
+  | ({ type: 'exercise_feedback'; clientMutationId: string } & Record<string, unknown>);
 
 export interface SyncResult {
   clientMutationId: string;

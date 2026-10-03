@@ -1,5 +1,13 @@
 import Link from 'next/link';
-import { listClients, listClientsNeedingReferral, reviewInbox } from '@tp/application';
+import {
+  listAlerts,
+  listClients,
+  listClientsNeedingReferral,
+  monitoringOverview,
+  reviewInbox,
+} from '@tp/application';
+import { AlertActions } from '@/components/monitoring/actions';
+import { SeverityBadge } from '@/components/monitoring/severity';
 import { label } from '@/lib/labels';
 import { Badge, Card, EmptyState, Stat } from '@/components/ui/card';
 import { requireStaff } from '@/server/session';
@@ -12,7 +20,11 @@ export default async function TodayPage() {
   const referral = await listClientsNeedingReferral(ctx);
   const noGoal = page.items.filter((c) => !c.primaryGoal);
   const noAccount = page.items.filter((c) => !c.hasAccount && c.modality !== 'in_person');
-  const inbox = await reviewInbox(ctx);
+  const [inbox, overview, alerts] = await Promise.all([
+    reviewInbox(ctx),
+    monitoringOverview(ctx),
+    listAlerts(ctx, { status: 'live', limit: 8 }),
+  ]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -25,8 +37,44 @@ export default async function TodayPage() {
           value={inbox.sessionsToday.length}
           hint={`${inbox.sessionsToday.filter((x) => x.attendance).length} registradas`}
         />
-        <Stat label="Adherencia 28 d" value="—" hint="Disponible en la Fase 8" />
+        <Stat
+          label="Adherencia 28 d"
+          value={
+            overview.adherence28.percent == null
+              ? '—'
+              : `${overview.adherence28.percent.toLocaleString('es-ES')} %`
+          }
+          hint={`${overview.adherence28.done} de ${overview.adherence28.planned} sesiones`}
+        />
       </div>
+      <Card
+        title={`Alertas (${overview.alerts.red} rojas · ${overview.alerts.yellow} amarillas · ${overview.alerts.green} propuestas)`}
+        actions={
+          <Link href="/app/alerts" className="text-sm text-accent underline">
+            Ver todas
+          </Link>
+        }
+      >
+        {alerts.length === 0 ? (
+          <EmptyState>Sin alertas activas.</EmptyState>
+        ) : (
+          <ul className="divide-y divide-border">
+            {alerts.map((a) => (
+              <li key={a.id} className="flex flex-wrap items-center gap-2 py-2 text-sm">
+                <SeverityBadge severity={a.severity} />
+                <Link
+                  className="font-medium hover:underline"
+                  href={`/app/clients/${a.clientId}?tab=seguimiento`}
+                >
+                  {a.firstName} {a.lastName}
+                </Link>
+                <span className="min-w-0 flex-1 text-muted">{a.message}</span>
+                <AlertActions alertId={a.id} status={a.status} />
+              </li>
+            ))}
+          </ul>
+        )}
+      </Card>
       <div className="grid gap-4 md:grid-cols-2">
         <Card title="Sesiones de hoy">
           {inbox.sessionsToday.length === 0 ? (

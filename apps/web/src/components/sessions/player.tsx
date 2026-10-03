@@ -437,6 +437,20 @@ export function Player({
                 >
                   No puedo hacer este ejercicio
                 </button>
+                <ExerciseFeedback
+                  name={perf.name}
+                  onSend={async (fb) => {
+                    await enqueue({
+                      type: 'exercise_feedback',
+                      clientMutationId: newMutationId(),
+                      sessionExerciseId: e.id,
+                      ...fb,
+                    });
+                    void flush();
+                    if (fb.pain != null && fb.pain > 0)
+                      setNotices((n) => ({ ...n, [e.id]: PAIN_MESSAGE }));
+                  }}
+                />
               </article>
             );
           })}
@@ -798,6 +812,43 @@ function CloseSheet({
         Guardar sesión
       </Button>
     </Sheet>
+  );
+}
+
+/** Optional per-exercise feedback: difficulty and discomfort (stored only with consent). */
+function ExerciseFeedback({
+  name,
+  onSend,
+}: {
+  name: string;
+  onSend: (fb: { difficulty: number | null; pain: number | null }) => Promise<void>;
+}) {
+  const [difficulty, setDifficulty] = useState<number | null>(null);
+  const [pain, setPain] = useState<number | null>(null);
+  const [sent, setSent] = useState(false);
+  if (sent) return <p className="text-xs text-muted">Valoración guardada. ¡Gracias!</p>;
+  return (
+    <details>
+      <summary className="cursor-pointer text-sm text-muted">¿Qué tal {name}?</summary>
+      <div className="mt-2 flex flex-col gap-2">
+        <Scale legend="Dificultad (0–10)" value={difficulty} onChange={setDifficulty} />
+        <Scale legend="Molestias en este ejercicio (0–10)" value={pain} onChange={setPain} />
+        <p className="text-xs text-muted">
+          Las molestias solo se guardan si has dado tu consentimiento para datos de salud.
+        </p>
+        <Button
+          size="sm"
+          variant="secondary"
+          disabled={difficulty == null && pain == null}
+          onClick={() => {
+            setSent(true);
+            void onSend({ difficulty, pain });
+          }}
+        >
+          Enviar valoración
+        </Button>
+      </div>
+    </details>
   );
 }
 

@@ -95,3 +95,13 @@ test('client calendar lists published sessions and staff APIs stay closed', asyn
   });
   expect([403, 404]).toContain(pub.status());
 });
+
+test('client sees their consistency in plain language', async ({ page }) => {
+  await login(page, 'iker.arrieta@example.com');
+  await page.getByRole('link', { name: 'Progreso' }).click();
+  await expect(
+    page.getByText(/Has hecho \d+ de \d+ sesiones en las últimas 4 semanas/),
+  ).toBeVisible();
+  // Alerts are for the trainer only.
+  expect((await page.request.get('/api/v1/alerts')).status()).toBe(403);
+});

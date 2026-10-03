@@ -18,7 +18,10 @@ import {
   getPlan,
   getPlayerSession,
   listPlanTemplates,
+  monitorAllClients,
   publishSessions,
+  saveReadiness,
+  completeSession,
   syncMutations,
   setPlanStatus,
   getAssessment,
@@ -550,6 +553,17 @@ const GOAL_TEMPLATE: Record<string, string> = {
 };
 const WEEKDAYS: Record<number, number[]> = { 2: [2, 4], 3: [1, 3, 5] };
 let plansCreated = 0;
+/**
+ * Follow-up demo (Fase 8): adherence from 45 % to 100 % and alerts of every colour. Clients
+ * without the app are logged by their trainer (room mode) following these profiles.
+ */
+const PROFILES: HistoryProfile[] = [
+  { adherence: 0.45, pain: { region: 'Hombro derecho', intensity: 7 } },
+  { adherence: 0.75, srpeHigh: true },
+  { adherence: 0.9 },
+  { adherence: 1 },
+];
+let profileIndex = 0;
 for (const [i, c] of created.entries()) {
   const goals = specs[i]!.goals;
   const main = goals.find((g) => g.primary)?.slug ?? goals[0]?.slug;
@@ -560,12 +574,57 @@ for (const [i, c] of created.entries()) {
   const lastWeekMonday = addDays(today, 1 - isoWeekday(today) - 7);
   const plan = await createPlanFromTemplate(c.by, c.id, {
     templateId: t.id,
-    startDate: c.user ? lastWeekMonday : '2026-09-28',
+    startDate: c.user ? lastWeekMonday : i % 2 === 0 ? addDays(lastWeekMonday, -21) : '2026-09-28',
     weekdays: WEEKDAYS[t.sessionsPerWeek] ?? [1, 2, 4, 5],
   });
   if (i % 2 === 0 || c.user) await setPlanStatus(c.by, plan.id, { status: 'active' });
   plansCreated++;
-  if (c.user) await runSessions(c, plan.id, today);
+  const name = String(specs[i]!.basics.firstName);
+  if (c.user) await runSessions(c, plan.id, today, name);
+  else if (i % 2 === 0)
+    await roomHistory(c, plan.id, today, PROFILES[profileIndex++ % PROFILES.length]!);
+}
+const monitored = await monitorAllClients({ db, now: () => new Date() });
+console.log(`Monitoring: ${monitored.clients} clients evaluated, ${monitored.created} alerts.`);
+
+interface HistoryProfile {
+  adherence: number;
+  pain?: { region: string; intensity: number };
+  srpeHigh?: boolean;
+}
+
+/** Past sessions logged by the trainer: the profile sets how many are done and what was felt. */
+async function roomHistory(
+  c: (typeof created)[number],
+  planId: string,
+  today: string,
+  profile: HistoryProfile,
+) {
+  await publishSessions(c.by, { scope: 'plan', id: planId, published: true });
+  const p = await getPlan(c.by, planId);
+  const past = p.phases
+    .flatMap((ph) => ph.mesocycles.flatMap((m) => m.weeks.flatMap((w) => w.sessions)))
+    .filter((s) => s.scheduledDate && s.scheduledDate < today);
+  // Done sessions spread evenly (deterministic): with 45 %, the last ones are left unrecorded.
+  const done = past.filter(
+    (_, k) =>
+      Math.floor((k + 1) * profile.adherence + 1e-9) > Math.floor(k * profile.adherence + 1e-9),
+  );
+  for (const [k, s] of done.entries()) {
+    const last = k === done.length - 1;
+    const high = profile.srpeHigh && k >= done.length - 3;
+    await completeSession(c.by, s.id, {
+      status: 'completed',
+      performedDate: s.scheduledDate!,
+      durationMin: 60,
+      sessionRpe: high ? 9 : 6,
+      fatigue: high ? 8 : 4,
+      motivation: 7,
+      ...(last && profile.pain
+        ? { pain: { intensity: profile.pain.intensity, bodyRegion: profile.pain.region } }
+        : {}),
+    });
+  }
 }
 console.log(`Plans: ${plansCreated} demo plans from templates.`);
 
@@ -574,7 +633,12 @@ console.log(`Plans: ${plansCreated} demo plans from templates.`);
  * graph are pre-approved alternatives, and past sessions are logged through the offline sync
  * endpoint (as the app does). One session is partial, one has a pending substitution.
  */
-async function runSessions(c: (typeof created)[number], planId: string, today: string) {
+async function runSessions(
+  c: (typeof created)[number],
+  planId: string,
+  today: string,
+  name: string,
+) {
   await publishSessions(c.by, { scope: 'plan', id: planId, published: true });
   await db.execute(sql`
     UPDATE session_exercises se SET alternative_exercise_ids = coalesce((
@@ -606,7 +670,13 @@ async function runSessions(c: (typeof created)[number], planId: string, today: s
           side: e.side === 'each' ? 'left' : null,
           loadKg: e.preload.loadKg ?? (e.prescription.loadPct1rm ? 40 : null),
           reps: e.preload.reps,
-          rir: e.preload.durationS != null ? null : (e.preload.rir ?? 2),
+          // Iker logs sets clearly easier than planned → green "raise the load" proposal.
+          rir:
+            e.preload.durationS != null
+              ? null
+              : name === 'Iker' && j === exs.findIndex((x) => x.prescription.rirMax != null)
+                ? Math.min(10, e.prescription.rirMax + 2)
+                : (e.preload.rir ?? 2),
           durationS: e.preload.durationS,
           loggedAt: `${s.scheduledDate}T18:${String(10 + set).padStart(2, '0')}:00+02:00`,
         });
@@ -627,7 +697,8 @@ async function runSessions(c: (typeof created)[number], planId: string, today: s
       sessionId: s.id,
       performedDate: s.scheduledDate,
       durationMin: 55,
-      sessionRpe: partial ? 8 : 6,
+      // Marcos closes his last session without RPE → green reminder.
+      sessionRpe: name === 'Marcos' && k === past.length - 1 ? null : partial ? 8 : 6,
       fatigue: partial ? 7 : 4,
       motivation: 7,
       ...(partial ? { status: 'partial', reasonCode: 'fatigue' } : { status: 'completed' }),
@@ -635,6 +706,16 @@ async function runSessions(c: (typeof created)[number], planId: string, today: s
     });
     await syncMutations(c.user!, { mutations });
   }
+  // Elena reports low wellness three days in a row → yellow.
+  if (name === 'Elena')
+    for (const d of [2, 1, 0])
+      await saveReadiness(c.user!, c.id, {
+        recordedOn: addDays(today, -d),
+        energy: 2,
+        sleepQuality: 3,
+        soreness: 7,
+        comment: 'Semana de exámenes, duermo poco.',
+      });
 }
 
 // Exercise library: the user's methodology bank as reviewable drafts (skip with DEMO_SKIP_BANK=1).

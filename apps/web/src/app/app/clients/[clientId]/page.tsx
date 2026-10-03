@@ -1,5 +1,7 @@
 import Link from 'next/link';
 import {
+  clientMonitoring,
+  getMonitoringRules,
   clientSessionReview,
   clientAssessmentProgress,
   getClient,
@@ -21,6 +23,13 @@ import { DomainError } from '@tp/domain';
 import { notFound } from 'next/navigation';
 import { ProgressView } from '@/components/assessment/progress';
 import { ReferralBanner } from '@/components/referral-banner';
+import {
+  AlertActions,
+  RefreshAlertsButton,
+  RuleOverrideToggle,
+} from '@/components/monitoring/actions';
+import { WeeklyLoadChart } from '@/components/monitoring/charts';
+import { SeverityBadge } from '@/components/monitoring/severity';
 import { NewAssessmentForm } from '../../assessments/forms';
 import { NewPlanForm } from '../../plans/forms';
 import { Badge, Card, EmptyState } from '@/components/ui/card';
@@ -46,6 +55,7 @@ const TABS = [
   ['evaluaciones', 'Evaluaciones'],
   ['planificacion', 'Planificación'],
   ['sesiones', 'Sesiones'],
+  ['seguimiento', 'Seguimiento'],
   ['salud', 'Salud declarada'],
   ['privacidad', 'Consentimientos'],
   ['equipo', 'Entrenadores'],
@@ -174,6 +184,8 @@ export default async function ClientPage({
       {tab === 'planificacion' ? await plansTab(ctx, client.id) : null}
 
       {tab === 'sesiones' ? await sessionsTab(ctx, client.id) : null}
+
+      {tab === 'seguimiento' ? await monitoringTab(ctx, client.id) : null}
 
       {tab === 'salud' ? (
         <div className="flex flex-col gap-4">
@@ -414,5 +426,194 @@ async function sessionsTab(ctx: Awaited<ReturnType<typeof requireStaff>>, client
         </ul>
       )}
     </Card>
+  );
+}
+
+const pct = (v: number | null) =>
+  v == null ? '—' : `${v.toLocaleString('es-ES', { maximumFractionDigits: 1 })} %`;
+
+async function monitoringTab(ctx: Awaited<ReturnType<typeof requireStaff>>, clientId: string) {
+  const [m, rules] = await Promise.all([clientMonitoring(ctx, clientId), getMonitoringRules(ctx)]);
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="grid gap-3 sm:grid-cols-3">
+        <Card title="Adherencia 4 semanas">
+          <p className="text-2xl font-semibold tabular-nums">{pct(m.adherence28.percent)}</p>
+          <p className="text-xs text-muted">
+            {m.adherence28.done} de {m.adherence28.planned} sesiones realizadas (
+            {m.adherence28.partial} parciales, {m.adherence28.missed + m.adherence28.unrecorded} no
+            realizadas)
+          </p>
+        </Card>
+        <Card title="Adherencia 12 semanas">
+          <p className="text-2xl font-semibold tabular-nums">{pct(m.adherence84.percent)}</p>
+          <p className="text-xs text-muted">
+            {m.adherence84.done} de {m.adherence84.planned} sesiones
+          </p>
+        </Card>
+        <Card title="Alertas activas" actions={<RefreshAlertsButton clientId={clientId} />}>
+          <p className="text-2xl font-semibold tabular-nums">{m.alerts.length}</p>
+        </Card>
+      </div>
+
+      <Card title="Alertas">
+        {m.alerts.length === 0 ? (
+          <EmptyState>Sin alertas activas.</EmptyState>
+        ) : (
+          <ul className="divide-y divide-border">
+            {m.alerts.map((a) => (
+              <li key={a.id} className="flex flex-col gap-1 py-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <SeverityBadge severity={a.severity} />
+                  <span className="text-xs text-muted">{formatDateTime(a.updatedAt)}</span>
+                  <span className="ml-auto">
+                    <AlertActions alertId={a.id} status={a.status} />
+                  </span>
+                </div>
+                <p className="text-sm">{a.message}</p>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Card>
+
+      <Card title="Carga interna semanal (RPE de la sesión × minutos, UA)">
+        <div className="grid gap-4 lg:grid-cols-2">
+          <WeeklyLoadChart weeks={m.weeks} />
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-left text-xs text-muted">
+                <th className="py-1">Semana</th>
+                <th>Sesiones</th>
+                <th>Adherencia</th>
+                <th>Carga</th>
+                <th title="Media / desviación típica de la carga diaria">Monotonía</th>
+                <th title="Carga × monotonía">Tensión</th>
+              </tr>
+            </thead>
+            <tbody>
+              {m.weeks.map((w) => (
+                <tr key={w.weekStart} className="border-t border-border tabular-nums">
+                  <td className="py-1">{formatDate(w.weekStart)}</td>
+                  <td>
+                    {w.adherence.done}/{w.adherence.planned}
+                  </td>
+                  <td>{pct(w.adherence.percent)}</td>
+                  <td>{w.load.toLocaleString('es-ES')}</td>
+                  <td>{w.monotony?.toLocaleString('es-ES') ?? '—'}</td>
+                  <td>{w.strain?.toLocaleString('es-ES') ?? '—'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p className="mt-2 text-xs text-muted">
+          Método sRPE: válido y fiable para cuantificar la carga interna en muchos deportes y
+          actividades (según PubMed: Foster 2001, PMID 11708692;{' '}
+          <a className="underline" href="https://doi.org/10.3389/fnins.2017.00612">
+            Haddad 2017
+          </a>
+          ). La monotonía y la tensión son descriptivas, sin umbrales universales (
+          <a className="underline" href="https://doi.org/10.1097/00005768-199807000-00023">
+            Foster 1998
+          </a>
+          ). No se calcula el ratio agudo:crónico (
+          <a className="underline" href="https://doi.org/10.1123/ijspp.2019-0864">
+            Impellizzeri 2020
+          </a>
+          ). Solo suman carga las sesiones con RPE y duración.
+        </p>
+      </Card>
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Card title="Últimas sesiones">
+          {m.recent.length === 0 ? (
+            <EmptyState>Sin sesiones pasadas.</EmptyState>
+          ) : (
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-xs text-muted">
+                  <th className="py-1">Fecha</th>
+                  <th>Estado</th>
+                  <th>RPE (previsto)</th>
+                  <th>Min</th>
+                  <th>Carga</th>
+                </tr>
+              </thead>
+              <tbody>
+                {m.recent.map((r) => (
+                  <tr key={r.id} className="border-t border-border tabular-nums">
+                    <td className="py-1">
+                      <Link
+                        href={`/app/clients/${clientId}/sessions/${r.id}`}
+                        className="hover:underline"
+                      >
+                        {formatDate(r.date)}
+                      </Link>
+                    </td>
+                    <td>{r.status ? label('attendance', r.status) : 'Sin registrar'}</td>
+                    <td>
+                      {r.sessionRpe ?? '—'}
+                      {r.targetRpe != null ? ` (${r.targetRpe})` : ''}
+                    </td>
+                    <td>{r.durationMin ?? '—'}</td>
+                    <td>{r.load ?? '—'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </Card>
+        <Card title="Bienestar diario (0–10, más alto = mejor)">
+          {m.readiness.length === 0 ? (
+            <EmptyState>El cliente no ha registrado su bienestar en 14 días.</EmptyState>
+          ) : (
+            <ul className="text-sm">
+              {m.readiness.map((r) => (
+                <li key={r.date} className="flex gap-3 tabular-nums">
+                  <span className="w-24 text-muted">{formatDate(r.date)}</span>
+                  <span className="w-16 font-medium">{r.score ?? '—'}</span>
+                  <span className="text-xs text-muted">
+                    energía {r.energy ?? '—'} · sueño {r.sleepQuality ?? '—'} · agujetas{' '}
+                    {r.soreness ?? '—'}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Card>
+      </div>
+
+      <Card title="Reglas de alerta para este cliente">
+        <details open={m.disabledRules.length > 0}>
+          <summary className="cursor-pointer text-sm text-muted">
+            {m.disabledRules.length
+              ? `${m.disabledRules.length} reglas desactivadas para este cliente`
+              : 'Todas las reglas del centro están activas'}
+          </summary>
+          <p className="my-2 text-xs text-muted">
+            Puedes desactivar una regla solo para este cliente (por ejemplo, durante una pausa
+            acordada). Queda auditado.
+          </p>
+          <ul>
+            {rules.rules
+              .filter((r) => r.enabled)
+              .map((r) => {
+                const off = m.disabledRules.find((d) => d.key === r.key);
+                return (
+                  <RuleOverrideToggle
+                    key={r.key}
+                    clientId={clientId}
+                    ruleKey={r.key}
+                    name={r.name}
+                    disabled={!!off}
+                    reason={off?.reason ?? null}
+                  />
+                );
+              })}
+          </ul>
+        </details>
+      </Card>
+    </div>
   );
 }
