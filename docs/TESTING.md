@@ -61,3 +61,16 @@ Pendiente para fases siguientes: evaluación, programa, sesión, ejercicios, fee
   - la retracción queda registrada.
 - La base de datos de integración se crea con la biblioteca científica global importada (`prepareTestDatabase`).
 - `lint`, `typecheck`, `format:check` y `depcruise` sin errores.
+
+## 5. Resultado en la entrega de la Fase 5
+
+- Unidad: 176 tests ✔, entre ellos:
+  - agregación, interpretación frente al MDC, errores combinados, tendencia, métricas derivadas, aplicabilidad de referencias, puntos de corte descriptivos y clínicos, y propuesta de batería;
+  - coherencia de `seed-data/assessment`.
+- Integración: 84 tests ✔. `assessments.int.test.ts` cubre:
+  - catálogo global de solo lectura, tests propios, versión de protocolo y fiabilidad local;
+  - propuesta sin cribado o con él, agregación, reemplazo del resultado y métricas por lado;
+  - veredicto con fiabilidad publicada, sin veredicto con métodos distintos o error desconocido;
+  - referencias por rango de edad sin derivar;
+  - alcance entre entrenadores, organizaciones y clientes.
+- E2E: 14 tests ✔. Nuevos: el entrenador revisa el progreso, crea y registra una evaluación y la completa; otro entrenador no ve al cliente; el cliente ve su progreso en el móvil.

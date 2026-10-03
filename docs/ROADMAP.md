@@ -9,8 +9,9 @@ Plan completo y criterios de aceptación: `MASTER_SPECIFICATION.md` §16.
 | 2 Base de datos + estructura | ✅ 2026-10-03 | Esquema completo (91 tablas), restricciones, triggers de integridad multi-tenant, RLS en todas las tablas con activación automática por caso de uso, catálogos estructurales (patrones, músculos, categorías, variables y perfiles de prescripción, poblaciones, desenlaces), `DATABASE.md`. |
 | 3 Biblioteca de ejercicios | ✅ 2026-10-03 | Alta, edición, publicación con requisitos, búsqueda sin tildes y filtros, vídeos con verificación humana, siluetas, grafo de progresiones sin contradicciones, sustituciones explicadas con material y tolerancias del cliente; banco de los Excel (1 141 ejercicios) importado como borradores para revisar. |
 | 4 Biblioteca científica | ✅ 2026-10-03 | Fuentes, hallazgos, afirmaciones y métodos con niveles A–H calculados, QA científico, revisión con lista de control, publicación solo por administración; trazabilidad método → fuente con DOI/PubMed; 135 fuentes verificadas en PubMed, 80 afirmaciones y 23 métodos globales; enlace ejercicio ↔ método. |
-| 5 Evaluación | ⏭ siguiente | Tests de evaluación con valores de referencia verificados. |
-| 6–15 | pendiente | Ver especificación. |
+| 5 Evaluación | ✅ 2026-10-03 | Catálogo de 43 tests con protocolo, fiabilidad (38 filas) y referencias (10 filas) verificadas en PubMed; baterías por objetivo con exclusiones de seguridad; registro por intentos; métricas derivadas; cambio interpretado frente al error típico y el MDC95 (sin veredicto si el error es desconocido); z-score solo con referencia aplicable; gráficos; vista sencilla para el cliente. |
+| 6 Planificación | ⏭ siguiente | Planes de 3/6/9/12 meses, fases, editor de sesión, plantillas. |
+| 7–15 | pendiente | Ver especificación. |
 
 ## Criterios de cierre de la Fase 1 (§63)
 
@@ -59,3 +60,16 @@ Plan completo y criterios de aceptación: `MASTER_SPECIFICATION.md` §16.
 | Documentación | ✅ `SCIENTIFIC_FRAMEWORK.md`, `research/evidence_seed_report.md`, `API.md`, `TESTING.md`, `DATABASE.md`. |
 | Datos | ✅ 135 fuentes (verificadas en PubMed), 218 hallazgos, 80 afirmaciones (79 publicadas), 23 métodos; incluidos en `db:seed`/`db:reset`. |
 | Pendiente conocido | Revisión humana experta de las afirmaciones globales; 19 referencias de los documentos no localizables en PubMed **[REQUIERE VERIFICACIÓN]**. |
+
+## Criterios de cierre de la Fase 5
+
+| Criterio | Estado |
+|---|---|
+| Funcionalidad | ✅ §11 completo: catálogo, fiabilidad local y publicada, referencias con población, baterías, propuesta por objetivo, registro por intentos y lados, métricas derivadas, comparación antes/después, series y tendencia. |
+| Criterio de aceptación §16.2 | ✅ Comparación antes/después interpretada frente al MDC (tests de dominio y de integración). **Sin z-score si la referencia no es aplicable** (test). |
+| UX | ✅ Revisada con capturas: valores redondeados y en español, veredictos con su base, gráficos con banda de error, lenguaje sencillo para el cliente. |
+| Seguridad | ✅ Permisos `assessments:*` y RLS de tipo `client_owned`. El cribado solo se lee con consentimiento de salud. Sin tests máximos sin cribado. Síntomas que detienen el test. Las referencias clínicas derivan, nunca diagnostican. |
+| Tests | ✅ 176 unitarios, 84 de integración y 14 E2E. |
+| Documentación | ✅ `ASSESSMENT.md`, `research/assessment_seed_report.md`, `API.md`, `TESTING.md` y `DATABASE.md`. |
+| Datos | ✅ Catálogo global en `db:seed`/`db:reset`; demo con 2–3 evaluaciones por cliente (valores ficticios). |
+| Pendiente conocido | Revisión experta de las baterías. Cortes EWGSOP2 y normas por edad pendientes de texto completo **[REQUIERE VERIFICACIÓN]**. La mayoría de los tests necesitarán test-retest propio para emitir veredictos. |

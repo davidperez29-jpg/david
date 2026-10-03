@@ -109,3 +109,24 @@ Detalle del modelo y de las reglas en `SCIENTIFIC_FRAMEWORK.md`. El contenido gl
 | `POST /science/methods/{id}/status` | `science:publish` (publicar) / `science:write` | `{status}` | Publicar exige definición y todas las variables justificadas (`details.publish`). |
 | `GET /science/qa` | `science:read` | — | Totales, afirmaciones por nivel, errores y avisos con enlace. |
 | `PUT /exercises/{id}/methods` | `library:write` | `{methodIds}` | Enlaza un ejercicio propio con métodos (propios o globales). |
+
+## Evaluación (Fase 5)
+
+Detalle de reglas en `ASSESSMENT.md`. Una evaluación de un cliente fuera de alcance devuelve 404.
+
+| Método y ruta | Permiso | Entrada | Descripción |
+|---|---|---|---|
+| `GET /assessment-tests` | `assessments:read` | query `q`, `category` | Catálogo, con número de filas de fiabilidad y de referencia. |
+| `POST /assessment-tests` | `assessments:catalog` | `testSchema` | Test propio de la organización. |
+| `GET /assessment-tests/{id}` | `assessments:read` | — | Ficha, fiabilidad, referencias, fuentes y fórmulas derivadas. |
+| `PATCH /assessment-tests/{id}` | `assessments:catalog` | `updateTestSchema` (`expectedVersion`) | Solo tests propios; cambiar el protocolo crea una versión nueva. |
+| `POST /assessment-tests/{id}/reliability` | `assessments:catalog` | `localReliabilitySchema` (SEM, CV o MDC95 obligatorio) | Test-retest del centro. |
+| `DELETE /assessment-reliability/{id}` | `assessments:catalog` | — | Solo fiabilidad local. |
+| `GET /assessment-batteries` · `POST` | `assessments:read` / `assessments:catalog` | `batterySchema` | Baterías globales y propias. |
+| `GET /clients/{id}/assessments` · `POST` | `assessments:read` / `assessments:write` | `createAssessmentSchema` (`assessedOn`, `batteryId?`, `testIds`) | Si se indica una batería y no se pasan tests, se usan los de la batería. |
+| `GET /clients/{id}/assessments/proposal` | `assessments:write` | — | Batería propuesta, tests excluidos con su motivo y explicación. |
+| `GET /clients/{id}/assessments/progress` | `assessments:read` | — | Series por test y lado, cambio frente al error, tendencia, referencias y métricas derivadas. |
+| `GET /assessments/{id}` | `assessments:read` | — | Tests, resultados con cambio y referencias, métricas derivadas y banderas. |
+| `POST /assessments/{id}/results` | `assessments:write` | `recordResultSchema` (`testId`, `side`, `attempts`, `measurementMethod?`, `valid`) | Crea o reemplaza el resultado del test y lado; recalcula las métricas derivadas. |
+| `DELETE /assessment-results/{id}` | `assessments:write` | — | |
+| `POST /assessments/{id}/status` | `assessments:write` | `{status}` | Planificada, en curso, completada o cancelada. |

@@ -2,6 +2,33 @@
 
 Formato: fecha · cambio · motivo · archivos · impacto.
 
+## 2026-10-03 — Fase 5: evaluación
+
+- **Cambio:** dominio de evaluación (§11).
+  - Agregación de intentos.
+  - Interpretación del cambio frente al error típico y al MDC95: primero la fiabilidad local, después la publicada en población similar y, si no hay, sin veredicto.
+  - Errores combinados para las métricas de diferencia y tendencia con 3 o más puntos.
+  - Métricas derivadas: IMC, déficit de COD por lado, fuerza relativa, CMJ/SJ y asimetrías descriptivas.
+  - Aplicabilidad de referencias, con z-score solo si son aplicables.
+  - Puntos de corte descriptivos frente a clínicos (solo los clínicos derivan).
+  - Propuesta de batería con exclusiones de seguridad.
+  - **Archivos:** `packages/domain/src/assessment/*`.
+- **Cambio:** casos de uso, API y UI.
+  - **Incluye:** catálogo y fichas, fiabilidad del centro, baterías, evaluaciones por intentos y lados, progreso con gráficos SVG con banda de error y la pantalla «Progreso» del cliente.
+  - **Archivos:** `packages/application/src/assessments.ts`, `apps/web/src/app/app/assessments/*`, `apps/web/src/app/me/progreso`.
+  - **Impacto:** permisos `assessments:read/write/catalog`.
+- **Cambio:** catálogo global verificado en PubMed.
+  - **Datos:** 43 tests, 38 filas de fiabilidad, 10 de referencia y 57 fuentes. Cada fila incluye la cita literal del resumen que contiene sus cifras.
+  - **Comprobación:** 8 fuentes contrastadas de nuevo con PubMed antes de importar.
+  - **Archivos:** `seed-data/assessment/*`, `packages/db/src/seed/{assessment,knowledge}.ts`.
+  - **Impacto:** 3 poblaciones nuevas.
+- **Cambio:** 5 referencias no localizadas y 24 datos no verificados **[REQUIERE VERIFICACIÓN]**, entre ellos los cortes EWGSOP2, que no figuran en el resumen.
+  - **Archivos:** `docs/research/assessment_seed_report.md`.
+- **Corrección:** el anexo de la Fase 0 tenía invertidos los MDC del lunge test (intra/inter); se sigue el resumen de Powden 2015. El PMID 31081853 propuesto para EWGSOP2 es una fe de erratas; el correcto es 30312372.
+- **Cambio:** migraciones `0009` y `0010`; demo con 2–3 evaluaciones por cliente.
+- **Cambio:** tests: 176 unitarios, 84 de integración y 14 E2E.
+- **Cambio:** documentación: `ASSESSMENT.md`; `API.md`, `TESTING.md`, `ROADMAP.md`, `DATABASE.md` y `README.md` actualizados.
+
 ## 2026-10-03 — Fase 4: biblioteca científica
 
 - **Cambio:** dominio científico.

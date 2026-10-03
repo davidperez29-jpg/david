@@ -217,3 +217,13 @@ Auditoría:
 - `evidence_sources`: DOI, PMID y `source_key` son únicos **por ámbito** (organización o global) solo cuando tienen valor. Son índices únicos parciales sobre `coalesce(organization_id, 0…0)` (migración `0008`), así que pueden convivir varias fuentes sin DOI.
 - `evidence_findings.finding_key` (`tema:clave`) y `evidence_sources.source_key` (migración `0007`) son las claves de la importación idempotente de `seed-data/evidence`.
 - Los niveles (`evidence_level`) se **calculan** desde `grading_rationale`; no se editan a mano. Ver `SCIENTIFIC_FRAMEWORK.md`.
+
+## Evaluación (Fase 5)
+
+- Migración `0009`:
+  - `assessment_tests.is_estimate`;
+  - `assessments.planned_test_ids`;
+  - un resultado por evaluación, test y lado (`assessment_results_one_per_side_uq`);
+  - una métrica por evaluación (`derived_metrics_assessment_metric_uq`).
+- Migración `0010`: `reference_values.sample_size` pasa a `integer` (hay normas con más de 32 767 personas).
+- `pnpm db:seed` importa también `seed-data/assessment`: tests, fiabilidad, referencias y baterías globales. Sus fuentes se importan como evidencia verificada.
