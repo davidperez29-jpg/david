@@ -15,7 +15,10 @@ export async function listClientAudit(ctx: RequestContext, clientId: string, lim
     .limit(Math.min(limit, 500));
   const actorIds = [...new Set(rows.map((r) => r.actorUserId).filter((x): x is string => !!x))];
   const names = actorIds.length
-    ? await ctx.db.select({ id: users.id, name: users.displayName }).from(users).where(inArray(users.id, actorIds))
+    ? await ctx.db
+        .select({ id: users.id, name: users.displayName })
+        .from(users)
+        .where(inArray(users.id, actorIds))
     : [];
   return rows.map((r) => ({
     id: r.id,

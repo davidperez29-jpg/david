@@ -1,7 +1,17 @@
 import { decrypt, encrypt } from '@tp/auth';
-import { clearHealthDeclarationSchema, healthDeclarationSchema, screeningSchema } from '@tp/contracts';
+import {
+  clearHealthDeclarationSchema,
+  healthDeclarationSchema,
+  screeningSchema,
+} from '@tp/contracts';
 import { schema, type Executor } from '@tp/db';
-import { DomainError, hasActiveConsent, needsReferral, REFERRAL_TEXT, type ConsentPurpose } from '@tp/domain';
+import {
+  DomainError,
+  hasActiveConsent,
+  needsReferral,
+  REFERRAL_TEXT,
+  type ConsentPurpose,
+} from '@tp/domain';
 import { and, desc, eq } from 'drizzle-orm';
 import { writeAudit } from './audit';
 import { authorizeClient, requirePermission } from './authz';
@@ -41,7 +51,12 @@ export async function referralStatus(db: Executor, clientId: string): Promise<Re
 async function requireHealthConsent(db: Executor, clientId: string): Promise<void> {
   const rows = await db.select().from(consents).where(eq(consents.clientId, clientId));
   const ok = hasActiveConsent(
-    rows.map((r) => ({ purpose: r.purpose as ConsentPurpose, textVersion: r.textVersion, grantedAt: r.grantedAt, revokedAt: r.revokedAt })),
+    rows.map((r) => ({
+      purpose: r.purpose as ConsentPurpose,
+      textVersion: r.textVersion,
+      grantedAt: r.grantedAt,
+      revokedAt: r.revokedAt,
+    })),
     'health_data',
   );
   if (!ok) {
@@ -66,7 +81,12 @@ export async function listHealthDeclarations(ctx: RequestContext, clientId: stri
     .from(screeningResponses)
     .where(eq(screeningResponses.clientId, clientId))
     .orderBy(desc(screeningResponses.completedOn));
-  await writeAudit(ctx.db, ctx, { action: 'view_sensitive', entityType: 'health_declarations', entityId: clientId, clientId });
+  await writeAudit(ctx.db, ctx, {
+    action: 'view_sensitive',
+    entityType: 'health_declarations',
+    entityId: clientId,
+    clientId,
+  });
   return {
     declarations: rows.map((r) => ({
       id: r.id,
@@ -96,7 +116,11 @@ function staffOnly(ctx: RequestContext, resource: Awaited<ReturnType<typeof auth
   }
 }
 
-export async function addHealthDeclaration(ctx: RequestContext, clientId: string, input: unknown): Promise<{ id: string }> {
+export async function addHealthDeclaration(
+  ctx: RequestContext,
+  clientId: string,
+  input: unknown,
+): Promise<{ id: string }> {
   const d = parse(healthDeclarationSchema, input);
   const resource = await authorizeClient(ctx, 'health:write', clientId);
   staffOnly(ctx, resource);
@@ -121,29 +145,55 @@ export async function addHealthDeclaration(ctx: RequestContext, clientId: string
       entityId: row!.id,
       clientId,
       // Free text is not copied into the audit trail.
-      changes: { type: d.type, bodyRegion: d.bodyRegion ?? null, requiresProfessionalAssessment: d.requiresProfessionalAssessment },
+      changes: {
+        type: d.type,
+        bodyRegion: d.bodyRegion ?? null,
+        requiresProfessionalAssessment: d.requiresProfessionalAssessment,
+      },
     });
     return { id: row!.id };
   });
 }
 
 /** Records that a health professional has assessed the issue (the system never decides this). */
-export async function clearHealthDeclaration(ctx: RequestContext, clientId: string, declarationId: string, input: unknown): Promise<void> {
+export async function clearHealthDeclaration(
+  ctx: RequestContext,
+  clientId: string,
+  declarationId: string,
+  input: unknown,
+): Promise<void> {
   const { note } = parse(clearHealthDeclarationSchema, input);
   const resource = await authorizeClient(ctx, 'health:write', clientId);
   staffOnly(ctx, resource);
   await ctx.db.transaction(async (tx) => {
     const updated = await tx
       .update(healthDeclarations)
-      .set({ clearedAt: ctx.now(), clearedBy: ctx.actor.userId, clearanceNote: note, updatedBy: ctx.actor.userId })
-      .where(and(eq(healthDeclarations.id, declarationId), eq(healthDeclarations.clientId, clientId)))
+      .set({
+        clearedAt: ctx.now(),
+        clearedBy: ctx.actor.userId,
+        clearanceNote: note,
+        updatedBy: ctx.actor.userId,
+      })
+      .where(
+        and(eq(healthDeclarations.id, declarationId), eq(healthDeclarations.clientId, clientId)),
+      )
       .returning({ id: healthDeclarations.id });
     if (!updated.length) throw new DomainError('not_found', 'Declaración no encontrada.');
-    await writeAudit(tx, ctx, { action: 'clear', entityType: 'health_declaration', entityId: declarationId, clientId, reason: note });
+    await writeAudit(tx, ctx, {
+      action: 'clear',
+      entityType: 'health_declaration',
+      entityId: declarationId,
+      clientId,
+      reason: note,
+    });
   });
 }
 
-export async function recordScreening(ctx: RequestContext, clientId: string, input: unknown): Promise<{ id: string }> {
+export async function recordScreening(
+  ctx: RequestContext,
+  clientId: string,
+  input: unknown,
+): Promise<{ id: string }> {
   const s = parse(screeningSchema, input);
   const resource = await authorizeClient(ctx, 'health:write', clientId);
   staffOnly(ctx, resource);
@@ -160,7 +210,13 @@ export async function recordScreening(ctx: RequestContext, clientId: string, inp
         createdBy: ctx.actor.userId,
       })
       .returning({ id: screeningResponses.id });
-    await writeAudit(tx, ctx, { action: 'create', entityType: 'screening', entityId: row!.id, clientId, changes: { questionnaire: s.questionnaire, result: s.result } });
+    await writeAudit(tx, ctx, {
+      action: 'create',
+      entityType: 'screening',
+      entityId: row!.id,
+      clientId,
+      changes: { questionnaire: s.questionnaire, result: s.result },
+    });
     return { id: row!.id };
   });
 }

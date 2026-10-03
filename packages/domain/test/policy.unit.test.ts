@@ -18,17 +18,41 @@ describe('authorize', () => {
   });
 
   it('limits trainers to assigned clients', () => {
-    expect(authorize(trainer, 'clients:read', { organizationId: ORG, clientId: 'c9', assignedToActor: false }).allowed).toBe(false);
-    expect(authorize(trainer, 'clients:read', { organizationId: ORG, clientId: 'c9', assignedToActor: true }).allowed).toBe(true);
+    expect(
+      authorize(trainer, 'clients:read', {
+        organizationId: ORG,
+        clientId: 'c9',
+        assignedToActor: false,
+      }).allowed,
+    ).toBe(false);
+    expect(
+      authorize(trainer, 'clients:read', {
+        organizationId: ORG,
+        clientId: 'c9',
+        assignedToActor: true,
+      }).allowed,
+    ).toBe(true);
     // assignedToActor missing is treated as not assigned
-    expect(authorize(trainer, 'clients:read', { organizationId: ORG, clientId: 'c9' }).allowed).toBe(false);
+    expect(
+      authorize(trainer, 'clients:read', { organizationId: ORG, clientId: 'c9' }).allowed,
+    ).toBe(false);
   });
 
   it('limits clients to their own record', () => {
-    expect(authorize(client, 'clients:read', { organizationId: ORG, clientId: 'c3' }).allowed).toBe(true);
-    expect(authorize(client, 'clients:read', { organizationId: ORG, clientId: 'c4', assignedToActor: true }).allowed).toBe(false);
+    expect(authorize(client, 'clients:read', { organizationId: ORG, clientId: 'c3' }).allowed).toBe(
+      true,
+    );
+    expect(
+      authorize(client, 'clients:read', {
+        organizationId: ORG,
+        clientId: 'c4',
+        assignedToActor: true,
+      }).allowed,
+    ).toBe(false);
     const noClient: Actor = { ...client, clientId: null };
-    expect(authorize(noClient, 'clients:read', { organizationId: ORG, clientId: 'c3' }).allowed).toBe(false);
+    expect(
+      authorize(noClient, 'clients:read', { organizationId: ORG, clientId: 'c3' }).allowed,
+    ).toBe(false);
   });
 
   it('uses the broadest scope across roles', () => {
@@ -37,7 +61,13 @@ describe('authorize', () => {
   });
 
   it('clients can never write health data, plans or audit', () => {
-    for (const p of ['health:write', 'goals:write', 'audit:read', 'users:read', 'clients:assign'] as const) {
+    for (const p of [
+      'health:write',
+      'goals:write',
+      'audit:read',
+      'users:read',
+      'clients:assign',
+    ] as const) {
       expect(scopeFor(client, p)).toBeNull();
     }
   });

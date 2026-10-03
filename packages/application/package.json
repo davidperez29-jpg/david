@@ -3,8 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "exports": { ".": "./src/index.ts" },
-  "scripts": { "typecheck": "tsc -p tsconfig.json" },
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "seed:demo": "tsx scripts/seed-demo.ts",
+    "create-org": "tsx scripts/create-org.ts"
+  },
   "dependencies": {
     "@tp/auth": "workspace:*",
     "@tp/contracts": "workspace:*",
@@ -12,5 +18,9 @@
     "@tp/domain": "workspace:*",
     "drizzle-orm": "^0.45.2",
     "zod": "^4.1.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.20.0",
+    "dotenv": "^17.0.0"
   }
 }

@@ -95,7 +95,9 @@ export const clients = pgTable(
     /** AES-256-GCM encrypted (§6.4). */
     phoneEnc: text('phone_enc'),
     photoFileId: uuid('photo_file_id'),
-    joinedAt: date('joined_at').notNull().default(sql`CURRENT_DATE`),
+    joinedAt: date('joined_at')
+      .notNull()
+      .default(sql`CURRENT_DATE`),
     status: clientStatus('status').notNull().default('active'),
     modality: modality('modality').notNull().default('in_person'),
     preferences: text('preferences'),
@@ -129,7 +131,9 @@ export const trainerClientAssignments = pgTable(
     createdBy: uuid('created_by'),
   },
   (t) => [
-    uniqueIndex('tca_active_uq').on(t.trainerId, t.clientId).where(sql`${t.endedAt} IS NULL`),
+    uniqueIndex('tca_active_uq')
+      .on(t.trainerId, t.clientId)
+      .where(sql`${t.endedAt} IS NULL`),
     index('tca_client_idx').on(t.clientId),
   ],
 );
@@ -231,7 +235,9 @@ export const healthDeclarations = pgTable(
       .references(() => clients.id, { onDelete: 'cascade' }),
     type: healthDeclarationType('type').notNull(),
     bodyRegion: text('body_region'),
-    declaredOn: date('declared_on').notNull().default(sql`CURRENT_DATE`),
+    declaredOn: date('declared_on')
+      .notNull()
+      .default(sql`CURRENT_DATE`),
     declaredStatus: declaredStatus('declared_status').notNull().default('unknown'),
     requiresProfessionalAssessment: boolean('requires_professional_assessment')
       .notNull()
@@ -282,4 +288,3 @@ export const consents = pgTable(
   },
   (t) => [index('consents_client_idx').on(t.clientId, t.purpose)],
 );
-

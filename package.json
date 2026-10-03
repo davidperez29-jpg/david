@@ -21,7 +21,7 @@
     "db:generate": "pnpm --filter @tp/db generate",
     "db:migrate": "pnpm --filter @tp/db migrate",
     "db:seed": "pnpm --filter @tp/db seed",
-    "db:seed:demo": "pnpm --filter @tp/db seed:demo",
+    "db:seed:demo": "pnpm --filter @tp/application seed:demo",
     "db:reset": "pnpm --filter @tp/db reset"
   },
   "devDependencies": {

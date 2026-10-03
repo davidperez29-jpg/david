@@ -1,7 +1,10 @@
 import { integer, timestamp, uuid } from 'drizzle-orm/pg-core';
 import { uuidv7 } from '../uuid';
 
-export const id = () => uuid('id').primaryKey().$defaultFn(() => uuidv7());
+export const id = () =>
+  uuid('id')
+    .primaryKey()
+    .$defaultFn(() => uuidv7());
 
 export const timestamps = () => ({
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),

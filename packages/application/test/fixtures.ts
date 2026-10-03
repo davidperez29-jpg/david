@@ -22,7 +22,9 @@ export function testDb(): DbHandle {
 
 export const PASSWORD = 'correct-horse-battery-staple';
 
-export function appContext(overrides: Partial<AppContext> = {}): AppContext & { mailer: MemoryMailer } {
+export function appContext(
+  overrides: Partial<AppContext> = {},
+): AppContext & { mailer: MemoryMailer } {
   return {
     db: testDb().db,
     keys: keyRingFromBase64(Buffer.alloc(32, 7).toString('base64')),
@@ -55,7 +57,12 @@ export async function buildOrg() {
   const org = await bootstrapOrganization(ctx.db, {
     name: `Org ${tag}`,
     slug: `org-${tag}`,
-    admin: { email: `admin-${tag}@example.com`, password: PASSWORD, firstName: 'Ada', lastName: 'Admin' },
+    admin: {
+      email: `admin-${tag}@example.com`,
+      password: PASSWORD,
+      firstName: 'Ada',
+      lastName: 'Admin',
+    },
   });
   const admin = await as(ctx, org.adminUserId);
 
@@ -65,19 +72,37 @@ export async function buildOrg() {
     firstName: 'Teo',
     lastName: 'Trainer',
   });
-  const t2Login = await acceptInvitation(ctx, { token: tokenFrom(inv.link), displayName: 'Teo Trainer', password: PASSWORD });
+  const t2Login = await acceptInvitation(ctx, {
+    token: tokenFrom(inv.link),
+    displayName: 'Teo Trainer',
+    password: PASSWORD,
+  });
   const t2State = await resolveSession(ctx, t2Login.token);
   if (t2State.status !== 'authenticated') throw new Error('trainer2 not authenticated');
   const trainer2 = await as(ctx, t2State.actor.userId);
 
   const clientA = await createClient(admin, {
-    basics: { firstName: 'Ana', lastName: `Alpha ${tag}`, birthDate: '1995-04-10', sex: 'female', email: `ana-${tag}@example.com` },
+    basics: {
+      firstName: 'Ana',
+      lastName: `Alpha ${tag}`,
+      birthDate: '1995-04-10',
+      sex: 'female',
+      email: `ana-${tag}@example.com`,
+    },
   });
   const clientB = await createClient(trainer2, {
     basics: { firstName: 'Bruno', lastName: `Beta ${tag}`, birthDate: '1980-01-01', sex: 'male' },
   });
-  const cInv = await createInvitation(admin, { role: 'CLIENT', email: `ana-${tag}@example.com`, clientId: clientA.id });
-  const cLogin = await acceptInvitation(ctx, { token: tokenFrom(cInv.link), displayName: 'Ana', password: PASSWORD });
+  const cInv = await createInvitation(admin, {
+    role: 'CLIENT',
+    email: `ana-${tag}@example.com`,
+    clientId: clientA.id,
+  });
+  const cLogin = await acceptInvitation(ctx, {
+    token: tokenFrom(cInv.link),
+    displayName: 'Ana',
+    password: PASSWORD,
+  });
   const cState = await resolveSession(ctx, cLogin.token);
   if (cState.status !== 'authenticated') throw new Error('client not authenticated');
   const clientUser = await as(ctx, cState.actor.userId);

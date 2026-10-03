@@ -23,8 +23,12 @@ export async function bootstrapOrganization(
   const passwordHash = await hashPassword(input.admin.password);
   return db.transaction(async (tx) => {
     const exists = await tx.select().from(organizations).where(eq(organizations.slug, input.slug));
-    if (exists.length) throw new DomainError('conflict', `Organization ${input.slug} already exists`);
-    const [org] = await tx.insert(organizations).values({ name: input.name, slug: input.slug }).returning();
+    if (exists.length)
+      throw new DomainError('conflict', `Organization ${input.slug} already exists`);
+    const [org] = await tx
+      .insert(organizations)
+      .values({ name: input.name, slug: input.slug })
+      .returning();
     const [user] = await tx
       .insert(users)
       .values({
@@ -36,10 +40,14 @@ export async function bootstrapOrganization(
       .returning();
     const roleRows = await tx.select().from(roles);
     const id = (k: string) => roleRows.find((r) => r.key === k)!.id;
-    await tx.insert(userRoles).values({ userId: user!.id, roleId: id('ADMIN'), organizationId: org!.id });
+    await tx
+      .insert(userRoles)
+      .values({ userId: user!.id, roleId: id('ADMIN'), organizationId: org!.id });
     let trainerId: string | null = null;
     if (input.adminIsTrainer ?? true) {
-      await tx.insert(userRoles).values({ userId: user!.id, roleId: id('TRAINER'), organizationId: org!.id });
+      await tx
+        .insert(userRoles)
+        .values({ userId: user!.id, roleId: id('TRAINER'), organizationId: org!.id });
       const [t] = await tx
         .insert(trainers)
         .values({

@@ -11,7 +11,9 @@ const DAY = 24 * HOUR;
 /** Session lifetimes (§14.1): staff 12 h idle / 7 d absolute; clients 30 d idle / 90 d absolute. */
 export function sessionLifetimes(roles: Role[]): { idleMs: number; absoluteMs: number } {
   const staff = roles.some((r) => r === 'ADMIN' || r === 'TRAINER');
-  return staff ? { idleMs: 12 * HOUR, absoluteMs: 7 * DAY } : { idleMs: 30 * DAY, absoluteMs: 90 * DAY };
+  return staff
+    ? { idleMs: 12 * HOUR, absoluteMs: 7 * DAY }
+    : { idleMs: 30 * DAY, absoluteMs: 90 * DAY };
 }
 
 /** Sliding window is only extended when older than this, to avoid a write per request. */
@@ -96,11 +98,19 @@ export async function markSecondFactorVerified(db: Executor, sessionId: string):
     .where(eq(authSessions.id, sessionId));
 }
 
-export async function revokeSession(db: Executor, sessionId: string, now = new Date()): Promise<void> {
+export async function revokeSession(
+  db: Executor,
+  sessionId: string,
+  now = new Date(),
+): Promise<void> {
   await db.update(authSessions).set({ revokedAt: now }).where(eq(authSessions.id, sessionId));
 }
 
-export async function revokeAllSessions(db: Executor, userId: string, now = new Date()): Promise<void> {
+export async function revokeAllSessions(
+  db: Executor,
+  userId: string,
+  now = new Date(),
+): Promise<void> {
   await db
     .update(authSessions)
     .set({ revokedAt: now })

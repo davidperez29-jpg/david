@@ -86,7 +86,10 @@ function scopeCondition(ctx: RequestContext, scope: 'org' | 'assigned' | 'own'):
   );
 }
 
-export async function listClients(ctx: RequestContext, query: unknown): Promise<Page<ClientSummary>> {
+export async function listClients(
+  ctx: RequestContext,
+  query: unknown,
+): Promise<Page<ClientSummary>> {
   const q = parse(listClientsSchema, query ?? {});
   const scope = requirePermission(ctx, 'clients:read');
   const conds: (SQL | undefined)[] = [scopeCondition(ctx, scope)];
@@ -104,7 +107,10 @@ export async function listClients(ctx: RequestContext, query: unknown): Promise<
     );
   }
   const where = and(...conds);
-  const [{ total } = { total: 0 }] = await ctx.db.select({ total: count() }).from(clients).where(where);
+  const [{ total } = { total: 0 }] = await ctx.db
+    .select({ total: count() })
+    .from(clients)
+    .where(where);
   const rows = await ctx.db
     .select({
       id: clients.id,
@@ -142,7 +148,12 @@ export async function listClients(ctx: RequestContext, query: unknown): Promise<
         })
         .from(trainerClientAssignments)
         .innerJoin(trainers, eq(trainers.id, trainerClientAssignments.trainerId))
-        .where(and(inArray(trainerClientAssignments.clientId, ids), isNull(trainerClientAssignments.endedAt)))
+        .where(
+          and(
+            inArray(trainerClientAssignments.clientId, ids),
+            isNull(trainerClientAssignments.endedAt),
+          ),
+        )
     : [];
   const now = ctx.now();
   return {
@@ -195,7 +206,11 @@ export async function getClient(ctx: RequestContext, clientId: string) {
     .where(eq(clientAvailability.clientId, clientId))
     .orderBy(asc(clientAvailability.weekday), asc(clientAvailability.startTime));
   const equipmentRows = await ctx.db
-    .select({ equipmentId: clientEquipment.equipmentId, name: equipment.name, location: clientEquipment.location })
+    .select({
+      equipmentId: clientEquipment.equipmentId,
+      name: equipment.name,
+      location: clientEquipment.location,
+    })
     .from(clientEquipment)
     .innerJoin(equipment, eq(equipment.id, clientEquipment.equipmentId))
     .where(eq(clientEquipment.clientId, clientId))
@@ -209,7 +224,12 @@ export async function getClient(ctx: RequestContext, clientId: string) {
     })
     .from(trainerClientAssignments)
     .innerJoin(trainers, eq(trainers.id, trainerClientAssignments.trainerId))
-    .where(and(eq(trainerClientAssignments.clientId, clientId), isNull(trainerClientAssignments.endedAt)));
+    .where(
+      and(
+        eq(trainerClientAssignments.clientId, clientId),
+        isNull(trainerClientAssignments.endedAt),
+      ),
+    );
   const history = await ctx.db
     .select()
     .from(clientHistoryEntries)
@@ -262,12 +282,20 @@ async function insertGoals(
   clientId: string,
   input: z.output<typeof setGoalsSchema>['goals'],
 ): Promise<void> {
-  const problems = validateGoalSelection(input.map((g) => ({ ...g, targetDate: g.targetDate ?? null })));
-  if (problems.length) throw new DomainError('validation', 'Objetivos no válidos.', { goals: problems });
+  const problems = validateGoalSelection(
+    input.map((g) => ({ ...g, targetDate: g.targetDate ?? null })),
+  );
+  if (problems.length)
+    throw new DomainError('validation', 'Objetivos no válidos.', { goals: problems });
   const known = await tx
     .select({ id: goals.id, org: goals.organizationId })
     .from(goals)
-    .where(inArray(goals.id, input.map((g) => g.goalId)));
+    .where(
+      inArray(
+        goals.id,
+        input.map((g) => g.goalId),
+      ),
+    );
   for (const g of input) {
     const k = known.find((x) => x.id === g.goalId);
     if (!k || (k.org !== null && k.org !== ctx.actor.organizationId)) {
@@ -318,12 +346,18 @@ async function replaceEquipment(
     const known = await tx
       .select({ id: equipment.id, org: equipment.organizationId })
       .from(equipment)
-      .where(inArray(equipment.id, items.map((i) => i.equipmentId)));
+      .where(
+        inArray(
+          equipment.id,
+          items.map((i) => i.equipmentId),
+        ),
+      );
     const ok = items.every((i) => {
       const k = known.find((x) => x.id === i.equipmentId);
       return k && (k.org === null || k.org === ctx.actor.organizationId);
     });
-    if (!ok) throw new DomainError('validation', 'Material desconocido.', { equipment: ['unknown'] });
+    if (!ok)
+      throw new DomainError('validation', 'Material desconocido.', { equipment: ['unknown'] });
   }
   await tx.delete(clientEquipment).where(eq(clientEquipment.clientId, clientId));
   if (items.length) {
@@ -333,7 +367,10 @@ async function replaceEquipment(
   }
 }
 
-async function resolveTrainerForNewClient(ctx: RequestContext, requested?: string): Promise<string> {
+async function resolveTrainerForNewClient(
+  ctx: RequestContext,
+  requested?: string,
+): Promise<string> {
   if (requested && requested !== ctx.actor.trainerId) {
     if (!ctx.actor.roles.includes('ADMIN')) {
       throw new DomainError('forbidden', 'Solo administración puede asignar a otro entrenador.');
@@ -348,11 +385,14 @@ async function resolveTrainerForNewClient(ctx: RequestContext, requested?: strin
           eq(trainers.active, true),
         ),
       );
-    if (!t) throw new DomainError('validation', 'Entrenador no válido.', { trainerId: ['unknown'] });
+    if (!t)
+      throw new DomainError('validation', 'Entrenador no válido.', { trainerId: ['unknown'] });
     return t.id;
   }
   if (ctx.actor.trainerId) return ctx.actor.trainerId;
-  throw new DomainError('validation', 'Selecciona el entrenador responsable.', { trainerId: ['required'] });
+  throw new DomainError('validation', 'Selecciona el entrenador responsable.', {
+    trainerId: ['required'],
+  });
 }
 
 export async function createClient(ctx: RequestContext, input: unknown): Promise<{ id: string }> {
@@ -438,11 +478,18 @@ export async function updateClient(
     const [before] = await tx.select().from(clients).where(eq(clients.id, clientId)).for('update');
     if (!before) throw new DomainError('not_found', 'Cliente no encontrado.');
     if (before.version !== expectedVersion) {
-      throw new DomainError('conflict', 'Otra persona ha modificado este cliente. Recarga los datos.');
+      throw new DomainError(
+        'conflict',
+        'Otra persona ha modificado este cliente. Recarga los datos.',
+      );
     }
-    const set: Partial<typeof clients.$inferInsert> = { updatedBy: ctx.actor.userId, version: before.version + 1 };
+    const set: Partial<typeof clients.$inferInsert> = {
+      updatedBy: ctx.actor.userId,
+      version: before.version + 1,
+    };
     for (const k of keys) {
-      if (k === 'phone') set.phoneEnc = changes.phone ? encrypt(ctx.keys.encryptionKey, changes.phone) : null;
+      if (k === 'phone')
+        set.phoneEnc = changes.phone ? encrypt(ctx.keys.encryptionKey, changes.phone) : null;
       else (set as Record<string, unknown>)[k] = (changes as Record<string, unknown>)[k] ?? null;
     }
     await tx.update(clients).set(set).where(eq(clients.id, clientId));
@@ -450,12 +497,23 @@ export async function updateClient(
       ...before,
       phone: before.phoneEnc ? decrypt(ctx.keys.encryptionKey, before.phoneEnc) : null,
     };
-    const afterPlain = { ...beforePlain, ...Object.fromEntries(keys.map((k) => [k, changes[k] ?? null])) };
+    const afterPlain = {
+      ...beforePlain,
+      ...Object.fromEntries(keys.map((k) => [k, changes[k] ?? null])),
+    };
     const diff = diffFields(beforePlain, afterPlain, BASIC_FIELDS).map((d) =>
-      d.field === 'phone' ? { ...d, before: d.before ? '[set]' : null, after: d.after ? '[set]' : null } : d,
+      d.field === 'phone'
+        ? { ...d, before: d.before ? '[set]' : null, after: d.after ? '[set]' : null }
+        : d,
     );
     if (diff.length) {
-      await writeAudit(tx, ctx, { action: 'update', entityType: 'client', entityId: clientId, clientId, changes: diff });
+      await writeAudit(tx, ctx, {
+        action: 'update',
+        entityType: 'client',
+        entityId: clientId,
+        clientId,
+        changes: diff,
+      });
     }
     return { version: before.version + 1 };
   });
@@ -485,23 +543,40 @@ export async function setClientArchived(
       entityType: 'client',
       entityId: clientId,
       clientId,
-      changes: [{ field: 'status', before: before!.status, after: archived ? 'archived' : 'active' }],
+      changes: [
+        { field: 'status', before: before!.status, after: archived ? 'archived' : 'active' },
+      ],
       reason: reason ?? null,
     });
   });
 }
 
-function denyOwnScope(ctx: RequestContext, permission: 'clients:write' | 'goals:write', resource: Awaited<ReturnType<typeof authorizeClient>>) {
+function denyOwnScope(
+  ctx: RequestContext,
+  permission: 'clients:write' | 'goals:write',
+  resource: Awaited<ReturnType<typeof authorizeClient>>,
+) {
   if (requirePermission(ctx, permission, resource) === 'own') {
     throw new DomainError('forbidden', 'Solo tu entrenador puede modificar estos datos.');
   }
 }
 
-export async function updateTrainingProfile(ctx: RequestContext, clientId: string, input: unknown): Promise<void> {
+export async function updateTrainingProfile(
+  ctx: RequestContext,
+  clientId: string,
+  input: unknown,
+): Promise<void> {
   const p = parse(trainingProfileSchema, input);
   const resource = await authorizeClient(ctx, 'clients:write', clientId);
   denyOwnScope(ctx, 'clients:write', resource);
-  const fields = ['experienceLevel', 'yearsTraining', 'sessionsPerWeek', 'sessionDurationMin', 'location', 'notes'] as const;
+  const fields = [
+    'experienceLevel',
+    'yearsTraining',
+    'sessionsPerWeek',
+    'sessionDurationMin',
+    'location',
+    'notes',
+  ] as const;
   await ctx.db.transaction(async (tx) => {
     const [before] = await tx
       .select()
@@ -527,18 +602,32 @@ export async function updateTrainingProfile(ctx: RequestContext, clientId: strin
       r ? { ...r, yearsTraining: r.yearsTraining != null ? Number(r.yearsTraining) : null } : null;
     const diff = diffFields(norm(before), norm(values), fields);
     if (diff.length) {
-      await writeAudit(tx, ctx, { action: 'update', entityType: 'client_training_profile', entityId: clientId, clientId, changes: diff });
+      await writeAudit(tx, ctx, {
+        action: 'update',
+        entityType: 'client_training_profile',
+        entityId: clientId,
+        clientId,
+        changes: diff,
+      });
     }
   });
 }
 
-export async function setClientGoals(ctx: RequestContext, clientId: string, input: unknown): Promise<void> {
+export async function setClientGoals(
+  ctx: RequestContext,
+  clientId: string,
+  input: unknown,
+): Promise<void> {
   const { goals: list } = parse(setGoalsSchema, input);
   const resource = await authorizeClient(ctx, 'goals:write', clientId);
   denyOwnScope(ctx, 'goals:write', resource);
   await ctx.db.transaction(async (tx) => {
     const before = await tx
-      .select({ goalId: clientGoals.goalId, isPrimary: clientGoals.isPrimary, w: clientGoals.priorityWeight })
+      .select({
+        goalId: clientGoals.goalId,
+        isPrimary: clientGoals.isPrimary,
+        w: clientGoals.priorityWeight,
+      })
       .from(clientGoals)
       .where(and(eq(clientGoals.clientId, clientId), eq(clientGoals.status, 'active')));
     // Previous goals are kept as history (status = dropped), never deleted.
@@ -555,15 +644,27 @@ export async function setClientGoals(ctx: RequestContext, clientId: string, inpu
       changes: [
         {
           field: 'goals',
-          before: before.map((g) => ({ goalId: g.goalId, isPrimary: g.isPrimary, weight: Number(g.w) })),
-          after: list.map((g) => ({ goalId: g.goalId, isPrimary: g.isPrimary, weight: g.priorityWeight })),
+          before: before.map((g) => ({
+            goalId: g.goalId,
+            isPrimary: g.isPrimary,
+            weight: Number(g.w),
+          })),
+          after: list.map((g) => ({
+            goalId: g.goalId,
+            isPrimary: g.isPrimary,
+            weight: g.priorityWeight,
+          })),
         },
       ],
     });
   });
 }
 
-export async function setClientAvailability(ctx: RequestContext, clientId: string, input: unknown): Promise<void> {
+export async function setClientAvailability(
+  ctx: RequestContext,
+  clientId: string,
+  input: unknown,
+): Promise<void> {
   const { slots } = parse(setAvailabilitySchema, input);
   // Availability is self-editable by the client (§14.2).
   await authorizeClient(ctx, 'clients:write', clientId);
@@ -579,7 +680,11 @@ export async function setClientAvailability(ctx: RequestContext, clientId: strin
   });
 }
 
-export async function setClientEquipment(ctx: RequestContext, clientId: string, input: unknown): Promise<void> {
+export async function setClientEquipment(
+  ctx: RequestContext,
+  clientId: string,
+  input: unknown,
+): Promise<void> {
   const { items } = parse(setEquipmentSchema, input);
   const resource = await authorizeClient(ctx, 'clients:write', clientId);
   denyOwnScope(ctx, 'clients:write', resource);
@@ -595,21 +700,40 @@ export async function setClientEquipment(ctx: RequestContext, clientId: string, 
   });
 }
 
-export async function addHistoryEntry(ctx: RequestContext, clientId: string, input: unknown): Promise<{ id: string }> {
+export async function addHistoryEntry(
+  ctx: RequestContext,
+  clientId: string,
+  input: unknown,
+): Promise<{ id: string }> {
   const data = parse(historyEntrySchema, input);
   const resource = await authorizeClient(ctx, 'clients:write', clientId);
   denyOwnScope(ctx, 'clients:write', resource);
   return ctx.db.transaction(async (tx) => {
     const [row] = await tx
       .insert(clientHistoryEntries)
-      .values({ clientId, ...data, periodStart: data.periodStart ?? null, periodEnd: data.periodEnd ?? null, createdBy: ctx.actor.userId })
+      .values({
+        clientId,
+        ...data,
+        periodStart: data.periodStart ?? null,
+        periodEnd: data.periodEnd ?? null,
+        createdBy: ctx.actor.userId,
+      })
       .returning({ id: clientHistoryEntries.id });
-    await writeAudit(tx, ctx, { action: 'create', entityType: 'client_history_entry', entityId: row!.id, clientId });
+    await writeAudit(tx, ctx, {
+      action: 'create',
+      entityType: 'client_history_entry',
+      entityId: row!.id,
+      clientId,
+    });
     return { id: row!.id };
   });
 }
 
-export async function deleteHistoryEntry(ctx: RequestContext, clientId: string, entryId: string): Promise<void> {
+export async function deleteHistoryEntry(
+  ctx: RequestContext,
+  clientId: string,
+  entryId: string,
+): Promise<void> {
   const resource = await authorizeClient(ctx, 'clients:write', clientId);
   denyOwnScope(ctx, 'clients:write', resource);
   await ctx.db.transaction(async (tx) => {
@@ -628,40 +752,107 @@ export async function deleteHistoryEntry(ctx: RequestContext, clientId: string, 
   });
 }
 
-export async function assignTrainer(ctx: RequestContext, clientId: string, input: unknown): Promise<void> {
+export async function assignTrainer(
+  ctx: RequestContext,
+  clientId: string,
+  input: unknown,
+): Promise<void> {
   const data = parse(assignTrainerSchema, input);
   const resource = await authorizeClient(ctx, 'clients:read', clientId);
   requirePermission(ctx, 'clients:assign', resource);
   const [t] = await ctx.db
     .select({ id: trainers.id })
     .from(trainers)
-    .where(and(eq(trainers.id, data.trainerId), eq(trainers.organizationId, ctx.actor.organizationId), eq(trainers.active, true)));
+    .where(
+      and(
+        eq(trainers.id, data.trainerId),
+        eq(trainers.organizationId, ctx.actor.organizationId),
+        eq(trainers.active, true),
+      ),
+    );
   if (!t) throw new DomainError('validation', 'Entrenador no válido.', { trainerId: ['unknown'] });
   await ctx.db.transaction(async (tx) => {
     const inserted = await tx
       .insert(trainerClientAssignments)
-      .values({ organizationId: ctx.actor.organizationId, trainerId: t.id, clientId, role: data.role, createdBy: ctx.actor.userId })
+      .values({
+        organizationId: ctx.actor.organizationId,
+        trainerId: t.id,
+        clientId,
+        role: data.role,
+        createdBy: ctx.actor.userId,
+      })
       .onConflictDoNothing()
       .returning({ id: trainerClientAssignments.id });
     if (!inserted.length) throw new DomainError('conflict', 'Ese entrenador ya está asignado.');
-    await writeAudit(tx, ctx, { action: 'assign', entityType: 'trainer_client_assignment', entityId: inserted[0]!.id, clientId, changes: { trainerId: t.id, role: data.role } });
+    await writeAudit(tx, ctx, {
+      action: 'assign',
+      entityType: 'trainer_client_assignment',
+      entityId: inserted[0]!.id,
+      clientId,
+      changes: { trainerId: t.id, role: data.role },
+    });
   });
 }
 
-export async function unassignTrainer(ctx: RequestContext, clientId: string, assignmentId: string): Promise<void> {
+export async function unassignTrainer(
+  ctx: RequestContext,
+  clientId: string,
+  assignmentId: string,
+): Promise<void> {
   const resource = await authorizeClient(ctx, 'clients:read', clientId);
   requirePermission(ctx, 'clients:assign', resource);
   await ctx.db.transaction(async (tx) => {
     const active = await tx
       .select()
       .from(trainerClientAssignments)
-      .where(and(eq(trainerClientAssignments.clientId, clientId), isNull(trainerClientAssignments.endedAt)));
+      .where(
+        and(
+          eq(trainerClientAssignments.clientId, clientId),
+          isNull(trainerClientAssignments.endedAt),
+        ),
+      );
     const target = active.find((a) => a.id === assignmentId);
     if (!target) throw new DomainError('not_found', 'Asignación no encontrada.');
     if (active.length === 1) {
       throw new DomainError('conflict', 'El cliente debe tener al menos un entrenador asignado.');
     }
-    await tx.update(trainerClientAssignments).set({ endedAt: ctx.now() }).where(eq(trainerClientAssignments.id, assignmentId));
-    await writeAudit(tx, ctx, { action: 'unassign', entityType: 'trainer_client_assignment', entityId: assignmentId, clientId, changes: { trainerId: target.trainerId } });
+    await tx
+      .update(trainerClientAssignments)
+      .set({ endedAt: ctx.now() })
+      .where(eq(trainerClientAssignments.id, assignmentId));
+    await writeAudit(tx, ctx, {
+      action: 'unassign',
+      entityType: 'trainer_client_assignment',
+      entityId: assignmentId,
+      clientId,
+      changes: { trainerId: target.trainerId },
+    });
   });
+}
+
+/**
+ * Clients within the actor's scope that currently show the referral banner. Single pass over
+ * declarations/screenings instead of one detail load per client.
+ */
+export async function listClientsNeedingReferral(
+  ctx: RequestContext,
+): Promise<{ id: string; firstName: string; lastName: string }[]> {
+  const scope = requirePermission(ctx, 'clients:read');
+  const base = and(scopeCondition(ctx, scope), sql`${clients.status} <> 'archived'`);
+  const rows = await ctx.db
+    .select({ id: clients.id, firstName: clients.firstName, lastName: clients.lastName })
+    .from(clients)
+    .where(
+      and(
+        base,
+        sql`(
+          EXISTS (SELECT 1 FROM health_declarations h WHERE h.client_id = ${clients.id}
+                  AND h.requires_professional_assessment AND h.cleared_at IS NULL)
+          OR (SELECT s.result FROM screening_responses s WHERE s.client_id = ${clients.id}
+              ORDER BY s.completed_on DESC, s.created_at DESC LIMIT 1) = 'refer'
+        )`,
+      ),
+    )
+    .orderBy(asc(clients.lastName));
+  return rows;
 }

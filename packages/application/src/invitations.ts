@@ -112,7 +112,10 @@ export async function acceptInvitation(ctx: AppContext, input: unknown): Promise
         gt(invitations.expiresAt, now),
       ),
     );
-  if (!inv) throw new DomainError('validation', 'La invitación no es válida o ha caducado.', { token: ['invalid'] });
+  if (!inv)
+    throw new DomainError('validation', 'La invitación no es válida o ha caducado.', {
+      token: ['invalid'],
+    });
   assertPasswordPolicy(data.password, inv.email);
   const passwordHash = await hashPassword(data.password);
 
@@ -127,7 +130,9 @@ export async function acceptInvitation(ctx: AppContext, input: unknown): Promise
       })
       .returning();
     const [role] = await tx.select().from(roles).where(eq(roles.key, inv.role));
-    await tx.insert(userRoles).values({ userId: user!.id, roleId: role!.id, organizationId: inv.organizationId });
+    await tx
+      .insert(userRoles)
+      .values({ userId: user!.id, roleId: role!.id, organizationId: inv.organizationId });
     if (inv.role === 'TRAINER') {
       const p = (inv.payload ?? {}) as { firstName?: string; lastName?: string };
       await tx.insert(trainers).values({
@@ -143,7 +148,8 @@ export async function acceptInvitation(ctx: AppContext, input: unknown): Promise
         .set({ userId: user!.id })
         .where(and(eq(clients.id, inv.clientId!), isNull(clients.userId)))
         .returning({ id: clients.id });
-      if (linked.length === 0) throw new DomainError('conflict', 'Este cliente ya tiene una cuenta.');
+      if (linked.length === 0)
+        throw new DomainError('conflict', 'Este cliente ya tiene una cuenta.');
     }
     await tx.update(invitations).set({ acceptedAt: now }).where(eq(invitations.id, inv.id));
     await revokeAllSessions(tx, user!.id, now);

@@ -65,7 +65,9 @@ export function authorize(
         ? { allowed: true, scope }
         : { allowed: false, reason: 'out_of_scope' };
     case 'own':
-      return resource.clientId != null && actor.clientId != null && resource.clientId === actor.clientId
+      return resource.clientId != null &&
+        actor.clientId != null &&
+        resource.clientId === actor.clientId
         ? { allowed: true, scope }
         : { allowed: false, reason: 'out_of_scope' };
   }

@@ -23,9 +23,16 @@ export async function listUsers(ctx: RequestContext) {
     .from(users)
     .where(eq(users.organizationId, ctx.actor.organizationId))
     .orderBy(asc(users.displayName));
-  const withRoles = await Promise.all(rows.map(async (u) => ({ ...u, roles: await rolesOf(ctx.db, u.id) })));
+  const withRoles = await Promise.all(
+    rows.map(async (u) => ({ ...u, roles: await rolesOf(ctx.db, u.id) })),
+  );
   const pending = await ctx.db
-    .select({ id: invitations.id, email: invitations.email, role: invitations.role, expiresAt: invitations.expiresAt })
+    .select({
+      id: invitations.id,
+      email: invitations.email,
+      role: invitations.role,
+      expiresAt: invitations.expiresAt,
+    })
     .from(invitations)
     .where(
       and(
@@ -47,16 +54,24 @@ export async function listTrainers(ctx: RequestContext) {
     .orderBy(asc(trainers.lastName));
 }
 
-export async function setUserActive(ctx: RequestContext, userId: string, active: boolean): Promise<void> {
+export async function setUserActive(
+  ctx: RequestContext,
+  userId: string,
+  active: boolean,
+): Promise<void> {
   requirePermission(ctx, 'users:manage', { organizationId: ctx.actor.organizationId });
-  if (userId === ctx.actor.userId) throw new DomainError('conflict', 'No puedes desactivar tu propia cuenta.');
+  if (userId === ctx.actor.userId)
+    throw new DomainError('conflict', 'No puedes desactivar tu propia cuenta.');
   await ctx.db.transaction(async (tx) => {
     const [u] = await tx
       .select()
       .from(users)
       .where(and(eq(users.id, userId), eq(users.organizationId, ctx.actor.organizationId)));
     if (!u) throw new DomainError('not_found', 'Usuario no encontrado.');
-    await tx.update(users).set({ status: active ? 'active' : 'disabled' }).where(eq(users.id, userId));
+    await tx
+      .update(users)
+      .set({ status: active ? 'active' : 'disabled' })
+      .where(eq(users.id, userId));
     await tx.update(trainers).set({ active }).where(eq(trainers.userId, userId));
     if (!active) await revokeAllSessions(tx, userId, ctx.now());
     await writeAudit(tx, ctx, {

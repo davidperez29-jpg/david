@@ -74,11 +74,16 @@ export async function login(
 
   const fail = async (userId?: string, organizationId?: string) => {
     await recordAttempt(ctx.db, emailHash, ipHash, false, now);
-    await writeAudit(ctx.db, ctx, {
-      action: 'login_failed',
-      entityType: 'user',
-      entityId: userId ?? null,
-    }, userId && organizationId ? { userId, organizationId, roles: [] } : undefined);
+    await writeAudit(
+      ctx.db,
+      ctx,
+      {
+        action: 'login_failed',
+        entityType: 'user',
+        entityId: userId ?? null,
+      },
+      userId && organizationId ? { userId, organizationId, roles: [] } : undefined,
+    );
     throw new DomainError('unauthenticated', INVALID);
   };
 
@@ -131,7 +136,10 @@ export type SessionState =
   | { status: 'second_factor_required'; sessionId: string; userId: string }
   | { status: 'authenticated'; sessionId: string; actor: Actor };
 
-export async function resolveSession(ctx: AppContext, token: string | undefined): Promise<SessionState> {
+export async function resolveSession(
+  ctx: AppContext,
+  token: string | undefined,
+): Promise<SessionState> {
   if (!token) return { status: 'anonymous' };
   const s = await validateSession(ctx.db, token, (id) => rolesOf(ctx.db, id), ctx.now());
   if (!s) return { status: 'anonymous' };
@@ -153,7 +161,8 @@ export async function verifySecondFactor(
     throw new DomainError('unauthenticated', 'Sesión no válida.');
   }
   const [u] = await ctx.db.select().from(users).where(eq(users.id, state.userId));
-  if (!u?.totpSecretEnc || !u.totpEnabledAt) throw new DomainError('unauthenticated', 'Sesión no válida.');
+  if (!u?.totpSecretEnc || !u.totpEnabledAt)
+    throw new DomainError('unauthenticated', 'Sesión no válida.');
   const emailHash = keyedHash(ctx.keys.hashKey, u.email.toLowerCase());
   if (await isRateLimited(ctx.db, emailHash, ctx.ipHash ?? null, ctx.now())) {
     throw new DomainError('rate_limited', 'Demasiados intentos. Inténtalo de nuevo más tarde.');
@@ -176,7 +185,8 @@ export async function beginTotpEnrollment(
 ): Promise<{ secret: string; uri: string }> {
   const [u] = await ctx.db.select().from(users).where(eq(users.id, ctx.actor.userId));
   if (!u) throw new DomainError('not_found', 'Usuario no encontrado.');
-  if (u.totpEnabledAt) throw new DomainError('conflict', 'La verificación en dos pasos ya está activa.');
+  if (u.totpEnabledAt)
+    throw new DomainError('conflict', 'La verificación en dos pasos ya está activa.');
   const secret = generateTotpSecret();
   await ctx.db
     .update(users)
@@ -260,12 +270,18 @@ export async function resetPassword(ctx: AppContext, input: unknown): Promise<vo
         gt(passwordResetTokens.expiresAt, now),
       ),
     );
-  if (!row) throw new DomainError('validation', 'El enlace no es válido o ha caducado.', { token: ['invalid'] });
+  if (!row)
+    throw new DomainError('validation', 'El enlace no es válido o ha caducado.', {
+      token: ['invalid'],
+    });
   assertPasswordPolicy(password, row.u.email);
   const hash = await hashPassword(password);
   const roles = await rolesOf(ctx.db, row.u.id);
   await ctx.db.transaction(async (tx) => {
-    await tx.update(passwordResetTokens).set({ usedAt: now }).where(eq(passwordResetTokens.id, row.t.id));
+    await tx
+      .update(passwordResetTokens)
+      .set({ usedAt: now })
+      .where(eq(passwordResetTokens.id, row.t.id));
     await tx
       .update(users)
       .set({ passwordHash: hash, failedLoginCount: 0, lockedUntil: null })
@@ -281,3 +297,14 @@ export async function resetPassword(ctx: AppContext, input: unknown): Promise<vo
 }
 
 export { assertPasswordPolicy };
+
+export async function getSecurityStatus(
+  ctx: RequestContext,
+): Promise<{ totpEnabled: boolean; email: string }> {
+  const [u] = await ctx.db
+    .select({ totp: users.totpEnabledAt, email: users.email })
+    .from(users)
+    .where(eq(users.id, ctx.actor.userId));
+  if (!u) throw new DomainError('not_found', 'Usuario no encontrado.');
+  return { totpEnabled: u.totp != null, email: u.email };
+}
