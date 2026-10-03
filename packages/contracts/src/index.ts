@@ -7,3 +7,4 @@ export * from './assessment';
 export * from './planning';
 export * from './sessions';
 export * from './monitoring';
+export * from './dashboard';

@@ -1,0 +1,1 @@
+ALTER TABLE "clients" ADD COLUMN "progress_test_ids" uuid[] DEFAULT '{}'::uuid[] NOT NULL;

@@ -69,6 +69,7 @@ const {
   exerciseSubstitutions,
   consents,
   clients,
+  assessments,
 } = schema;
 
 type SessionPermission = 'sessions:read' | 'sessions:log' | 'sessions:review' | 'sessions:publish';
@@ -90,7 +91,7 @@ const SUBSTITUTION_LABELS: Record<string, string> = {
   fatigue: 'fatiga',
 };
 
-function prescriptionOf(r: typeof sessionExercises.$inferSelect): Prescription {
+export function prescriptionOf(r: typeof sessionExercises.$inferSelect): Prescription {
   return {
     sets: r.sets,
     repsMin: r.repsMin,
@@ -309,10 +310,24 @@ async function clientAgenda_(ctx: RequestContext, clientId: string, query: unkno
       .map((r) => ({ id: r.id, date: r.date, attended: r.attendance != null })),
     today,
   );
+  // Planned and done assessments of the period (the client sees their own evaluation days).
+  const evals = await ctx.db
+    .select({ id: assessments.id, date: assessments.assessedOn, status: assessments.status })
+    .from(assessments)
+    .where(
+      and(
+        eq(assessments.clientId, clientId),
+        ne(assessments.status, 'cancelled'),
+        gte(assessments.assessedOn, from),
+        lte(assessments.assessedOn, to),
+      ),
+    )
+    .orderBy(asc(assessments.assessedOn));
   return {
     today,
     from,
     to,
+    assessments: evals,
     next: pick.session
       ? { ...rows.find((r) => r.id === pick.session!.id)!, isToday: pick.isToday }
       : null,

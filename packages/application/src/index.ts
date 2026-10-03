@@ -21,3 +21,4 @@ export * from './assessments';
 export * from './planning';
 export * from './sessions';
 export * from './monitoring';
+export * from './dashboard';

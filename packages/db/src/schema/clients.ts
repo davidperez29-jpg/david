@@ -101,6 +101,11 @@ export const clients = pgTable(
     status: clientStatus('status').notNull().default('active'),
     modality: modality('modality').notNull().default('in_person'),
     preferences: text('preferences'),
+    /** Tests the trainer shows in the client's "Progreso" (§9.5); empty = all. */
+    progressTestIds: uuid('progress_test_ids')
+      .array()
+      .notNull()
+      .default(sql`'{}'::uuid[]`),
     archivedAt: timestamp('archived_at', { withTimezone: true }),
     ...timestamps(),
     ...authorship(),
