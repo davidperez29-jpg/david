@@ -11,6 +11,11 @@ import {
   addHealthDeclaration,
   addHistoryEntry,
   bootstrapOrganization,
+  createAssessment,
+  getAssessment,
+  proposeAssessmentBattery,
+  recordAssessmentResult,
+  setAssessmentStatus,
   createClient,
   createInvitation,
   grantConsent,
@@ -392,6 +397,7 @@ const specs: Spec[] = [
   },
 ];
 
+const created: { id: string; by: RequestContext; age: number; sex: string }[] = [];
 for (const s of specs) {
   const { id } = await createClient(s.by, {
     basics: s.basics,
@@ -416,6 +422,12 @@ for (const s of specs) {
   });
   if (s.health) await addHealthDeclaration(s.by, id, s.health);
   if (s.history) await addHistoryEntry(s.by, id, { kind: 'sport', description: s.history });
+  created.push({
+    id,
+    by: s.by,
+    age: 2026 - Number(String(s.basics.birthDate).slice(0, 4)),
+    sex: String(s.basics.sex),
+  });
   if (s.account && s.basics.email) {
     const inv = await createInvitation(s.by, {
       role: 'CLIENT',
@@ -425,6 +437,88 @@ for (const s of specs) {
     await acceptAs(inv.link, String(s.basics.firstName));
   }
 }
+
+// Assessments (§15 demo data): 2–3 per client from the proposed battery, with fictitious values.
+// Deterministic pseudo-random noise (fixed seed) so the demo is reproducible.
+let seed = 42;
+const rnd = () => (seed = (seed * 1103515245 + 12345) % 2 ** 31) / 2 ** 31 - 0.5;
+/** Fictitious baselines for a young adult man; scaled by age and sex below. [value, improves by] */
+const BASE: Record<string, [number, number]> = {
+  one_rm_back_squat: [95, 0.08],
+  one_rm_bench_press: [72, 0.06],
+  body_mass: [76, -0.01],
+  height: [176, 0],
+  waist_circumference: [86, -0.02],
+  grip_strength: [44, 0.04],
+  five_times_sit_to_stand: [8.5, -0.06],
+  chair_stand_30s: [18, 0.08],
+  sppb: [11, 0.04],
+  gait_speed: [1.25, 0.03],
+  unipedal_stance_eo: [28, 0.1],
+  six_minute_walk: [560, 0.04],
+  timed_up_and_go: [6.8, -0.05],
+  weight_bearing_lunge: [10.5, 0.06],
+  cmj: [34, 0.05],
+  squat_jump: [31, 0.05],
+  sprint_5m: [1.08, -0.015],
+  sprint_10m: [1.82, -0.015],
+  sprint_20m: [3.1, -0.015],
+  sprint_30m: [4.3, -0.015],
+  max_sprint_speed: [8.4, 0.02],
+  test_505: [2.45, -0.02],
+  ift_30_15: [18.5, 0.04],
+  yoyo_ir1: [1400, 0.1],
+  drop_jump_rsi: [1.6, 0.06],
+  imtp: [2600, 0.06],
+  srpe: [380, 0],
+  wellness_hooper: [12, 0],
+};
+const DATES = ['2026-04-14', '2026-06-16', '2026-09-22'];
+let assessmentsCreated = 0;
+for (const [i, c] of created.entries()) {
+  const proposal = await proposeAssessmentBattery(c.by, c.id);
+  const tests = proposal.tests.filter((t) => t.included && t.testId && BASE[t.slug]);
+  if (!proposal.batteryId || !tests.length) continue;
+  const scale = (c.sex === 'female' ? 0.78 : 1) * (c.age >= 65 ? 0.7 : c.age < 18 ? 0.85 : 1);
+  const count = 2 + (i % 2);
+  for (let k = 0; k < count; k++) {
+    const date = DATES[DATES.length - count + k]!;
+    const { id: aid } = await createAssessment(c.by, c.id, {
+      assessedOn: date,
+      batteryId: proposal.batteryId,
+      testIds: tests.map((t) => t.testId!),
+      context: k === 0 ? 'Evaluación inicial' : 'Reevaluación',
+    });
+    const detail = await getAssessment(c.by, aid);
+    for (const t of detail.tests) {
+      const [base, gain] = BASE[t.slug]!;
+      const lowerBetter = gain < 0;
+      const scaled = ['height', 'body_mass', 'sppb', 'srpe', 'wellness_hooper'].includes(t.slug)
+        ? base
+        : lowerBetter
+          ? base / scale
+          : base * scale;
+      const v = scaled * (1 + gain * k + rnd() * 0.02);
+      const dec = v < 3 ? 2 : v < 100 ? 1 : 0;
+      const attempts = Array.from({ length: t.defaultAttempts }, () =>
+        Number((v * (1 + rnd() * 0.03)).toFixed(dec)),
+      );
+      const sides = t.sided ? (['left', 'right'] as const) : (['both'] as const);
+      for (const side of sides) {
+        await recordAssessmentResult(c.by, aid, {
+          testId: t.id,
+          side,
+          attempts:
+            side === 'right' ? attempts.map((x) => Number((x * 0.96).toFixed(dec))) : attempts,
+          measurementMethod: null,
+        });
+      }
+    }
+    await setAssessmentStatus(c.by, aid, { status: 'completed' });
+    assessmentsCreated++;
+  }
+}
+console.log(`Assessments: ${assessmentsCreated} demo assessments with fictitious results.`);
 
 // Exercise library: the user's methodology bank as reviewable drafts (skip with DEMO_SKIP_BANK=1).
 if (!process.env.DEMO_SKIP_BANK) {

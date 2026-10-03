@@ -1,14 +1,17 @@
 import 'dotenv/config';
 import { createDb } from '../src/client';
 import { seedCatalog } from '../src/seed/catalog';
-import { loadEvidenceFiles, seedEvidence } from '../src/seed/evidence';
-import { EVIDENCE_DIR } from './evidence-path';
+import { seedKnowledgeBase } from '../src/seed/knowledge';
+import { SEED_DIR } from './evidence-path';
 
 const { db, close } = createDb(process.env.DATABASE_URL!);
 await seedCatalog(db);
-const evidence = await seedEvidence(db, loadEvidenceFiles(EVIDENCE_DIR));
+const { evidence, assessment } = await seedKnowledgeBase(db, SEED_DIR);
 console.log(
   `Scientific library: ${evidence.sources} sources, ${evidence.findings} findings, ${evidence.claims.published}/${evidence.claims.total} claims and ${evidence.methods.published}/${evidence.methods.total} methods published.`,
+);
+console.log(
+  `Assessment catalogue: ${assessment.tests} tests, ${assessment.reliability} reliability rows, ${assessment.references} reference rows, ${assessment.batteries} batteries.`,
 );
 for (const e of evidence.qaErrors) console.warn(`  QA ${e.code}: ${e.target.key} — ${e.message}`);
 await close();

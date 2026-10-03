@@ -17,3 +17,4 @@ export * from './storage';
 export * from './library';
 export * from './library-import';
 export * from './science';
+export * from './assessments';

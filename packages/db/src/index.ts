@@ -8,3 +8,5 @@ export { RLS_POLICIES, INHERIT_SCOPE, CHECK_CLIENT_ORG } from './rls/policies';
 export * from './seed/structure';
 export { generateRlsSql } from './rls/generate';
 export * from './seed/evidence';
+export * from './seed/assessment';
+export * from './seed/knowledge';

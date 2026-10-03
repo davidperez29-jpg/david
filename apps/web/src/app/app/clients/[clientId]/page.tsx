@@ -1,6 +1,11 @@
 import Link from 'next/link';
 import {
+  clientAssessmentProgress,
   getClient,
+  listAssessmentTests,
+  listBatteries,
+  listClientAssessments,
+  proposeAssessmentBattery,
   listCatalog,
   listClientAudit,
   listConsents,
@@ -11,7 +16,9 @@ import {
 } from '@tp/application';
 import { DomainError } from '@tp/domain';
 import { notFound } from 'next/navigation';
+import { ProgressView } from '@/components/assessment/progress';
 import { ReferralBanner } from '@/components/referral-banner';
+import { NewAssessmentForm } from '../../assessments/forms';
 import { Badge, Card, EmptyState } from '@/components/ui/card';
 import { formatDate, formatDateTime, label, LABELS } from '@/lib/labels';
 import { requireStaff } from '@/server/session';
@@ -32,6 +39,7 @@ const TABS = [
   ['resumen', 'Resumen'],
   ['perfil', 'Perfil'],
   ['objetivos', 'Objetivos'],
+  ['evaluaciones', 'Evaluaciones'],
   ['salud', 'Salud declarada'],
   ['privacidad', 'Consentimientos'],
   ['equipo', 'Entrenadores'],
@@ -138,7 +146,6 @@ export default async function ClientPage({
           </Card>
           <Card title="Próximos pasos">
             <ul className="list-inside list-disc text-sm text-muted">
-              <li>Evaluación inicial — Fase 5</li>
               <li>Programa — Fase 6</li>
               <li>Seguimiento y adherencia — Fase 8</li>
             </ul>
@@ -156,6 +163,8 @@ export default async function ClientPage({
       ) : null}
 
       {tab === 'objetivos' && catalog ? <GoalsPanel client={client} catalog={catalog} /> : null}
+
+      {tab === 'evaluaciones' ? await assessmentsTab(ctx, client.id) : null}
 
       {tab === 'salud' ? (
         <div className="flex flex-col gap-4">
@@ -239,4 +248,81 @@ function fmt(v: unknown): string {
   if (v === null || v === undefined || v === '') return '∅';
   if (typeof v === 'object') return JSON.stringify(v);
   return String(v);
+}
+
+async function assessmentsTab(ctx: Awaited<ReturnType<typeof requireStaff>>, clientId: string) {
+  const [list, progress, proposal, batteries, tests] = await Promise.all([
+    listClientAssessments(ctx, clientId),
+    clientAssessmentProgress(ctx, clientId),
+    proposeAssessmentBattery(ctx, clientId),
+    listBatteries(ctx),
+    listAssessmentTests(ctx),
+  ]);
+  return (
+    <div className="flex flex-col gap-4">
+      <Card title="Evaluaciones">
+        {list.length === 0 ? (
+          <EmptyState>Sin evaluaciones registradas.</EmptyState>
+        ) : (
+          <ul className="divide-y divide-border">
+            {list.map((a) => (
+              <li key={a.id} className="flex flex-wrap items-center gap-2 py-2 text-sm">
+                <Link
+                  href={`/app/clients/${clientId}/assessments/${a.id}`}
+                  className="font-medium hover:underline"
+                >
+                  {formatDate(a.assessedOn)}
+                </Link>
+                {a.battery ? <span className="text-muted">{a.battery}</span> : null}
+                {a.context ? <span className="text-muted">· {a.context}</span> : null}
+                <Badge
+                  tone={
+                    a.status === 'completed'
+                      ? 'ok'
+                      : a.status === 'cancelled'
+                        ? 'danger'
+                        : 'neutral'
+                  }
+                >
+                  {label('assessmentStatus', a.status)}
+                </Badge>
+                <span className="text-xs text-muted">
+                  {a.results} resultado(s) de {a.planned} test(s)
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Card>
+      <section className="flex flex-col gap-2">
+        <h2 className="text-lg font-semibold">Progreso</h2>
+        <ProgressView data={progress} audience="trainer" />
+      </section>
+      <Card title="Nueva evaluación">
+        <div className="mb-3 text-sm">
+          <p className="font-medium">
+            Propuesta: {proposal.batteryName ?? 'sin batería'}
+            {proposal.screening !== 'clear' ? (
+              <Badge tone="warn">
+                {proposal.screening === 'refer'
+                  ? 'Cribado con derivación'
+                  : 'Sin cribado registrado'}
+              </Badge>
+            ) : null}
+          </p>
+          <ul className="list-inside list-disc text-xs text-muted">
+            {proposal.explanation.map((e) => (
+              <li key={e}>{e}</li>
+            ))}
+          </ul>
+        </div>
+        <NewAssessmentForm
+          clientId={clientId}
+          proposal={proposal}
+          batteries={batteries.map((b) => ({ id: b.id, name: b.name, testIds: b.testIds }))}
+          tests={tests.map((t) => ({ id: t.id, name: t.name, category: t.category }))}
+        />
+      </Card>
+    </div>
+  );
 }

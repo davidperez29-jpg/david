@@ -33,6 +33,9 @@ export const PERMISSIONS = [
   'science:read',
   'science:write',
   'science:publish',
+  'assessments:read',
+  'assessments:write',
+  'assessments:catalog',
   'privacy:export_subject',
 ] as const;
 export type Permission = (typeof PERMISSIONS)[number];
@@ -63,6 +66,9 @@ export const ROLE_PERMISSIONS: Matrix = {
     'science:write': 'org',
     // Only ADMIN verifies sources and publishes claims/methods (§14.2: evidence:publish).
     'science:publish': 'org',
+    'assessments:read': 'org',
+    'assessments:write': 'org',
+    'assessments:catalog': 'org',
     'privacy:export_subject': 'org',
   },
   TRAINER: {
@@ -87,6 +93,10 @@ export const ROLE_PERMISSIONS: Matrix = {
     // Trainers read the knowledge base and may draft content; publishing is ADMIN-only.
     'science:read': 'org',
     'science:write': 'org',
+    'assessments:read': 'assigned',
+    'assessments:write': 'assigned',
+    // Tests, batteries and local reliability are shared by the organization.
+    'assessments:catalog': 'org',
   },
   CLIENT: {
     'clients:read': 'own',
@@ -95,6 +105,7 @@ export const ROLE_PERMISSIONS: Matrix = {
     'consents:read': 'own',
     'consents:write': 'own',
     'catalog:read': 'org',
+    'assessments:read': 'own',
     'privacy:export_subject': 'own',
   },
 };

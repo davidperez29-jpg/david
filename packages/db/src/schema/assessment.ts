@@ -90,6 +90,8 @@ export const assessmentTests = pgTable(
       .notNull()
       .default(sql`'{}'::text[]`),
     limitations: text('limitations'),
+    /** The value is an estimate (e.g. 1RM from load-velocity, %fat by BIA): shown with its error. */
+    isEstimate: boolean('is_estimate').notNull().default(false),
     sourceIds: uuid('source_ids')
       .array()
       .notNull()
@@ -221,6 +223,11 @@ export const assessments = pgTable(
     conditions: jsonb('conditions'),
     /** Optional link to a training plan's planned (re)assessment. */
     planId: uuid('plan_id'),
+    /** Tests planned for this assessment (from a battery or chosen by the trainer). */
+    plannedTestIds: uuid('planned_test_ids')
+      .array()
+      .notNull()
+      .default(sql`'{}'::uuid[]`),
     notes: text('notes'),
     ...timestamps(),
     ...authorship(),
@@ -270,6 +277,7 @@ export const assessmentResults = pgTable(
   (t) => [
     index('assessment_results_assessment_idx').on(t.assessmentId, t.testId),
     index('assessment_results_client_test_idx').on(t.clientId, t.testId),
+    unique('assessment_results_one_per_side_uq').on(t.assessmentId, t.testId, t.side),
   ],
 );
 
@@ -293,5 +301,8 @@ export const derivedMetrics = pgTable(
     inputs: jsonb('inputs'),
     ...timestamps(),
   },
-  (t) => [index('derived_metrics_client_idx').on(t.clientId, t.metric)],
+  (t) => [
+    index('derived_metrics_client_idx').on(t.clientId, t.metric),
+    unique('derived_metrics_assessment_metric_uq').on(t.assessmentId, t.metric),
+  ],
 );

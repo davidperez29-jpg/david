@@ -3,12 +3,10 @@ import { dropAll, runMigrations } from './migrate';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { seedCatalog } from './seed/catalog';
-import { loadEvidenceFiles, seedEvidence } from './seed/evidence';
+import { seedKnowledgeBase } from './seed/knowledge';
 
-export const EVIDENCE_DIR = join(
-  dirname(fileURLToPath(import.meta.url)),
-  '../../../seed-data/evidence',
-);
+export const SEED_DIR = join(dirname(fileURLToPath(import.meta.url)), '../../../seed-data');
+export const EVIDENCE_DIR = join(SEED_DIR, 'evidence');
 
 /** Recreates the test database from scratch. Called once per integration test run. */
 export async function prepareTestDatabase(url: string): Promise<void> {
@@ -16,6 +14,6 @@ export async function prepareTestDatabase(url: string): Promise<void> {
   await runMigrations(url);
   const { db, close } = createDb(url, { max: 1 });
   await seedCatalog(db);
-  await seedEvidence(db, loadEvidenceFiles(EVIDENCE_DIR));
+  await seedKnowledgeBase(db, SEED_DIR);
   await close();
 }
