@@ -1,14 +1,23 @@
-import { clientAssessmentProgress, clientMonitoring } from '@tp/application';
+import { clientAssessmentProgress, clientDashboard, clientMonitoring } from '@tp/application';
 import { ProgressView } from '@/components/assessment/progress';
 import { requireClientUser } from '@/server/session';
 
 export default async function ClientProgress() {
   const ctx = await requireClientUser();
-  const [data, m] = await Promise.all([
+  const [all, m, dash] = await Promise.all([
     clientAssessmentProgress(ctx, ctx.actor.clientId!),
     clientMonitoring(ctx, ctx.actor.clientId!),
+    clientDashboard(ctx, ctx.actor.clientId!),
   ]);
   const a = m.adherence28;
+  // Only the tests the trainer chose for this screen (§9.5); none chosen = all.
+  const data = dash.visibleTestIds.length
+    ? {
+        ...all,
+        series: all.series.filter((x) => dash.visibleTestIds.includes(x.test.id)),
+        derived: [],
+      }
+    : all;
   return (
     <div className="flex flex-col gap-4">
       <h1 className="text-2xl font-bold">Tu progreso</h1>
@@ -52,6 +61,31 @@ export default async function ClientProgress() {
           </p>
         )}
       </section>
+      {dash.streak > 1 ? (
+        <p className="text-sm">Racha actual: {dash.streak} sesiones seguidas.</p>
+      ) : null}
+      {dash.milestones.length ? (
+        <section className="rounded-xl border border-border p-5" aria-label="Tus hitos">
+          <h2 className="text-xs font-semibold tracking-wide text-muted uppercase">Tus hitos</h2>
+          <ul className="mt-2 flex flex-col gap-1 text-sm">
+            {dash.milestones.map((x) => (
+              <li key={x.key} className="flex gap-2">
+                <span aria-hidden>★</span>
+                <span className="flex-1">{x.text}</span>
+                {x.date ? (
+                  <span className="text-xs text-muted">
+                    {new Intl.DateTimeFormat('es-ES', {
+                      day: 'numeric',
+                      month: 'short',
+                      timeZone: 'UTC',
+                    }).format(new Date(`${x.date}T00:00:00Z`))}
+                  </span>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
       <p className="text-sm text-muted">
         Comparamos cada resultado con el margen de error del test: así sabemos si un cambio es real.
       </p>

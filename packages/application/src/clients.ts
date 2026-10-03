@@ -246,6 +246,7 @@ async function getClient_(ctx: RequestContext, clientId: string) {
     status: c.status,
     modality: c.modality,
     preferences: c.preferences,
+    progressTestIds: c.progressTestIds,
     hasAccount: c.userId != null,
     version: c.version,
     profile: profile

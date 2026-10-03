@@ -296,7 +296,13 @@ function keyMetrics(progress: Progress, chosen: string[]) {
   const series = progress.series.filter((s) => s.side === 'both' || s.side === 'left');
   const picked = chosen.length
     ? series.filter((s) => chosen.includes(s.test.id))
-    : [...series].sort((a, b) => (a.points.at(-1)!.on < b.points.at(-1)!.on ? 1 : -1));
+    : [...series].sort(
+        (a, b) =>
+          // Performance tests before body measurements, then the most recently measured.
+          Number(a.test.category === 'body_composition') -
+            Number(b.test.category === 'body_composition') ||
+          (a.points.at(-1)!.on < b.points.at(-1)!.on ? 1 : -1),
+      );
   return picked.slice(0, 5).map((s) => ({
     testId: s.test.id,
     name: s.side === 'both' ? s.test.name : `${s.test.name} (izq.)`,
@@ -358,7 +364,11 @@ async function clientDashboard_(ctx: RequestContext, clientId: string) {
           ...agenda.next,
           preview: preview.map((r) => ({
             name: r.name,
-            short: prescriptionShort(prescriptionOf(r.se)),
+            // Compact for the client: volume and effort, without %1RM or rest (shown in the player).
+            short: prescriptionShort(prescriptionOf(r.se))
+              .split(' · ')
+              .filter((p) => !/1RM|descanso|tempo/i.test(p))
+              .join(' · '),
           })),
         }
       : null,

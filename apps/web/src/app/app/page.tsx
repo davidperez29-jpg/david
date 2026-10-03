@@ -5,10 +5,11 @@ import {
   listClientsNeedingReferral,
   monitoringOverview,
   reviewInbox,
+  trainerDashboard,
 } from '@tp/application';
 import { AlertActions } from '@/components/monitoring/actions';
 import { SeverityBadge } from '@/components/monitoring/severity';
-import { label } from '@/lib/labels';
+import { formatDate, label } from '@/lib/labels';
 import { Badge, Card, EmptyState, Stat } from '@/components/ui/card';
 import { requireStaff } from '@/server/session';
 
@@ -20,22 +21,27 @@ export default async function TodayPage() {
   const referral = await listClientsNeedingReferral(ctx);
   const noGoal = page.items.filter((c) => !c.primaryGoal);
   const noAccount = page.items.filter((c) => !c.hasAccount && c.modality !== 'in_person');
-  const [inbox, overview, alerts] = await Promise.all([
+  const [inbox, overview, alerts, dash] = await Promise.all([
     reviewInbox(ctx),
     monitoringOverview(ctx),
     listAlerts(ctx, { status: 'live', limit: 8 }),
+    trainerDashboard(ctx),
   ]);
+  const overdue = dash.pendingAssessments.filter((a) => a.overdue);
 
   return (
     <div className="flex flex-col gap-6">
       <h1 className="text-2xl font-semibold">Hoy</h1>
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <Stat label="Clientes activos" value={active.length} />
-        <Stat label="Requieren atención" value={referral.length + noGoal.length} />
+        <Stat
+          label="Clientes activos"
+          value={active.length}
+          hint={`${referral.length + noGoal.length} requieren atención`}
+        />
         <Stat
           label="Sesiones hoy"
           value={inbox.sessionsToday.length}
-          hint={`${inbox.sessionsToday.filter((x) => x.attendance).length} registradas`}
+          hint={`${inbox.sessionsToday.filter((x) => x.attendance).length} hechas`}
         />
         <Stat
           label="Adherencia 28 d"
@@ -45,6 +51,11 @@ export default async function TodayPage() {
               : `${overview.adherence28.percent.toLocaleString('es-ES')} %`
           }
           hint={`${overview.adherence28.done} de ${overview.adherence28.planned} sesiones`}
+        />
+        <Stat
+          label="Evaluaciones pendientes"
+          value={dash.pendingAssessments.length}
+          hint={overdue.length ? `${overdue.length} con fecha pasada` : 'próximos 7 días'}
         />
       </div>
       <Card
@@ -142,6 +153,60 @@ export default async function TodayPage() {
                   <span className="text-muted">
                     {x.count} series · {x.reason}
                   </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Card>
+      </div>
+      <div className="grid gap-4 md:grid-cols-2">
+        <Card title="Feedback reciente">
+          {dash.recentFeedback.length === 0 ? (
+            <EmptyState>Sin valoraciones en los últimos 7 días.</EmptyState>
+          ) : (
+            <ul className="divide-y divide-border">
+              {dash.recentFeedback.map((f) => (
+                <li key={f.sessionId} className="flex flex-wrap items-center gap-2 py-2 text-sm">
+                  <Link
+                    className="font-medium hover:underline"
+                    href={`/app/clients/${f.clientId}/sessions/${f.sessionId}`}
+                  >
+                    {f.firstName} {f.lastName}
+                  </Link>
+                  {f.comment ? <span className="italic">«{f.comment}»</span> : null}
+                  {f.sessionRpe != null ? (
+                    <span className="text-xs text-muted">RPE {f.sessionRpe}</span>
+                  ) : null}
+                  {f.status && f.status !== 'completed' ? (
+                    <Badge tone="warn">{label('attendance', f.status)}</Badge>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
+          )}
+        </Card>
+        <Card
+          title="Evaluaciones pendientes"
+          actions={
+            <Link href="/app/calendar" className="text-sm text-accent underline">
+              Calendario
+            </Link>
+          }
+        >
+          {dash.pendingAssessments.length === 0 ? (
+            <EmptyState>Ninguna en los próximos 7 días.</EmptyState>
+          ) : (
+            <ul className="divide-y divide-border">
+              {dash.pendingAssessments.map((a) => (
+                <li key={a.id} className="flex flex-wrap items-center gap-2 py-2 text-sm">
+                  <span className="w-24 text-muted tabular-nums">{formatDate(a.date)}</span>
+                  <Link
+                    className="font-medium hover:underline"
+                    href={`/app/clients/${a.clientId}/assessments/${a.id}`}
+                  >
+                    {a.firstName} {a.lastName}
+                  </Link>
+                  {a.overdue ? <Badge tone="warn">Fecha pasada</Badge> : null}
                 </li>
               ))}
             </ul>

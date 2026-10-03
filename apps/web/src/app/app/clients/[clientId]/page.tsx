@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import {
   clientMonitoring,
+  clientSummary,
   getMonitoringRules,
   clientSessionReview,
   clientAssessmentProgress,
@@ -22,6 +23,7 @@ import {
 import { DomainError } from '@tp/domain';
 import { notFound } from 'next/navigation';
 import { ProgressView } from '@/components/assessment/progress';
+import { VisibleMetricsPicker } from '@/components/assessment/visible-metrics';
 import { ReferralBanner } from '@/components/referral-banner';
 import {
   AlertActions,
@@ -78,6 +80,7 @@ export default async function ClientPage({
   });
   const isAdmin = ctx.actor.roles.includes('ADMIN');
   const catalog = tab === 'perfil' || tab === 'objetivos' ? await listCatalog(ctx) : null;
+  const summary = tab === 'resumen' ? await clientSummary(ctx, client.id) : null;
 
   return (
     <div className="flex flex-col gap-4">
@@ -116,6 +119,8 @@ export default async function ClientPage({
           </Link>
         ))}
       </nav>
+
+      {summary ? <SummaryRow clientId={client.id} s={summary} /> : null}
 
       {tab === 'resumen' ? (
         <div className="grid gap-4 md:grid-cols-3">
@@ -160,9 +165,23 @@ export default async function ClientPage({
               </dd>
             </dl>
           </Card>
-          <Card title="Próximos pasos">
-            <ul className="list-inside list-disc text-sm text-muted">
-              <li>Seguimiento y adherencia — Fase 8</li>
+          <Card title="Accesos rápidos">
+            <ul className="flex flex-col gap-1 text-sm">
+              <li>
+                <Link href="?tab=seguimiento" className="text-accent underline">
+                  Seguimiento: adherencia, carga y alertas
+                </Link>
+              </li>
+              <li>
+                <Link href="?tab=sesiones" className="text-accent underline">
+                  Sesiones registradas
+                </Link>
+              </li>
+              <li>
+                <Link href={`/app/calendar?cliente=${client.id}`} className="text-accent underline">
+                  Calendario del cliente
+                </Link>
+              </li>
             </ul>
           </Card>
         </div>
@@ -179,7 +198,7 @@ export default async function ClientPage({
 
       {tab === 'objetivos' && catalog ? <GoalsPanel client={client} catalog={catalog} /> : null}
 
-      {tab === 'evaluaciones' ? await assessmentsTab(ctx, client.id) : null}
+      {tab === 'evaluaciones' ? await assessmentsTab(ctx, client.id, client.progressTestIds) : null}
 
       {tab === 'planificacion' ? await plansTab(ctx, client.id) : null}
 
@@ -271,7 +290,11 @@ function fmt(v: unknown): string {
   return String(v);
 }
 
-async function assessmentsTab(ctx: Awaited<ReturnType<typeof requireStaff>>, clientId: string) {
+async function assessmentsTab(
+  ctx: Awaited<ReturnType<typeof requireStaff>>,
+  clientId: string,
+  visibleIds: string[],
+) {
   const [list, progress, proposal, batteries, tests] = await Promise.all([
     listClientAssessments(ctx, clientId),
     clientAssessmentProgress(ctx, clientId),
@@ -317,6 +340,17 @@ async function assessmentsTab(ctx: Awaited<ReturnType<typeof requireStaff>>, cli
       </Card>
       <section className="flex flex-col gap-2">
         <h2 className="text-lg font-semibold">Progreso</h2>
+        {progress.series.length ? (
+          <Card title="Visible para el cliente">
+            <VisibleMetricsPicker
+              clientId={clientId}
+              tests={[
+                ...new Map(progress.series.map((x) => [x.test.id, x.test.name])).entries(),
+              ].map(([id, name]) => ({ id, name }))}
+              selected={visibleIds}
+            />
+          </Card>
+        ) : null}
         <ProgressView data={progress} audience="trainer" />
       </section>
       <Card title="Nueva evaluación">
@@ -614,6 +648,96 @@ async function monitoringTab(ctx: Awaited<ReturnType<typeof requireStaff>>, clie
           </ul>
         </details>
       </Card>
+    </div>
+  );
+}
+
+function SummaryRow({
+  clientId,
+  s,
+}: {
+  clientId: string;
+  s: Awaited<ReturnType<typeof clientSummary>>;
+}) {
+  const pctTxt =
+    s.adherence28.percent == null ? '—' : `${s.adherence28.percent.toLocaleString('es-ES')} %`;
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <Card title="Plan activo">
+          {s.plan ? (
+            <>
+              <Link href={`/app/plans/${s.plan.id}`} className="font-medium hover:underline">
+                {s.plan.name}
+              </Link>
+              <p className="text-sm text-muted">
+                {s.plan.current
+                  ? `${s.plan.current.phase} · semana ${s.plan.current.weekIndex} de ${s.plan.current.totalWeeks} (${label('weekType', s.plan.current.weekType)})`
+                  : 'Fuera de las fechas del plan'}
+              </p>
+            </>
+          ) : (
+            <p className="text-sm text-muted">Sin plan activo.</p>
+          )}
+        </Card>
+        <Card title="Próxima sesión">
+          {s.next ? (
+            <>
+              <Link
+                href={`/app/clients/${clientId}/sessions/${s.next.id}`}
+                className="font-medium hover:underline"
+              >
+                {s.next.title ?? `Sesión ${s.next.dayLabel}`}
+              </Link>
+              <p className="text-sm text-muted">
+                {s.next.isToday ? 'Hoy' : formatDate(s.next.date)}
+                {s.next.published ? '' : ' · no publicada'}
+              </p>
+            </>
+          ) : (
+            <p className="text-sm text-muted">Nada programado.</p>
+          )}
+        </Card>
+        <Card title="Adherencia 4 semanas">
+          <p className="text-2xl font-semibold tabular-nums">{pctTxt}</p>
+          <p className="text-xs text-muted">
+            {s.adherence28.done} de {s.adherence28.planned} sesiones
+          </p>
+        </Card>
+        <Card title="Alertas">
+          <p className="text-sm">
+            🔴 {s.alerts.red} · 🟡 {s.alerts.yellow} · 🟢 {s.alerts.green}
+          </p>
+          <ul className="mt-1 flex flex-col gap-1 text-xs">
+            {s.alerts.top.map((a) => (
+              <li key={a.id} className="line-clamp-2">
+                {a.message}
+              </li>
+            ))}
+          </ul>
+          <Link href="?tab=seguimiento" className="text-xs text-accent underline">
+            Seguimiento
+          </Link>
+        </Card>
+      </div>
+      {s.keyMetrics.length ? (
+        <Card title="Métricas clave">
+          <ul className="grid gap-2 text-sm sm:grid-cols-2 lg:grid-cols-5">
+            {s.keyMetrics.map((m) => (
+              <li key={m.testId} className="rounded-md border border-border p-2">
+                <p className="text-xs text-muted">{m.name}</p>
+                <p className="font-semibold tabular-nums">
+                  {m.last.value.toLocaleString('es-ES', { maximumFractionDigits: 2 })} {m.unit}
+                </p>
+                <p className="text-xs text-muted">
+                  {formatDate(m.last.on)}
+                  {m.label ? ` · ${m.label}` : m.points < 2 ? ' · una sola medición' : ''}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      ) : null}
     </div>
   );
 }

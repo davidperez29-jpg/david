@@ -18,14 +18,16 @@ test('trainer sees alerts by severity, reviews a client follow-up and resolves a
     .first()
     .click();
   await expect(page.getByRole('heading', { name: 'Alertas', exact: true })).toBeVisible();
-  const pain = page
-    .locator('li')
-    .filter({ hasText: 'Requiere valoración por profesional sanitario' })
+  // Tomás has red alerts in the demo (adherence; the pain one is resolved by the UX review).
+  const red = page
+    .locator('main li')
+    .filter({ hasText: '🔴 Roja' })
+    .filter({ hasText: 'Tomás Garrido' })
     .first();
-  await expect(pain).toBeVisible();
+  await expect(red).toBeVisible();
 
   // Client follow-up: adherence, weekly load with its evidence, alerts.
-  await pain.getByRole('link', { name: /Tomás Garrido/ }).click();
+  await red.getByRole('link', { name: /Tomás Garrido/ }).click();
   await expect(page.getByRole('heading', { name: 'Adherencia 4 semanas' })).toBeVisible();
   await expect(page.getByRole('heading', { name: /Carga interna semanal/ })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Haddad 2017' })).toHaveAttribute(
@@ -66,4 +68,22 @@ test('alert thresholds: trainers read, ADMIN saves a new version', async ({ page
   await expect(page.getByText('Guardado')).toBeVisible();
   await page.reload();
   await expect(page.getByText(/Versión \d+ del centro/)).toBeVisible();
+});
+
+test('global calendar: month and week, filtered by client with phases and rest weeks', async ({
+  page,
+}) => {
+  await login(page, 'lucia.moreno@example.com');
+  await page
+    .getByRole('navigation', { name: 'Principal' })
+    .getByRole('link', { name: 'Calendario' })
+    .click();
+  await expect(page.getByRole('heading', { name: /de 20\d\d$/ })).toBeVisible();
+  await page.getByLabel('Cliente').selectOption({ label: 'Villalba, Marcos' });
+  await page.getByRole('button', { name: 'Filtrar' }).click();
+  await expect(page.getByText(/fase del plan/)).toBeVisible();
+  await expect(page.getByText('📋 Evaluación').first()).toBeVisible();
+  // Trainers only see their own clients' sessions; clients cannot use the staff calendar.
+  const res = await page.request.get('/api/v1/calendar?from=2026-01-01&to=2026-12-31');
+  expect(res.status()).toBe(422);
 });

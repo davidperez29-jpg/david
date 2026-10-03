@@ -14,6 +14,8 @@ import {
   addHistoryEntry,
   bootstrapOrganization,
   createAssessment,
+  listAssessmentTests,
+  setProgressMetrics,
   createPlanFromTemplate,
   getPlan,
   getPlayerSession,
@@ -583,6 +585,27 @@ for (const [i, c] of created.entries()) {
   if (c.user) await runSessions(c, plan.id, today, name);
   else if (i % 2 === 0)
     await roomHistory(c, plan.id, today, PROFILES[profileIndex++ % PROFILES.length]!);
+}
+// Calendar demo (Fase 9): upcoming and overdue assessments; Iker sees only two tests in Progreso.
+{
+  const today = localDate(new Date());
+  const tests = await listAssessmentTests(lucia);
+  const slug = (x: string) => tests.find((t) => t.slug === x)!.id;
+  const byName = (n: string) => created[specs.findIndex((x) => String(x.basics.firstName) === n)]!;
+  for (const [name, days] of [
+    ['Marcos', 4],
+    ['Elena', 9],
+    ['Javier', -2],
+  ] as const) {
+    const c = byName(name);
+    await createAssessment(c.by, c.id, {
+      assessedOn: addDays(today, days),
+      testIds: [slug('cmj_height'), slug('handgrip_strength')],
+      context: days < 0 ? 'Reevaluación pendiente' : 'Reevaluación programada',
+    });
+  }
+  const iker = byName('Iker');
+  await setProgressMetrics(iker.by, iker.id, { testIds: [slug('cmj_height'), slug('sprint_30m')] });
 }
 const monitored = await monitorAllClients({ db, now: () => new Date() });
 console.log(`Monitoring: ${monitored.clients} clients evaluated, ${monitored.created} alerts.`);

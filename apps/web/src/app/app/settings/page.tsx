@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { getSecurityStatus } from '@tp/application';
 import { requireRequestContext } from '@/server/session';
 import { SecuritySettings } from '@/components/security-settings';
+import { ThemeSwitch } from '@/components/theme-switch';
 
 export default async function SettingsPage() {
   const ctx = await requireRequestContext();
@@ -12,6 +13,7 @@ export default async function SettingsPage() {
       <Link href="/app/settings/alertas" className="text-sm text-accent underline">
         Reglas y umbrales de las alertas de seguimiento
       </Link>
+      <ThemeSwitch />
       <SecuritySettings
         totpEnabled={sec.totpEnabled}
         recommend2fa={ctx.actor.roles.some((r) => r !== 'CLIENT')}

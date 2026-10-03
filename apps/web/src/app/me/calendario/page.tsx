@@ -24,6 +24,22 @@ export default async function ClientCalendar() {
   return (
     <div className="flex flex-col gap-4">
       <h1 className="text-2xl font-bold">Calendario</h1>
+      {a.assessments.filter((x) => x.date >= a.today).length ? (
+        <section className="rounded-lg border border-border p-4" aria-label="Evaluaciones">
+          <h2 className="text-xs font-semibold tracking-wide text-muted uppercase">
+            Próximas evaluaciones
+          </h2>
+          <ul className="mt-1 text-sm">
+            {a.assessments
+              .filter((x) => x.date >= a.today)
+              .map((x) => (
+                <li key={x.id} className="first-letter:uppercase">
+                  📋 {fmt(x.date)}
+                </li>
+              ))}
+          </ul>
+        </section>
+      ) : null}
       {a.sessions.length === 0 ? (
         <EmptyState>Todavía no hay sesiones publicadas.</EmptyState>
       ) : (

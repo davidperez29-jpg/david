@@ -14,8 +14,9 @@
   --danger: #b91c1c;
   --focus: #2563eb;
 }
+/* Dark mode (§9.7): follows the system unless the person chose otherwise in Ajustes. */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme='light']) {
     --bg: #0f1115;
     --surface: #171a20;
     --border: #2a2f38;
@@ -28,6 +29,19 @@
     --danger: #f87171;
     --focus: #60a5fa;
   }
+}
+:root[data-theme='dark'] {
+  --bg: #0f1115;
+  --surface: #171a20;
+  --border: #2a2f38;
+  --text: #e8eaed;
+  --muted: #9aa3af;
+  --accent: #2dd4bf;
+  --accent-contrast: #0b1414;
+  --ok: #4ade80;
+  --warn: #fbbf24;
+  --danger: #f87171;
+  --focus: #60a5fa;
 }
 
 @theme inline {

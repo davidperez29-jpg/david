@@ -21,6 +21,7 @@ export default async function StaffLayout({ children }: { children: ReactNode })
               Hoy
             </NavLink>
             <NavLink href="/app/clients">Clientes</NavLink>
+            <NavLink href="/app/calendar">Calendario</NavLink>
             <NavLink href="/app/alerts">
               Alertas
               {urgent ? (

@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
 import './globals.css';
+import { THEME_BOOT } from '@/components/theme-switch';
 
 export const metadata: Metadata = {
   title: { default: 'Plataforma de entrenamiento', template: '%s · Plataforma de entrenamiento' },
@@ -14,7 +15,10 @@ export const viewport: Viewport = { width: 'device-width', initialScale: 1, them
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="es">
+    <html lang="es" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_BOOT }} />
+      </head>
       <body className="min-h-screen bg-bg text-text antialiased">{children}</body>
     </html>
   );
