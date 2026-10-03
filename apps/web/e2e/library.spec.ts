@@ -16,6 +16,7 @@ test('trainer creates, completes and publishes an exercise; videos need verifica
     page
       .getByRole('row')
       .filter({ hasText: /Curl nórdico/i })
+      .filter({ hasText: 'Revisar' })
       .first()
       .getByText('Revisar', { exact: true }),
   ).toBeVisible();

@@ -10,3 +10,5 @@ export { generateRlsSql } from './rls/generate';
 export * from './seed/evidence';
 export * from './seed/assessment';
 export * from './seed/knowledge';
+export * from './seed/exercises';
+export * from './seed/templates';

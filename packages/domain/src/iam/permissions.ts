@@ -36,6 +36,9 @@ export const PERMISSIONS = [
   'assessments:read',
   'assessments:write',
   'assessments:catalog',
+  'plans:read',
+  'plans:write',
+  'plans:templates',
   'privacy:export_subject',
 ] as const;
 export type Permission = (typeof PERMISSIONS)[number];
@@ -69,6 +72,9 @@ export const ROLE_PERMISSIONS: Matrix = {
     'assessments:read': 'org',
     'assessments:write': 'org',
     'assessments:catalog': 'org',
+    'plans:read': 'org',
+    'plans:write': 'org',
+    'plans:templates': 'org',
     'privacy:export_subject': 'org',
   },
   TRAINER: {
@@ -97,6 +103,10 @@ export const ROLE_PERMISSIONS: Matrix = {
     'assessments:write': 'assigned',
     // Tests, batteries and local reliability are shared by the organization.
     'assessments:catalog': 'org',
+    'plans:read': 'assigned',
+    'plans:write': 'assigned',
+    // Templates are shared by the organization's staff.
+    'plans:templates': 'org',
   },
   CLIENT: {
     'clients:read': 'own',

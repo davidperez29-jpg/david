@@ -12,6 +12,9 @@ import {
   addHistoryEntry,
   bootstrapOrganization,
   createAssessment,
+  createPlanFromTemplate,
+  listPlanTemplates,
+  setPlanStatus,
   getAssessment,
   proposeAssessmentBattery,
   recordAssessmentResult,
@@ -519,6 +522,36 @@ for (const [i, c] of created.entries()) {
   }
 }
 console.log(`Assessments: ${assessmentsCreated} demo assessments with fictitious results.`);
+
+// Plans (§15 demo data): a 12-week plan from the template matching each client's main goal.
+const templates = await listPlanTemplates(lucia);
+const GOAL_TEMPLATE: Record<string, string> = {
+  hypertrophy: 'hipertrofia-3d',
+  max_strength: 'fuerza-3d',
+  general_health: 'salud-2d',
+  functional_strength: 'salud-2d',
+  reconditioning: 'salud-2d',
+  team_sport_performance: 'equipo-3d',
+  endurance_sport_performance: 'resistencia-2d',
+  strength_initiation: 'iniciacion-2d',
+  general_physical_preparation: 'iniciacion-3d',
+};
+const WEEKDAYS: Record<number, number[]> = { 2: [2, 4], 3: [1, 3, 5] };
+let plansCreated = 0;
+for (const [i, c] of created.entries()) {
+  const goals = specs[i]!.goals;
+  const main = goals.find((g) => g.primary)?.slug ?? goals[0]?.slug;
+  const t = templates.find((x) => x.slug === GOAL_TEMPLATE[main ?? '']);
+  if (!t) continue;
+  const plan = await createPlanFromTemplate(c.by, c.id, {
+    templateId: t.id,
+    startDate: '2026-09-28',
+    weekdays: WEEKDAYS[t.sessionsPerWeek] ?? [1, 2, 4, 5],
+  });
+  if (i % 2 === 0) await setPlanStatus(c.by, plan.id, { status: 'active' });
+  plansCreated++;
+}
+console.log(`Plans: ${plansCreated} demo plans from templates.`);
 
 // Exercise library: the user's methodology bank as reviewable drafts (skip with DEMO_SKIP_BANK=1).
 if (!process.env.DEMO_SKIP_BANK) {

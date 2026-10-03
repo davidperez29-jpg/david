@@ -134,6 +134,7 @@ CREATE POLICY tca_write ON trainer_client_assignments FOR ALL USING (organizatio
   derived_metrics: { kind: 'client_owned', clientWrite: false, clientRead: true },
 
   // ── Planning ────────────────────────────────────────────────────────────────
+  plan_templates: { kind: 'catalog' },
   training_plans: { kind: 'client_optional', clientWrite: false, clientRead: true },
   plan_revisions: { kind: 'client_optional', clientWrite: false, clientRead: false },
   phases: { kind: 'client_optional', clientWrite: false, clientRead: true },

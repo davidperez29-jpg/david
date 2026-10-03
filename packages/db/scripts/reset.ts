@@ -10,7 +10,10 @@ await dropAll(url);
 await runMigrations(url);
 const { db, close } = createDb(url);
 await seedCatalog(db);
-const { evidence, assessment } = await seedKnowledgeBase(db, SEED_DIR);
+const { evidence, assessment, exercises, templates } = await seedKnowledgeBase(db, SEED_DIR);
+console.log(
+  `Global library: ${exercises.exercises} exercises, ${exercises.progressions} progressions, ${templates.templates} plan templates.`,
+);
 console.log(
   `Scientific library: ${evidence.sources} sources, ${evidence.findings} findings, ${evidence.claims.published}/${evidence.claims.total} claims and ${evidence.methods.published}/${evidence.methods.total} methods published.`,
 );

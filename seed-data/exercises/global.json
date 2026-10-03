@@ -1,0 +1,5023 @@
+{
+  "exercises": [
+    {
+      "slug": "back_squat",
+      "name": "Sentadilla trasera con barra",
+      "altNames": ["Back squat", "Sentadilla"],
+      "pattern": "knee_dominant",
+      "categories": ["strength", "hypertrophy"],
+      "primaryMuscles": ["quadriceps", "gluteus_maximus"],
+      "secondaryMuscles": ["adductors", "erector_spinae"],
+      "equipment": [
+        {
+          "slug": "barbell",
+          "optional": false
+        },
+        {
+          "slug": "plates",
+          "optional": false
+        },
+        {
+          "slug": "squat_rack",
+          "optional": false
+        },
+        {
+          "slug": "linear_encoder",
+          "optional": true
+        }
+      ],
+      "bodyRegion": "lower",
+      "laterality": "bilateral",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["concentric", "eccentric"],
+      "intendedVelocity": "moderate",
+      "level": "intermediate",
+      "spaceRequired": "small",
+      "technicalComplexity": 3,
+      "axialLoad": "high",
+      "impactLevel": "none",
+      "profile": "loaded_dynamic",
+      "supportsVbt": true,
+      "contactsPerRep": null,
+      "clientDescription": "Con la barra apoyada sobre la parte alta de la espalda, baja flexionando caderas y rodillas a la vez y sube hasta quedar de pie.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "Coloca la barra sobre los trapecios, agarre firme y pies a la anchura de los hombros con las puntas ligeramente abiertas.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Baja de forma controlada llevando las rodillas en la dirección de los pies y manteniendo el tronco firme; sube empujando el suelo.",
+          "audience": "both"
+        },
+        {
+          "kind": "cue",
+          "text": "Reparte el peso en todo el pie y mantén el pecho orientado al frente.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Dejar que las rodillas se vayan hacia dentro o que los talones se levanten.",
+          "audience": "both"
+        },
+        {
+          "kind": "precaution",
+          "text": "Ajusta los topes de seguridad del rack a una altura ligeramente inferior a la posición más baja.",
+          "audience": "trainer"
+        }
+      ]
+    },
+    {
+      "slug": "front_squat",
+      "name": "Sentadilla frontal con barra",
+      "altNames": ["Front squat"],
+      "pattern": "knee_dominant",
+      "categories": ["strength", "hypertrophy"],
+      "primaryMuscles": ["quadriceps"],
+      "secondaryMuscles": ["gluteus_maximus", "erector_spinae", "rectus_abdominis"],
+      "equipment": [
+        {
+          "slug": "barbell",
+          "optional": false
+        },
+        {
+          "slug": "plates",
+          "optional": false
+        },
+        {
+          "slug": "squat_rack",
+          "optional": false
+        },
+        {
+          "slug": "linear_encoder",
+          "optional": true
+        }
+      ],
+      "bodyRegion": "lower",
+      "laterality": "bilateral",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["concentric", "eccentric"],
+      "intendedVelocity": "moderate",
+      "level": "advanced",
+      "spaceRequired": "small",
+      "technicalComplexity": 4,
+      "axialLoad": "high",
+      "impactLevel": "none",
+      "profile": "loaded_dynamic",
+      "supportsVbt": true,
+      "contactsPerRep": null,
+      "clientDescription": "Con la barra apoyada en la parte delantera de los hombros, baja en sentadilla con el tronco erguido y vuelve a subir.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "Apoya la barra sobre los deltoides anteriores con los codos altos, en agarre de rack o con brazos cruzados.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Desciende entre las piernas manteniendo el tronco vertical y sube sin dejar caer los codos.",
+          "audience": "both"
+        },
+        {
+          "kind": "cue",
+          "text": "Codos arriba durante toda la repetición.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Redondear la parte alta de la espalda y dejar que la barra ruede hacia delante.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "goblet_squat",
+      "name": "Sentadilla goblet con KB",
+      "altNames": ["Goblet squat", "Sentadilla goblet"],
+      "pattern": "knee_dominant",
+      "categories": ["strength", "hypertrophy"],
+      "primaryMuscles": ["quadriceps", "gluteus_maximus"],
+      "secondaryMuscles": ["adductors", "rectus_abdominis"],
+      "equipment": [
+        {
+          "slug": "kettlebells",
+          "optional": false
+        },
+        {
+          "slug": "dumbbells",
+          "optional": true
+        }
+      ],
+      "bodyRegion": "lower",
+      "laterality": "bilateral",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["concentric", "eccentric"],
+      "intendedVelocity": "moderate",
+      "level": "beginner",
+      "spaceRequired": "minimal",
+      "technicalComplexity": 1,
+      "axialLoad": "low",
+      "impactLevel": "none",
+      "profile": "loaded_dynamic",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "Sujeta una kettlebell o mancuerna pegada al pecho y haz una sentadilla bajando entre las piernas.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "Sostén la carga a la altura del esternón con los codos apuntando hacia abajo.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Baja manteniendo el tronco erguido y los codos entre las rodillas; sube empujando el suelo.",
+          "audience": "both"
+        },
+        {
+          "kind": "cue",
+          "text": "Mantén la carga pegada al cuerpo.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Inclinar el tronco en exceso o separar la carga del pecho.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "box_squat",
+      "name": "Sentadilla al cajón con barra",
+      "altNames": ["Box squat"],
+      "pattern": "knee_dominant",
+      "categories": ["strength"],
+      "primaryMuscles": ["quadriceps", "gluteus_maximus"],
+      "secondaryMuscles": ["hamstrings", "erector_spinae"],
+      "equipment": [
+        {
+          "slug": "barbell",
+          "optional": false
+        },
+        {
+          "slug": "plates",
+          "optional": false
+        },
+        {
+          "slug": "squat_rack",
+          "optional": false
+        },
+        {
+          "slug": "plyo_box",
+          "optional": false
+        },
+        {
+          "slug": "bench",
+          "optional": true
+        }
+      ],
+      "bodyRegion": "lower",
+      "laterality": "bilateral",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["concentric", "eccentric"],
+      "intendedVelocity": "moderate",
+      "level": "intermediate",
+      "spaceRequired": "small",
+      "technicalComplexity": 3,
+      "axialLoad": "high",
+      "impactLevel": "none",
+      "profile": "loaded_dynamic",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "Baja en sentadilla hasta sentarte brevemente en un cajón sin relajar el tronco y vuelve a subir.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "Coloca un cajón detrás de ti a la altura de profundidad deseada.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Lleva la cadera atrás hasta contactar con el cajón, mantén la tensión un instante y sube.",
+          "audience": "both"
+        },
+        {
+          "kind": "cue",
+          "text": "Toca el cajón, no te dejes caer sobre él.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Relajar el tronco o balancearse al sentarse.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "leg_press",
+      "name": "Prensa 45º",
+      "altNames": ["Leg press", "Prensa de piernas"],
+      "pattern": "knee_dominant",
+      "categories": ["hypertrophy", "strength"],
+      "primaryMuscles": ["quadriceps", "gluteus_maximus"],
+      "secondaryMuscles": ["adductors", "hamstrings"],
+      "equipment": [
+        {
+          "slug": "leg_press",
+          "optional": false
+        }
+      ],
+      "bodyRegion": "lower",
+      "laterality": "bilateral",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["concentric", "eccentric"],
+      "intendedVelocity": "moderate",
+      "level": "beginner",
+      "spaceRequired": "small",
+      "technicalComplexity": 1,
+      "axialLoad": "none",
+      "impactLevel": "none",
+      "profile": "loaded_dynamic",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "Sentado en la prensa, flexiona las rodillas acercando la plataforma y extiende las piernas sin bloquear las rodillas.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "Apoya la espalda y la cadera en el respaldo y los pies a la anchura de la cadera en la plataforma.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Baja la plataforma de forma controlada hasta donde mantengas la pelvis apoyada y empuja de vuelta.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Despegar la pelvis del asiento al final de la bajada.",
+          "audience": "both"
+        },
+        {
+          "kind": "cue",
+          "text": "Empuja con todo el pie, no solo con las puntas.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "bulgarian_split_squat",
+      "name": "Sentadilla búlgara con MCs",
+      "altNames": ["Bulgarian split squat", "Sentadilla búlgara"],
+      "pattern": "knee_dominant",
+      "categories": ["strength", "hypertrophy"],
+      "primaryMuscles": ["quadriceps", "gluteus_maximus"],
+      "secondaryMuscles": ["adductors", "gluteus_medius"],
+      "equipment": [
+        {
+          "slug": "bench",
+          "optional": false
+        },
+        {
+          "slug": "dumbbells",
+          "optional": true
+        }
+      ],
+      "bodyRegion": "lower",
+      "laterality": "unilateral",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["concentric", "eccentric"],
+      "intendedVelocity": "moderate",
+      "level": "intermediate",
+      "spaceRequired": "small",
+      "technicalComplexity": 3,
+      "axialLoad": "low",
+      "impactLevel": "none",
+      "profile": "loaded_dynamic",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "Con el pie trasero apoyado en un banco, baja flexionando la pierna delantera y sube empujando con ella.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "Apoya el empeine trasero en un banco y adelanta el otro pie hasta que la bajada sea cómoda.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Desciende en vertical hasta que la rodilla trasera se acerque al suelo y sube con la pierna delantera.",
+          "audience": "both"
+        },
+        {
+          "kind": "cue",
+          "text": "La rodilla delantera sigue la dirección del pie.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Colocar el pie delantero demasiado cerca del banco.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "split_squat",
+      "name": "Sentadilla dividida",
+      "altNames": ["Split squat"],
+      "pattern": "knee_dominant",
+      "categories": ["strength", "hypertrophy"],
+      "primaryMuscles": ["quadriceps", "gluteus_maximus"],
+      "secondaryMuscles": ["adductors", "gluteus_medius"],
+      "equipment": [
+        {
+          "slug": "dumbbells",
+          "optional": true
+        }
+      ],
+      "bodyRegion": "lower",
+      "laterality": "unilateral",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["concentric", "eccentric"],
+      "intendedVelocity": "moderate",
+      "level": "beginner",
+      "spaceRequired": "minimal",
+      "technicalComplexity": 2,
+      "axialLoad": "low",
+      "impactLevel": "none",
+      "profile": "loaded_dynamic",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "En posición de paso largo, baja la rodilla trasera hacia el suelo y vuelve a subir sin mover los pies.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "Separa los pies en paso largo, con la anchura de la cadera entre ellos.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Baja en vertical flexionando ambas rodillas y sube empujando con la pierna delantera.",
+          "audience": "both"
+        },
+        {
+          "kind": "cue",
+          "text": "Tronco alto y peso repartido sobre el pie delantero.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Perder el equilibrio por colocar los pies en la misma línea.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "reverse_lunge",
+      "name": "Zancada detrás",
+      "altNames": ["Reverse lunge", "Zancada inversa"],
+      "pattern": "knee_dominant",
+      "categories": ["strength", "hypertrophy"],
+      "primaryMuscles": ["quadriceps", "gluteus_maximus"],
+      "secondaryMuscles": ["hamstrings", "gluteus_medius", "adductors"],
+      "equipment": [
+        {
+          "slug": "dumbbells",
+          "optional": true
+        }
+      ],
+      "bodyRegion": "lower",
+      "laterality": "alternating",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["concentric", "eccentric"],
+      "intendedVelocity": "moderate",
+      "level": "beginner",
+      "spaceRequired": "small",
+      "technicalComplexity": 2,
+      "axialLoad": "low",
+      "impactLevel": "low",
+      "profile": "loaded_dynamic",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "Da un paso largo hacia atrás, baja la rodilla trasera cerca del suelo y vuelve a la posición inicial.",
+      "instructions": [
+        {
+          "kind": "execution",
+          "text": "Lleva un pie atrás, flexiona ambas rodillas y regresa empujando con la pierna delantera.",
+          "audience": "both"
+        },
+        {
+          "kind": "cue",
+          "text": "Mantén la mayor parte del peso en la pierna delantera.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Dar un paso demasiado corto o golpear la rodilla contra el suelo.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "walking_lunge",
+      "name": "Zancada caminando con MCs",
+      "altNames": ["Walking lunge"],
+      "pattern": "knee_dominant",
+      "categories": ["strength", "hypertrophy", "coordination"],
+      "primaryMuscles": ["quadriceps", "gluteus_maximus"],
+      "secondaryMuscles": ["hamstrings", "gluteus_medius", "adductors"],
+      "equipment": [
+        {
+          "slug": "dumbbells",
+          "optional": true
+        }
+      ],
+      "bodyRegion": "lower",
+      "laterality": "alternating",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["concentric", "eccentric"],
+      "intendedVelocity": "moderate",
+      "level": "intermediate",
+      "spaceRequired": "large",
+      "technicalComplexity": 2,
+      "axialLoad": "low",
+      "impactLevel": "low",
+      "profile": "loaded_dynamic",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "Avanza dando zancadas largas y alternando las piernas, bajando la rodilla trasera cerca del suelo en cada paso.",
+      "instructions": [
+        {
+          "kind": "execution",
+          "text": "Da un paso al frente, baja controlado y lleva la pierna trasera adelante para el siguiente paso.",
+          "audience": "both"
+        },
+        {
+          "kind": "cue",
+          "text": "Tronco alto y pasos de longitud constante.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Perder la alineación de la rodilla delantera hacia dentro.",
+          "audience": "both"
+        },
+        {
+          "kind": "precaution",
+          "text": "Asegura un pasillo libre de obstáculos.",
+          "audience": "trainer"
+        }
+      ]
+    },
+    {
+      "slug": "step_up",
+      "name": "Step Up con MCs",
+      "altNames": ["Step-up", "Subida al cajón"],
+      "pattern": "knee_dominant",
+      "categories": ["strength", "hypertrophy"],
+      "primaryMuscles": ["quadriceps", "gluteus_maximus"],
+      "secondaryMuscles": ["gluteus_medius", "hamstrings"],
+      "equipment": [
+        {
+          "slug": "plyo_box",
+          "optional": false
+        },
+        {
+          "slug": "dumbbells",
+          "optional": true
+        }
+      ],
+      "bodyRegion": "lower",
+      "laterality": "unilateral",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["concentric", "eccentric"],
+      "intendedVelocity": "moderate",
+      "level": "beginner",
+      "spaceRequired": "small",
+      "technicalComplexity": 2,
+      "axialLoad": "low",
+      "impactLevel": "none",
+      "profile": "loaded_dynamic",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "Apoya un pie en un cajón y sube empujando con esa pierna hasta quedar de pie encima; baja controlado.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "Coloca el pie completo sobre el cajón; la altura debe permitir mantener el tronco erguido.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Sube con la pierna de arriba evitando impulsarte con la de abajo y desciende despacio.",
+          "audience": "both"
+        },
+        {
+          "kind": "cue",
+          "text": "Empuja con el talón del pie apoyado.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Impulsarse con la pierna del suelo.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "step_up_low",
+      "name": "Step Up en escalón bajo",
+      "altNames": ["Low step-up"],
+      "pattern": "knee_dominant",
+      "categories": ["strength", "balance"],
+      "primaryMuscles": ["quadriceps", "gluteus_maximus"],
+      "secondaryMuscles": ["gluteus_medius", "gastrocnemius"],
+      "equipment": [
+        {
+          "slug": "step",
+          "optional": false
+        }
+      ],
+      "bodyRegion": "lower",
+      "laterality": "alternating",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["concentric", "eccentric"],
+      "intendedVelocity": "slow_controlled",
+      "level": "beginner",
+      "spaceRequired": "minimal",
+      "technicalComplexity": 1,
+      "axialLoad": "none",
+      "impactLevel": "none",
+      "profile": "loaded_dynamic",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "Sube a un escalón bajo apoyando el pie completo y baja de forma controlada, alternando las piernas.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "Colócate frente a un escalón estable; si lo necesitas, ten un apoyo cerca para las manos.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Sube un pie, extiende la pierna hasta quedar de pie y baja primero la misma pierna.",
+          "audience": "both"
+        },
+        {
+          "kind": "cue",
+          "text": "Mira al frente y sube despacio.",
+          "audience": "both"
+        },
+        {
+          "kind": "precaution",
+          "text": "Usa una barandilla o pared si el equilibrio es limitado.",
+          "audience": "trainer"
+        }
+      ]
+    },
+    {
+      "slug": "sit_to_stand",
+      "name": "Levantarse y sentarse de una silla",
+      "altNames": ["Sit-to-stand", "Chair stand"],
+      "pattern": "knee_dominant",
+      "categories": ["strength", "reconditioning"],
+      "primaryMuscles": ["quadriceps", "gluteus_maximus"],
+      "secondaryMuscles": ["hamstrings", "adductors"],
+      "equipment": [],
+      "bodyRegion": "lower",
+      "laterality": "bilateral",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["concentric", "eccentric"],
+      "intendedVelocity": "moderate",
+      "level": "beginner",
+      "spaceRequired": "minimal",
+      "technicalComplexity": 1,
+      "axialLoad": "none",
+      "impactLevel": "none",
+      "profile": "loaded_dynamic",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "Desde sentado en una silla, levántate sin usar las manos y vuelve a sentarte despacio.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "Usa una silla estable sin ruedas, con los pies apoyados y a la anchura de la cadera.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Inclina el tronco ligeramente hacia delante, levántate hasta quedar de pie y siéntate controlando la bajada.",
+          "audience": "both"
+        },
+        {
+          "kind": "cue",
+          "text": "Cruza los brazos sobre el pecho si puedes; si no, apóyate lo mínimo.",
+          "audience": "both"
+        },
+        {
+          "kind": "precaution",
+          "text": "Coloca la silla contra la pared para que no se desplace.",
+          "audience": "trainer"
+        }
+      ]
+    },
+    {
+      "slug": "banded_back_squat",
+      "name": "Sentadilla trasera con bandas elásticas",
+      "altNames": ["Banded back squat"],
+      "pattern": "knee_dominant",
+      "categories": ["accommodating_resistance", "strength", "power"],
+      "primaryMuscles": ["quadriceps", "gluteus_maximus"],
+      "secondaryMuscles": ["adductors", "erector_spinae"],
+      "equipment": [
+        {
+          "slug": "barbell",
+          "optional": false
+        },
+        {
+          "slug": "plates",
+          "optional": false
+        },
+        {
+          "slug": "squat_rack",
+          "optional": false
+        },
+        {
+          "slug": "resistance_bands",
+          "optional": false
+        },
+        {
+          "slug": "linear_encoder",
+          "optional": true
+        }
+      ],
+      "bodyRegion": "lower",
+      "laterality": "bilateral",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["concentric", "eccentric"],
+      "intendedVelocity": "maximal_intent",
+      "level": "advanced",
+      "spaceRequired": "small",
+      "technicalComplexity": 4,
+      "axialLoad": "high",
+      "impactLevel": "none",
+      "profile": "accommodating",
+      "supportsVbt": true,
+      "contactsPerRep": null,
+      "clientDescription": "Sentadilla con barra a la que se añaden bandas elásticas que aumentan la resistencia al subir.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "Ancla las bandas a la base del rack o a pesos y engánchalas a los extremos de la barra de forma simétrica.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Baja controlando el tirón de las bandas y sube con la máxima intención de velocidad.",
+          "audience": "both"
+        },
+        {
+          "kind": "cue",
+          "text": "Mantén la barra estable; las bandas tiran hacia abajo y hacia los lados.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Colocar las bandas con tensión distinta en cada lado.",
+          "audience": "trainer"
+        }
+      ]
+    },
+    {
+      "slug": "leg_extension",
+      "name": "Extensión de rodilla sentado en máquina",
+      "altNames": ["Leg extension"],
+      "pattern": "isolation",
+      "categories": ["hypertrophy", "strength"],
+      "primaryMuscles": ["quadriceps"],
+      "secondaryMuscles": [],
+      "equipment": [
+        {
+          "slug": "machines_other",
+          "optional": false
+        }
+      ],
+      "bodyRegion": "lower",
+      "laterality": "bilateral",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["concentric", "eccentric"],
+      "intendedVelocity": "slow_controlled",
+      "level": "beginner",
+      "spaceRequired": "minimal",
+      "technicalComplexity": 1,
+      "axialLoad": "none",
+      "impactLevel": "none",
+      "profile": "loaded_dynamic",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "Sentado en la máquina, extiende las rodillas levantando el rodillo y bájalo despacio.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "Alinea la rodilla con el eje de la máquina y coloca el rodillo sobre la parte baja de la tibia.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Extiende las piernas por completo y regresa de forma controlada.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Levantar la cadera del asiento o lanzar el peso.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "spanish_squat_iso",
+      "name": "Sentadilla española con goma (isométrico)",
+      "altNames": ["Spanish squat"],
+      "pattern": "knee_dominant",
+      "categories": ["isometric", "strength"],
+      "primaryMuscles": ["quadriceps"],
+      "secondaryMuscles": ["gluteus_maximus"],
+      "equipment": [
+        {
+          "slug": "resistance_bands",
+          "optional": false
+        }
+      ],
+      "bodyRegion": "lower",
+      "laterality": "bilateral",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["isometric"],
+      "intendedVelocity": "slow_controlled",
+      "level": "beginner",
+      "spaceRequired": "minimal",
+      "technicalComplexity": 1,
+      "axialLoad": "none",
+      "impactLevel": "none",
+      "profile": "isometric",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "Con una banda gruesa detrás de las rodillas anclada delante, échate hacia atrás y mantén la sentadilla sin moverte.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "Ancla una banda gruesa a un punto fijo y colócala detrás de ambas rodillas.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Lleva la cadera atrás hasta el ángulo de rodilla indicado, con las tibias verticales, y mantén la posición.",
+          "audience": "both"
+        },
+        {
+          "kind": "cue",
+          "text": "Deja que la banda sostenga las rodillas mientras empujas el suelo.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Inclinar el tronco hacia delante en lugar de sentarse atrás.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "wall_sit",
+      "name": "Sentadilla isométrica en pared",
+      "altNames": ["Wall sit"],
+      "pattern": "knee_dominant",
+      "categories": ["isometric", "strength"],
+      "primaryMuscles": ["quadriceps"],
+      "secondaryMuscles": ["gluteus_maximus", "adductors"],
+      "equipment": [],
+      "bodyRegion": "lower",
+      "laterality": "bilateral",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["isometric"],
+      "intendedVelocity": "slow_controlled",
+      "level": "beginner",
+      "spaceRequired": "minimal",
+      "technicalComplexity": 1,
+      "axialLoad": "none",
+      "impactLevel": "none",
+      "profile": "isometric",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "Apoya la espalda en la pared, baja hasta flexionar las rodillas y mantén la posición.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "Separa los pies de la pared lo suficiente para que las rodillas queden sobre los tobillos.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Desliza la espalda hasta el ángulo indicado y mantén sin moverte.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Apoyar las manos sobre los muslos.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "deadlift",
+      "name": "Peso muerto con barra",
+      "altNames": ["Deadlift", "Conventional deadlift", "Peso Muerto"],
+      "pattern": "hip_dominant",
+      "categories": ["strength"],
+      "primaryMuscles": ["gluteus_maximus", "hamstrings"],
+      "secondaryMuscles": ["quadriceps", "erector_spinae", "trapezius", "forearm"],
+      "equipment": [
+        {
+          "slug": "barbell",
+          "optional": false
+        },
+        {
+          "slug": "plates",
+          "optional": false
+        },
+        {
+          "slug": "linear_encoder",
+          "optional": true
+        }
+      ],
+      "bodyRegion": "lower",
+      "laterality": "bilateral",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["concentric", "eccentric"],
+      "intendedVelocity": "moderate",
+      "level": "intermediate",
+      "spaceRequired": "small",
+      "technicalComplexity": 4,
+      "axialLoad": "high",
+      "impactLevel": "none",
+      "profile": "loaded_dynamic",
+      "supportsVbt": true,
+      "contactsPerRep": null,
+      "clientDescription": "Levanta la barra desde el suelo extendiendo caderas y rodillas a la vez hasta quedar de pie, y bájala controlada.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "Pies bajo la barra a la anchura de la cadera; agarra la barra justo por fuera de las piernas.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Tensa la espalda, empuja el suelo y lleva la barra pegada a las piernas hasta extender la cadera.",
+          "audience": "both"
+        },
+        {
+          "kind": "cue",
+          "text": "Barra pegada al cuerpo durante todo el recorrido.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Redondear la espalda o separar la barra de las piernas.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Subir la cadera antes que los hombros al iniciar el tirón.",
+          "audience": "trainer"
+        }
+      ]
+    },
+    {
+      "slug": "romanian_deadlift",
+      "name": "Peso muerto rumano con barra",
+      "altNames": ["Romanian deadlift", "RDL"],
+      "pattern": "hip_dominant",
+      "categories": ["strength", "hypertrophy"],
+      "primaryMuscles": ["hamstrings", "gluteus_maximus"],
+      "secondaryMuscles": ["erector_spinae", "forearm"],
+      "equipment": [
+        {
+          "slug": "barbell",
+          "optional": false
+        },
+        {
+          "slug": "plates",
+          "optional": false
+        },
+        {
+          "slug": "dumbbells",
+          "optional": true
+        }
+      ],
+      "bodyRegion": "lower",
+      "laterality": "bilateral",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["concentric", "eccentric"],
+      "intendedVelocity": "slow_controlled",
+      "level": "intermediate",
+      "spaceRequired": "small",
+      "technicalComplexity": 3,
+      "axialLoad": "moderate",
+      "impactLevel": "none",
+      "profile": "loaded_dynamic",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "De pie con la barra, lleva la cadera atrás bajando la barra por los muslos con la espalda recta y vuelve a subir.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "De pie con la barra en las manos y las rodillas ligeramente flexionadas.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Lleva la cadera hacia atrás deslizando la barra por las piernas hasta notar tensión en los isquios y regresa.",
+          "audience": "both"
+        },
+        {
+          "kind": "cue",
+          "text": "La rodilla apenas cambia de ángulo; el movimiento es de cadera.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Flexionar la columna para bajar más.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "single_leg_rdl",
+      "name": "Peso muerto a una pierna",
+      "altNames": ["Single-leg Romanian deadlift"],
+      "pattern": "hip_dominant",
+      "categories": ["strength", "balance"],
+      "primaryMuscles": ["hamstrings", "gluteus_maximus"],
+      "secondaryMuscles": ["gluteus_medius", "erector_spinae"],
+      "equipment": [
+        {
+          "slug": "dumbbells",
+          "optional": true
+        },
+        {
+          "slug": "kettlebells",
+          "optional": true
+        }
+      ],
+      "bodyRegion": "lower",
+      "laterality": "unilateral",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["concentric", "eccentric"],
+      "intendedVelocity": "slow_controlled",
+      "level": "intermediate",
+      "spaceRequired": "small",
+      "technicalComplexity": 3,
+      "axialLoad": "low",
+      "impactLevel": "none",
+      "profile": "loaded_dynamic",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "Apoyado en una pierna, inclina el tronco hacia delante mientras la otra pierna sube atrás y vuelve a la posición erguida.",
+      "instructions": [
+        {
+          "kind": "execution",
+          "text": "Bisagra de cadera sobre la pierna de apoyo con la rodilla ligeramente flexionada; regresa apretando el glúteo.",
+          "audience": "both"
+        },
+        {
+          "kind": "cue",
+          "text": "Cadera y hombros alineados, sin rotar la pelvis.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Abrir la cadera de la pierna libre hacia fuera.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "hip_thrust",
+      "name": "Hip Thrust con barra",
+      "altNames": ["Barbell hip thrust", "Hip Thrust"],
+      "pattern": "hip_dominant",
+      "categories": ["hypertrophy", "strength"],
+      "primaryMuscles": ["gluteus_maximus"],
+      "secondaryMuscles": ["hamstrings", "quadriceps", "adductors"],
+      "equipment": [
+        {
+          "slug": "barbell",
+          "optional": false
+        },
+        {
+          "slug": "plates",
+          "optional": false
+        },
+        {
+          "slug": "bench",
+          "optional": false
+        }
+      ],
+      "bodyRegion": "lower",
+      "laterality": "bilateral",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["concentric", "eccentric"],
+      "intendedVelocity": "moderate",
+      "level": "intermediate",
+      "spaceRequired": "small",
+      "technicalComplexity": 2,
+      "axialLoad": "none",
+      "impactLevel": "none",
+      "profile": "loaded_dynamic",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "Con la espalda apoyada en un banco y la barra sobre la cadera, eleva la pelvis hasta alinear tronco y muslos.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "Apoya la parte baja de las escápulas en el banco, barra almohadillada sobre la cadera y pies a la anchura de la cadera.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Empuja con los talones elevando la cadera hasta la extensión completa y baja controlado.",
+          "audience": "both"
+        },
+        {
+          "kind": "cue",
+          "text": "Barbilla ligeramente recogida y costillas abajo al final.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Arquear la zona lumbar en lugar de extender la cadera.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "glute_bridge",
+      "name": "Puente de glúteos",
+      "altNames": ["Glute bridge", "Elevación de cadera"],
+      "pattern": "hip_dominant",
+      "categories": ["hypertrophy", "motor_control"],
+      "primaryMuscles": ["gluteus_maximus"],
+      "secondaryMuscles": ["hamstrings"],
+      "equipment": [
+        {
+          "slug": "mat",
+          "optional": true
+        }
+      ],
+      "bodyRegion": "lower",
+      "laterality": "bilateral",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["concentric", "eccentric"],
+      "intendedVelocity": "slow_controlled",
+      "level": "beginner",
+      "spaceRequired": "minimal",
+      "technicalComplexity": 1,
+      "axialLoad": "none",
+      "impactLevel": "none",
+      "profile": "loaded_dynamic",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "Tumbado boca arriba con las rodillas flexionadas, eleva la cadera hasta alinear rodillas, cadera y hombros.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "Tumbado boca arriba, pies apoyados cerca de los glúteos y brazos a los lados.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Eleva la cadera apretando los glúteos, mantén un instante y baja despacio.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Empujar con la zona lumbar arqueando la espalda.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "kettlebell_swing",
+      "name": "Kettlebell Swing",
+      "altNames": ["KB swing", "Russian swing"],
+      "pattern": "hip_dominant",
+      "categories": ["power", "ballistic"],
+      "primaryMuscles": ["gluteus_maximus", "hamstrings"],
+      "secondaryMuscles": ["erector_spinae", "forearm", "quadriceps"],
+      "equipment": [
+        {
+          "slug": "kettlebells",
+          "optional": false
+        }
+      ],
+      "bodyRegion": "lower",
+      "laterality": "bilateral",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["concentric", "reactive_ssc"],
+      "intendedVelocity": "ballistic",
+      "level": "intermediate",
+      "spaceRequired": "small",
+      "technicalComplexity": 3,
+      "axialLoad": "moderate",
+      "impactLevel": "none",
+      "profile": "loaded_dynamic",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "Balancea la kettlebell entre las piernas y proyéctala al frente con una extensión rápida de cadera.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "Kettlebell un poco por delante de los pies; agárrala con ambas manos con la espalda recta.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Lleva la kettlebell atrás entre los muslos y extiende la cadera con fuerza para proyectarla hasta la altura del pecho.",
+          "audience": "both"
+        },
+        {
+          "kind": "cue",
+          "text": "Los brazos solo guían; la fuerza sale de la cadera.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Convertir el movimiento en una sentadilla o levantar con los brazos.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "isometric_mid_thigh_pull",
+      "name": "Tirón isométrico a medio muslo",
+      "altNames": ["Isometric mid-thigh pull", "IMTP"],
+      "pattern": "hip_dominant",
+      "categories": ["isometric", "strength"],
+      "primaryMuscles": ["gluteus_maximus", "quadriceps", "hamstrings"],
+      "secondaryMuscles": ["trapezius", "erector_spinae", "forearm"],
+      "equipment": [
+        {
+          "slug": "barbell",
+          "optional": false
+        },
+        {
+          "slug": "squat_rack",
+          "optional": false
+        },
+        {
+          "slug": "force_plate",
+          "optional": true
+        }
+      ],
+      "bodyRegion": "full_body",
+      "laterality": "bilateral",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["isometric"],
+      "intendedVelocity": "maximal_intent",
+      "level": "intermediate",
+      "spaceRequired": "small",
+      "technicalComplexity": 2,
+      "axialLoad": "moderate",
+      "impactLevel": "none",
+      "profile": "isometric",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "Tira con máxima intención de una barra fija a la altura de medio muslo, empujando el suelo sin que la barra se mueva.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "Fija la barra a la altura de medio muslo; tronco erguido, rodillas y cadera ligeramente flexionadas.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Agarra con firmeza y empuja el suelo lo más rápido y fuerte posible durante el tiempo indicado.",
+          "audience": "both"
+        },
+        {
+          "kind": "cue",
+          "text": "Empuja el suelo, no tires con los brazos.",
+          "audience": "both"
+        },
+        {
+          "kind": "precaution",
+          "text": "Pretensa ligeramente antes de la señal para evitar tirones bruscos.",
+          "audience": "trainer"
+        }
+      ]
+    },
+    {
+      "slug": "nordic_hamstring_curl",
+      "name": "Curl nórdico",
+      "altNames": ["Nordic hamstring curl", "Nordic curl"],
+      "pattern": "isolation",
+      "categories": ["eccentric", "strength"],
+      "primaryMuscles": ["hamstrings"],
+      "secondaryMuscles": ["gluteus_maximus", "gastrocnemius"],
+      "equipment": [
+        {
+          "slug": "mat",
+          "optional": false
+        },
+        {
+          "slug": "resistance_bands",
+          "optional": true
+        }
+      ],
+      "bodyRegion": "lower",
+      "laterality": "bilateral",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["eccentric"],
+      "intendedVelocity": "slow_controlled",
+      "level": "advanced",
+      "spaceRequired": "minimal",
+      "technicalComplexity": 3,
+      "axialLoad": "none",
+      "impactLevel": "none",
+      "profile": "loaded_dynamic",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "De rodillas con los tobillos sujetos, deja caer el tronco hacia delante lo más lento posible y recógete con las manos.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "De rodillas sobre una esterilla con los talones fijados por un compañero o un anclaje.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Inclínate hacia delante como una tabla desde la rodilla, frenando la caída todo lo posible, y amortigua con las manos.",
+          "audience": "both"
+        },
+        {
+          "kind": "cue",
+          "text": "Cadera extendida: rodilla, cadera y hombro en línea.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Flexionar la cadera para acortar la palanca.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "leg_curl_machine",
+      "name": "Curl de isquios en máquina",
+      "altNames": ["Leg curl", "Hamstring curl"],
+      "pattern": "isolation",
+      "categories": ["hypertrophy", "strength"],
+      "primaryMuscles": ["hamstrings"],
+      "secondaryMuscles": ["gastrocnemius"],
+      "equipment": [
+        {
+          "slug": "machines_other",
+          "optional": false
+        }
+      ],
+      "bodyRegion": "lower",
+      "laterality": "bilateral",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["concentric", "eccentric"],
+      "intendedVelocity": "slow_controlled",
+      "level": "beginner",
+      "spaceRequired": "minimal",
+      "technicalComplexity": 1,
+      "axialLoad": "none",
+      "impactLevel": "none",
+      "profile": "loaded_dynamic",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "En la máquina, flexiona las rodillas llevando el rodillo hacia los glúteos y vuelve despacio.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "Alinea la rodilla con el eje de la máquina y el rodillo justo encima de los talones.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Flexiona las rodillas por completo y extiende de forma controlada.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Levantar la cadera del apoyo para completar el movimiento.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "standing_calf_raise",
+      "name": "Elevación de talón de pie",
+      "altNames": ["Standing calf raise"],
+      "pattern": "isolation",
+      "categories": ["hypertrophy", "strength"],
+      "primaryMuscles": ["gastrocnemius"],
+      "secondaryMuscles": ["soleus", "foot_intrinsics"],
+      "equipment": [
+        {
+          "slug": "step",
+          "optional": false
+        },
+        {
+          "slug": "machines_other",
+          "optional": true
+        },
+        {
+          "slug": "dumbbells",
+          "optional": true
+        }
+      ],
+      "bodyRegion": "lower",
+      "laterality": "bilateral",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["concentric", "eccentric"],
+      "intendedVelocity": "slow_controlled",
+      "level": "beginner",
+      "spaceRequired": "minimal",
+      "technicalComplexity": 1,
+      "axialLoad": "low",
+      "impactLevel": "none",
+      "profile": "loaded_dynamic",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "De pie con las puntas en un escalón, sube los talones lo más alto posible y bájalos por debajo del escalón.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "Apoya la parte delantera del pie en el borde de un escalón con las rodillas extendidas.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Eleva los talones al máximo, mantén un instante y baja controlado.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Rebotar en la parte baja del recorrido.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "seated_calf_raise",
+      "name": "Elevación de talón sentado",
+      "altNames": ["Seated calf raise", "Elevación de talón sentado en banco"],
+      "pattern": "isolation",
+      "categories": ["hypertrophy", "strength"],
+      "primaryMuscles": ["soleus"],
+      "secondaryMuscles": ["gastrocnemius"],
+      "equipment": [
+        {
+          "slug": "machines_other",
+          "optional": true
+        },
+        {
+          "slug": "dumbbells",
+          "optional": true
+        },
+        {
+          "slug": "bench",
+          "optional": true
+        },
+        {
+          "slug": "step",
+          "optional": true
+        }
+      ],
+      "bodyRegion": "lower",
+      "laterality": "bilateral",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["concentric", "eccentric"],
+      "intendedVelocity": "slow_controlled",
+      "level": "beginner",
+      "spaceRequired": "minimal",
+      "technicalComplexity": 1,
+      "axialLoad": "none",
+      "impactLevel": "none",
+      "profile": "loaded_dynamic",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "Sentado con las rodillas flexionadas y carga sobre los muslos, sube y baja los talones.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "Sentado con las rodillas a 90º y la parte delantera de los pies sobre un escalón o plataforma.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Eleva los talones al máximo y baja lentamente.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Usar un recorrido corto.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "copenhagen_plank",
+      "name": "Plancha de Copenhague",
+      "altNames": ["Copenhagen adductor plank", "Copenhagen plank"],
+      "pattern": "core_anti_lateral_flexion",
+      "categories": ["isometric", "core"],
+      "primaryMuscles": ["adductors", "obliques"],
+      "secondaryMuscles": ["gluteus_medius", "transversus_abdominis"],
+      "equipment": [
+        {
+          "slug": "bench",
+          "optional": false
+        },
+        {
+          "slug": "mat",
+          "optional": true
+        }
+      ],
+      "bodyRegion": "trunk",
+      "laterality": "unilateral",
+      "planes": ["frontal"],
+      "contractionEmphasis": ["isometric"],
+      "intendedVelocity": "slow_controlled",
+      "level": "intermediate",
+      "spaceRequired": "small",
+      "technicalComplexity": 2,
+      "axialLoad": "none",
+      "impactLevel": "none",
+      "profile": "core",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "De lado, apoya el antebrazo en el suelo y la pierna de arriba en un banco, y eleva la cadera manteniendo el cuerpo recto.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "Apoya la rodilla (versión corta) o el tobillo (versión larga) de la pierna superior sobre el banco.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Eleva la cadera hasta alinear el cuerpo y mantén la posición.",
+          "audience": "both"
+        },
+        {
+          "kind": "cue",
+          "text": "Aprieta la pierna de arriba contra el banco.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Dejar caer la cadera o rotar el tronco hacia delante.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "isometric_hip_adduction",
+      "name": "Aducción isométrica de cadera con balón",
+      "altNames": ["Isometric hip adduction squeeze"],
+      "pattern": "isolation",
+      "categories": ["isometric"],
+      "primaryMuscles": ["adductors"],
+      "secondaryMuscles": [],
+      "equipment": [
+        {
+          "slug": "medicine_ball",
+          "optional": true
+        },
+        {
+          "slug": "mat",
+          "optional": true
+        }
+      ],
+      "bodyRegion": "lower",
+      "laterality": "bilateral",
+      "planes": ["frontal"],
+      "contractionEmphasis": ["isometric"],
+      "intendedVelocity": "slow_controlled",
+      "level": "beginner",
+      "spaceRequired": "minimal",
+      "technicalComplexity": 1,
+      "axialLoad": "none",
+      "impactLevel": "none",
+      "profile": "isometric",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "Tumbado boca arriba con un balón entre las rodillas, apriétalo con fuerza y mantén.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "Tumbado boca arriba con las rodillas flexionadas y un balón o toalla enrollada entre ellas.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Aprieta el balón con la intensidad indicada y mantén sin contener la respiración.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Levantar la cadera o arquear la zona lumbar.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "bench_press",
+      "name": "Press en banco plano con barra",
+      "altNames": ["Bench press", "Press banca"],
+      "pattern": "horizontal_push",
+      "categories": ["strength", "hypertrophy"],
+      "primaryMuscles": ["pectoralis_major"],
+      "secondaryMuscles": ["triceps_brachii", "anterior_deltoid"],
+      "equipment": [
+        {
+          "slug": "barbell",
+          "optional": false
+        },
+        {
+          "slug": "plates",
+          "optional": false
+        },
+        {
+          "slug": "bench",
+          "optional": false
+        },
+        {
+          "slug": "squat_rack",
+          "optional": false
+        },
+        {
+          "slug": "linear_encoder",
+          "optional": true
+        }
+      ],
+      "bodyRegion": "upper",
+      "laterality": "bilateral",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["concentric", "eccentric"],
+      "intendedVelocity": "moderate",
+      "level": "intermediate",
+      "spaceRequired": "small",
+      "technicalComplexity": 3,
+      "axialLoad": "none",
+      "impactLevel": "none",
+      "profile": "loaded_dynamic",
+      "supportsVbt": true,
+      "contactsPerRep": null,
+      "clientDescription": "Tumbado en el banco, baja la barra al pecho de forma controlada y empújala hasta extender los brazos.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "Ojos bajo la barra, escápulas juntas y hacia abajo, pies firmes en el suelo.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Baja la barra a la parte baja del pecho con los codos algo por debajo de los hombros y empuja hacia arriba.",
+          "audience": "both"
+        },
+        {
+          "kind": "cue",
+          "text": "Muñecas rectas sobre los codos.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Rebotar la barra en el pecho o despegar la cadera del banco.",
+          "audience": "both"
+        },
+        {
+          "kind": "precaution",
+          "text": "Utiliza ayudante o topes de seguridad con cargas altas.",
+          "audience": "trainer"
+        }
+      ]
+    },
+    {
+      "slug": "dumbbell_bench_press",
+      "name": "Press en banco plano con MCs",
+      "altNames": ["Dumbbell bench press"],
+      "pattern": "horizontal_push",
+      "categories": ["hypertrophy", "strength"],
+      "primaryMuscles": ["pectoralis_major"],
+      "secondaryMuscles": ["triceps_brachii", "anterior_deltoid"],
+      "equipment": [
+        {
+          "slug": "dumbbells",
+          "optional": false
+        },
+        {
+          "slug": "bench",
+          "optional": false
+        }
+      ],
+      "bodyRegion": "upper",
+      "laterality": "bilateral",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["concentric", "eccentric"],
+      "intendedVelocity": "moderate",
+      "level": "beginner",
+      "spaceRequired": "small",
+      "technicalComplexity": 2,
+      "axialLoad": "none",
+      "impactLevel": "none",
+      "profile": "loaded_dynamic",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "Tumbado en el banco con una mancuerna en cada mano, bájalas a los lados del pecho y empuja hacia arriba.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "Sube las mancuernas apoyadas en los muslos al tumbarte; escápulas retraídas.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Baja las mancuernas controladas hasta la altura del pecho y empuja juntándolas ligeramente arriba.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Abrir los codos a 90º respecto al tronco.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "incline_dumbbell_press",
+      "name": "Press en banco inclinado con MCs",
+      "altNames": ["Incline dumbbell press"],
+      "pattern": "horizontal_push",
+      "categories": ["hypertrophy", "strength"],
+      "primaryMuscles": ["pectoralis_major", "anterior_deltoid"],
+      "secondaryMuscles": ["triceps_brachii"],
+      "equipment": [
+        {
+          "slug": "dumbbells",
+          "optional": false
+        },
+        {
+          "slug": "bench",
+          "optional": false
+        }
+      ],
+      "bodyRegion": "upper",
+      "laterality": "bilateral",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["concentric", "eccentric"],
+      "intendedVelocity": "moderate",
+      "level": "beginner",
+      "spaceRequired": "small",
+      "technicalComplexity": 2,
+      "axialLoad": "none",
+      "impactLevel": "none",
+      "profile": "loaded_dynamic",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "En un banco inclinado, baja las mancuernas hacia la parte alta del pecho y empújalas hacia arriba.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "Banco inclinado moderadamente; espalda y cabeza apoyadas.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Baja controlado hasta la altura del pecho y empuja en vertical.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Despegar la espalda del respaldo para empujar.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "push_up",
+      "name": "Flexión de brazos",
+      "altNames": ["Push-up", "Flexiones"],
+      "pattern": "horizontal_push",
+      "categories": ["strength", "hypertrophy"],
+      "primaryMuscles": ["pectoralis_major"],
+      "secondaryMuscles": [
+        "triceps_brachii",
+        "anterior_deltoid",
+        "serratus_anterior",
+        "rectus_abdominis"
+      ],
+      "equipment": [],
+      "bodyRegion": "upper",
+      "laterality": "bilateral",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["concentric", "eccentric"],
+      "intendedVelocity": "moderate",
+      "level": "beginner",
+      "spaceRequired": "minimal",
+      "technicalComplexity": 2,
+      "axialLoad": "none",
+      "impactLevel": "none",
+      "profile": "loaded_dynamic",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "En plancha sobre manos y pies, baja el pecho hacia el suelo con el cuerpo recto y empuja hasta extender los brazos.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "Manos algo más abiertas que los hombros y cuerpo en línea de cabeza a talones.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Baja hasta acercar el pecho al suelo y empuja manteniendo la línea del cuerpo.",
+          "audience": "both"
+        },
+        {
+          "kind": "cue",
+          "text": "Aprieta glúteos y abdomen durante todo el movimiento.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Dejar caer la cadera o adelantar la cabeza.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "knee_push_up",
+      "name": "Flexión de brazos con rodillas apoyadas",
+      "altNames": ["Knee push-up"],
+      "pattern": "horizontal_push",
+      "categories": ["strength"],
+      "primaryMuscles": ["pectoralis_major"],
+      "secondaryMuscles": ["triceps_brachii", "anterior_deltoid"],
+      "equipment": [
+        {
+          "slug": "mat",
+          "optional": true
+        }
+      ],
+      "bodyRegion": "upper",
+      "laterality": "bilateral",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["concentric", "eccentric"],
+      "intendedVelocity": "moderate",
+      "level": "beginner",
+      "spaceRequired": "minimal",
+      "technicalComplexity": 1,
+      "axialLoad": "none",
+      "impactLevel": "none",
+      "profile": "loaded_dynamic",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "Flexión de brazos con las rodillas apoyadas en el suelo, manteniendo el tronco recto desde las rodillas.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "Rodillas apoyadas en una esterilla y cuerpo alineado de rodillas a cabeza.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Baja el pecho hacia el suelo y empuja hasta extender los brazos.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Flexionar la cadera llevando los glúteos hacia arriba.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "incline_push_up",
+      "name": "Flexión de brazos inclinada",
+      "altNames": ["Incline push-up"],
+      "pattern": "horizontal_push",
+      "categories": ["strength"],
+      "primaryMuscles": ["pectoralis_major"],
+      "secondaryMuscles": ["triceps_brachii", "anterior_deltoid"],
+      "equipment": [
+        {
+          "slug": "bench",
+          "optional": true
+        },
+        {
+          "slug": "plyo_box",
+          "optional": true
+        }
+      ],
+      "bodyRegion": "upper",
+      "laterality": "bilateral",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["concentric", "eccentric"],
+      "intendedVelocity": "moderate",
+      "level": "beginner",
+      "spaceRequired": "minimal",
+      "technicalComplexity": 1,
+      "axialLoad": "none",
+      "impactLevel": "none",
+      "profile": "loaded_dynamic",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "Flexión de brazos con las manos apoyadas en un banco o superficie elevada.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "Manos sobre un banco, cajón o pared estable; cuanto más alto, más fácil.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Baja el pecho hacia el borde y empuja hasta extender los brazos con el cuerpo recto.",
+          "audience": "both"
+        },
+        {
+          "kind": "precaution",
+          "text": "Comprueba que la superficie no se desliza.",
+          "audience": "trainer"
+        }
+      ]
+    },
+    {
+      "slug": "chain_bench_press",
+      "name": "Press en banco plano con barra y cadenas",
+      "altNames": ["Bench press with chains"],
+      "pattern": "horizontal_push",
+      "categories": ["accommodating_resistance", "strength"],
+      "primaryMuscles": ["pectoralis_major"],
+      "secondaryMuscles": ["triceps_brachii", "anterior_deltoid"],
+      "equipment": [
+        {
+          "slug": "barbell",
+          "optional": false
+        },
+        {
+          "slug": "plates",
+          "optional": false
+        },
+        {
+          "slug": "bench",
+          "optional": false
+        },
+        {
+          "slug": "squat_rack",
+          "optional": false
+        },
+        {
+          "slug": "chains",
+          "optional": false
+        },
+        {
+          "slug": "linear_encoder",
+          "optional": true
+        }
+      ],
+      "bodyRegion": "upper",
+      "laterality": "bilateral",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["concentric", "eccentric"],
+      "intendedVelocity": "maximal_intent",
+      "level": "advanced",
+      "spaceRequired": "small",
+      "technicalComplexity": 3,
+      "axialLoad": "none",
+      "impactLevel": "none",
+      "profile": "accommodating",
+      "supportsVbt": true,
+      "contactsPerRep": null,
+      "clientDescription": "Press de banca con cadenas colgando de la barra, que añaden carga a medida que la barra sube.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "Cuelga las cadenas de forma simétrica para que parte de ellas descanse en el suelo con la barra en el pecho.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Baja controlado y empuja con la máxima intención de velocidad.",
+          "audience": "both"
+        },
+        {
+          "kind": "cue",
+          "text": "Mantén la trayectoria estable aunque las cadenas oscilen.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Colocar cadenas con distinta longitud a cada lado.",
+          "audience": "trainer"
+        }
+      ]
+    },
+    {
+      "slug": "overhead_press",
+      "name": "Press vertical estricto con barra",
+      "altNames": ["Overhead press", "Military press", "Press Vertical"],
+      "pattern": "vertical_push",
+      "categories": ["strength", "hypertrophy"],
+      "primaryMuscles": ["anterior_deltoid"],
+      "secondaryMuscles": ["triceps_brachii", "lateral_deltoid", "trapezius", "rectus_abdominis"],
+      "equipment": [
+        {
+          "slug": "barbell",
+          "optional": false
+        },
+        {
+          "slug": "plates",
+          "optional": false
+        },
+        {
+          "slug": "squat_rack",
+          "optional": false
+        }
+      ],
+      "bodyRegion": "upper",
+      "laterality": "bilateral",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["concentric", "eccentric"],
+      "intendedVelocity": "moderate",
+      "level": "intermediate",
+      "spaceRequired": "small",
+      "technicalComplexity": 3,
+      "axialLoad": "moderate",
+      "impactLevel": "none",
+      "profile": "loaded_dynamic",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "De pie con la barra apoyada en los hombros, empújala por encima de la cabeza hasta extender los brazos.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "Barra sobre la parte delantera de los hombros, agarre algo más ancho que los hombros, glúteos y abdomen activos.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Empuja la barra en línea recta apartando la cabeza y termina con la barra sobre la mitad del pie.",
+          "audience": "both"
+        },
+        {
+          "kind": "cue",
+          "text": "Costillas abajo, sin arquear la zona lumbar.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Inclinar el tronco atrás para empujar.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "dumbbell_shoulder_press",
+      "name": "Press vertical sentado con MC",
+      "altNames": ["Dumbbell shoulder press", "Seated dumbbell press"],
+      "pattern": "vertical_push",
+      "categories": ["hypertrophy", "strength"],
+      "primaryMuscles": ["anterior_deltoid"],
+      "secondaryMuscles": ["triceps_brachii", "lateral_deltoid"],
+      "equipment": [
+        {
+          "slug": "dumbbells",
+          "optional": false
+        },
+        {
+          "slug": "bench",
+          "optional": true
+        }
+      ],
+      "bodyRegion": "upper",
+      "laterality": "bilateral",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["concentric", "eccentric"],
+      "intendedVelocity": "moderate",
+      "level": "beginner",
+      "spaceRequired": "small",
+      "technicalComplexity": 2,
+      "axialLoad": "low",
+      "impactLevel": "none",
+      "profile": "loaded_dynamic",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "Sentado o de pie, empuja las mancuernas desde la altura de los hombros hasta extender los brazos por encima de la cabeza.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "Mancuernas a la altura de los hombros con los antebrazos verticales.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Empuja hacia arriba hasta extender los codos y baja de forma controlada.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Arquear la espalda o chocar las mancuernas arriba.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "landmine_press",
+      "name": "Press con barra diagonal",
+      "altNames": ["Landmine press"],
+      "pattern": "vertical_push",
+      "categories": ["strength", "hypertrophy"],
+      "primaryMuscles": ["anterior_deltoid", "pectoralis_major"],
+      "secondaryMuscles": ["triceps_brachii", "serratus_anterior", "obliques"],
+      "equipment": [
+        {
+          "slug": "barbell",
+          "optional": false
+        },
+        {
+          "slug": "landmine",
+          "optional": false
+        },
+        {
+          "slug": "plates",
+          "optional": false
+        }
+      ],
+      "bodyRegion": "upper",
+      "laterality": "unilateral",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["concentric", "eccentric"],
+      "intendedVelocity": "moderate",
+      "level": "beginner",
+      "spaceRequired": "small",
+      "technicalComplexity": 2,
+      "axialLoad": "low",
+      "impactLevel": "none",
+      "profile": "loaded_dynamic",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "Empuja con una mano el extremo de una barra anclada en el suelo hacia arriba y adelante.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "Sujeta el extremo de la barra a la altura del hombro, de pie o medio arrodillado.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Empuja la barra en diagonal hasta extender el brazo y regresa controlado.",
+          "audience": "both"
+        },
+        {
+          "kind": "cue",
+          "text": "Acompaña el final con la escápula hacia delante.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Rotar el tronco para completar el empuje.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "triceps_pushdown",
+      "name": "Extensión de codo en polea alta con cuerda",
+      "altNames": ["Triceps pushdown", "Rope pushdown"],
+      "pattern": "isolation",
+      "categories": ["hypertrophy"],
+      "primaryMuscles": ["triceps_brachii"],
+      "secondaryMuscles": [],
+      "equipment": [
+        {
+          "slug": "cable_station",
+          "optional": false
+        }
+      ],
+      "bodyRegion": "upper",
+      "laterality": "bilateral",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["concentric", "eccentric"],
+      "intendedVelocity": "slow_controlled",
+      "level": "beginner",
+      "spaceRequired": "minimal",
+      "technicalComplexity": 1,
+      "axialLoad": "none",
+      "impactLevel": "none",
+      "profile": "loaded_dynamic",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "Frente a la polea alta, extiende los codos empujando la cuerda hacia abajo y vuelve despacio.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "Codos pegados a los costados y ligera inclinación del tronco.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Extiende los codos por completo separando ligeramente los extremos de la cuerda y regresa.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Mover los codos hacia delante y atrás.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "lateral_raise",
+      "name": "Elevaciones laterales con MC",
+      "altNames": ["Lateral raise", "Dumbbell lateral raise"],
+      "pattern": "isolation",
+      "categories": ["hypertrophy"],
+      "primaryMuscles": ["lateral_deltoid"],
+      "secondaryMuscles": ["trapezius", "anterior_deltoid"],
+      "equipment": [
+        {
+          "slug": "dumbbells",
+          "optional": false
+        },
+        {
+          "slug": "cable_station",
+          "optional": true
+        }
+      ],
+      "bodyRegion": "upper",
+      "laterality": "bilateral",
+      "planes": ["frontal"],
+      "contractionEmphasis": ["concentric", "eccentric"],
+      "intendedVelocity": "slow_controlled",
+      "level": "beginner",
+      "spaceRequired": "minimal",
+      "technicalComplexity": 1,
+      "axialLoad": "none",
+      "impactLevel": "none",
+      "profile": "loaded_dynamic",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "De pie con una mancuerna en cada mano, eleva los brazos hacia los lados hasta la altura de los hombros.",
+      "instructions": [
+        {
+          "kind": "execution",
+          "text": "Eleva los brazos con los codos ligeramente flexionados hasta la altura de los hombros y baja despacio.",
+          "audience": "both"
+        },
+        {
+          "kind": "cue",
+          "text": "Lleva los codos hacia fuera, no hacia arriba con los hombros.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Balancear el tronco para subir la carga.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "pull_up",
+      "name": "Dominada agarre prono",
+      "altNames": ["Pull-up"],
+      "pattern": "vertical_pull",
+      "categories": ["strength", "hypertrophy"],
+      "primaryMuscles": ["latissimus_dorsi"],
+      "secondaryMuscles": ["biceps_brachii", "rhomboids", "trapezius", "forearm"],
+      "equipment": [
+        {
+          "slug": "pull_up_bar",
+          "optional": false
+        }
+      ],
+      "bodyRegion": "upper",
+      "laterality": "bilateral",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["concentric", "eccentric"],
+      "intendedVelocity": "moderate",
+      "level": "intermediate",
+      "spaceRequired": "minimal",
+      "technicalComplexity": 3,
+      "axialLoad": "none",
+      "impactLevel": "none",
+      "profile": "loaded_dynamic",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "Colgado de la barra con las palmas hacia delante, tira hasta pasar la barbilla por encima y baja controlado.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "Agarre algo más ancho que los hombros, brazos extendidos.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Inicia llevando las escápulas abajo y tira hasta que la barbilla supere la barra.",
+          "audience": "both"
+        },
+        {
+          "kind": "cue",
+          "text": "Lleva los codos hacia los bolsillos.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Balancear las piernas o acortar el recorrido abajo.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "band_assisted_pull_up",
+      "name": "Dominada asistida con banda elástica",
+      "altNames": ["Band-assisted pull-up"],
+      "pattern": "vertical_pull",
+      "categories": ["strength"],
+      "primaryMuscles": ["latissimus_dorsi"],
+      "secondaryMuscles": ["biceps_brachii", "rhomboids"],
+      "equipment": [
+        {
+          "slug": "pull_up_bar",
+          "optional": false
+        },
+        {
+          "slug": "resistance_bands",
+          "optional": false
+        }
+      ],
+      "bodyRegion": "upper",
+      "laterality": "bilateral",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["concentric", "eccentric"],
+      "intendedVelocity": "moderate",
+      "level": "beginner",
+      "spaceRequired": "minimal",
+      "technicalComplexity": 2,
+      "axialLoad": "none",
+      "impactLevel": "none",
+      "profile": "loaded_dynamic",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "Dominada con una banda elástica bajo las rodillas o los pies que ayuda a subir.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "Pasa la banda por la barra y apoya en ella una rodilla o los pies.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Tira hasta pasar la barbilla sobre la barra y baja controlando el rebote de la banda.",
+          "audience": "both"
+        },
+        {
+          "kind": "precaution",
+          "text": "Coloca y retira la banda con cuidado para que no salga despedida.",
+          "audience": "trainer"
+        }
+      ]
+    },
+    {
+      "slug": "machine_assisted_pull_up",
+      "name": "Dominada agarre neutro asistida en máquina",
+      "altNames": ["Assisted pull-up machine"],
+      "pattern": "vertical_pull",
+      "categories": ["strength"],
+      "primaryMuscles": ["latissimus_dorsi"],
+      "secondaryMuscles": ["biceps_brachii", "rhomboids"],
+      "equipment": [
+        {
+          "slug": "machines_other",
+          "optional": false
+        }
+      ],
+      "bodyRegion": "upper",
+      "laterality": "bilateral",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["concentric", "eccentric"],
+      "intendedVelocity": "moderate",
+      "level": "beginner",
+      "spaceRequired": "minimal",
+      "technicalComplexity": 1,
+      "axialLoad": "none",
+      "impactLevel": "none",
+      "profile": "loaded_dynamic",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "Dominada en máquina con contrapeso que reduce la carga de tu propio peso.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "Selecciona el contrapeso y apoya las rodillas o los pies en la plataforma.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Tira hasta llevar la barbilla sobre los agarres y baja hasta extender los brazos.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Dejarse caer rápido en la bajada.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "lat_pulldown",
+      "name": "Jalón en polea alta",
+      "altNames": ["Lat pulldown"],
+      "pattern": "vertical_pull",
+      "categories": ["hypertrophy", "strength"],
+      "primaryMuscles": ["latissimus_dorsi"],
+      "secondaryMuscles": ["biceps_brachii", "rhomboids", "posterior_deltoid"],
+      "equipment": [
+        {
+          "slug": "cable_station",
+          "optional": false
+        }
+      ],
+      "bodyRegion": "upper",
+      "laterality": "bilateral",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["concentric", "eccentric"],
+      "intendedVelocity": "moderate",
+      "level": "beginner",
+      "spaceRequired": "minimal",
+      "technicalComplexity": 1,
+      "axialLoad": "none",
+      "impactLevel": "none",
+      "profile": "loaded_dynamic",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "Sentado en la polea alta, tira de la barra hacia la parte alta del pecho y deja que suba controlada.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "Ajusta el soporte de los muslos y agarra la barra algo más ancho que los hombros.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Lleva la barra hacia el pecho bajando los codos y regresa hasta estirar los brazos.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Echar el tronco muy atrás para tirar.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "barbell_row",
+      "name": "Remo inclinado con barra",
+      "altNames": ["Barbell row", "Bent-over row"],
+      "pattern": "horizontal_pull",
+      "categories": ["strength", "hypertrophy"],
+      "primaryMuscles": ["latissimus_dorsi", "rhomboids"],
+      "secondaryMuscles": ["trapezius", "posterior_deltoid", "biceps_brachii", "erector_spinae"],
+      "equipment": [
+        {
+          "slug": "barbell",
+          "optional": false
+        },
+        {
+          "slug": "plates",
+          "optional": false
+        },
+        {
+          "slug": "linear_encoder",
+          "optional": true
+        }
+      ],
+      "bodyRegion": "upper",
+      "laterality": "bilateral",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["concentric", "eccentric"],
+      "intendedVelocity": "moderate",
+      "level": "intermediate",
+      "spaceRequired": "small",
+      "technicalComplexity": 3,
+      "axialLoad": "moderate",
+      "impactLevel": "none",
+      "profile": "loaded_dynamic",
+      "supportsVbt": true,
+      "contactsPerRep": null,
+      "clientDescription": "Con el tronco inclinado y la espalda recta, tira de la barra hacia el abdomen y bájala controlada.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "Bisagra de cadera con la espalda neutra, rodillas algo flexionadas y barra colgando bajo los hombros.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Tira de la barra hacia la parte baja del pecho o el abdomen juntando las escápulas.",
+          "audience": "both"
+        },
+        {
+          "kind": "cue",
+          "text": "El tronco no se levanta al tirar.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Usar impulso de cadera para subir la barra.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "one_arm_dumbbell_row",
+      "name": "Remo a 1 mano con mancuerna, apoyado en banco",
+      "altNames": ["One-arm dumbbell row"],
+      "pattern": "horizontal_pull",
+      "categories": ["hypertrophy", "strength"],
+      "primaryMuscles": ["latissimus_dorsi", "rhomboids"],
+      "secondaryMuscles": ["posterior_deltoid", "biceps_brachii", "trapezius"],
+      "equipment": [
+        {
+          "slug": "dumbbells",
+          "optional": false
+        },
+        {
+          "slug": "bench",
+          "optional": false
+        }
+      ],
+      "bodyRegion": "upper",
+      "laterality": "unilateral",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["concentric", "eccentric"],
+      "intendedVelocity": "moderate",
+      "level": "beginner",
+      "spaceRequired": "small",
+      "technicalComplexity": 1,
+      "axialLoad": "none",
+      "impactLevel": "none",
+      "profile": "loaded_dynamic",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "Apoyado con una mano y una rodilla en el banco, tira de la mancuerna hacia la cadera.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "Mano y rodilla del mismo lado sobre el banco, espalda paralela al suelo.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Lleva la mancuerna hacia la cadera con el codo pegado y bájala estirando el brazo.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Rotar el tronco para subir la mancuerna.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "seated_cable_row",
+      "name": "Remo agarre neutro sentado en polea baja",
+      "altNames": ["Seated cable row"],
+      "pattern": "horizontal_pull",
+      "categories": ["hypertrophy", "strength"],
+      "primaryMuscles": ["latissimus_dorsi", "rhomboids"],
+      "secondaryMuscles": ["trapezius", "posterior_deltoid", "biceps_brachii"],
+      "equipment": [
+        {
+          "slug": "cable_station",
+          "optional": false
+        }
+      ],
+      "bodyRegion": "upper",
+      "laterality": "bilateral",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["concentric", "eccentric"],
+      "intendedVelocity": "moderate",
+      "level": "beginner",
+      "spaceRequired": "small",
+      "technicalComplexity": 1,
+      "axialLoad": "none",
+      "impactLevel": "none",
+      "profile": "loaded_dynamic",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "Sentado frente a la polea baja, tira del agarre hacia el abdomen y deja que vuelva estirando los brazos.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "Pies apoyados, rodillas algo flexionadas y tronco erguido.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Tira llevando los codos atrás y juntando las escápulas; regresa controlado.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Balancear el tronco adelante y atrás.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "inverted_row",
+      "name": "Remo invertido en suspensión",
+      "altNames": ["Inverted row", "Suspension row", "TRX row"],
+      "pattern": "horizontal_pull",
+      "categories": ["strength"],
+      "primaryMuscles": ["latissimus_dorsi", "rhomboids"],
+      "secondaryMuscles": ["biceps_brachii", "posterior_deltoid", "rectus_abdominis"],
+      "equipment": [
+        {
+          "slug": "suspension_trainer",
+          "optional": false
+        }
+      ],
+      "bodyRegion": "upper",
+      "laterality": "bilateral",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["concentric", "eccentric"],
+      "intendedVelocity": "moderate",
+      "level": "beginner",
+      "spaceRequired": "minimal",
+      "technicalComplexity": 1,
+      "axialLoad": "none",
+      "impactLevel": "none",
+      "profile": "loaded_dynamic",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "Inclinado hacia atrás sujetando las asas, tira del cuerpo hacia ellas manteniéndolo recto.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "Sujeta las asas con los brazos extendidos y el cuerpo en línea; cuanto más horizontal, más difícil.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Tira llevando el pecho hacia las manos y baja controlado.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Dejar caer la cadera durante el tirón.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "face_pull",
+      "name": "Face pull en polea con cuerda",
+      "altNames": ["Face pull"],
+      "pattern": "horizontal_pull",
+      "categories": ["hypertrophy", "stability"],
+      "primaryMuscles": ["posterior_deltoid", "rhomboids"],
+      "secondaryMuscles": ["trapezius", "rotator_cuff"],
+      "equipment": [
+        {
+          "slug": "cable_station",
+          "optional": false
+        },
+        {
+          "slug": "resistance_bands",
+          "optional": true
+        }
+      ],
+      "bodyRegion": "upper",
+      "laterality": "bilateral",
+      "planes": ["transverse"],
+      "contractionEmphasis": ["concentric", "eccentric"],
+      "intendedVelocity": "slow_controlled",
+      "level": "beginner",
+      "spaceRequired": "minimal",
+      "technicalComplexity": 2,
+      "axialLoad": "none",
+      "impactLevel": "none",
+      "profile": "loaded_dynamic",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "Tira de la cuerda de la polea hacia la cara separando las manos y llevando los codos altos.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "Polea a la altura de la cara o algo más alta, agarre de la cuerda con pulgares hacia atrás.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Tira hacia la frente separando los extremos y gira los antebrazos hacia arriba al final.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Tirar con el tronco hacia atrás.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "band_pull_apart",
+      "name": "Band pull apart",
+      "altNames": ["Band pull-apart", "Separación de banda"],
+      "pattern": "horizontal_pull",
+      "categories": ["hypertrophy", "motor_control"],
+      "primaryMuscles": ["posterior_deltoid", "rhomboids"],
+      "secondaryMuscles": ["trapezius", "rotator_cuff"],
+      "equipment": [
+        {
+          "slug": "resistance_bands",
+          "optional": false
+        }
+      ],
+      "bodyRegion": "upper",
+      "laterality": "bilateral",
+      "planes": ["transverse"],
+      "contractionEmphasis": ["concentric", "eccentric"],
+      "intendedVelocity": "slow_controlled",
+      "level": "beginner",
+      "spaceRequired": "minimal",
+      "technicalComplexity": 1,
+      "axialLoad": "none",
+      "impactLevel": "none",
+      "profile": "loaded_dynamic",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "Sujeta una banda frente al pecho con los brazos extendidos y sepárala hasta que toque el pecho.",
+      "instructions": [
+        {
+          "kind": "execution",
+          "text": "Abre los brazos hacia los lados juntando las escápulas y vuelve despacio.",
+          "audience": "both"
+        },
+        {
+          "kind": "cue",
+          "text": "Hombros lejos de las orejas.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Flexionar los codos o arquear la espalda.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "biceps_curl",
+      "name": "Curl de bíceps con MCs",
+      "altNames": ["Dumbbell biceps curl"],
+      "pattern": "isolation",
+      "categories": ["hypertrophy"],
+      "primaryMuscles": ["biceps_brachii"],
+      "secondaryMuscles": ["forearm"],
+      "equipment": [
+        {
+          "slug": "dumbbells",
+          "optional": false
+        },
+        {
+          "slug": "barbell",
+          "optional": true
+        },
+        {
+          "slug": "cable_station",
+          "optional": true
+        }
+      ],
+      "bodyRegion": "upper",
+      "laterality": "bilateral",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["concentric", "eccentric"],
+      "intendedVelocity": "slow_controlled",
+      "level": "beginner",
+      "spaceRequired": "minimal",
+      "technicalComplexity": 1,
+      "axialLoad": "none",
+      "impactLevel": "none",
+      "profile": "loaded_dynamic",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "De pie con una mancuerna en cada mano, flexiona los codos subiendo las mancuernas y bájalas despacio.",
+      "instructions": [
+        {
+          "kind": "execution",
+          "text": "Flexiona los codos con las palmas hacia arriba y extiende por completo al bajar.",
+          "audience": "both"
+        },
+        {
+          "kind": "cue",
+          "text": "Codos quietos junto al tronco.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Balancear el cuerpo para subir el peso.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "farmer_carry",
+      "name": "Farmer carry",
+      "altNames": ["Paseo del granjero", "Farmer's walk"],
+      "pattern": "carry",
+      "categories": ["strength", "stability"],
+      "primaryMuscles": ["forearm", "trapezius"],
+      "secondaryMuscles": ["obliques", "gluteus_medius", "quadriceps"],
+      "equipment": [
+        {
+          "slug": "dumbbells",
+          "optional": false
+        },
+        {
+          "slug": "kettlebells",
+          "optional": true
+        }
+      ],
+      "bodyRegion": "full_body",
+      "laterality": "bilateral",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["isometric"],
+      "intendedVelocity": "moderate",
+      "level": "beginner",
+      "spaceRequired": "large",
+      "technicalComplexity": 1,
+      "axialLoad": "moderate",
+      "impactLevel": "none",
+      "profile": "loaded_dynamic",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "Camina con una carga pesada en cada mano manteniendo el cuerpo erguido.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "Levanta las cargas desde el suelo con la técnica de peso muerto.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Camina con pasos cortos y controlados, hombros abajo y tronco firme.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Inclinarse hacia un lado o encoger los hombros.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "suitcase_carry",
+      "name": "Suitcase carry (paseo con carga unilateral)",
+      "altNames": ["Suitcase carry"],
+      "pattern": "carry",
+      "categories": ["core", "stability"],
+      "primaryMuscles": ["obliques", "forearm"],
+      "secondaryMuscles": ["gluteus_medius", "trapezius", "erector_spinae"],
+      "equipment": [
+        {
+          "slug": "kettlebells",
+          "optional": false
+        },
+        {
+          "slug": "dumbbells",
+          "optional": true
+        }
+      ],
+      "bodyRegion": "full_body",
+      "laterality": "asymmetric_load",
+      "planes": ["frontal"],
+      "contractionEmphasis": ["isometric"],
+      "intendedVelocity": "moderate",
+      "level": "beginner",
+      "spaceRequired": "large",
+      "technicalComplexity": 1,
+      "axialLoad": "low",
+      "impactLevel": "none",
+      "profile": "core",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "Camina con una carga en una sola mano sin dejar que el tronco se incline.",
+      "instructions": [
+        {
+          "kind": "execution",
+          "text": "Camina manteniendo los hombros nivelados y el tronco vertical.",
+          "audience": "both"
+        },
+        {
+          "kind": "cue",
+          "text": "Crece hacia arriba, como si te estiraran de la cabeza.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Compensar inclinándote hacia el lado contrario.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "front_plank",
+      "name": "Plancha frontal",
+      "altNames": ["Front plank", "Plank"],
+      "pattern": "core_anti_extension",
+      "categories": ["core", "stability"],
+      "primaryMuscles": ["rectus_abdominis", "transversus_abdominis"],
+      "secondaryMuscles": ["obliques", "gluteus_maximus", "serratus_anterior"],
+      "equipment": [
+        {
+          "slug": "mat",
+          "optional": true
+        }
+      ],
+      "bodyRegion": "trunk",
+      "laterality": "bilateral",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["isometric"],
+      "intendedVelocity": "slow_controlled",
+      "level": "beginner",
+      "spaceRequired": "minimal",
+      "technicalComplexity": 1,
+      "axialLoad": "none",
+      "impactLevel": "none",
+      "profile": "core",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "Apoyado sobre antebrazos y puntas de los pies, mantén el cuerpo recto como una tabla.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "Codos bajo los hombros y pies a la anchura de la cadera.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Mantén la línea cabeza-cadera-talones apretando glúteos y abdomen.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Dejar caer la cadera o elevarla en exceso.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "side_plank",
+      "name": "Plancha lateral sobre codo",
+      "altNames": ["Side plank"],
+      "pattern": "core_anti_lateral_flexion",
+      "categories": ["core", "stability"],
+      "primaryMuscles": ["obliques"],
+      "secondaryMuscles": ["gluteus_medius", "transversus_abdominis"],
+      "equipment": [
+        {
+          "slug": "mat",
+          "optional": true
+        }
+      ],
+      "bodyRegion": "trunk",
+      "laterality": "unilateral",
+      "planes": ["frontal"],
+      "contractionEmphasis": ["isometric"],
+      "intendedVelocity": "slow_controlled",
+      "level": "beginner",
+      "spaceRequired": "minimal",
+      "technicalComplexity": 1,
+      "axialLoad": "none",
+      "impactLevel": "none",
+      "profile": "core",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "De lado, apoyado en un antebrazo y los pies, eleva la cadera y mantén el cuerpo en línea.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "Codo bajo el hombro y piernas extendidas; versión fácil con rodillas apoyadas.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Eleva la cadera hasta alinear el cuerpo y mantén.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Rotar el tronco o dejar caer la cadera.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "dead_bug",
+      "name": "Dead bug",
+      "altNames": ["Dead bug", "Bicho muerto"],
+      "pattern": "core_anti_extension",
+      "categories": ["core", "motor_control"],
+      "primaryMuscles": ["rectus_abdominis", "transversus_abdominis"],
+      "secondaryMuscles": ["obliques", "hip_flexors"],
+      "equipment": [
+        {
+          "slug": "mat",
+          "optional": true
+        }
+      ],
+      "bodyRegion": "trunk",
+      "laterality": "alternating",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["isometric", "mixed"],
+      "intendedVelocity": "slow_controlled",
+      "level": "beginner",
+      "spaceRequired": "minimal",
+      "technicalComplexity": 2,
+      "axialLoad": "none",
+      "impactLevel": "none",
+      "profile": "core",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "Tumbado boca arriba con brazos y piernas elevados, extiende un brazo y la pierna contraria sin despegar la zona lumbar.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "Boca arriba, brazos hacia el techo, cadera y rodillas a 90º.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Extiende brazo y pierna contrarios hacia el suelo y regresa; alterna.",
+          "audience": "both"
+        },
+        {
+          "kind": "cue",
+          "text": "Mantén la zona lumbar en contacto con el suelo.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Arquear la espalda al extender la pierna.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "bird_dog",
+      "name": "Bird dog",
+      "altNames": ["Bird dog", "Perro de muestra"],
+      "pattern": "core_anti_rotation",
+      "categories": ["core", "motor_control"],
+      "primaryMuscles": ["erector_spinae", "gluteus_maximus"],
+      "secondaryMuscles": ["transversus_abdominis", "obliques", "posterior_deltoid"],
+      "equipment": [
+        {
+          "slug": "mat",
+          "optional": true
+        }
+      ],
+      "bodyRegion": "trunk",
+      "laterality": "alternating",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["isometric", "mixed"],
+      "intendedVelocity": "slow_controlled",
+      "level": "beginner",
+      "spaceRequired": "minimal",
+      "technicalComplexity": 2,
+      "axialLoad": "none",
+      "impactLevel": "none",
+      "profile": "core",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "En cuadrupedia, extiende un brazo y la pierna contraria sin mover la pelvis y vuelve.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "Manos bajo los hombros y rodillas bajo la cadera, espalda neutra.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Extiende brazo y pierna contrarios hasta la horizontal, mantén un instante y regresa.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Rotar la cadera o arquear la zona lumbar.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "pallof_press",
+      "name": "Press Antirotacional Pallof",
+      "altNames": ["Pallof press"],
+      "pattern": "core_anti_rotation",
+      "categories": ["core", "stability"],
+      "primaryMuscles": ["obliques", "transversus_abdominis"],
+      "secondaryMuscles": ["rectus_abdominis", "gluteus_medius"],
+      "equipment": [
+        {
+          "slug": "cable_station",
+          "optional": false
+        },
+        {
+          "slug": "resistance_bands",
+          "optional": true
+        }
+      ],
+      "bodyRegion": "trunk",
+      "laterality": "unilateral",
+      "planes": ["transverse"],
+      "contractionEmphasis": ["isometric"],
+      "intendedVelocity": "slow_controlled",
+      "level": "beginner",
+      "spaceRequired": "small",
+      "technicalComplexity": 1,
+      "axialLoad": "none",
+      "impactLevel": "none",
+      "profile": "core",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "De lado a la polea, empuja el agarre al frente desde el pecho sin dejar que el tronco gire.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "De lado a la polea o banda a la altura del pecho, pies a la anchura de la cadera.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Extiende los brazos al frente, mantén un instante y regresa al pecho.",
+          "audience": "both"
+        },
+        {
+          "kind": "cue",
+          "text": "Las manos se mantienen en el centro del pecho.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Dejar que el tronco rote hacia el anclaje.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "ab_wheel_rollout",
+      "name": "Rollout con rueda abdominal",
+      "altNames": ["Ab wheel rollout"],
+      "pattern": "core_anti_extension",
+      "categories": ["core", "strength"],
+      "primaryMuscles": ["rectus_abdominis"],
+      "secondaryMuscles": ["transversus_abdominis", "latissimus_dorsi", "serratus_anterior"],
+      "equipment": [
+        {
+          "slug": "mat",
+          "optional": false
+        }
+      ],
+      "bodyRegion": "trunk",
+      "laterality": "bilateral",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["eccentric", "isometric"],
+      "intendedVelocity": "slow_controlled",
+      "level": "advanced",
+      "spaceRequired": "small",
+      "technicalComplexity": 3,
+      "axialLoad": "none",
+      "impactLevel": "none",
+      "profile": "core",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "De rodillas con una rueda abdominal, deslízala hacia delante sin arquear la espalda y vuelve.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "De rodillas sobre una esterilla con las manos en la rueda bajo los hombros.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Rueda hacia delante hasta donde mantengas la espalda neutra y regresa.",
+          "audience": "both"
+        },
+        {
+          "kind": "cue",
+          "text": "Pelvis en retroversión y glúteos activos.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Hundir la zona lumbar al final del recorrido.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "squat_jump",
+      "name": "Salto vertical desde sentadilla",
+      "altNames": ["Squat jump", "SJ"],
+      "pattern": "jump_plyometric",
+      "categories": ["plyometrics", "power"],
+      "primaryMuscles": ["quadriceps", "gluteus_maximus"],
+      "secondaryMuscles": ["gastrocnemius", "hamstrings"],
+      "equipment": [
+        {
+          "slug": "jump_mat_or_app",
+          "optional": true
+        }
+      ],
+      "bodyRegion": "lower",
+      "laterality": "bilateral",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["concentric"],
+      "intendedVelocity": "maximal_intent",
+      "level": "beginner",
+      "spaceRequired": "minimal",
+      "technicalComplexity": 2,
+      "axialLoad": "none",
+      "impactLevel": "moderate",
+      "profile": "plyometric",
+      "supportsVbt": false,
+      "contactsPerRep": 1,
+      "clientDescription": "Desde media sentadilla mantenida un instante, salta lo más alto posible sin contramovimiento y aterriza suave.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "Baja a media sentadilla con las manos en la cadera y mantén la posición un momento.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Salta verticalmente sin bajar antes y aterriza con rodillas y caderas flexionadas.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Hacer un pequeño contramovimiento antes de saltar.",
+          "audience": "trainer"
+        }
+      ]
+    },
+    {
+      "slug": "countermovement_jump",
+      "name": "Salto con contramovimiento",
+      "altNames": ["Countermovement jump", "CMJ", "Salto Vertical"],
+      "pattern": "jump_plyometric",
+      "categories": ["plyometrics", "power"],
+      "primaryMuscles": ["quadriceps", "gluteus_maximus"],
+      "secondaryMuscles": ["gastrocnemius", "hamstrings"],
+      "equipment": [
+        {
+          "slug": "jump_mat_or_app",
+          "optional": true
+        }
+      ],
+      "bodyRegion": "lower",
+      "laterality": "bilateral",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["reactive_ssc"],
+      "intendedVelocity": "maximal_intent",
+      "level": "beginner",
+      "spaceRequired": "minimal",
+      "technicalComplexity": 2,
+      "axialLoad": "none",
+      "impactLevel": "moderate",
+      "profile": "plyometric",
+      "supportsVbt": false,
+      "contactsPerRep": 1,
+      "clientDescription": "Desde de pie, baja rápido y salta lo más alto posible, aterrizando de forma controlada.",
+      "instructions": [
+        {
+          "kind": "execution",
+          "text": "Baja rápidamente a una profundidad cómoda e invierte el movimiento saltando lo más alto posible.",
+          "audience": "both"
+        },
+        {
+          "kind": "cue",
+          "text": "Aterriza suave sobre la parte delantera del pie y amortigua con cadera y rodillas.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Aterrizar con las rodillas hacia dentro.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "box_jump",
+      "name": "Box Jump / Salto al cajón",
+      "altNames": ["Box jump"],
+      "pattern": "jump_plyometric",
+      "categories": ["plyometrics", "power"],
+      "primaryMuscles": ["quadriceps", "gluteus_maximus"],
+      "secondaryMuscles": ["gastrocnemius", "hamstrings"],
+      "equipment": [
+        {
+          "slug": "plyo_box",
+          "optional": false
+        }
+      ],
+      "bodyRegion": "lower",
+      "laterality": "bilateral",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["concentric"],
+      "intendedVelocity": "maximal_intent",
+      "level": "intermediate",
+      "spaceRequired": "small",
+      "technicalComplexity": 2,
+      "axialLoad": "none",
+      "impactLevel": "low",
+      "profile": "plyometric",
+      "supportsVbt": false,
+      "contactsPerRep": 1,
+      "clientDescription": "Salta sobre un cajón aterrizando con ambos pies de forma estable y baja caminando.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "Colócate a un paso del cajón; elige una altura que permita aterrizar sin encoger excesivamente las piernas.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Contramovimiento con brazos y salta al cajón aterrizando con las rodillas flexionadas; baja paso a paso.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Usar un cajón tan alto que se aterriza en sentadilla profunda.",
+          "audience": "both"
+        },
+        {
+          "kind": "precaution",
+          "text": "Utiliza cajones estables y antideslizantes.",
+          "audience": "trainer"
+        }
+      ]
+    },
+    {
+      "slug": "broad_jump",
+      "name": "Salto horizontal",
+      "altNames": ["Broad jump", "Standing long jump"],
+      "pattern": "jump_plyometric",
+      "categories": ["plyometrics", "power"],
+      "primaryMuscles": ["quadriceps", "gluteus_maximus"],
+      "secondaryMuscles": ["hamstrings", "gastrocnemius", "soleus"],
+      "equipment": [],
+      "bodyRegion": "lower",
+      "laterality": "bilateral",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["reactive_ssc"],
+      "intendedVelocity": "maximal_intent",
+      "level": "beginner",
+      "spaceRequired": "large",
+      "technicalComplexity": 2,
+      "axialLoad": "none",
+      "impactLevel": "moderate",
+      "profile": "plyometric",
+      "supportsVbt": false,
+      "contactsPerRep": 1,
+      "clientDescription": "Salta hacia delante lo más lejos posible con los dos pies y aterriza estable.",
+      "instructions": [
+        {
+          "kind": "execution",
+          "text": "Balancea los brazos, baja y proyéctate hacia delante extendiendo cadera, rodillas y tobillos.",
+          "audience": "both"
+        },
+        {
+          "kind": "cue",
+          "text": "Aterriza y mantén la posición sin dar pasos.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Caer con el tronco muy adelantado.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "drop_jump",
+      "name": "Salto desde caída (drop jump)",
+      "altNames": ["Drop jump", "DJ", "Saltos vertical desde drop reactivo"],
+      "pattern": "jump_plyometric",
+      "categories": ["plyometrics", "power"],
+      "primaryMuscles": ["quadriceps", "gluteus_maximus"],
+      "secondaryMuscles": ["gastrocnemius", "soleus", "hamstrings"],
+      "equipment": [
+        {
+          "slug": "plyo_box",
+          "optional": false
+        },
+        {
+          "slug": "jump_mat_or_app",
+          "optional": true
+        }
+      ],
+      "bodyRegion": "lower",
+      "laterality": "bilateral",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["reactive_ssc"],
+      "intendedVelocity": "maximal_intent",
+      "level": "advanced",
+      "spaceRequired": "small",
+      "technicalComplexity": 4,
+      "axialLoad": "none",
+      "impactLevel": "high",
+      "profile": "plyometric",
+      "supportsVbt": false,
+      "contactsPerRep": 1,
+      "clientDescription": "Déjate caer desde un cajón y, al tocar el suelo, salta lo más rápido y alto posible.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "Desde un cajón bajo, adelanta un pie y déjate caer sin saltar hacia arriba.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Contacta con ambos pies y rebota hacia arriba con el menor tiempo de contacto posible.",
+          "audience": "both"
+        },
+        {
+          "kind": "cue",
+          "text": "Suelo caliente: toca y sal.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Hundirse en el aterrizaje o caer sobre los talones.",
+          "audience": "both"
+        },
+        {
+          "kind": "precaution",
+          "text": "Ajusta la altura del cajón a la que permita mantener un contacto corto.",
+          "audience": "trainer"
+        }
+      ]
+    },
+    {
+      "slug": "pogo_jumps",
+      "name": "Pogo Jumps",
+      "altNames": ["Pogo jumps", "Saltos de tobillo"],
+      "pattern": "jump_plyometric",
+      "categories": ["plyometrics", "coordination"],
+      "primaryMuscles": ["gastrocnemius", "soleus"],
+      "secondaryMuscles": ["quadriceps", "foot_intrinsics"],
+      "equipment": [],
+      "bodyRegion": "lower",
+      "laterality": "bilateral",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["reactive_ssc"],
+      "intendedVelocity": "maximal_intent",
+      "level": "beginner",
+      "spaceRequired": "minimal",
+      "technicalComplexity": 1,
+      "axialLoad": "none",
+      "impactLevel": "moderate",
+      "profile": "plyometric",
+      "supportsVbt": false,
+      "contactsPerRep": 1,
+      "clientDescription": "Salta de forma continua sobre la parte delantera de los pies con las rodillas casi extendidas.",
+      "instructions": [
+        {
+          "kind": "execution",
+          "text": "Rebota rápido usando sobre todo los tobillos, con contactos cortos.",
+          "audience": "both"
+        },
+        {
+          "kind": "cue",
+          "text": "Piernas rígidas como un muelle.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Flexionar demasiado las rodillas o apoyar los talones.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "lateral_bounds",
+      "name": "Saltos laterales (skater bounds)",
+      "altNames": ["Lateral bounds", "Skater jumps"],
+      "pattern": "jump_plyometric",
+      "categories": ["plyometrics", "coordination"],
+      "primaryMuscles": ["gluteus_medius", "gluteus_maximus", "quadriceps"],
+      "secondaryMuscles": ["adductors", "gastrocnemius"],
+      "equipment": [],
+      "bodyRegion": "lower",
+      "laterality": "alternating",
+      "planes": ["frontal"],
+      "contractionEmphasis": ["reactive_ssc"],
+      "intendedVelocity": "maximal_intent",
+      "level": "intermediate",
+      "spaceRequired": "small",
+      "technicalComplexity": 3,
+      "axialLoad": "none",
+      "impactLevel": "moderate",
+      "profile": "plyometric",
+      "supportsVbt": false,
+      "contactsPerRep": 2,
+      "clientDescription": "Salta lateralmente de una pierna a la otra y estabiliza cada aterrizaje.",
+      "instructions": [
+        {
+          "kind": "execution",
+          "text": "Impulsa con una pierna hacia el lado contrario y aterriza sobre la otra, amortiguando.",
+          "audience": "both"
+        },
+        {
+          "kind": "cue",
+          "text": "Rodilla alineada con el pie al aterrizar.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Dejar que la rodilla se vaya hacia dentro en la recepción.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "single_leg_hop",
+      "name": "Salto a 1 pierna",
+      "altNames": ["Single-leg hop"],
+      "pattern": "jump_plyometric",
+      "categories": ["plyometrics", "balance"],
+      "primaryMuscles": ["quadriceps", "gluteus_maximus"],
+      "secondaryMuscles": ["gluteus_medius", "gastrocnemius", "soleus"],
+      "equipment": [],
+      "bodyRegion": "lower",
+      "laterality": "unilateral",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["reactive_ssc"],
+      "intendedVelocity": "maximal_intent",
+      "level": "intermediate",
+      "spaceRequired": "small",
+      "technicalComplexity": 3,
+      "axialLoad": "none",
+      "impactLevel": "high",
+      "profile": "plyometric",
+      "supportsVbt": false,
+      "contactsPerRep": 1,
+      "clientDescription": "Salta hacia delante con una pierna y aterriza sobre la misma de forma estable.",
+      "instructions": [
+        {
+          "kind": "execution",
+          "text": "Impulsa con una pierna y aterriza sobre ella con rodilla y cadera flexionadas.",
+          "audience": "both"
+        },
+        {
+          "kind": "cue",
+          "text": "Mantén la recepción un instante antes del siguiente salto.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Aterrizar con la rodilla hacia dentro o la pelvis caída.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "jump_squat_loaded",
+      "name": "Sentadilla con salto cargada",
+      "altNames": ["Loaded jump squat", "Barbell jump squat"],
+      "pattern": "jump_plyometric",
+      "categories": ["power", "ballistic", "plyometrics"],
+      "primaryMuscles": ["quadriceps", "gluteus_maximus"],
+      "secondaryMuscles": ["gastrocnemius", "hamstrings"],
+      "equipment": [
+        {
+          "slug": "barbell",
+          "optional": false
+        },
+        {
+          "slug": "plates",
+          "optional": false
+        },
+        {
+          "slug": "squat_rack",
+          "optional": false
+        },
+        {
+          "slug": "linear_encoder",
+          "optional": true
+        },
+        {
+          "slug": "dumbbells",
+          "optional": true
+        }
+      ],
+      "bodyRegion": "lower",
+      "laterality": "bilateral",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["reactive_ssc", "concentric"],
+      "intendedVelocity": "maximal_intent",
+      "level": "advanced",
+      "spaceRequired": "small",
+      "technicalComplexity": 4,
+      "axialLoad": "moderate",
+      "impactLevel": "moderate",
+      "profile": "vbt",
+      "supportsVbt": true,
+      "contactsPerRep": 1,
+      "clientDescription": "Con carga ligera sobre la espalda o mancuernas, baja y salta con la máxima intención, aterrizando controlado.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "Barra ligera sobre los trapecios o mancuernas a los lados, sujeción firme.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Contramovimiento a la profundidad indicada y salta con la máxima velocidad; aterriza y estabiliza.",
+          "audience": "both"
+        },
+        {
+          "kind": "cue",
+          "text": "Mantén la barra pegada a la espalda en el vuelo.",
+          "audience": "both"
+        },
+        {
+          "kind": "precaution",
+          "text": "Usa cargas que permitan aterrizar con control.",
+          "audience": "trainer"
+        }
+      ]
+    },
+    {
+      "slug": "med_ball_chest_pass",
+      "name": "Lanzamiento de pecho con BM",
+      "altNames": ["Medicine ball chest pass"],
+      "pattern": "throw",
+      "categories": ["power", "ballistic"],
+      "primaryMuscles": ["pectoralis_major", "triceps_brachii"],
+      "secondaryMuscles": ["anterior_deltoid", "serratus_anterior"],
+      "equipment": [
+        {
+          "slug": "medicine_ball",
+          "optional": false
+        }
+      ],
+      "bodyRegion": "upper",
+      "laterality": "bilateral",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["concentric", "reactive_ssc"],
+      "intendedVelocity": "ballistic",
+      "level": "beginner",
+      "spaceRequired": "small",
+      "technicalComplexity": 1,
+      "axialLoad": "none",
+      "impactLevel": "none",
+      "profile": "plyometric",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "Lanza el balón medicinal desde el pecho hacia una pared o compañero con la máxima velocidad.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "De pie o de rodillas frente a la pared, balón a la altura del pecho.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Empuja y suelta el balón con ambos brazos extendiendo los codos de forma explosiva.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Arquear la espalda para lanzar.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "med_ball_rotational_throw",
+      "name": "Lanzamiento rotacional con BM",
+      "altNames": ["Medicine ball rotational throw", "Lanzamientos Rotacionales"],
+      "pattern": "throw",
+      "categories": ["power", "ballistic", "core"],
+      "primaryMuscles": ["obliques"],
+      "secondaryMuscles": ["gluteus_maximus", "latissimus_dorsi", "pectoralis_major"],
+      "equipment": [
+        {
+          "slug": "medicine_ball",
+          "optional": false
+        }
+      ],
+      "bodyRegion": "full_body",
+      "laterality": "unilateral",
+      "planes": ["transverse"],
+      "contractionEmphasis": ["concentric", "reactive_ssc"],
+      "intendedVelocity": "ballistic",
+      "level": "intermediate",
+      "spaceRequired": "small",
+      "technicalComplexity": 2,
+      "axialLoad": "none",
+      "impactLevel": "none",
+      "profile": "plyometric",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "De lado a una pared, gira desde la cadera y lanza el balón contra ella con la máxima velocidad.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "De lado a la pared con el balón a la altura de la cadera del lado alejado.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Carga girando hacia atrás y lanza rotando cadera y tronco hacia la pared.",
+          "audience": "both"
+        },
+        {
+          "kind": "cue",
+          "text": "La cadera inicia el giro antes que los brazos.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Lanzar solo con los brazos.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "med_ball_slam",
+      "name": "Slam con Balón Medicinal",
+      "altNames": ["Medicine ball slam", "Slam ball"],
+      "pattern": "throw",
+      "categories": ["power", "ballistic"],
+      "primaryMuscles": ["latissimus_dorsi", "rectus_abdominis"],
+      "secondaryMuscles": ["triceps_brachii", "gluteus_maximus"],
+      "equipment": [
+        {
+          "slug": "medicine_ball",
+          "optional": false
+        }
+      ],
+      "bodyRegion": "full_body",
+      "laterality": "bilateral",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["concentric"],
+      "intendedVelocity": "ballistic",
+      "level": "beginner",
+      "spaceRequired": "small",
+      "technicalComplexity": 1,
+      "axialLoad": "none",
+      "impactLevel": "low",
+      "profile": "plyometric",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "Eleva el balón por encima de la cabeza y lánzalo con fuerza contra el suelo delante de ti.",
+      "instructions": [
+        {
+          "kind": "execution",
+          "text": "Extiende el cuerpo con el balón arriba y lánzalo al suelo flexionando cadera y tronco.",
+          "audience": "both"
+        },
+        {
+          "kind": "precaution",
+          "text": "Usa un balón sin rebote y aléjate de la trayectoria de vuelta.",
+          "audience": "trainer"
+        },
+        {
+          "kind": "common_error",
+          "text": "Redondear la espalda al recoger el balón.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "hang_power_clean",
+      "name": "Hang Power Clean",
+      "altNames": ["Cargada de potencia colgada", "Hang power clean"],
+      "pattern": "triple_extension",
+      "categories": ["olympic_lifts", "power"],
+      "primaryMuscles": ["gluteus_maximus", "quadriceps", "trapezius"],
+      "secondaryMuscles": ["hamstrings", "gastrocnemius", "erector_spinae", "forearm"],
+      "equipment": [
+        {
+          "slug": "barbell",
+          "optional": false
+        },
+        {
+          "slug": "plates",
+          "optional": false
+        },
+        {
+          "slug": "linear_encoder",
+          "optional": true
+        }
+      ],
+      "bodyRegion": "full_body",
+      "laterality": "bilateral",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["concentric", "reactive_ssc"],
+      "intendedVelocity": "maximal_intent",
+      "level": "advanced",
+      "spaceRequired": "small",
+      "technicalComplexity": 5,
+      "axialLoad": "high",
+      "impactLevel": "low",
+      "profile": "loaded_dynamic",
+      "supportsVbt": true,
+      "contactsPerRep": null,
+      "clientDescription": "Desde la barra a la altura de los muslos, extiende cadera, rodillas y tobillos de forma explosiva y recibe la barra sobre los hombros.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "De pie con la barra en las manos, agarre algo más ancho que los muslos, y bisagra de cadera hasta encima de las rodillas.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Extiende de forma explosiva, encoge los hombros, tira con los codos altos y recibe la barra en media sentadilla.",
+          "audience": "both"
+        },
+        {
+          "kind": "cue",
+          "text": "Codos rápidos hacia delante en la recepción.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Tirar con los brazos antes de completar la extensión de cadera.",
+          "audience": "both"
+        },
+        {
+          "kind": "precaution",
+          "text": "Requiere aprendizaje técnico supervisado y discos de bumper.",
+          "audience": "trainer"
+        }
+      ]
+    },
+    {
+      "slug": "acceleration_10m",
+      "name": "Aceleración 10 m",
+      "altNames": ["10 m acceleration", "Sprint 10 m"],
+      "pattern": "sprint_cod",
+      "categories": ["acceleration", "sprint"],
+      "primaryMuscles": ["hamstrings", "gluteus_maximus", "quadriceps"],
+      "secondaryMuscles": ["gastrocnemius", "soleus", "hip_flexors"],
+      "equipment": [
+        {
+          "slug": "cones",
+          "optional": false
+        },
+        {
+          "slug": "timing_gates",
+          "optional": true
+        }
+      ],
+      "bodyRegion": "lower",
+      "laterality": "bilateral",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["reactive_ssc"],
+      "intendedVelocity": "maximal_intent",
+      "level": "beginner",
+      "spaceRequired": "track_field",
+      "technicalComplexity": 2,
+      "axialLoad": "none",
+      "impactLevel": "moderate",
+      "profile": "sprint",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "Desde salida de pie, acelera al máximo durante 10 metros.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "Salida en posición de dos apoyos con el pie delantero tras la línea.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Empuja el suelo con fuerza con el tronco inclinado y braceo amplio.",
+          "audience": "both"
+        },
+        {
+          "kind": "cue",
+          "text": "Empuja el suelo hacia atrás, pasos potentes.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Erguirse de golpe en los primeros pasos.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "sprint_20m",
+      "name": "Sprint 20 m",
+      "altNames": ["20 m sprint", "Sprint cronometrado"],
+      "pattern": "sprint_cod",
+      "categories": ["sprint", "acceleration"],
+      "primaryMuscles": ["hamstrings", "gluteus_maximus", "quadriceps"],
+      "secondaryMuscles": ["gastrocnemius", "soleus", "hip_flexors"],
+      "equipment": [
+        {
+          "slug": "cones",
+          "optional": false
+        },
+        {
+          "slug": "timing_gates",
+          "optional": true
+        }
+      ],
+      "bodyRegion": "lower",
+      "laterality": "bilateral",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["reactive_ssc"],
+      "intendedVelocity": "maximal_intent",
+      "level": "beginner",
+      "spaceRequired": "track_field",
+      "technicalComplexity": 2,
+      "axialLoad": "none",
+      "impactLevel": "moderate",
+      "profile": "sprint",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "Corre a máxima velocidad 20 metros desde salida de pie.",
+      "instructions": [
+        {
+          "kind": "execution",
+          "text": "Acelera de forma progresiva enderezando el tronco y mantén la velocidad hasta pasar la línea.",
+          "audience": "both"
+        },
+        {
+          "kind": "cue",
+          "text": "Brazos rápidos y relajados.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Frenar antes de la línea de llegada.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "flying_sprint",
+      "name": "Sprint lanzado",
+      "altNames": ["Flying sprint"],
+      "pattern": "sprint_cod",
+      "categories": ["sprint"],
+      "primaryMuscles": ["hamstrings", "gluteus_maximus", "quadriceps"],
+      "secondaryMuscles": ["gastrocnemius", "soleus", "hip_flexors"],
+      "equipment": [
+        {
+          "slug": "cones",
+          "optional": false
+        },
+        {
+          "slug": "timing_gates",
+          "optional": true
+        }
+      ],
+      "bodyRegion": "lower",
+      "laterality": "bilateral",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["reactive_ssc"],
+      "intendedVelocity": "maximal_intent",
+      "level": "intermediate",
+      "spaceRequired": "track_field",
+      "technicalComplexity": 3,
+      "axialLoad": "none",
+      "impactLevel": "moderate",
+      "profile": "sprint",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "Tras una zona de aceleración progresiva, recorre el tramo marcado a máxima velocidad.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "Marca una zona de carrerilla y, a continuación, el tramo cronometrado.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Acelera de forma progresiva y entra en el tramo a máxima velocidad, manteniéndola hasta el final.",
+          "audience": "both"
+        },
+        {
+          "kind": "cue",
+          "text": "Postura alta y apoyos bajo la cadera.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Tensar los hombros y la cara al buscar velocidad.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "resisted_sled_sprint",
+      "name": "Sprint resistido con trineo",
+      "altNames": ["Resisted sled sprint", "Sprint Lastrado"],
+      "pattern": "sprint_cod",
+      "categories": ["acceleration", "sprint", "strength"],
+      "primaryMuscles": ["hamstrings", "gluteus_maximus", "quadriceps"],
+      "secondaryMuscles": ["gastrocnemius", "soleus", "hip_flexors"],
+      "equipment": [
+        {
+          "slug": "sled",
+          "optional": false
+        },
+        {
+          "slug": "cones",
+          "optional": true
+        }
+      ],
+      "bodyRegion": "lower",
+      "laterality": "bilateral",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["concentric"],
+      "intendedVelocity": "maximal_intent",
+      "level": "intermediate",
+      "spaceRequired": "track_field",
+      "technicalComplexity": 2,
+      "axialLoad": "none",
+      "impactLevel": "moderate",
+      "profile": "sprint",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "Acelera arrastrando un trineo con arnés, manteniendo la técnica de aceleración.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "Ajusta el arnés a la cintura o al pecho y tensa la cuerda antes de salir.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Acelera con el tronco inclinado y empujes potentes contra el suelo.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Usar una carga que rompe la técnica de carrera.",
+          "audience": "trainer"
+        }
+      ]
+    },
+    {
+      "slug": "drill_505",
+      "name": "Test 505 de cambio de dirección",
+      "altNames": ["505 drill", "505 COD"],
+      "pattern": "sprint_cod",
+      "categories": ["cod", "acceleration"],
+      "primaryMuscles": ["hamstrings", "gluteus_maximus", "quadriceps"],
+      "secondaryMuscles": ["gastrocnemius", "soleus", "hip_flexors"],
+      "equipment": [
+        {
+          "slug": "cones",
+          "optional": false
+        },
+        {
+          "slug": "timing_gates",
+          "optional": true
+        }
+      ],
+      "bodyRegion": "lower",
+      "laterality": "bilateral",
+      "planes": ["sagittal", "transverse"],
+      "contractionEmphasis": ["eccentric", "reactive_ssc"],
+      "intendedVelocity": "maximal_intent",
+      "level": "intermediate",
+      "spaceRequired": "large",
+      "technicalComplexity": 3,
+      "axialLoad": "none",
+      "impactLevel": "high",
+      "profile": "cod",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "Corre hasta la línea, gira 180º y vuelve a máxima velocidad atravesando la zona cronometrada.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "Marca la línea de giro a 5 m de la zona de cronometraje y una zona de carrerilla previa.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Acelera, frena con pasos cortos, gira 180º con el pie en la línea y reacelera.",
+          "audience": "both"
+        },
+        {
+          "kind": "cue",
+          "text": "Baja el centro de gravedad al frenar.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Girar sin pisar la línea o redondear el giro.",
+          "audience": "trainer"
+        }
+      ]
+    },
+    {
+      "slug": "shuttle_run",
+      "name": "Carrera de ida y vuelta",
+      "altNames": ["Shuttle run"],
+      "pattern": "sprint_cod",
+      "categories": ["cod", "agility"],
+      "primaryMuscles": ["hamstrings", "gluteus_maximus", "quadriceps"],
+      "secondaryMuscles": ["gastrocnemius", "soleus", "hip_flexors"],
+      "equipment": [
+        {
+          "slug": "cones",
+          "optional": false
+        }
+      ],
+      "bodyRegion": "lower",
+      "laterality": "bilateral",
+      "planes": ["sagittal", "transverse"],
+      "contractionEmphasis": ["eccentric", "reactive_ssc"],
+      "intendedVelocity": "maximal_intent",
+      "level": "beginner",
+      "spaceRequired": "large",
+      "technicalComplexity": 2,
+      "axialLoad": "none",
+      "impactLevel": "moderate",
+      "profile": "cod",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "Corre entre dos líneas tocando cada una y cambiando de sentido lo más rápido posible.",
+      "instructions": [
+        {
+          "kind": "execution",
+          "text": "Corre a la línea, toca con la mano o el pie, gira y vuelve.",
+          "audience": "both"
+        },
+        {
+          "kind": "cue",
+          "text": "Pasos cortos antes de cada cambio de sentido.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Frenar con el tronco erguido y la pierna muy adelantada.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "deceleration_drill",
+      "name": "Frenada tras aceleración",
+      "altNames": ["Deceleration drill"],
+      "pattern": "sprint_cod",
+      "categories": ["cod", "acceleration"],
+      "primaryMuscles": ["quadriceps", "gluteus_maximus"],
+      "secondaryMuscles": ["hamstrings", "gastrocnemius"],
+      "equipment": [
+        {
+          "slug": "cones",
+          "optional": false
+        }
+      ],
+      "bodyRegion": "lower",
+      "laterality": "bilateral",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["eccentric"],
+      "intendedVelocity": "maximal_intent",
+      "level": "intermediate",
+      "spaceRequired": "large",
+      "technicalComplexity": 2,
+      "axialLoad": "none",
+      "impactLevel": "high",
+      "profile": "cod",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "Acelera unos metros y frena hasta detenerte por completo en la zona marcada, en posición atlética.",
+      "instructions": [
+        {
+          "kind": "execution",
+          "text": "Acelera hasta la marca y frena con pasos cortos y rápidos hasta quedar estable.",
+          "audience": "both"
+        },
+        {
+          "kind": "cue",
+          "text": "Cadera baja y tronco ligeramente adelantado al frenar.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Frenar con una sola zancada larga.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "hip_90_90",
+      "name": "Movilidad de cadera 90/90",
+      "altNames": ["90/90 hip switch"],
+      "pattern": "mobility_activation",
+      "categories": ["mobility"],
+      "primaryMuscles": ["gluteus_maximus", "adductors"],
+      "secondaryMuscles": ["hip_flexors", "gluteus_medius"],
+      "equipment": [
+        {
+          "slug": "mat",
+          "optional": true
+        }
+      ],
+      "bodyRegion": "lower",
+      "laterality": "alternating",
+      "planes": ["transverse"],
+      "contractionEmphasis": ["mixed"],
+      "intendedVelocity": "slow_controlled",
+      "level": "beginner",
+      "spaceRequired": "minimal",
+      "technicalComplexity": 1,
+      "axialLoad": "none",
+      "impactLevel": "none",
+      "profile": "mobility",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "Sentado con ambas piernas flexionadas a 90º, gira las rodillas de un lado a otro con el tronco erguido.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "Sentado en el suelo con una pierna delante y otra al lado, ambas rodillas a 90º.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Gira las rodillas hacia el lado contrario y alterna de forma lenta.",
+          "audience": "both"
+        },
+        {
+          "kind": "cue",
+          "text": "Tronco alto; apóyate con las manos si lo necesitas.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "worlds_greatest_stretch",
+      "name": "Estiramiento del corredor con rotación",
+      "altNames": ["World's greatest stretch", "Zancada con rotación torácica"],
+      "pattern": "mobility_activation",
+      "categories": ["mobility"],
+      "primaryMuscles": ["hip_flexors", "hamstrings"],
+      "secondaryMuscles": ["adductors", "gluteus_maximus", "obliques"],
+      "equipment": [],
+      "bodyRegion": "full_body",
+      "laterality": "alternating",
+      "planes": ["sagittal", "transverse"],
+      "contractionEmphasis": ["mixed"],
+      "intendedVelocity": "slow_controlled",
+      "level": "beginner",
+      "spaceRequired": "minimal",
+      "technicalComplexity": 1,
+      "axialLoad": "none",
+      "impactLevel": "none",
+      "profile": "mobility",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "En zancada profunda, apoya la mano junto al pie delantero, gira el tronco abriendo el brazo hacia el techo y vuelve.",
+      "instructions": [
+        {
+          "kind": "execution",
+          "text": "Zancada larga, mano contraria al suelo, codo hacia el tobillo y rotación del tronco con el brazo arriba.",
+          "audience": "both"
+        },
+        {
+          "kind": "cue",
+          "text": "Mantén la rodilla trasera estirada o apoyada.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Acortar la zancada o perder la estabilidad del pie delantero.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "ankle_knee_to_wall",
+      "name": "Movilidad de tobillo rodilla a pared",
+      "altNames": ["Knee-to-wall ankle dorsiflexion"],
+      "pattern": "mobility_activation",
+      "categories": ["mobility"],
+      "primaryMuscles": ["soleus", "gastrocnemius"],
+      "secondaryMuscles": ["tibialis_anterior"],
+      "equipment": [],
+      "bodyRegion": "lower",
+      "laterality": "unilateral",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["mixed"],
+      "intendedVelocity": "slow_controlled",
+      "level": "beginner",
+      "spaceRequired": "minimal",
+      "technicalComplexity": 1,
+      "axialLoad": "none",
+      "impactLevel": "none",
+      "profile": "mobility",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "Con el pie frente a la pared, lleva la rodilla hacia la pared sin levantar el talón.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "Pie a unos centímetros de la pared, apuntando hacia ella.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Lleva la rodilla a tocar la pared sobre el segundo dedo manteniendo el talón apoyado.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Levantar el talón o llevar la rodilla hacia dentro.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "thoracic_rotation",
+      "name": "Movilidad torácica cuadrupedia",
+      "altNames": ["Quadruped thoracic rotation"],
+      "pattern": "mobility_activation",
+      "categories": ["mobility"],
+      "primaryMuscles": ["obliques", "erector_spinae"],
+      "secondaryMuscles": ["rhomboids"],
+      "equipment": [
+        {
+          "slug": "mat",
+          "optional": true
+        }
+      ],
+      "bodyRegion": "trunk",
+      "laterality": "unilateral",
+      "planes": ["transverse"],
+      "contractionEmphasis": ["mixed"],
+      "intendedVelocity": "slow_controlled",
+      "level": "beginner",
+      "spaceRequired": "minimal",
+      "technicalComplexity": 1,
+      "axialLoad": "none",
+      "impactLevel": "none",
+      "profile": "mobility",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "En cuadrupedia con una mano en la nuca, gira el tronco llevando el codo hacia el techo y vuelve.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "En cuadrupedia, cadera sobre las rodillas y una mano detrás de la cabeza.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Rota el tronco abriendo el codo hacia arriba y regresa hacia el brazo de apoyo.",
+          "audience": "both"
+        },
+        {
+          "kind": "cue",
+          "text": "La cadera no se mueve; gira la parte alta de la espalda.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "cat_camel",
+      "name": "Gato (cat-camel)",
+      "altNames": ["Cat-camel", "Cat-cow"],
+      "pattern": "mobility_activation",
+      "categories": ["mobility", "motor_control"],
+      "primaryMuscles": ["erector_spinae", "rectus_abdominis"],
+      "secondaryMuscles": [],
+      "equipment": [
+        {
+          "slug": "mat",
+          "optional": true
+        }
+      ],
+      "bodyRegion": "trunk",
+      "laterality": "bilateral",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["mixed"],
+      "intendedVelocity": "slow_controlled",
+      "level": "beginner",
+      "spaceRequired": "minimal",
+      "technicalComplexity": 1,
+      "axialLoad": "none",
+      "impactLevel": "none",
+      "profile": "mobility",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "En cuadrupedia, redondea la espalda hacia arriba y luego arquéala suavemente, de forma alterna.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "Manos bajo los hombros y rodillas bajo la cadera.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Alterna flexión y extensión de la columna de forma lenta y sin dolor.",
+          "audience": "both"
+        },
+        {
+          "kind": "cue",
+          "text": "Muévete vértebra a vértebra.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "miniband_glute_activation",
+      "name": "Monster walk lateral con miniband",
+      "altNames": ["Mini band lateral walk", "Glute activation with mini band"],
+      "pattern": "mobility_activation",
+      "categories": ["motor_control", "stability"],
+      "primaryMuscles": ["gluteus_medius"],
+      "secondaryMuscles": ["gluteus_maximus"],
+      "equipment": [
+        {
+          "slug": "resistance_bands",
+          "optional": false
+        }
+      ],
+      "bodyRegion": "lower",
+      "laterality": "bilateral",
+      "planes": ["frontal"],
+      "contractionEmphasis": ["concentric", "isometric"],
+      "intendedVelocity": "slow_controlled",
+      "level": "beginner",
+      "spaceRequired": "minimal",
+      "technicalComplexity": 1,
+      "axialLoad": "none",
+      "impactLevel": "none",
+      "profile": "mobility",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "Con una minibanda alrededor de las piernas, camina lateralmente en media sentadilla manteniendo la tensión.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "Minibanda por encima de las rodillas o en los tobillos, media sentadilla.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Da pasos laterales cortos sin juntar los pies y sin perder la altura.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Balancear el tronco o dejar que las rodillas se cierren.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "single_leg_balance",
+      "name": "Equilibrio monopodal",
+      "altNames": ["Single-leg balance", "Single-leg stance"],
+      "pattern": "mobility_activation",
+      "categories": ["balance", "stability"],
+      "primaryMuscles": ["gluteus_medius", "foot_intrinsics"],
+      "secondaryMuscles": ["soleus", "tibialis_anterior"],
+      "equipment": [],
+      "bodyRegion": "lower",
+      "laterality": "unilateral",
+      "planes": ["frontal", "sagittal"],
+      "contractionEmphasis": ["isometric"],
+      "intendedVelocity": "slow_controlled",
+      "level": "beginner",
+      "spaceRequired": "minimal",
+      "technicalComplexity": 1,
+      "axialLoad": "none",
+      "impactLevel": "none",
+      "profile": "core",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "Mantente de pie sobre una sola pierna el máximo tiempo posible con el cuerpo erguido.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "Colócate junto a una pared o silla para apoyarte si lo necesitas.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Levanta un pie y mantén el equilibrio con la mirada al frente.",
+          "audience": "both"
+        },
+        {
+          "kind": "cue",
+          "text": "Pie de apoyo activo, como si agarraras el suelo.",
+          "audience": "both"
+        },
+        {
+          "kind": "precaution",
+          "text": "Ten un apoyo cercano en personas con equilibrio limitado.",
+          "audience": "trainer"
+        }
+      ]
+    },
+    {
+      "slug": "tandem_walk",
+      "name": "Marcha en tándem",
+      "altNames": ["Tandem walk", "Heel-to-toe walk"],
+      "pattern": "mobility_activation",
+      "categories": ["balance", "coordination"],
+      "primaryMuscles": ["gluteus_medius", "foot_intrinsics"],
+      "secondaryMuscles": ["tibialis_anterior", "soleus"],
+      "equipment": [],
+      "bodyRegion": "lower",
+      "laterality": "alternating",
+      "planes": ["sagittal", "frontal"],
+      "contractionEmphasis": ["mixed"],
+      "intendedVelocity": "slow_controlled",
+      "level": "beginner",
+      "spaceRequired": "small",
+      "technicalComplexity": 1,
+      "axialLoad": "none",
+      "impactLevel": "none",
+      "profile": "mobility",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "Camina en línea recta colocando el talón de un pie justo delante de la punta del otro.",
+      "instructions": [
+        {
+          "kind": "execution",
+          "text": "Avanza pie delante de pie sobre una línea, con la mirada al frente.",
+          "audience": "both"
+        },
+        {
+          "kind": "cue",
+          "text": "Pasos lentos y controlados.",
+          "audience": "both"
+        },
+        {
+          "kind": "precaution",
+          "text": "Realízalo junto a una pared o con supervisión si hay riesgo de caída.",
+          "audience": "trainer"
+        }
+      ]
+    },
+    {
+      "slug": "bike_erg_intervals",
+      "name": "Intervalos en bicicleta ergométrica",
+      "altNames": ["Bike erg intervals"],
+      "pattern": "conditioning",
+      "categories": ["endurance", "aerobic_capacity"],
+      "primaryMuscles": ["quadriceps", "gluteus_maximus"],
+      "secondaryMuscles": ["hamstrings", "gastrocnemius"],
+      "equipment": [
+        {
+          "slug": "bike_erg",
+          "optional": false
+        }
+      ],
+      "bodyRegion": "lower",
+      "laterality": "alternating",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["mixed"],
+      "intendedVelocity": "maximal_intent",
+      "level": "beginner",
+      "spaceRequired": "small",
+      "technicalComplexity": 1,
+      "axialLoad": "none",
+      "impactLevel": "none",
+      "profile": "conditioning",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "Pedalea alternando tramos de alta intensidad con tramos de recuperación según lo pautado.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "Ajusta el sillín para que la rodilla quede ligeramente flexionada con el pedal abajo.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Alterna tramos intensos y suaves según la pauta, manteniendo una cadencia fluida.",
+          "audience": "both"
+        },
+        {
+          "kind": "cue",
+          "text": "Tronco estable; la fuerza sale de las piernas.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "rowing_ergometer",
+      "name": "Remoergómetro",
+      "altNames": ["Rowing ergometer", "Rower"],
+      "pattern": "conditioning",
+      "categories": ["endurance", "aerobic_capacity"],
+      "primaryMuscles": ["quadriceps", "latissimus_dorsi"],
+      "secondaryMuscles": ["gluteus_maximus", "hamstrings", "rhomboids", "biceps_brachii"],
+      "equipment": [
+        {
+          "slug": "rower",
+          "optional": false
+        }
+      ],
+      "bodyRegion": "full_body",
+      "laterality": "alternating",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["mixed"],
+      "intendedVelocity": "moderate",
+      "level": "beginner",
+      "spaceRequired": "small",
+      "technicalComplexity": 1,
+      "axialLoad": "none",
+      "impactLevel": "none",
+      "profile": "conditioning",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "Rema en el ergómetro encadenando piernas, tronco y brazos de forma fluida.",
+      "instructions": [
+        {
+          "kind": "setup",
+          "text": "Ajusta los pies con la correa a la altura de la parte ancha del pie.",
+          "audience": "both"
+        },
+        {
+          "kind": "execution",
+          "text": "Empuja con las piernas, inclina ligeramente el tronco atrás y termina tirando con los brazos; regresa en orden inverso.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Tirar con los brazos antes de extender las piernas.",
+          "audience": "both"
+        }
+      ]
+    },
+    {
+      "slug": "brisk_walking",
+      "name": "Caminata rápida",
+      "altNames": ["Brisk walking", "Aeróbico zona 2"],
+      "pattern": "conditioning",
+      "categories": ["aerobic_capacity", "endurance"],
+      "primaryMuscles": ["quadriceps", "gluteus_maximus"],
+      "secondaryMuscles": ["hamstrings", "gastrocnemius"],
+      "equipment": [
+        {
+          "slug": "treadmill",
+          "optional": true
+        }
+      ],
+      "bodyRegion": "lower",
+      "laterality": "alternating",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["mixed"],
+      "intendedVelocity": "moderate",
+      "level": "beginner",
+      "spaceRequired": "large",
+      "technicalComplexity": 1,
+      "axialLoad": "none",
+      "impactLevel": "low",
+      "profile": "conditioning",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "Camina a paso rápido manteniendo un ritmo que te permita hablar con frases cortas.",
+      "instructions": [
+        {
+          "kind": "execution",
+          "text": "Camina con zancada natural, braceo activo y postura erguida.",
+          "audience": "both"
+        },
+        {
+          "kind": "cue",
+          "text": "Ritmo sostenido de forma continua.",
+          "audience": "both"
+        },
+        {
+          "kind": "precaution",
+          "text": "Usa calzado adecuado y superficies regulares.",
+          "audience": "trainer"
+        }
+      ]
+    },
+    {
+      "slug": "running_intervals",
+      "name": "Carrera con intervalos de intensidad",
+      "altNames": ["Running intervals", "Interval running"],
+      "pattern": "conditioning",
+      "categories": ["aerobic_capacity", "endurance"],
+      "primaryMuscles": ["quadriceps", "gluteus_maximus"],
+      "secondaryMuscles": ["hamstrings", "gastrocnemius", "soleus"],
+      "equipment": [
+        {
+          "slug": "treadmill",
+          "optional": true
+        },
+        {
+          "slug": "cones",
+          "optional": true
+        }
+      ],
+      "bodyRegion": "lower",
+      "laterality": "alternating",
+      "planes": ["sagittal"],
+      "contractionEmphasis": ["mixed"],
+      "intendedVelocity": "moderate",
+      "level": "intermediate",
+      "spaceRequired": "track_field",
+      "technicalComplexity": 1,
+      "axialLoad": "none",
+      "impactLevel": "moderate",
+      "profile": "conditioning",
+      "supportsVbt": false,
+      "contactsPerRep": null,
+      "clientDescription": "Corre alternando tramos rápidos con tramos de recuperación al trote o caminando.",
+      "instructions": [
+        {
+          "kind": "execution",
+          "text": "Alterna tramos rápidos y de recuperación según la pauta, manteniendo una técnica de carrera relajada.",
+          "audience": "both"
+        },
+        {
+          "kind": "cue",
+          "text": "Apoya el pie bajo el cuerpo, no muy por delante.",
+          "audience": "both"
+        },
+        {
+          "kind": "common_error",
+          "text": "Salir demasiado rápido en los primeros intervalos.",
+          "audience": "both"
+        }
+      ]
+    }
+  ],
+  "progressions": [
+    {
+      "from": "goblet_squat",
+      "to": "back_squat",
+      "relation": "progression"
+    },
+    {
+      "from": "box_squat",
+      "to": "back_squat",
+      "relation": "progression"
+    },
+    {
+      "from": "back_squat",
+      "to": "front_squat",
+      "relation": "variant"
+    },
+    {
+      "from": "back_squat",
+      "to": "banded_back_squat",
+      "relation": "variant"
+    },
+    {
+      "from": "sit_to_stand",
+      "to": "goblet_squat",
+      "relation": "progression"
+    },
+    {
+      "from": "goblet_squat",
+      "to": "box_squat",
+      "relation": "progression"
+    },
+    {
+      "from": "leg_press",
+      "to": "back_squat",
+      "relation": "variant"
+    },
+    {
+      "from": "wall_sit",
+      "to": "spanish_squat_iso",
+      "relation": "variant"
+    },
+    {
+      "from": "split_squat",
+      "to": "bulgarian_split_squat",
+      "relation": "progression"
+    },
+    {
+      "from": "split_squat",
+      "to": "reverse_lunge",
+      "relation": "progression"
+    },
+    {
+      "from": "reverse_lunge",
+      "to": "walking_lunge",
+      "relation": "progression"
+    },
+    {
+      "from": "step_up_low",
+      "to": "step_up",
+      "relation": "progression"
+    },
+    {
+      "from": "sit_to_stand",
+      "to": "step_up_low",
+      "relation": "variant"
+    },
+    {
+      "from": "romanian_deadlift",
+      "to": "deadlift",
+      "relation": "progression"
+    },
+    {
+      "from": "romanian_deadlift",
+      "to": "single_leg_rdl",
+      "relation": "progression"
+    },
+    {
+      "from": "glute_bridge",
+      "to": "hip_thrust",
+      "relation": "progression"
+    },
+    {
+      "from": "romanian_deadlift",
+      "to": "kettlebell_swing",
+      "relation": "progression"
+    },
+    {
+      "from": "leg_curl_machine",
+      "to": "nordic_hamstring_curl",
+      "relation": "progression"
+    },
+    {
+      "from": "standing_calf_raise",
+      "to": "seated_calf_raise",
+      "relation": "variant"
+    },
+    {
+      "from": "isometric_hip_adduction",
+      "to": "copenhagen_plank",
+      "relation": "progression"
+    },
+    {
+      "from": "knee_push_up",
+      "to": "push_up",
+      "relation": "progression"
+    },
+    {
+      "from": "incline_push_up",
+      "to": "push_up",
+      "relation": "progression"
+    },
+    {
+      "from": "incline_push_up",
+      "to": "knee_push_up",
+      "relation": "variant"
+    },
+    {
+      "from": "dumbbell_bench_press",
+      "to": "bench_press",
+      "relation": "progression"
+    },
+    {
+      "from": "push_up",
+      "to": "dumbbell_bench_press",
+      "relation": "variant"
+    },
+    {
+      "from": "bench_press",
+      "to": "chain_bench_press",
+      "relation": "variant"
+    },
+    {
+      "from": "dumbbell_bench_press",
+      "to": "incline_dumbbell_press",
+      "relation": "variant"
+    },
+    {
+      "from": "landmine_press",
+      "to": "dumbbell_shoulder_press",
+      "relation": "progression"
+    },
+    {
+      "from": "dumbbell_shoulder_press",
+      "to": "overhead_press",
+      "relation": "progression"
+    },
+    {
+      "from": "machine_assisted_pull_up",
+      "to": "pull_up",
+      "relation": "progression"
+    },
+    {
+      "from": "band_assisted_pull_up",
+      "to": "pull_up",
+      "relation": "progression"
+    },
+    {
+      "from": "lat_pulldown",
+      "to": "band_assisted_pull_up",
+      "relation": "progression"
+    },
+    {
+      "from": "inverted_row",
+      "to": "barbell_row",
+      "relation": "progression"
+    },
+    {
+      "from": "one_arm_dumbbell_row",
+      "to": "barbell_row",
+      "relation": "progression"
+    },
+    {
+      "from": "seated_cable_row",
+      "to": "one_arm_dumbbell_row",
+      "relation": "variant"
+    },
+    {
+      "from": "band_pull_apart",
+      "to": "face_pull",
+      "relation": "progression"
+    },
+    {
+      "from": "front_plank",
+      "to": "ab_wheel_rollout",
+      "relation": "progression"
+    },
+    {
+      "from": "dead_bug",
+      "to": "front_plank",
+      "relation": "progression"
+    },
+    {
+      "from": "bird_dog",
+      "to": "pallof_press",
+      "relation": "variant"
+    },
+    {
+      "from": "side_plank",
+      "to": "copenhagen_plank",
+      "relation": "progression"
+    },
+    {
+      "from": "farmer_carry",
+      "to": "suitcase_carry",
+      "relation": "variant"
+    },
+    {
+      "from": "squat_jump",
+      "to": "countermovement_jump",
+      "relation": "progression"
+    },
+    {
+      "from": "countermovement_jump",
+      "to": "box_jump",
+      "relation": "progression"
+    },
+    {
+      "from": "box_jump",
+      "to": "drop_jump",
+      "relation": "progression"
+    },
+    {
+      "from": "pogo_jumps",
+      "to": "drop_jump",
+      "relation": "progression"
+    },
+    {
+      "from": "countermovement_jump",
+      "to": "broad_jump",
+      "relation": "variant"
+    },
+    {
+      "from": "broad_jump",
+      "to": "single_leg_hop",
+      "relation": "progression"
+    },
+    {
+      "from": "broad_jump",
+      "to": "lateral_bounds",
+      "relation": "variant"
+    },
+    {
+      "from": "countermovement_jump",
+      "to": "jump_squat_loaded",
+      "relation": "progression"
+    },
+    {
+      "from": "kettlebell_swing",
+      "to": "hang_power_clean",
+      "relation": "progression"
+    },
+    {
+      "from": "med_ball_slam",
+      "to": "med_ball_rotational_throw",
+      "relation": "variant"
+    },
+    {
+      "from": "med_ball_chest_pass",
+      "to": "med_ball_rotational_throw",
+      "relation": "variant"
+    },
+    {
+      "from": "acceleration_10m",
+      "to": "sprint_20m",
+      "relation": "progression"
+    },
+    {
+      "from": "sprint_20m",
+      "to": "flying_sprint",
+      "relation": "progression"
+    },
+    {
+      "from": "acceleration_10m",
+      "to": "resisted_sled_sprint",
+      "relation": "variant"
+    },
+    {
+      "from": "deceleration_drill",
+      "to": "shuttle_run",
+      "relation": "progression"
+    },
+    {
+      "from": "shuttle_run",
+      "to": "drill_505",
+      "relation": "progression"
+    },
+    {
+      "from": "single_leg_balance",
+      "to": "tandem_walk",
+      "relation": "variant"
+    },
+    {
+      "from": "cat_camel",
+      "to": "thoracic_rotation",
+      "relation": "progression"
+    },
+    {
+      "from": "hip_90_90",
+      "to": "worlds_greatest_stretch",
+      "relation": "progression"
+    },
+    {
+      "from": "brisk_walking",
+      "to": "running_intervals",
+      "relation": "progression"
+    },
+    {
+      "from": "bike_erg_intervals",
+      "to": "rowing_ergometer",
+      "relation": "variant"
+    },
+    {
+      "from": "glute_bridge",
+      "to": "miniband_glute_activation",
+      "relation": "variant"
+    }
+  ]
+}

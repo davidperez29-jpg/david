@@ -88,15 +88,25 @@ describe('exercise library', () => {
     expect(byAccent.items.map((e) => e.id)).toContain(id);
     const typo = await listExercises(o.trainer2, { q: 'sentadila trasera' });
     expect(typo.items.map((e) => e.id)).toContain(id);
-    const byPattern = await listExercises(o.admin, { patternId: pat('horizontal_push') });
+    const byPattern = await listExercises(o.admin, {
+      patternId: pat('horizontal_push'),
+      scope: 'organization',
+    });
     expect(byPattern.items.map((e) => e.name)).toEqual(['Press banca']);
-    const byMuscle = await listExercises(o.admin, { muscleGroup: 'quadriceps' });
+    const byMuscle = await listExercises(o.admin, {
+      muscleGroup: 'quadriceps',
+      scope: 'organization',
+    });
     expect(byMuscle.items.map((e) => e.id)).toEqual([id]);
     // only dumbbells available → barbell squat is not doable
-    const noBar = await listExercises(o.admin, { equipmentIds: eqp('dumbbells') });
+    const noBar = await listExercises(o.admin, {
+      equipmentIds: eqp('dumbbells'),
+      scope: 'organization',
+    });
     expect(noBar.items.map((e) => e.id)).not.toContain(id);
     const withBar = await listExercises(o.admin, {
       equipmentIds: `${eqp('barbell')},${eqp('squat_rack')}`,
+      scope: 'organization',
     });
     expect(withBar.items.map((e) => e.id)).toContain(id);
   });

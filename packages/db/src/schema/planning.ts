@@ -20,7 +20,8 @@ import { authorship, id, timestamps, version } from './_common';
 import { organizations } from './iam';
 import { clients } from './clients';
 import { goals } from './catalog';
-import { exercises } from './library';
+import { exercises, pubStatus } from './library';
+import { orgScoped } from './_org';
 
 /**
  * PLANIFICACIÓN (§12). plan → phases → mesocycles → microcycles → sessions → blocks →
@@ -397,5 +398,42 @@ export const exerciseSets = pgTable(
   (t) => [
     unique('exercise_sets_idx_uq').on(t.sessionExerciseId, t.setIndex),
     ...prescriptionChecks(t, 'exercise_sets'),
+  ],
+);
+
+/**
+ * Plan templates (§12.3): compact JSON definitions (phases, mesocycles, weekly session pattern,
+ * declarative progression) expanded into a client plan on demand. Global templates
+ * (organization NULL) are platform data loaded from seed-data/templates; organizations save
+ * their own ("Guardar como plantilla"), anonymized: no client, no absolute dates.
+ */
+export const planTemplates = pgTable(
+  'plan_templates',
+  {
+    id: id(),
+    organizationId: orgScoped(),
+    slug: text('slug').notNull(),
+    name: text('name').notNull(),
+    description: text('description'),
+    goalSlug: text('goal_slug'),
+    level: text('level'),
+    sessionsPerWeek: smallint('sessions_per_week').notNull(),
+    durationMonths: smallint('duration_months').notNull(),
+    definition: jsonb('definition').notNull(),
+    /** Global method slugs whose evidence supports the doses used (traceability, §10.1). */
+    methodSlugs: text('method_slugs')
+      .array()
+      .notNull()
+      .default(sql`'{}'::text[]`),
+    status: pubStatus('status').notNull().default('published'),
+    derivedFromPlanId: uuid('derived_from_plan_id'),
+    ...timestamps(),
+    ...authorship(),
+    version: version(),
+  },
+  (t) => [
+    unique('plan_templates_org_slug_uq').on(t.organizationId, t.slug).nullsNotDistinct(),
+    check('plan_templates_duration_ck', sql`${t.durationMonths} IN (3, 6, 9, 12)`),
+    check('plan_templates_spw_ck', sql`${t.sessionsPerWeek} BETWEEN 1 AND 7`),
   ],
 );

@@ -5,6 +5,8 @@ import {
   listAssessmentTests,
   listBatteries,
   listClientAssessments,
+  listClientPlans,
+  listPlanTemplates,
   proposeAssessmentBattery,
   listCatalog,
   listClientAudit,
@@ -19,6 +21,7 @@ import { notFound } from 'next/navigation';
 import { ProgressView } from '@/components/assessment/progress';
 import { ReferralBanner } from '@/components/referral-banner';
 import { NewAssessmentForm } from '../../assessments/forms';
+import { NewPlanForm } from '../../plans/forms';
 import { Badge, Card, EmptyState } from '@/components/ui/card';
 import { formatDate, formatDateTime, label, LABELS } from '@/lib/labels';
 import { requireStaff } from '@/server/session';
@@ -40,6 +43,7 @@ const TABS = [
   ['perfil', 'Perfil'],
   ['objetivos', 'Objetivos'],
   ['evaluaciones', 'Evaluaciones'],
+  ['planificacion', 'Planificación'],
   ['salud', 'Salud declarada'],
   ['privacidad', 'Consentimientos'],
   ['equipo', 'Entrenadores'],
@@ -146,7 +150,6 @@ export default async function ClientPage({
           </Card>
           <Card title="Próximos pasos">
             <ul className="list-inside list-disc text-sm text-muted">
-              <li>Programa — Fase 6</li>
               <li>Seguimiento y adherencia — Fase 8</li>
             </ul>
           </Card>
@@ -165,6 +168,8 @@ export default async function ClientPage({
       {tab === 'objetivos' && catalog ? <GoalsPanel client={client} catalog={catalog} /> : null}
 
       {tab === 'evaluaciones' ? await assessmentsTab(ctx, client.id) : null}
+
+      {tab === 'planificacion' ? await plansTab(ctx, client.id) : null}
 
       {tab === 'salud' ? (
         <div className="flex flex-col gap-4">
@@ -322,6 +327,43 @@ async function assessmentsTab(ctx: Awaited<ReturnType<typeof requireStaff>>, cli
           batteries={batteries.map((b) => ({ id: b.id, name: b.name, testIds: b.testIds }))}
           tests={tests.map((t) => ({ id: t.id, name: t.name, category: t.category }))}
         />
+      </Card>
+    </div>
+  );
+}
+
+async function plansTab(ctx: Awaited<ReturnType<typeof requireStaff>>, clientId: string) {
+  const [plans, templates] = await Promise.all([
+    listClientPlans(ctx, clientId),
+    listPlanTemplates(ctx),
+  ]);
+  return (
+    <div className="flex flex-col gap-4">
+      <Card title="Planes">
+        {plans.length === 0 ? (
+          <EmptyState>Sin planes todavía.</EmptyState>
+        ) : (
+          <ul className="divide-y divide-border">
+            {plans.map((p) => (
+              <li key={p.id} className="flex flex-wrap items-center gap-2 py-2 text-sm">
+                <Link href={`/app/plans/${p.id}`} className="font-medium hover:underline">
+                  {p.name}
+                </Link>
+                <Badge tone={p.status === 'active' ? 'ok' : 'neutral'}>
+                  {label('planStatus', p.status)}
+                </Badge>
+                <span className="text-xs text-muted">
+                  {p.weeks} semanas · {p.sessionsPerWeek} días/semana
+                  {p.startDate ? ` · desde ${formatDate(p.startDate)}` : ''}
+                  {p.template ? ` · plantilla «${p.template}»` : ''}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Card>
+      <Card title="Nuevo plan">
+        <NewPlanForm clientId={clientId} templates={templates} />
       </Card>
     </div>
   );
