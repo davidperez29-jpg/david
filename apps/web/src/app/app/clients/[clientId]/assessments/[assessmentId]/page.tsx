@@ -5,7 +5,7 @@ import { notFound } from 'next/navigation';
 import { ChangeLine } from '@/components/assessment/verdict';
 import { Identifiers } from '@/components/science/evidence';
 import { Badge, Card, EmptyState } from '@/components/ui/card';
-import { formatDate, label } from '@/lib/labels';
+import { formatDate, formatValue, label } from '@/lib/labels';
 import { requireStaff } from '@/server/session';
 import {
   AssessmentStatusActions,
@@ -81,7 +81,7 @@ export default async function AssessmentPage({
                   <span className="font-medium">{r.test.name}</span>
                   {r.side !== 'both' ? <Badge>{label('side', r.side)}</Badge> : null}
                   <span className="text-lg font-semibold tabular-nums">
-                    {r.value} {r.test.unit}
+                    {formatValue(r.value)} {r.test.unit}
                   </span>
                   {r.test.isEstimate ? <Badge tone="warn">Estimación</Badge> : null}
                   {!r.valid ? <Badge tone="danger">No válido</Badge> : null}
@@ -135,7 +135,7 @@ export default async function AssessmentPage({
               <li key={d.id}>
                 <span className="font-medium">{d.name}:</span>{' '}
                 <span className="tabular-nums">
-                  {d.value} {d.unit}
+                  {formatValue(d.value)} {d.unit}
                 </span>
                 {d.isEstimate ? <Badge tone="warn">Estimación</Badge> : null}
                 <p className="text-xs text-muted">{d.formula}</p>

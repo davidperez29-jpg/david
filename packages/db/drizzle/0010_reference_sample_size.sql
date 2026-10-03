@@ -1,0 +1,1 @@
+ALTER TABLE "reference_values" ALTER COLUMN "sample_size" SET DATA TYPE integer;

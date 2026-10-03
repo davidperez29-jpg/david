@@ -52,21 +52,23 @@ export const GOAL_BATTERY: Record<string, string> = {
 
 /** Maximal or high-intensity tests: never before a clear screening (§11.1.2). */
 export const MAXIMAL_TESTS = new Set([
-  'one_rm',
-  'imtp',
+  'one_rm_back_squat',
+  'one_rm_bench_press',
+  'one_rm_deadlift',
+  'imtp_peak_force',
   'sprint_5m',
   'sprint_10m',
   'sprint_20m',
   'sprint_30m',
   'max_sprint_speed',
   'drop_jump_rsi',
-  'yoyo_ir1',
+  'yo_yo_ir1',
   'ift_30_15',
-  'cooper_12min',
+  'cooper_test',
   'test_505',
   't_test',
   'modified_agility_t_test',
-  'illinois_agility',
+  'illinois_agility_test',
 ]);
 
 export function proposeBattery(ctx: BatteryContext, templates: BatteryTemplate[]): BatteryProposal {
@@ -94,7 +96,11 @@ export function proposeBattery(ctx: BatteryContext, templates: BatteryTemplate[]
         ctx.screening === 'refer'
           ? 'Cribado con derivación: no realizar tests máximos. Requiere valoración por profesional sanitario.'
           : 'Sin cribado previo registrado: los tests máximos esperan a un cribado sin incidencias.';
-    } else if (t.slug === 'one_rm' && (novice || (ctx.age != null && ctx.age >= 65))) {
+    } else if (
+      t.slug.startsWith('one_rm_') &&
+      t.slug !== 'one_rm_lv_estimate' &&
+      (novice || (ctx.age != null && ctx.age >= 65))
+    ) {
       reason = 'No se propone un 1RM directo en principiantes ni en mayores sin familiarización.';
     }
     return { ...t, included: reason === null, reason };

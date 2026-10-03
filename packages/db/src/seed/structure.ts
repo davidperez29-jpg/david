@@ -366,12 +366,30 @@ export const POPULATIONS: {
     ageMax: 25,
     status: 'highly_trained',
   },
+  {
+    slug: 'adults_general',
+    name: 'Adultos sanos (nivel de actividad mixto o no especificado)',
+    ageMin: 18,
+    status: 'mixed',
+  },
+  {
+    slug: 'athletes_mixed',
+    name: 'Deportistas entrenados (deporte mixto o no especificado)',
+    ageMin: 18,
+    status: 'trained',
+  },
   // Clinical populations: evidence is shown for context only, never used for automatic prescription.
   { slug: 'tendinopathy_patients', name: 'Personas con tendinopatía', status: 'mixed' },
   {
     slug: 'athletes_patellar_tendinopathy',
     name: 'Deportistas con tendinopatía rotuliana',
     status: 'trained',
+  },
+  {
+    slug: 'msk_patients',
+    name: 'Pacientes con patología musculoesquelética (solo contexto clínico)',
+    ageMin: 18,
+    status: 'mixed',
   },
 ];
 

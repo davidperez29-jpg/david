@@ -1,7 +1,7 @@
 import type { AssessmentProgress } from '@tp/application';
 import { Identifiers } from '@/components/science/evidence';
 import { Badge, Card, EmptyState } from '@/components/ui/card';
-import { label } from '@/lib/labels';
+import { formatValue, label } from '@/lib/labels';
 import { BeforeAfterBars, SeriesChart } from './charts';
 import { ChangeLine, VerdictBadge } from './verdict';
 
@@ -37,7 +37,7 @@ export function ProgressView({
             <div className="flex flex-col gap-2">
               <div className="flex flex-wrap items-center gap-2 text-sm">
                 <span className="text-lg font-semibold tabular-nums">
-                  {last.value} {s.test.unit}
+                  {formatValue(last.value)} {s.test.unit}
                 </span>
                 {s.test.isEstimate ? <Badge tone="warn">Estimación</Badge> : null}
                 {s.points.length >= 3 ? (
@@ -113,7 +113,7 @@ export function ProgressView({
         ? data.derived.map((d) => (
             <Card key={d.metric} title={d.name}>
               <p className="text-lg font-semibold tabular-nums">
-                {d.points[d.points.length - 1]!.value} {d.unit}
+                {formatValue(d.points[d.points.length - 1]!.value)} {d.unit}
               </p>
               <p className="text-xs text-muted">{d.definition}</p>
               {d.overall ? (

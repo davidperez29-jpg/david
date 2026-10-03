@@ -124,10 +124,13 @@ export function compareToReference(
     case 'cutoff': {
       const c = num(v.cutoff);
       const dir = v.direction === 'above' ? 'above' : 'below';
-      const meaning = typeof v.meaning === 'string' ? v.meaning : 'criterio de cribado';
+      const meaning = typeof v.meaning === 'string' ? v.meaning : 'punto de corte';
       summary = `Punto de corte ${dir === 'below' ? '<' : '>'} ${c} ${ref.unit} (${meaning})`;
-      // Screening thresholds are applied when the reference is applicable: they never diagnose.
-      if (applicable && c != null && (dir === 'below' ? value < c : value > c)) {
+      const beyond = c != null && (dir === 'below' ? value < c : value > c);
+      if (applicable && c != null)
+        band = beyond ? `Más allá del punto de corte: ${meaning}` : 'Dentro del punto de corte';
+      // Only clinical screening criteria (referral: true) raise the referral; they never diagnose.
+      if (applicable && beyond && v.referral === true) {
         flag = { message: REFERRAL_TEXT, criterion: `${summary}. ${ref.sourceLabel}` };
       }
       break;

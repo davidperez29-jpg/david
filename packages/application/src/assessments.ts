@@ -697,6 +697,25 @@ async function recomputeDerived(
     inputs: x.inputs,
     resultId: null,
   }));
+  // Formulas whose inputs include a sided test (e.g. 505 per leg) are computed per side.
+  for (const side of ['left', 'right'] as const) {
+    const sideValues: Record<string, number> = {};
+    for (const r of rows)
+      if (r.valid && r.side === side && r.value != null) sideValues[r.slug] = Number(r.value);
+    if (!Object.keys(sideValues).length) continue;
+    for (const x of computeDerived({ ...both, ...sideValues })) {
+      if (!x.formula.inputs.some((i) => i in sideValues)) continue;
+      metrics.push({
+        metric: `${x.formula.id}:${side}`,
+        formula: `${x.formula.definition} Lado ${side === 'left' ? 'izquierdo' : 'derecho'}.`,
+        value: x.value,
+        unit: x.formula.unit,
+        isEstimate: x.formula.isEstimate,
+        inputs: x.inputs,
+        resultId: null,
+      });
+    }
+  }
   const sided = new Map<
     string,
     { left?: number; right?: number; better: BetterDirection; name: string }
@@ -928,6 +947,14 @@ function compareRefs(
   }));
 }
 
+function derivedName(metric: string, testName: (slug: string) => string): string {
+  if (metric.startsWith('asymmetry:')) return `Asimetría · ${testName(metric.slice(10))}`;
+  const [id, side] = metric.split(':');
+  const f = DERIVED_FORMULAS.find((x) => x.id === id);
+  const sideLabel = side === 'left' ? ' · izquierdo' : side === 'right' ? ' · derecho' : '';
+  return `${f?.name ?? id}${sideLabel}`;
+}
+
 // ── Assessment detail ─────────────────────────────────────────────────────────
 
 async function getAssessment_(ctx: RequestContext, id: string) {
@@ -1065,11 +1092,7 @@ async function getAssessment_(ctx: RequestContext, id: string) {
     derived: derived.map((m) => ({
       ...m,
       value: Number(m.value),
-      name:
-        DERIVED_FORMULAS.find((f) => f.id === m.metric)?.name ??
-        (m.metric.startsWith('asymmetry:')
-          ? `Asimetría · ${tests.find((t) => t.slug === m.metric.slice(10))?.name ?? m.metric.slice(10)}`
-          : m.metric),
+      name: derivedName(m.metric, (slug) => tests.find((t) => t.slug === slug)?.name ?? slug),
     })),
     flags,
   };
@@ -1130,7 +1153,7 @@ async function clientAssessmentProgress_(ctx: RequestContext, clientId: string) 
           first.method,
         )
       : null;
-    errorCache.set(t.slug, err);
+    errorCache.set(`${t.slug}:${side}`, err);
     const overall =
       points.length >= 2 ? interpretChange(first.value, last.value, t.betterDirection, err) : null;
     const lastStep =
@@ -1178,15 +1201,16 @@ async function clientAssessmentProgress_(ctx: RequestContext, clientId: string) 
   const byMetric = new Map<string, typeof dm>();
   for (const x of dm) byMetric.set(x.m.metric, [...(byMetric.get(x.m.metric) ?? []), x]);
   const derived = [...byMetric.entries()].map(([metric, g]) => {
-    const f = DERIVED_FORMULAS.find((x) => x.id === metric);
+    const [formulaId, side] = metric.split(':') as [string, string | undefined];
+    const f = metric.startsWith('asymmetry:')
+      ? undefined
+      : DERIVED_FORMULAS.find((x) => x.id === formulaId);
+    const inputError = (slug: string) =>
+      errorCache.get(`${slug}:${side ?? 'both'}`) ?? errorCache.get(`${slug}:both`) ?? null;
     const points = g.map((x) => ({ on: x.on, value: Number(x.m.value) }));
     const err =
       f?.errorModel === 'difference'
-        ? combineErrors(
-            errorCache.get(f.inputs[0]!) ?? null,
-            errorCache.get(f.inputs[1]!) ?? null,
-            f.name,
-          )
+        ? combineErrors(inputError(f.inputs[0]!), inputError(f.inputs[1]!), f.name)
         : null;
     const overall =
       points.length >= 2 && f
@@ -1194,7 +1218,7 @@ async function clientAssessmentProgress_(ctx: RequestContext, clientId: string) 
         : null;
     return {
       metric,
-      name: f?.name ?? metric,
+      name: derivedName(metric, (slug) => g[0]!.m.formula.match(/«(.+?)»/)?.[1] ?? slug),
       unit: g[0]!.m.unit,
       definition: g[0]!.m.formula,
       points,

@@ -1,0 +1,271 @@
+{
+  "_comment": "Batteries by goal (MASTER_SPECIFICATION §11.4). Proposal based on the test cards; pending validation by experts. The trainer edits every proposal.",
+  "batteries": [
+    {
+      "slug": "hypertrophy_strength",
+      "name": "Hipertrofia y fuerza",
+      "goalFamily": "muscle",
+      "description": "1RM en ejercicios clave y perímetros. Evitar el %grasa por bioimpedancia como único indicador.",
+      "tests": [
+        {
+          "test": "one_rm_back_squat",
+          "core": true,
+          "notes": "En ejercicios clave; solo con técnica estable y cribado sin incidencias."
+        },
+        {
+          "test": "one_rm_bench_press",
+          "core": true
+        },
+        {
+          "test": "body_mass",
+          "core": true
+        },
+        {
+          "test": "waist_circumference",
+          "core": true
+        },
+        {
+          "test": "height",
+          "core": false
+        },
+        {
+          "test": "one_rm_lv_estimate",
+          "core": false
+        }
+      ]
+    },
+    {
+      "slug": "health",
+      "name": "Salud y función (incluye mayores)",
+      "goalFamily": "health",
+      "description": "Prensión, levantarse de la silla, SPPB, velocidad de marcha, apoyo monopodal y 6MWT. Sin 1RM directo ni tests máximos de campo.",
+      "tests": [
+        {
+          "test": "handgrip_strength",
+          "core": true
+        },
+        {
+          "test": "five_times_sit_to_stand",
+          "core": true
+        },
+        {
+          "test": "chair_stand_30s",
+          "core": true
+        },
+        {
+          "test": "sppb",
+          "core": true
+        },
+        {
+          "test": "gait_speed",
+          "core": true
+        },
+        {
+          "test": "unipedal_stance_eyes_open",
+          "core": true
+        },
+        {
+          "test": "six_minute_walk_test",
+          "core": true
+        },
+        {
+          "test": "timed_up_and_go",
+          "core": false
+        },
+        {
+          "test": "weight_bearing_lunge_distance",
+          "core": false
+        }
+      ]
+    },
+    {
+      "slug": "team_sport",
+      "name": "Deporte de equipo",
+      "goalFamily": "sport_performance",
+      "description": "CMJ, sprint 10/20/30 m con células, 505 y déficit de COD, y Yo-Yo IR1 o 30-15 IFT. El ACWR nunca como indicador de riesgo.",
+      "tests": [
+        {
+          "test": "cmj_height",
+          "core": true
+        },
+        {
+          "test": "sprint_10m",
+          "core": true
+        },
+        {
+          "test": "sprint_20m",
+          "core": true
+        },
+        {
+          "test": "sprint_30m",
+          "core": true
+        },
+        {
+          "test": "test_505",
+          "core": true
+        },
+        {
+          "test": "ift_30_15",
+          "core": true
+        },
+        {
+          "test": "yo_yo_ir1",
+          "core": false
+        },
+        {
+          "test": "imtp_peak_force",
+          "core": false
+        },
+        {
+          "test": "modified_agility_t_test",
+          "core": false
+        },
+        {
+          "test": "drop_jump_rsi",
+          "core": false
+        },
+        {
+          "test": "srpe",
+          "core": false
+        },
+        {
+          "test": "wellness_hooper",
+          "core": false
+        }
+      ]
+    },
+    {
+      "slug": "endurance",
+      "name": "Resistencia",
+      "goalFamily": "endurance",
+      "description": "Test de campo (VO₂max siempre «estimado») y sRPE. No comparar velocidades entre protocolos distintos.",
+      "tests": [
+        {
+          "test": "ift_30_15",
+          "core": true
+        },
+        {
+          "test": "cooper_test",
+          "core": false
+        },
+        {
+          "test": "srpe",
+          "core": true
+        },
+        {
+          "test": "cmj_height",
+          "core": false,
+          "notes": "Seguimiento de la fatiga neuromuscular."
+        },
+        {
+          "test": "weight_bearing_lunge_distance",
+          "core": false
+        }
+      ]
+    },
+    {
+      "slug": "sprint_power",
+      "name": "Sprint y potencia",
+      "goalFamily": "power_speed",
+      "description": "Sprint 5–30 m y velocidad máxima, CMJ y SJ, RSI e IMTP. Sin cronometraje manual.",
+      "tests": [
+        {
+          "test": "sprint_5m",
+          "core": true
+        },
+        {
+          "test": "sprint_10m",
+          "core": true
+        },
+        {
+          "test": "sprint_30m",
+          "core": true
+        },
+        {
+          "test": "max_sprint_speed",
+          "core": true
+        },
+        {
+          "test": "cmj_height",
+          "core": true
+        },
+        {
+          "test": "sj_height",
+          "core": true
+        },
+        {
+          "test": "drop_jump_rsi",
+          "core": true
+        },
+        {
+          "test": "imtp_peak_force",
+          "core": false
+        },
+        {
+          "test": "one_rm_back_squat",
+          "core": true
+        },
+        {
+          "test": "one_rm_bench_press",
+          "core": false
+        }
+      ]
+    },
+    {
+      "slug": "initiation",
+      "name": "Iniciación",
+      "goalFamily": "general",
+      "description": "Prensión, levantarse de la silla, CMJ y perímetro de cintura. Sin 1RM directo en las primeras semanas ni tests máximos sin supervisión.",
+      "tests": [
+        {
+          "test": "handgrip_strength",
+          "core": true
+        },
+        {
+          "test": "chair_stand_30s",
+          "core": true
+        },
+        {
+          "test": "cmj_height",
+          "core": true
+        },
+        {
+          "test": "body_mass",
+          "core": true
+        },
+        {
+          "test": "waist_circumference",
+          "core": true
+        },
+        {
+          "test": "height",
+          "core": false
+        }
+      ]
+    },
+    {
+      "slug": "body_composition",
+      "name": "Composición corporal",
+      "goalFamily": "body_composition",
+      "description": "Masa, talla y perímetro de cintura; bioimpedancia solo como estimación con sus limitaciones.",
+      "tests": [
+        {
+          "test": "body_mass",
+          "core": true
+        },
+        {
+          "test": "height",
+          "core": true
+        },
+        {
+          "test": "waist_circumference",
+          "core": true
+        },
+        {
+          "test": "bia_body_fat",
+          "core": false
+        }
+      ]
+    }
+  ]
+}

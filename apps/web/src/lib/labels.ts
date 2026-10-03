@@ -328,3 +328,11 @@ export function formatDateTime(d: string | Date): string {
     timeZone: 'Europe/Madrid',
   }).format(new Date(d));
 }
+
+/** Measurement values: at most 2 decimals, Spanish formatting (no "6.4667 cm"). */
+export function formatValue(v: number | null | undefined): string {
+  if (v == null) return '—';
+  return new Intl.NumberFormat('es-ES', {
+    maximumFractionDigits: Math.abs(v) >= 100 ? 0 : 2,
+  }).format(v);
+}

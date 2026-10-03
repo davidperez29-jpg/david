@@ -61,8 +61,9 @@ export function ChangeLine({
       </div>
       {change.error ? (
         <span className="text-muted">
-          Error típico ±{change.error.te} {unit} · MDC95 {change.error.mdc95} {unit} (
-          {change.error.basis}; {change.error.label})
+          Error típico ±{fmt(change.error.te).replace('+', '')} {unit} · MDC95{' '}
+          {fmt(change.error.mdc95).replace('+', '')} {unit} ({change.error.basis};{' '}
+          {change.error.label})
         </span>
       ) : null}
       {change.warnings.map((w) => (

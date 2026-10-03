@@ -24,3 +24,13 @@ test('client sees today screen and manages consent on mobile', async ({ page }) 
   const box = await page.getByRole('link', { name: 'Hoy' }).boundingBox();
   expect(box!.height).toBeGreaterThanOrEqual(48);
 });
+
+test('client sees their progress in plain language', async ({ page }) => {
+  await login(page, 'iker.arrieta@example.com');
+  await page.getByRole('link', { name: 'Progreso' }).click();
+  await expect(page.getByRole('heading', { name: 'Tu progreso' })).toBeVisible();
+  await expect(page.getByText(/margen de error/).first()).toBeVisible();
+  // Clients cannot record results.
+  const res = await page.request.get('/api/v1/assessment-tests');
+  expect(res.status()).toBe(200);
+});

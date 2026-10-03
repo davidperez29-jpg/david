@@ -103,6 +103,13 @@ describe('change against measurement error (§11.5)', () => {
     ).toBeNull();
   });
 
+  it('converts force errors between N and kg exactly', () => {
+    expect(errorFromReliability(rel({ sem: 9.80665, semUnit: 'N' }), 'kg', 30)!.te).toBeCloseTo(
+      1,
+      6,
+    );
+  });
+
   it('warns when the test cannot detect the smallest worthwhile change', () => {
     const err = errorFromReliability(rel({ sem: 2, swc: 1, semUnit: 'cm' }), 'cm', 40)!;
     expect(interpretChange(40, 46, 'higher', err).warnings.join(' ')).toMatch(/poco sensible/);
@@ -149,7 +156,7 @@ describe('derived metrics', () => {
       height: 180,
       test_505: 2.45,
       sprint_10m: 1.85,
-      one_rm: 120,
+      one_rm_back_squat: 120,
     });
     const by = Object.fromEntries(d.map((x) => [x.formula.id, x.value]));
     expect(by.bmi).toBeCloseTo(24.691, 3);
@@ -216,7 +223,12 @@ describe('reference comparison (§11.6)', () => {
       14,
       ref({
         statisticType: 'cutoff',
-        values: { cutoff: 16, direction: 'below', meaning: 'baja fuerza (cribado)' },
+        values: {
+          cutoff: 16,
+          direction: 'below',
+          meaning: 'baja fuerza (cribado)',
+          referral: true,
+        },
       }),
       { age: 70, sex: 'female' },
       null,
@@ -231,6 +243,18 @@ describe('reference comparison (§11.6)', () => {
         null,
       ).flag,
     ).toBeNull();
+    // Descriptive cut-offs (e.g. "worse than average") inform but never refer.
+    const descriptive = compareToReference(
+      14,
+      ref({
+        statisticType: 'cutoff',
+        values: { cutoff: 16, direction: 'below', meaning: 'peor que la media' },
+      }),
+      { age: 70, sex: 'female' },
+      null,
+    );
+    expect(descriptive.flag).toBeNull();
+    expect(descriptive.band).toMatch(/peor que la media/);
   });
   it('places a value in percentile bands', () => {
     const c = compareToReference(
@@ -250,7 +274,7 @@ describe('battery proposal', () => {
       name: 'Hipertrofia',
       goalFamily: 'muscle',
       tests: [
-        { slug: 'one_rm', name: '1RM', isCore: true },
+        { slug: 'one_rm_back_squat', name: '1RM', isCore: true },
         { slug: 'waist_circumference', name: 'Cintura', isCore: true },
       ],
     },
@@ -273,17 +297,21 @@ describe('battery proposal', () => {
       { goals: ['hypertrophy'], age: 30, experience: 'beginner', screening: 'clear' },
       templates,
     );
-    expect(novice.tests.find((t) => t.slug === 'one_rm')).toMatchObject({ included: false });
+    expect(novice.tests.find((t) => t.slug === 'one_rm_back_squat')).toMatchObject({
+      included: false,
+    });
     const noScreen = proposeBattery(
       { goals: ['hypertrophy'], age: 30, experience: 'advanced', screening: 'unknown' },
       templates,
     );
-    expect(noScreen.tests.find((t) => t.slug === 'one_rm')!.reason).toMatch(/cribado/);
+    expect(noScreen.tests.find((t) => t.slug === 'one_rm_back_squat')!.reason).toMatch(/cribado/);
     const refer = proposeBattery(
       { goals: ['hypertrophy'], age: 30, experience: 'advanced', screening: 'refer' },
       templates,
     );
-    expect(refer.tests.find((t) => t.slug === 'one_rm')!.reason).toMatch(/profesional sanitario/);
+    expect(refer.tests.find((t) => t.slug === 'one_rm_back_squat')!.reason).toMatch(
+      /profesional sanitario/,
+    );
   });
   it('prioritises health and function from 65 years', () => {
     expect(

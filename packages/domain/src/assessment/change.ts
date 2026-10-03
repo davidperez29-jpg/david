@@ -50,6 +50,9 @@ export function errorFromReliability(
     if (v == null) return null;
     if (u === '%') return (v / 100) * Math.abs(baseline);
     if (!u || u === unit) return v;
+    // Exact physical conversion between force units (dynamometers report N or kgf).
+    if (u === 'N' && unit === 'kg') return v / 9.80665;
+    if (u === 'kg' && unit === 'N') return v * 9.80665;
     return null;
   };
   let te = toAbs(row.sem, row.semUnit);
