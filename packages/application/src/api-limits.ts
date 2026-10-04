@@ -23,6 +23,7 @@ export function apiLimits(): Record<ApiBudget, number> {
 const HEAVY = [
   /^\/api\/v1\/exports/,
   /^\/api\/v1\/reports\/[^/]+\/(client-view\/)?download/,
+  /^\/api\/v1\/plans\/[^/]+\/pdf/,
   /^\/api\/v1\/clients\/[^/]+\/subject-data/,
   /^\/api\/v1\/imports(\/|$)/,
   /^\/api\/v1\/clients\/[^/]+\/reports$/,

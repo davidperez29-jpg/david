@@ -24,6 +24,15 @@ export default async function ClientCalendar() {
   return (
     <div className="flex flex-col gap-4">
       <h1 className="text-2xl font-bold">Calendario</h1>
+      {[...new Map(a.sessions.map((s) => [s.planId, s.planName])).entries()].map(([id, name]) => (
+        <a
+          key={id}
+          href={`/api/v1/plans/${id}/pdf`}
+          className="flex min-h-12 items-center text-accent underline"
+        >
+          Descargar «{name}» en PDF
+        </a>
+      ))}
       {a.assessments.filter((x) => x.date >= a.today).length ? (
         <section className="rounded-lg border border-border p-4" aria-label="Evaluaciones">
           <h2 className="text-xs font-semibold tracking-wide text-muted uppercase">

@@ -131,7 +131,17 @@ El aviso «más de 20 series semanales en un grupo» es un umbral **configurable
 | Cliente › Planificación | Lista de planes y asistente «Desde plantilla» (plantilla agrupada por objetivo, inicio y días) o «En blanco» (meses, semanas y días). |
 | `/app/plans/{id}` | Tres vistas: **Semanas** (fases, mesociclos, tipo de semana editable, copiar semana, sesiones e indicadores), **Calendario** (mes a mes) y **Gestión y revisiones** (activar, completar, archivar, revisión con motivo, duplicar, guardar como plantilla e historial de revisiones). |
 | `/app/plans/{id}/sessions/{id}` | Editor de sesión: datos y nota para el cliente, duplicar en otra semana, bloques y ejercicios con las variables del perfil, texto para el cliente, avisos de validación, origen (plantilla o progresión automática) y enlace a los métodos. |
+| `/app/plans/{id}` → **PDF (equipo)** · **PDF (cliente)** | El plan completo semana a semana (ver «PDF del plan»). |
+| App del cliente › Calendario → «Descargar … en PDF» | Su plan: solo las sesiones publicadas, en lenguaje sencillo. |
 | `/app/plans` y `/app/plans/templates/{id}` | Catálogo de plantillas y vista previa: estructura, sesiones con su prescripción y progresión, y métodos que justifican las dosis. |
+
+**PDF del plan** (pendiente técnico 5; `planDocument`, dominio puro, y el mismo motor PDF que los informes):
+
+- Un apartado por semana (fechas, tipo de semana y fase). En cada sesión: día, título, fecha, duración estimada, objetivo y una tabla **Bloque · Ejercicio · Prescripción · Notas** con las alternativas aprobadas.
+- **Versión del equipo**: prescripción técnica (`4×6 @ RIR 2 · descanso 2 min`), notas de la semana, nota interna de la sesión y notas del entrenador por ejercicio. Archivo `plan-<nombre>.equipo.pdf`.
+- **Versión del cliente**: prescripción en lenguaje sencillo («4 series de 6 repeticiones dejando…») y solo las notas escritas para el cliente; **nunca** las internas. El entrenador también puede descargarla para entregarla en papel.
+- **El cliente** solo descarga sus planes activos o completados, solo con las sesiones **publicadas**, y siempre en su versión (aunque pida la del equipo).
+- Cada descarga queda auditada como `export` con su versión. Cuenta como operación pesada en el límite por minuto.
 
 Criterio de aceptación (§16.2): crear un plan de 12 semanas y 3 días desde plantilla en menos de 20 minutos. El test E2E crea el plan, edita una sesión y lo activa en unos segundos.
 
@@ -153,3 +163,4 @@ Además, RLS: las tablas de planificación son de tipo `client_optional` y las p
 | Opción por cliente «aplicar progresiones rutinarias sin confirmación» (desactivada por defecto) | 11 |
 | Normalizar las 4 rutinas Excel aportadas como plantillas «3 días / 5 mesociclos / 36 semanas» tras su revisión | Operación (§18.1) |
 | Propuesta de plan por el motor de decisiones (`PROPOSAL`) | 10–11 |
+| ~~PDF del plan~~ Hecho: versión del equipo y del cliente | Pendientes técnicos |

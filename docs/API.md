@@ -144,6 +144,7 @@ Detalle en `PLANNING.md`. Lo que queda fuera de ámbito devuelve 404. Las edicio
 | `POST /plans/{id}/status` | `plans:write` | `{status, reason?}` | Activar exige fecha de inicio y que no haya otro plan activo; crea una revisión. |
 | `GET /plans/{id}/revisions` · `POST` | `plans:read` / `plans:write` | `{reason}` | Instantánea con su diferencia. |
 | `POST /plans/{id}/duplicate` | `plans:write` | `{name, clientId?}` | Copia profunda en borrador. |
+| `GET /plans/{id}/pdf?version=staff\|client` | `plans:read` (personal) · `sessions:read` (el propio cliente: plan activo o completado, sesiones publicadas, siempre su versión) | — | PDF del plan completo. Auditado como `export`; operación pesada. |
 | `POST /plans/{id}/template` | `plans:templates` | `{name, description?}` | Plantilla anonimizada de la organización. |
 | `PATCH /microcycles/{id}` · `POST /microcycles/{id}/duplicate` | `plans:write` | `{weekType}` · `{targetMicrocycleId}` | Tipo de semana · copiar semana (reemplaza). |
 | `GET /plan-sessions/{id}` · `PATCH` | `plans:read` / `plans:write` | `updateSessionSchema` | Sesión con bloques, ejercicios, texto para el cliente y validación. |

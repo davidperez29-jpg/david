@@ -82,7 +82,7 @@ const n = (v: string | number | null | undefined) => (v == null ? null : Number(
 const s = (v: number | null | undefined) => (v == null ? null : String(v));
 
 /** Numeric prescription columns come back as strings: normalize to the domain shape. */
-function toPrescription(r: Record<string, unknown>): Prescription {
+export function toPrescription(r: Record<string, unknown>): Prescription {
   return {
     sets: r.sets as number | null,
     repsMin: r.repsMin as number | null,

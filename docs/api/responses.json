@@ -762,7 +762,7 @@
     {
       "action": "string",
       "actor": "string",
-      "changes": "[object Object]|object|object|object|object|object",
+      "changes": "[object Object]|object|object|object|object|[object Object]|object|object|object|object|object",
       "entityType": "string",
       "id": "string",
       "occurredAt": "string",
@@ -1610,7 +1610,7 @@
         "bandTension": "null",
         "blockId": "string",
         "chainLoadKg": "null",
-        "coachNotes": "null",
+        "coachNotes": "string",
         "contacts": "null",
         "createdAt": "string",
         "createdBy": "string",
@@ -1626,7 +1626,9 @@
         "loadBasisMetric": "null",
         "loadKg": "null",
         "loadPct1rm": "null",
-        "methodIds": [],
+        "methodIds": [
+          "string"
+        ],
         "notesForClient": "null",
         "pairingLabel": "null",
         "position": "number",
@@ -1635,9 +1637,9 @@
         "repsMax": "number",
         "repsMin": "number",
         "repsPerCluster": "null",
-        "restS": "null",
-        "rirMax": "null",
-        "rirMin": "null",
+        "restS": "number",
+        "rirMax": "number",
+        "rirMin": "number",
         "rom": "null",
         "rpeTarget": "null",
         "sets": "number",
@@ -2785,6 +2787,7 @@
     "updatedBy": "string",
     "version": "number"
   },
+  "GET plans/[planId]/pdf": "file:application/pdf",
   "GET plans/[planId]/revisions": [
     {
       "createdAt": "string",

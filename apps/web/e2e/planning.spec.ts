@@ -53,6 +53,15 @@ test('trainer creates a 12-week, 3-day plan from a template and edits a session'
   await page.getByRole('link', { name: 'Gestión y revisiones' }).click();
   await page.getByRole('button', { name: 'Activar plan' }).click();
   await expect(page.getByText(/Revisión 1/)).toBeVisible();
+  // The whole plan as a PDF: team version (internal notes) and client version.
+  for (const [link, file] of [
+    ['PDF (equipo)', /^plan-plan-e2e-\d+\.equipo\.pdf$/],
+    ['PDF (cliente)', /^plan-plan-e2e-\d+\.pdf$/],
+  ] as const) {
+    const dl = page.waitForEvent('download');
+    await page.getByRole('link', { name: link }).click();
+    expect((await dl).suggestedFilename()).toMatch(file);
+  }
   // Acceptance criterion (§16.2): well under 20 minutes from template to an active plan.
   expect(Date.now() - started).toBeLessThan(20 * 60 * 1000);
 });

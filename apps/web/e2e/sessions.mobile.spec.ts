@@ -87,6 +87,15 @@ test('client calendar lists published sessions and staff APIs stay closed', asyn
   await page.getByRole('link', { name: 'Calendario' }).click();
   await expect(page.getByRole('heading', { name: 'Calendario' })).toBeVisible();
   await expect(page.getByText(/Completada|Parcial/).first()).toBeVisible();
+  // Their plan as a PDF (published sessions, plain language).
+  const dl = page.waitForEvent('download');
+  await page
+    .getByRole('link', { name: /Descargar «.+» en PDF/ })
+    .first()
+    .click();
+  const file = await dl;
+  expect(file.suggestedFilename()).toMatch(/^plan-[a-z0-9-]+\.pdf$/);
+  expect(file.suggestedFilename()).not.toMatch(/\.equipo\.pdf$/);
   expect((await page.request.get('/api/v1/review-inbox')).status()).toBe(403);
   // Out of scope for a client: refused (403) or not even disclosed (404).
   const pub = await page.request.post('/api/v1/sessions/publish', {

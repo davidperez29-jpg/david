@@ -117,6 +117,14 @@ export default async function PlanPage({
             : ' · sin fecha de inicio'}
           {` · revisión ${p.currentRevision}`}
         </span>
+        <span className="flex gap-3 text-sm">
+          <a className="text-accent underline" href={`/api/v1/plans/${p.id}/pdf?version=staff`}>
+            PDF (equipo)
+          </a>
+          <a className="text-accent underline" href={`/api/v1/plans/${p.id}/pdf?version=client`}>
+            PDF (cliente)
+          </a>
+        </span>
       </div>
       {p.kind === 'PROPOSAL' ? (
         <Card

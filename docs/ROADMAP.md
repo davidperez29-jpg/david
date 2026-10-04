@@ -171,7 +171,7 @@ Plan completo y criterios de aceptación: `MASTER_SPECIFICATION.md` §16.
 | Tests | ✅ 330 unitarios, 136 de integración y 30 E2E. |
 | Documentación | ✅ `REPORTS.md`, `API.md`, `TESTING.md`, `DATABASE.md` y `SECURITY.md`. |
 | Datos | ✅ Informe de Iker en la demo. |
-| Pendiente conocido | Informe para el cliente en su app. PDF del plan. Importación de referencias normativas. Trabajos en segundo plano para archivos grandes. |
+| Pendiente conocido | ~~Informe para el cliente en su app. PDF del plan.~~ (hechos tras la Fase 15). Importación de referencias normativas. Trabajos en segundo plano para archivos grandes. |
 
 ## Criterios de cierre de la Fase 13
 
@@ -197,7 +197,7 @@ Plan completo y criterios de aceptación: `MASTER_SPECIFICATION.md` §16.
 | Tests | ✅ 379 unitarios, 148 de integración, 560 comprobaciones RLS y 39 E2E. |
 | Documentación | ✅ `TESTING.md` (pirámide, áreas obligatorias, rendimiento), `API.md` (contrato), `DATABASE.md`, `SECURITY.md`, `ASVS_L2.md` y `PENTEST.md`. |
 | Datos | ✅ Demo ampliada (otra organización para el aislamiento; Elena con todos sus tipos de datos; importación pendiente) y datos de carga (`pnpm db:seed:perf`). |
-| Pendiente conocido | Crear un plan desde una plantilla tarda ≈ 0,9 s. CSP con *nonces*. Límite de peticiones por usuario en la API. Las respuestas de la API no tienen esquema formal. |
+| Pendiente conocido | Crear un plan desde una plantilla tarda ≈ 0,9 s. CSP con *nonces*. Límite de peticiones por usuario en la API. ~~Las respuestas de la API no tienen esquema formal.~~ (hecho tras la Fase 15: `docs/api/responses.json`). |
 
 ## Criterios de cierre de la Fase 15
 
@@ -210,4 +210,15 @@ Plan completo y criterios de aceptación: `MASTER_SPECIFICATION.md` §16.
 | Tests | ✅ 390 unitarios, 155 de integración, 566 comprobaciones RLS y 41 E2E. |
 | Documentación | ✅ `OPERATIONS.md`, `INTEGRATIONS.md`; `API.md`, `DATABASE.md`, `SECURITY.md`, `ASVS_L2.md`, `PENTEST.md` y `TESTING.md` actualizados. |
 | Datos | ✅ Una semana de mediciones de reloj de Elena; los datos de carga se generan en 42 s. |
-| Pendiente conocido | Elegir el proveedor de despliegue (región UE, copias, monitorización) y el de email (D4). Validación legal (D7). Adaptador de almacenamiento de objetos para los archivos. Imagen más pequeña (`standalone`). Conexiones con fabricantes cuando haya necesidad. |
+| Pendiente conocido | Elegir el proveedor de despliegue (región UE, copias, monitorización) y el de email (D4). Validación legal (D7). ~~Adaptador de almacenamiento de objetos para los archivos. Imagen más pequeña (`standalone`).~~ (hechos, ver abajo). Conexiones con fabricantes cuando haya necesidad. |
+
+## Pendientes técnicos cerrados tras la Fase 15
+
+| Pendiente | Estado |
+|---|---|
+| Imagen Docker mínima | ✅ `web` ≈ 480 MB (servidor autónomo de Next) e imagen `jobs` para migraciones y trabajos (`OPERATIONS.md`). |
+| Almacenamiento de objetos | ✅ Adaptador S3 compatible (SigV4), probado contra un servidor S3 real en CI. |
+| Esquema de las respuestas de la API | ✅ `docs/api/responses.json`: forma de cada `GET`; el E2E falla ante un campo eliminado o un tipo cambiado. |
+| Informe para el cliente en su app | ✅ El entrenador lo comparte; el cliente lo ve en lenguaje sencillo y lo descarga en PDF. RLS v10. |
+| PDF del plan | ✅ Versión del equipo y del cliente; el cliente solo con lo publicado. |
+| Siguen abiertos | Proveedor de despliegue y de email (D4), validación legal (D7), importación de referencias normativas, trabajos en segundo plano para archivos grandes, conexiones con fabricantes. |

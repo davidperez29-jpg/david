@@ -116,6 +116,5 @@ Admite CSV (separador `;` o `,`, detectado automáticamente) o XLSX (primera hoj
 
 ## 6. Pendiente
 
-- PDF del plan.
 - Importación de valores de referencia normativos.
 - Trabajos en segundo plano para archivos grandes (hoy, todo es síncrono y cabe en 1 000 filas).

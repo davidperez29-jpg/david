@@ -132,6 +132,7 @@
     "plan-templates/[templateId] GET authenticated",
     "plan-templates GET authenticated",
     "plans/[planId]/duplicate POST authenticated",
+    "plans/[planId]/pdf GET authenticated",
     "plans/[planId]/proposal/accept POST authenticated",
     "plans/[planId]/proposal/discard POST authenticated",
     "plans/[planId]/revisions GET authenticated",

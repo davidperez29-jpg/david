@@ -16,6 +16,8 @@ Formato: fecha · cambio · motivo · archivos · impacto.
     - permiso `reports:read_shared`;
     - columnas `reports.shared_at`/`shared_by` (`0031`) y RLS v10 (`0032`): el cliente solo lee sus informes compartidos.
   - **Motivo:** §9 (el cliente ve su progreso sin jerga) y la especificación de permisos («propio, si habilitado»).
+- **Cambio:** PDF del plan, semana a semana, con la prescripción de cada ejercicio.
+  - **Incluye:** versión del equipo (técnica, con notas internas) y del cliente (lenguaje sencillo, sin notas internas); el cliente solo descarga planes activos o completados y solo lo publicado; descargas auditadas. `GET /plans/{id}/pdf`.
 
 ## 2026-10-04 — Fase 15: optimización y escala
 

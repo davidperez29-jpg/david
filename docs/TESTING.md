@@ -33,7 +33,7 @@ Los tests de integración no truncan tablas (la auditoría es *append-only*): ca
 | Nivel | Herramienta | Qué cubre | Umbral | Resultado (Fase 14) |
 |---|---|---|---|---|
 | Unidad (dominio) | Vitest + fast-check | Fórmulas, reglas, progresiones, explicaciones; **24 propiedades** (límites, monotonía, invariancias, ida y vuelta) | ≥ 90 % líneas en `packages/domain` y en cada motor | ✅ 94,7 % líneas, 96,2 % funciones; motores ≥ 90 % |
-| Contrato | Zod → JSON Schema + diff propio | Rutas (método y acceso), esquema de entrada de cada petición y forma de la respuesta de cada `GET` | Sin cambios rompientes sin versión | ✅ `docs/api/contract.json`: 155 rutas y 113 esquemas; `docs/api/responses.json`: 65 respuestas (E2E `contract-responses.spec.ts`); los tests fallan ante cualquier cambio no aceptado |
+| Contrato | Zod → JSON Schema + diff propio | Rutas (método y acceso), esquema de entrada de cada petición y forma de la respuesta de cada `GET` | Sin cambios rompientes sin versión | ✅ `docs/api/contract.json`: 155 rutas y 113 esquemas; `docs/api/responses.json`: 68 respuestas (E2E `contract-responses.spec.ts`); los tests fallan ante cualquier cambio no aceptado |
 | Integración | Vitest + PostgreSQL 16 real | Casos de uso, RLS, transacciones y auditoría, migraciones | Todas las políticas RLS con test positivo y negativo | ✅ 148 tests; **matriz RLS**: cada tabla del mapa, cada tipo de política y cada política a medida, con datos (560 comprobaciones) |
 | Seguridad | Playwright (HTTP) | Acceso cruzado en **cada ruta**: sin sesión, ADMIN de otra organización, otro cliente, entrenador no asignado | 100 % de rutas | ✅ 180 *handlers* autenticados, 471 ataques con ids reales; ninguno pasa ni filtra datos |
 | E2E | Playwright (escritorio + Pixel 7) | Flujos §8.4 y §9, incluido sin conexión | Flujos críticos en cada PR | ✅ 39 tests en CI |
@@ -367,3 +367,19 @@ pnpm --filter @tp/web test:e2e -- e2e/perf.spec.ts e2e/perf.mobile.spec.ts
   - todos los listados ≤ 135 ms p95 con 1 000 clientes (`/trainers/workload`, 24 ms);
   - TTI en móvil ≈ 1,47–1,58 s.
 - **Operación**: imagen Docker y `docker compose` probados; simulacro de copia, supresión, restauración y reaplicación (`OPERATIONS.md` §7).
+
+## Resultado de los pendientes técnicos (tras la Fase 15)
+
+- **Unidad: 403 tests ✔**, con umbral de cobertura.
+  - `response-shape.unit.test.ts`: reglas del contrato de respuestas.
+  - `reports.unit.test.ts`: versión del cliente del informe (lenguaje sencillo, sin jerga técnica, aviso de derivación).
+  - `plan-document.unit.test.ts`: PDF del plan, versión del equipo y del cliente (sin notas internas).
+- **Integración: 160 tests ✔.** Nuevos:
+  - `storage.int.test.ts`: subir, leer y borrar contra un servidor S3 real (SeaweedFS en CI); una clave errónea se rechaza;
+  - `reports.int.test.ts`: compartir un informe, el cliente lo ve solo mientras está compartido, nunca el informe técnico; PDF auditado;
+  - `plan-pdf.int.test.ts`: versiones del PDF del plan; el cliente solo con su plan activo y lo publicado; ajenos, 404.
+- **Seguridad: 566 comprobaciones RLS ✔.** `reports` comprueba que el cliente lee sus informes compartidos y no los demás.
+- **E2E: 43 tests ✔** (1 omitido sin datos de carga).
+  - `contract-responses.spec.ts`: contrato de respuestas de cada `GET`.
+  - Compartir el informe y verlo en la app del cliente, con su PDF; descargar el PDF del plan como entrenador (dos versiones) y como cliente.
+  - Accesibilidad: la versión del cliente del informe, en escritorio y en móvil.

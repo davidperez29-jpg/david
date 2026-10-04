@@ -2,7 +2,7 @@
 
 Sistema profesional para **evaluar, programar, entrenar y hacer seguimiento** de clientes, presencial y online, con trazabilidad científica y control total del entrenador.
 
-> **Estado actual: Fases 0–15 completadas.** Plataforma completa: evaluación, bibliotecas científica (verificada en PubMed) y de ejercicios, planificación, app del cliente sin conexión, seguimiento, motores de decisiones y de programación, informes, seguridad y RGPD, pirámide de pruebas con umbrales en CI y, ahora, **optimización y escala**: observabilidad sin datos personales, límites por usuario, CSP con _nonce_, integraciones preparadas, herramientas de equipo e imagen Docker con guía de operación. Pendiente: decisiones de despliegue (proveedor UE, email) y validación legal.
+> **Estado actual: Fases 0–15 completadas.** Plataforma completa: evaluación, bibliotecas científica (verificada en PubMed) y de ejercicios, planificación, app del cliente sin conexión, seguimiento, motores de decisiones y de programación, informes, seguridad y RGPD, pirámide de pruebas con umbrales en CI y, ahora, **optimización y escala**: observabilidad sin datos personales, límites por usuario, CSP con _nonce_, integraciones preparadas, herramientas de equipo e imagen Docker con guía de operación. Tras la Fase 15 se cerraron los pendientes técnicos: imagen mínima, almacenamiento S3, contrato de respuestas, informe compartido con el cliente y PDF del plan. Pendiente: decisiones de despliegue (proveedor UE, email) y validación legal.
 
 ## Arranque rápido
 
