@@ -29,6 +29,17 @@ test('client report with 11 sections and PDF; validated import; export', async (
   await page.getByRole('link', { name: 'Descargar PDF' }).click();
   expect((await pdf).suggestedFilename()).toMatch(/^informe-iker-arrieta-\d{4}-\d{2}-\d{2}\.pdf$/);
 
+  // Share it with the client (plain-language version), preview it, stop sharing.
+  await page.getByRole('button', { name: 'Compartir con el cliente' }).click();
+  await expect(page.getByText(/Compartido con el cliente el/)).toBeVisible();
+  await page.getByRole('link', { name: 'Ver la versión del cliente' }).click();
+  await expect(page.getByText('Así lo ve el cliente en su app.')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Tu informe, Iker' })).toBeVisible();
+  await expect(page.getByText('Dos días de fuerza; reevaluar en la semana 6.')).toBeVisible();
+  await page.getByRole('link', { name: '← Informe completo' }).click();
+  await page.getByRole('button', { name: 'Dejar de compartir' }).click();
+  await expect(page.getByRole('button', { name: 'Compartir con el cliente' })).toBeVisible();
+
   // Import: errors per row and column before anything is written; only valid rows imported.
   await page.getByRole('link', { name: 'Informes', exact: true }).first().click();
   await page.getByRole('link', { name: 'Nueva importación' }).click();

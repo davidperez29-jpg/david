@@ -18,6 +18,11 @@ test('client pages meet WCAG 2.2 AA on a phone (axe, light and dark)', async ({ 
     ...(i.clientSession ? [`/me/sesion/${i.clientSession}`] : []),
   ])
     await scan(page, url, found);
+  // A report shared with the client (Elena in the demo).
+  await page.context().clearCookies();
+  await login(page, 'elena.prieto@example.com');
+  await scan(page, '/me/progreso', found);
+  if (i.sharedReport) await scan(page, `/me/informes/${i.sharedReport}`, found);
   console.log(found.join('\n') || 'Sin infracciones graves.');
   expect(found).toEqual([]);
 });

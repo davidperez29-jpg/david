@@ -8,8 +8,8 @@
       "id": "string",
       "lastName": "string",
       "message": "string",
-      "resolutionNote": "null",
-      "resolvedAt": "null",
+      "resolutionNote": "string",
+      "resolvedAt": "string",
       "severity": "string",
       "status": "string",
       "type": "string",
@@ -210,7 +210,28 @@
         "attempts": [
           "number"
         ],
-        "change": "null",
+        "change": {
+          "comparable": "boolean",
+          "delta": "number",
+          "deltaPercent": "number",
+          "error": {
+            "basis": "string",
+            "label": "string",
+            "mdc95": "number",
+            "origin": "string",
+            "swc": "null",
+            "te": "number"
+          },
+          "label": "string",
+          "note": "null",
+          "post": "number",
+          "pre": "number",
+          "previousOn": "string",
+          "verdict": "string",
+          "warnings": [
+            "string"
+          ]
+        },
         "clientId": "string",
         "createdAt": "string",
         "createdBy": "string",
@@ -741,7 +762,7 @@
     {
       "action": "string",
       "actor": "string",
-      "changes": "object",
+      "changes": "[object Object]|object|object|object|object|object",
       "entityType": "string",
       "id": "string",
       "occurredAt": "string",
@@ -1410,9 +1431,9 @@
       "id": "string",
       "organizationId": "string",
       "requestedBy": "string",
-      "resolvedAt": "null",
-      "resolvedBy": "null",
-      "response": "null",
+      "resolvedAt": "string",
+      "resolvedBy": "string",
+      "response": "string",
       "status": "string",
       "type": "string",
       "updatedAt": "string"
@@ -1424,7 +1445,8 @@
       "createdAt": "string",
       "hash": "string",
       "id": "string",
-      "parameters": "object"
+      "parameters": "object",
+      "sharedAt": "string"
     }
   ],
   "GET clients/[clientId]/session-review": [
@@ -1444,6 +1466,14 @@
       "sessionRpe": "number",
       "status": "string",
       "title": "string"
+    }
+  ],
+  "GET clients/[clientId]/shared-reports": [
+    {
+      "from": "string",
+      "id": "string",
+      "sharedAt": "string",
+      "to": "string"
     }
   ],
   "GET clients/[clientId]/subject-data": {
@@ -1668,6 +1698,8 @@
         "hash": "string",
         "id": "string",
         "parameters": "object",
+        "sharedAt": "string",
+        "sharedBy": "string",
         "status": "string",
         "type": "string",
         "updatedAt": "string"
@@ -1915,9 +1947,9 @@
         "dueOn": "string",
         "id": "string",
         "requestedBy": "string",
-        "resolvedAt": "null",
-        "resolvedBy": "null",
-        "response": "null",
+        "resolvedAt": "string",
+        "resolvedBy": "string",
+        "response": "string",
         "status": "string",
         "type": "string",
         "updatedAt": "string"
@@ -2165,7 +2197,7 @@
   "GET exercises/[exerciseId]": {
     "altNames": [],
     "axialLoad": "null",
-    "bodyRegion": "null",
+    "bodyRegion": "string",
     "categories": [
       {
         "id": "string",
@@ -2215,12 +2247,16 @@
       }
     ],
     "methodIds": [],
-    "movementPatternId": "null",
+    "movementPatternId": "string",
     "muscles": [],
     "name": "string",
     "needsReview": "boolean",
     "organizationId": "string",
-    "pattern": "null",
+    "pattern": {
+      "family": "string",
+      "id": "string",
+      "name": "string"
+    },
     "planes": [],
     "prescriptionProfileId": "string",
     "profile": {
@@ -2774,9 +2810,9 @@
       "organizationId": "string",
       "overdue": "boolean",
       "requestedBy": "string",
-      "resolvedAt": "null",
-      "resolvedBy": "null",
-      "response": "null",
+      "resolvedAt": "string",
+      "resolvedBy": "string",
+      "response": "string",
       "status": "string",
       "type": "string",
       "updatedAt": "string"
@@ -2819,6 +2855,7 @@
               ],
               "text": "string",
               "title": "string",
+              "tone": "string",
               "unit": "string"
             }
           ],
@@ -2829,8 +2866,44 @@
       ],
       "subtitle": "string",
       "title": "string"
-    }
+    },
+    "sharedAt": "null"
   },
+  "GET reports/[id]/client-view": {
+    "clientId": "string",
+    "id": "string",
+    "report": {
+      "footer": [
+        "string"
+      ],
+      "generatedAt": "string",
+      "sections": [
+        {
+          "blocks": [
+            {
+              "items": [
+                "string"
+              ],
+              "kind": "string",
+              "points": [
+                "object"
+              ],
+              "text": "string",
+              "title": "string",
+              "unit": "string"
+            }
+          ],
+          "key": "string",
+          "number": "number",
+          "title": "string"
+        }
+      ],
+      "subtitle": "string",
+      "title": "string"
+    },
+    "sharedAt": "null"
+  },
+  "GET reports/[id]/client-view/download": "file:application/pdf",
   "GET reports/[id]/download": "file:application/pdf",
   "GET review-inbox": {
     "flaggedLogs": [],
@@ -3195,7 +3268,7 @@
     "comparison": "string",
     "corrections": "null",
     "createdAt": "string",
-    "createdBy": "null",
+    "createdBy": "string",
     "doi": "string",
     "findings": [
       {
@@ -3242,14 +3315,24 @@
     "issue": "string",
     "journal": "string",
     "limitations": "string",
-    "organizationId": "null",
+    "organizationId": "string",
     "outcomesMeasured": "string",
     "pages": "string",
     "pmcid": "null",
     "pmid": "string",
     "populationSummary": "string",
     "practicalApplication": "string",
-    "qa": [],
+    "qa": [
+      {
+        "code": "string",
+        "message": "string",
+        "severity": "string",
+        "target": {
+          "key": "string",
+          "type": "string"
+        }
+      }
+    ],
     "resultsSummary": "string",
     "reviews": [],
     "sex": "string",
@@ -3260,11 +3343,11 @@
     "trainingStatus": "string",
     "updatedAt": "string",
     "updatedBy": "null",
-    "url": "null",
+    "url": "string",
     "verificationMethod": "string",
     "verificationStatus": "string",
     "verifiedAt": "string",
-    "verifiedBy": "null",
+    "verifiedBy": "string",
     "version": "number",
     "volume": "string",
     "year": "number"

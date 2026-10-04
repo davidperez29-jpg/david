@@ -94,17 +94,20 @@ const remove = (table: string, where: string) =>
   `DELETE FROM ${table} t WHERE ${where} RETURNING 1`;
 
 /** What the specification grants the client on their own rows (§14.2), per table. */
-function clientMay(table: string): { read: boolean; write: boolean } {
+/** `read` may be a condition: the client reads only the rows matching it (e.g. shared reports). */
+function clientMay(table: string): { read: boolean | string; write: boolean } {
   const p = RLS_POLICIES[table]!;
   if (p.kind === 'client_child') return { read: true, write: p.clientWrite };
   if (p.kind === 'client_owned' || p.kind === 'client_optional')
     return { read: p.clientRead, write: p.clientWrite };
-  const custom: Record<string, { read: boolean; write: boolean }> = {
+  const custom: Record<string, { read: boolean | string; write: boolean }> = {
     // Own contact details (PATCH /clients/{id}); other columns are blocked by a trigger (below).
     clients: { read: true, write: true },
     trainer_client_assignments: { read: true, write: false },
     audit_logs: { read: false, write: false },
     recommendation_evidence: { read: false, write: false },
+    // Only the reports the trainer shared with them.
+    reports: { read: 'shared_at IS NOT NULL', write: false },
   };
   return custom[table] ?? { read: false, write: false };
 }
@@ -230,7 +233,17 @@ describe.each(tables)('RLS %s', (table) => {
     if (total === 0) return;
     const may = clientMay(table);
     const read = await run(A.victim, count(table, where));
-    expect(read.rows, `${table}: client read ${read.rows} of ${total}`).toBe(may.read ? total : 0);
+    const visible =
+      typeof may.read === 'string'
+        ? (await run(null, count(table, `${where} AND ${may.read}`))).rows
+        : may.read
+          ? total
+          : 0;
+    if (typeof may.read === 'string')
+      expect(visible, `${table}: no row to test`).toBeGreaterThan(0);
+    if (typeof may.read === 'string')
+      expect(visible, `${table}: no hidden row`).toBeLessThan(total);
+    expect(read.rows, `${table}: client read ${read.rows} of ${total}`).toBe(visible);
     const write = await run(A.victim, touch(table, where));
     if (may.write) {
       expect(write.rows, `${table}: client could not update own rows`).toBe(total);

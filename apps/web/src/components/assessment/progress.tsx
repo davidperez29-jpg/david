@@ -1,20 +1,12 @@
 import type { AssessmentProgress } from '@tp/application';
+import { PLAIN_VERDICT } from '@tp/domain';
 import { Identifiers } from '@/components/science/evidence';
 import { Badge, Card, EmptyState } from '@/components/ui/card';
 import { formatValue, label } from '@/lib/labels';
 import { BeforeAfterBars, SeriesChart } from './charts';
 import { ChangeLine, VerdictBadge } from './verdict';
 
-/** Plain-language verdicts for the client app: never numbers without meaning. */
-const CLIENT_TEXT: Record<string, string> = {
-  probable_improvement: 'Has mejorado: el cambio supera el margen de error del test.',
-  probable_decline: 'Ha bajado más que el margen de error. Lo comentaremos.',
-  probable_change: 'Ha cambiado más que el margen de error.',
-  possible_change:
-    'Hay un cambio, pero está cerca del margen de error: lo confirmaremos en la próxima evaluación.',
-  within_error: 'Sin cambios más allá del margen de error del test.',
-  unknown_error: 'Mostramos la diferencia; este test no tiene un margen de error conocido.',
-};
+const CLIENT_TEXT: Record<string, string> = PLAIN_VERDICT;
 
 export function ProgressView({
   data,

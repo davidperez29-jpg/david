@@ -69,6 +69,23 @@ export function GenerateReportForm({
   );
 }
 
+/** Shows the report in the client's app (plain-language version) or hides it again. */
+export function ShareReportToggle({ reportId, shared }: { reportId: string; shared: boolean }) {
+  const a = useApiAction();
+  return (
+    <div className="flex flex-col gap-1">
+      <Button
+        variant={shared ? 'secondary' : 'primary'}
+        disabled={a.pending}
+        onClick={() => a.run(`/reports/${reportId}/share`, 'PUT', { shared: !shared })}
+      >
+        {shared ? 'Dejar de compartir' : 'Compartir con el cliente'}
+      </Button>
+      <FormError error={a.error} />
+    </div>
+  );
+}
+
 const ENTITIES = [
   ['clients', 'Clientes'],
   ['assessments', 'Evaluaciones'],

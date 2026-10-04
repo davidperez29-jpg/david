@@ -10,19 +10,23 @@ import {
   createClient,
   createImportJob,
   downloadClientReport,
+  downloadClientReportView,
   exportData,
   generateClientReport,
   getClientReport,
+  getClientReportView,
   getImportJob,
   grantConsent,
   importTemplate,
   listAssessmentTests,
   listCatalog,
   listClientReports,
+  listSharedReports,
   recordAssessmentResult,
   recordScreening,
   setAssessmentStatus,
   setClientGoals,
+  shareClientReport,
 } from '../src';
 import { buildOrg, testDb } from './fixtures';
 
@@ -153,6 +157,80 @@ describe('client report (§34): 11 sections, frozen snapshot, reproducible forma
     await expect(
       generateClientReport(o.admin, o.clientA, { from: today, to: addDays(today, -1) }),
     ).rejects.toMatchObject({ code: 'validation' });
+  });
+});
+
+describe('reports shared with the client (plain-language version in their app)', () => {
+  it('the client sees nothing until the trainer shares; then a plain view and its PDF; unsharing hides it again', async () => {
+    const { id } = await generateClientReport(o.admin, o.clientA, {
+      from: addDays(today, -90),
+      to: today,
+      trainerNotes: 'Sigue así: tres días por semana.',
+    });
+    expect(await listSharedReports(o.clientUser, o.clientA)).toEqual([]);
+    await expect(getClientReportView(o.clientUser, id)).rejects.toMatchObject({
+      code: 'not_found',
+    });
+    // The trainer previews the client's version before sharing.
+    const preview = await getClientReportView(o.admin, id);
+    expect(preview.sharedAt).toBeNull();
+
+    // Only staff of the client can share.
+    await expect(shareClientReport(o.clientUser, id, { shared: true })).rejects.toMatchObject({
+      code: 'not_found',
+    });
+    await expect(shareClientReport(o.trainer2, id, { shared: true })).rejects.toMatchObject({
+      code: 'not_found',
+    });
+    await expect(shareClientReport(other.admin, id, { shared: true })).rejects.toMatchObject({
+      code: 'not_found',
+    });
+
+    const shared = await shareClientReport(o.admin, id, { shared: true });
+    expect(shared.sharedAt).toBeInstanceOf(Date);
+    expect((await listSharedReports(o.clientUser, o.clientA)).map((r) => r.id)).toEqual([id]);
+    expect(
+      (await listClientReports(o.admin, o.clientA)).find((r) => r.id === id)!.sharedAt,
+    ).not.toBeNull();
+
+    const v = await getClientReportView(o.clientUser, id);
+    const text = JSON.stringify(v.report);
+    expect(v.report.title).toBe('Tu informe, Ana');
+    expect(v.report.sections.map((x) => x.title)).toEqual([
+      'Tu periodo',
+      'Tus objetivos',
+      'Lo que has entrenado',
+      'Cómo vas',
+      'Tu plan',
+      'Mensaje de tu entrenador',
+      'Próxima evaluación',
+    ]);
+    expect(text).toMatch(/Sigue así: tres días por semana/);
+    expect(text).toMatch(/de 30,1 cm \(.*?\) a [\d,]+ cm \(.*?\)\. Has mejorado/);
+    // No technical jargon in the client's version.
+    expect(text).not.toMatch(/MDC|UA\b|Carga interna|z-score|Cribado/);
+    expect(text).toMatch(/no es un diagnóstico/);
+
+    // The full technical report stays with the staff.
+    await expect(getClientReport(o.clientUser, id)).rejects.toMatchObject({ code: 'not_found' });
+    await expect(downloadClientReport(o.clientUser, id, 'pdf')).rejects.toMatchObject({
+      code: 'not_found',
+    });
+
+    const pdf = await downloadClientReportView(o.clientUser, id);
+    expect(pdf.contentType).toBe('application/pdf');
+    expect(pdf.body.subarray(0, 5).toString()).toBe('%PDF-');
+    const [audit] = await testDb()
+      .db.select()
+      .from(schema.auditLogs)
+      .where(and(eq(schema.auditLogs.entityId, id), eq(schema.auditLogs.action, 'export')));
+    expect(audit!.changes).toMatchObject({ version: 'client' });
+
+    await shareClientReport(o.admin, id, { shared: false });
+    expect(await listSharedReports(o.clientUser, o.clientA)).toEqual([]);
+    await expect(getClientReportView(o.clientUser, id)).rejects.toMatchObject({
+      code: 'not_found',
+    });
   });
 });
 

@@ -58,6 +58,7 @@ export const PERMISSIONS = [
   'privacy:manage',
   'privacy:erase_subject',
   'integrations:import',
+  'reports:read_shared',
 ] as const;
 export type Permission = (typeof PERMISSIONS)[number];
 
@@ -109,6 +110,7 @@ export const ROLE_PERMISSIONS: Matrix = {
     'privacy:export_subject': 'org',
     // Reports, exports and validated imports (§34, §52, §53); exports and imports are audited.
     'reports:generate': 'org',
+    'reports:read_shared': 'org',
     'data:export': 'org',
     'data:import': 'org',
     // RGPD rights (Phase 13): ADMIN handles requests and erases (with double confirmation).
@@ -163,6 +165,8 @@ export const ROLE_PERMISSIONS: Matrix = {
     // Reports and exports of assigned clients; imports into the organization (imported clients are
     // assigned to the trainer who imports them; assessments only for assigned clients).
     'reports:generate': 'assigned',
+    // The client's version of a report (to preview what the client sees).
+    'reports:read_shared': 'assigned',
     'data:export': 'assigned',
     'data:import': 'org',
   },
@@ -182,6 +186,8 @@ export const ROLE_PERMISSIONS: Matrix = {
     'privacy:export_subject': 'own',
     // The client downloads their data and files rights requests (erasure is requested, not done).
     'privacy:request': 'own',
+    // Reports their trainer chose to share, in plain language (never the unshared ones).
+    'reports:read_shared': 'own',
   },
 };
 

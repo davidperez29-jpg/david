@@ -36,3 +36,31 @@ test('client sees their progress in plain language', async ({ page }) => {
   const res = await page.request.get('/api/v1/assessment-tests');
   expect(res.status()).toBe(200);
 });
+
+test('client reads the report their trainer shared, in plain language, and downloads the PDF', async ({
+  page,
+}) => {
+  await login(page, 'elena.prieto@example.com');
+  await page.getByRole('link', { name: 'Progreso' }).click();
+  const section = page.getByRole('region', { name: 'Tus informes' });
+  await expect(section).toBeVisible();
+  // Only the shared report (the earlier one stays with the team).
+  await expect(section.getByRole('link')).toHaveCount(1);
+  await section.getByRole('link').click();
+  await expect(page.getByRole('heading', { name: 'Tu informe, Elena' })).toBeVisible();
+  for (const h of [
+    '1. Tu periodo',
+    '3. Lo que has entrenado',
+    '4. Cómo vas',
+    '6. Mensaje de tu entrenador',
+  ])
+    await expect(page.getByRole('heading', { name: h })).toBeVisible();
+  await expect(page.getByText(/Buen trabajo con la constancia/)).toBeVisible();
+  await expect(page.getByText(/MDC|Carga interna/)).toHaveCount(0);
+  const pdf = page.waitForEvent('download');
+  await page.getByRole('link', { name: 'Descargar PDF' }).click();
+  expect((await pdf).suggestedFilename()).toMatch(/^mi-informe-\d{4}-\d{2}-\d{2}\.pdf$/);
+  // The full technical report stays with the staff.
+  const id = page.url().split('/').at(-1)!;
+  expect((await page.request.get(`/api/v1/reports/${id}`)).status()).toBe(404);
+});

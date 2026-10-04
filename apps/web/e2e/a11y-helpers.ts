@@ -28,6 +28,9 @@ export async function a11yIds() {
       client,
       assessment: await one(`SELECT id FROM assessments WHERE client_id = '${client}' LIMIT 1`),
       report: await one(`SELECT id FROM reports WHERE client_id = '${client}' LIMIT 1`),
+      sharedReport: await one(
+        `SELECT r.id FROM reports r JOIN clients c ON c.id = r.client_id WHERE c.first_name = 'Elena' AND r.shared_at IS NOT NULL LIMIT 1`,
+      ),
       session: await one(
         `SELECT id FROM sessions WHERE client_id = '${client}' AND scheduled_date IS NOT NULL ORDER BY scheduled_date LIMIT 1`,
       ),

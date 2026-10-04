@@ -16,6 +16,7 @@ test('trainer pages meet WCAG 2.2 AA (axe, light and dark)', async ({ page }) =>
     ...CLIENT_TABS.map((t) => `/app/clients/${i.client}?tab=${t}`),
     `/app/clients/${i.client}/assessments/${i.assessment}`,
     `/app/clients/${i.client}/informes/${i.report}`,
+    `/app/clients/${i.client}/informes/${i.report}/cliente`,
     `/app/clients/${i.client}/sessions/${i.session}`,
     `/app/clients/${i.client}/sessions/${i.session}/sala`,
     '/app/calendar',

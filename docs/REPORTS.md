@@ -28,6 +28,26 @@ Tiene 11 apartados, siempre en este orden. Si un apartado no tiene datos, el inf
 - El PDF es idéntico **byte a byte** en cada descarga: sus fechas internas salen de la instantánea. Lo comprueba un test de integración.
 - La pantalla muestra «íntegro» si el hash coincide.
 
+**Compartido con el cliente** (pendiente técnico 4).
+
+- El entrenador decide: en la página del informe, «Compartir con el cliente» o «Dejar de compartir». Queda auditado (`reports.shared_at`, `shared_by`).
+- Antes de compartir puede ver **la versión del cliente** («Ver la versión del cliente»).
+- El cliente lo encuentra en su app, en **Progreso → Informes de tu entrenador**, y puede descargarlo en PDF (descarga auditada como `export`, `version: client`).
+- **Versión del cliente** (`clientReportView`, dominio puro, misma instantánea): 7 apartados en lenguaje sencillo.
+
+  | # | Apartado | Contenido |
+  |---|---|---|
+  | 1 | Tu periodo | Fechas y entrenador. Si el cribado es positivo: «requiere valoración por profesional sanitario». |
+  | 2 | Tus objetivos | Objetivos, con el principal. |
+  | 3 | Lo que has entrenado | Sesiones hechas de las planificadas (4 y 12 semanas) y esfuerzo medio. |
+  | 4 | Cómo vas | Gráfico por test y una frase: de dónde a dónde y qué significa frente al margen de error (los mismos textos que la pantalla de Progreso). |
+  | 5 | Tu plan | Plan, semana y fase; cuántas veces se ajustó. |
+  | 6 | Mensaje de tu entrenador | Las recomendaciones que el entrenador escribió (sección 10). |
+  | 7 | Próxima evaluación | Fecha aproximada. |
+
+- **No incluye**: tablas técnicas (MDC95, carga interna en UA), perfil del motor de decisiones, necesidades, referencias normativas ni la lista de fuentes. El informe técnico completo sigue siendo solo para el equipo; el cliente puede pedir todos sus datos con su derecho de acceso (`SECURITY.md` §2.2).
+- **Seguridad**: el cliente solo ve informes propios y compartidos. Lo comprueban la aplicación y la RLS (política `reports_select`, migración `0032`); dejar de compartir lo oculta al instante.
+
 **PDF.** Se genera con **pdfkit**, en Node y sin navegador en el servidor.
 
 - Es una desviación consciente de la especificación (§5: Playwright/Chromium en un worker): evita depender de Chromium en el despliegue y facilita la reproducibilidad.
@@ -79,6 +99,7 @@ Admite CSV (separador `;` o `,`, detectado automáticamente) o XLSX (primera hoj
 | Permiso | ADMIN | Entrenador | Cliente |
 |---|---|---|---|
 | `reports:generate` | organización | asignados | — |
+| `reports:read_shared` (versión del cliente) | organización | asignados | propios, solo compartidos |
 | `data:export` | organización | asignados | — |
 | `data:import` | organización | organización (más el permiso de la entidad: `clients:create`, `library:write`, `assessments:write`, `science:write`) | — |
 
@@ -90,11 +111,11 @@ Admite CSV (separador `;` o `,`, detectado automáticamente) o XLSX (primera hoj
   - historial de importaciones.
 - **Informes → Nueva importación**: tipo, plantillas, subida y columnas admitidas. Después, la vista previa con errores y «Importar N filas válidas» o «Cancelar».
 - **Ficha → Informes**: generar (periodo y recomendaciones propias), informes anteriores con su PDF y exportaciones del cliente.
-- **Página del informe**: los 11 apartados con gráficos, descargas en PDF, Excel y CSV, huella e integridad.
+- **Página del informe**: los 11 apartados con gráficos, descargas en PDF, Excel y CSV, huella e integridad; compartir con el cliente y vista previa de su versión.
+- **App del cliente → Progreso → Informes de tu entrenador**: los informes compartidos, en lenguaje sencillo, con su PDF.
 
 ## 6. Pendiente
 
-- Informe con el lenguaje del cliente (visible desde su app, si se habilita).
 - PDF del plan.
 - Importación de valores de referencia normativos.
 - Trabajos en segundo plano para archivos grandes (hoy, todo es síncrono y cabe en 1 000 filas).

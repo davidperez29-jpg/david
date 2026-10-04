@@ -297,7 +297,8 @@ Los planes propuestos usan `kind = PROPOSAL`, `status = proposed` y `recommendat
 - `import_jobs`/`import_rows`, ya existentes desde la Fase 2, guardan:
   - el estado del trabajo (`pending`, `succeeded`, `cancelled`);
   - cada fila con sus datos normalizados, los valores originales (`data.raw`), los errores por columna, su estado (`valid`, `invalid`, `imported`, `skipped`) y la entidad creada.
-- RLS: `reports` solo para el personal (`client_optional`, sin acceso del cliente); `import_*` solo para el personal de la organización.
+- `reports.shared_at` / `shared_by` (migración `0031`): informe compartido con la app del cliente.
+- RLS: `reports` escribe solo el personal; el cliente **lee** solo sus informes con `shared_at` (política propia, migración `0032`, RLS v10). `import_*` solo para el personal de la organización.
 
 ## Seguridad y RGPD (Fase 13)
 

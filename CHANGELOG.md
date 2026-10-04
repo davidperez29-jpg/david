@@ -2,6 +2,21 @@
 
 Formato: fecha · cambio · motivo · archivos · impacto.
 
+## 2026-10-04 — Pendientes técnicos tras la Fase 15
+
+- **Cambio:** imagen Docker mínima (`web`, servidor autónomo de Next, ≈ 480 MB) e imagen `jobs` para migraciones y trabajos.
+  - **Motivo:** la imagen única pesaba 1,7 GB. **Archivos:** `Dockerfile`, `docker-compose.yml`, `next.config.ts`.
+- **Cambio:** almacenamiento de objetos S3 compatible para los archivos subidos (firma SigV4, sin SDK), probado contra un servidor real en CI.
+  - **Impacto:** variables `S3_*`; sin ellas, disco local como antes.
+- **Cambio:** contrato de respuestas de la API: forma de cada `GET` en `docs/api/responses.json`; un campo eliminado o un tipo cambiado hace fallar el E2E.
+- **Cambio:** informe compartido con el cliente.
+  - **Incluye:**
+    - el entrenador comparte o deja de compartir un informe (auditado) y ve antes la versión del cliente;
+    - el cliente lo ve en Progreso, en 7 apartados en lenguaje sencillo, y lo descarga en PDF;
+    - permiso `reports:read_shared`;
+    - columnas `reports.shared_at`/`shared_by` (`0031`) y RLS v10 (`0032`): el cliente solo lee sus informes compartidos.
+  - **Motivo:** §9 (el cliente ve su progreso sin jerga) y la especificación de permisos («propio, si habilitado»).
+
 ## 2026-10-04 — Fase 15: optimización y escala
 
 - **Cambio:** observabilidad.

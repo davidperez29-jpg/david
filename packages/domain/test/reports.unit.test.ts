@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   buildClientReport,
+  clientReportView,
+  VERDICT_LABELS,
   parseCsv,
   reportRows,
   rowsToRecords,
@@ -191,5 +193,79 @@ describe('client report (§34: 11 sections)', () => {
     const rows = reportRows(buildClientReport(input()));
     expect(rows[0]).toEqual(['Informe de Iker Arrieta']);
     expect(rows.some((r) => r[0] === '11. Próxima reevaluación')).toBe(true);
+  });
+});
+
+describe("client's version of a shared report (plain language)", () => {
+  it('seven plain sections from the same snapshot; no technical tables or jargon', () => {
+    const r = clientReportView(
+      input({
+        series: [
+          {
+            ...input().series[0]!,
+            change: {
+              from: 34.2,
+              to: 37.1,
+              delta: 2.9,
+              label: VERDICT_LABELS.probable_improvement,
+              mdc95: 2.4,
+            },
+          },
+        ],
+      }),
+    );
+    expect(r.title).toBe('Tu informe, Iker');
+    expect(r.sections.map((s) => s.key)).toEqual([
+      'resumen',
+      'objetivos',
+      'constancia',
+      'progreso',
+      'plan',
+      'mensaje',
+      'proxima',
+    ]);
+    const text = JSON.stringify(r);
+    expect(text).toMatch(/has hecho 6 de 6 sesiones/);
+    expect(text).toMatch(
+      /CMJ: de 34,2 cm \(16\/06\/2026\) a 35,93 cm \(22\/09\/2026\)\. Has mejorado/,
+    );
+    expect(text).toMatch(/Vas por la semana 3 de 12 \(base\)/);
+    expect(text).toMatch(/ajustado el plan una vez/);
+    expect(text).toMatch(/Mantener el trabajo de fuerza/);
+    expect(text).toMatch(/Hacia el 02\/11\/2026/);
+    expect(text).not.toMatch(/MDC|UA|Fuerza relativa baja|Seitz|desarrollar|Carga interna/);
+    expect(r.sections.flatMap((s) => s.blocks).some((b) => b.kind === 'table')).toBe(false);
+    // Deterministic, like the trainer's report.
+    expect(clientReportView(input())).toEqual(clientReportView(input()));
+  });
+
+  it('safety and missing data: referral, non-comparable series, nothing planned, no message', () => {
+    const r = clientReportView(
+      input({
+        screening: 'refer',
+        series: [{ ...input().series[0]!, change: null, note: 'Métodos distintos.' }],
+        adherence: {
+          last4: { planned: 0, done: 0, percent: null },
+          last12: { planned: 0, done: 0, percent: null },
+          weeks: [],
+        },
+        plan: null,
+        trainerNotes: null,
+        goals: [],
+        nextReassessment: { date: null, basis: 'Sin evaluaciones' },
+      }),
+    );
+    const text = JSON.stringify(r);
+    expect(text).toMatch(/requiere valoración por profesional sanitario/);
+    expect(text).toMatch(/no son comparables/);
+    expect(text).toMatch(/No había sesiones planificadas/);
+    expect(text).toMatch(/no tienes un plan activo/);
+    expect(text).toMatch(/Sin mensaje/);
+    expect(text).toMatch(/Tu entrenador te dirá la fecha/);
+    expect(
+      clientReportView(input({ series: [], results: [] })).sections[3]!.blocks[0],
+    ).toMatchObject({
+      text: 'Aún no hay evaluaciones en este periodo.',
+    });
   });
 });

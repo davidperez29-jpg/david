@@ -88,6 +88,9 @@ export const reports = pgTable(
     fileId: uuid('file_id').references(() => files.id),
     error: text('error'),
     generatedBy: uuid('generated_by'),
+    /** Shared with the client (their app shows it in plain language); NULL = staff only. */
+    sharedAt: timestamp('shared_at', { withTimezone: true }),
+    sharedBy: uuid('shared_by'),
     ...timestamps(),
   },
   (t) => [index('reports_client_idx').on(t.clientId)],

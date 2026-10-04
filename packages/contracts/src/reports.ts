@@ -16,6 +16,9 @@ export const generateReportSchema = z
     path: ['to'],
   });
 
+/** Shares a report with the client's app (plain-language version) or stops sharing it. */
+export const shareReportSchema = z.object({ shared: z.boolean() });
+
 export const REPORT_FORMATS = ['pdf', 'xlsx', 'csv'] as const;
 export const EXPORT_ENTITIES = ['clients', 'assessments', 'plan', 'sessions', 'progress'] as const;
 export type ExportEntity = (typeof EXPORT_ENTITIES)[number];

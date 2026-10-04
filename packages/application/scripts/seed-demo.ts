@@ -18,6 +18,7 @@ import {
   decideRecommendation,
   evaluateAllAdjustments,
   generateClientReport,
+  shareClientReport,
   createImportJob,
   importExternalMeasurements,
   setExerciseTolerance,
@@ -830,7 +831,15 @@ console.log(`Programming engine: ${adj.created} adjustment proposals; 1 plan pro
 {
   const elena = created[specs.findIndex((s) => s.basics.firstName === 'Elena')]!;
   const to = localDate(new Date());
-  await generateClientReport(elena.by, elena.id, { from: addDays(to, -55), to });
+  // An earlier report kept for the team, and the latest one shared with Elena's app.
+  await generateClientReport(elena.by, elena.id, { from: addDays(to, -55), to: addDays(to, -28) });
+  const shared = await generateClientReport(elena.by, elena.id, {
+    from: addDays(to, -55),
+    to,
+    trainerNotes:
+      'Buen trabajo con la constancia. Seguimos progresando los saltos con prudencia y repetimos el test de salto en la próxima evaluación.',
+  });
+  await shareClientReport(elena.by, shared.id, { shared: true });
   const [pattern] = (await db.execute(
     sql`SELECT id FROM movement_patterns WHERE organization_id IS NULL AND slug = 'jump_plyometric' LIMIT 1`,
   )) as unknown as { id: string }[];
@@ -841,7 +850,7 @@ console.log(`Programming engine: ${adj.created} adjustment proposals; 1 plan pro
       reason: 'Progresar saltos con prudencia tras el esguince (sin molestias actuales).',
     });
 }
-console.log('Reports: 2 client reports (Iker, Elena).');
+console.log('Reports: 3 client reports (Iker; Elena, the latest shared with her app).');
 
 // Integrations (Phase 15): a week of a watch export for Elena (steps; resting heart rate with her
 // health-data consent). Fictitious values.

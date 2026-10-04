@@ -186,7 +186,13 @@ CREATE POLICY notifications_update ON notifications FOR UPDATE USING (organizati
 CREATE POLICY notifications_insert ON notifications FOR INSERT WITH CHECK (organization_id = app_org_id() AND app_is_staff());`,
   },
   files: { kind: 'client_optional', clientWrite: true, clientRead: true },
-  reports: { kind: 'client_optional', clientWrite: false, clientRead: false },
+  reports: {
+    kind: 'custom',
+    // Staff as client_optional; the client reads only their own reports the trainer shared
+    // (shared_at), never writes. Same role rule as the generator's client_optional.
+    sql: `CREATE POLICY reports_select ON reports FOR SELECT USING (organization_id = app_org_id() AND (CASE WHEN client_id IS NULL THEN app_is_staff() ELSE (app_has_role('ADMIN') OR (app_has_role('TRAINER') AND app_trainer_assigned(client_id)) OR (app_has_role('CLIENT') AND client_id = app_client_id() AND shared_at IS NOT NULL)) END));
+CREATE POLICY reports_write ON reports FOR ALL USING (organization_id = app_org_id() AND app_is_staff() AND (CASE WHEN client_id IS NULL THEN true ELSE (app_has_role('ADMIN') OR (app_has_role('TRAINER') AND app_trainer_assigned(client_id))) END)) WITH CHECK (organization_id = app_org_id() AND app_is_staff() AND (CASE WHEN client_id IS NULL THEN true ELSE (app_has_role('ADMIN') OR (app_has_role('TRAINER') AND app_trainer_assigned(client_id))) END));`,
+  },
   // Phase 13: the client files and reads their own rights requests; staff handle them.
   privacy_requests: { kind: 'client_owned', clientWrite: true, clientRead: true },
   user_recovery_codes: {

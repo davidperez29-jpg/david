@@ -5,11 +5,12 @@
  * audited as exports. Health data (screening, pain) only appear with the client's consent.
  */
 import { createHash } from 'node:crypto';
-import { generateReportSchema } from '@tp/contracts';
+import { generateReportSchema, shareReportSchema } from '@tp/contracts';
 import { schema } from '@tp/db';
 import {
   addDays,
   buildClientReport,
+  clientReportView,
   DomainError,
   hasActiveConsent,
   localDate,
@@ -18,6 +19,7 @@ import {
   toCsv,
   type ConsentPurpose,
   type Explanation,
+  type Permission,
   type ReportInput,
 } from '@tp/domain';
 import { and, asc, desc, eq, gte, inArray, isNull, lte, sql } from 'drizzle-orm';
@@ -412,6 +414,9 @@ async function reportInput(
   };
 }
 
+const isStaff = (ctx: RequestContext) =>
+  ctx.actor.roles.includes('ADMIN') || ctx.actor.roles.includes('TRAINER');
+
 const sha256 = (s: string) => createHash('sha256').update(s).digest('hex');
 
 async function generateClientReport_(ctx: RequestContext, clientId: string, input: unknown) {
@@ -448,12 +453,18 @@ async function generateClientReport_(ctx: RequestContext, clientId: string, inpu
   return { id: r!.id, hash };
 }
 
-async function loadReport(ctx: RequestContext, id: string) {
+async function loadReport(
+  ctx: RequestContext,
+  id: string,
+  permission: Permission = 'reports:generate',
+) {
   const [r] = await ctx.db.select().from(reports).where(eq(reports.id, id));
   if (!r || !r.clientId || r.type !== 'client_report' || !r.snapshot)
     throw new DomainError('not_found', 'Informe no encontrado.');
+  // The client only ever sees what their trainer shared (RLS enforces it too).
+  if (!r.sharedAt && !isStaff(ctx)) throw new DomainError('not_found', 'Informe no encontrado.');
   try {
-    await authorizeClient(ctx, 'reports:generate', r.clientId);
+    await authorizeClient(ctx, permission, r.clientId);
   } catch (e) {
     if (e instanceof DomainError && e.code === 'not_found')
       throw new DomainError('not_found', 'Informe no encontrado.');
@@ -470,6 +481,7 @@ async function listClientReports_(ctx: RequestContext, clientId: string) {
       parameters: reports.parameters,
       hash: reports.hash,
       createdAt: reports.createdAt,
+      sharedAt: reports.sharedAt,
       by: users.displayName,
     })
     .from(reports)
@@ -492,6 +504,7 @@ async function getClientReport_(ctx: RequestContext, id: string) {
     clientId: r.clientId!,
     hash: r.hash,
     createdAt: r.createdAt,
+    sharedAt: r.sharedAt,
     intact: sha256(stableStringify(snapshot)) === r.hash,
     report: buildClientReport(snapshot),
   };
@@ -560,7 +573,83 @@ async function downloadClientReport_(
   return out;
 }
 
+/** Shares the report with the client's app, or stops sharing it (the trainer decides). */
+async function shareClientReport_(ctx: RequestContext, id: string, input: unknown) {
+  const d = parse(shareReportSchema, input);
+  const r = await loadReport(ctx, id);
+  if (!!r.sharedAt === d.shared) return { id, sharedAt: r.sharedAt };
+  const [u] = await ctx.db
+    .update(reports)
+    .set(
+      d.shared
+        ? { sharedAt: ctx.now(), sharedBy: ctx.actor.userId, updatedAt: ctx.now() }
+        : { sharedAt: null, sharedBy: null, updatedAt: ctx.now() },
+    )
+    .where(eq(reports.id, id))
+    .returning({ sharedAt: reports.sharedAt });
+  await writeAudit(ctx.db, ctx, {
+    action: 'update',
+    entityType: 'report',
+    entityId: id,
+    clientId: r.clientId,
+    changes: { shared: d.shared },
+  });
+  return { id, sharedAt: u!.sharedAt };
+}
+
+/** Reports shared with the client, newest first (the client's app and the trainer's preview). */
+async function listSharedReports_(ctx: RequestContext, clientId: string) {
+  await authorizeClient(ctx, 'reports:read_shared', clientId);
+  const rows = await ctx.db
+    .select({ id: reports.id, parameters: reports.parameters, sharedAt: reports.sharedAt })
+    .from(reports)
+    .where(
+      and(
+        eq(reports.clientId, clientId),
+        eq(reports.type, 'client_report'),
+        sql`${reports.sharedAt} IS NOT NULL`,
+      ),
+    )
+    .orderBy(desc(reports.sharedAt))
+    .limit(50);
+  return rows.map((r) => {
+    const p = r.parameters as { from: string; to: string };
+    return { id: r.id, from: p.from, to: p.to, sharedAt: r.sharedAt! };
+  });
+}
+
+/** The client's plain-language version, from the same frozen snapshot. */
+async function getClientReportView_(ctx: RequestContext, id: string) {
+  const r = await loadReport(ctx, id, 'reports:read_shared');
+  return {
+    id: r.id,
+    clientId: r.clientId!,
+    sharedAt: r.sharedAt,
+    report: clientReportView(r.snapshot as ReportInput),
+  };
+}
+
+async function downloadClientReportView_(ctx: RequestContext, id: string): Promise<FileOut> {
+  const { report, clientId } = await getClientReportView_(ctx, id);
+  await writeAudit(ctx.db, ctx, {
+    action: 'export',
+    entityType: 'report',
+    entityId: id,
+    clientId,
+    changes: { format: 'pdf', version: 'client' },
+  });
+  return {
+    fileName: `mi-informe-${report.generatedAt.slice(0, 10)}.pdf`,
+    contentType: 'application/pdf',
+    body: await reportPdf(report),
+  };
+}
+
 export const generateClientReport = secured(generateClientReport_);
+export const shareClientReport = secured(shareClientReport_);
+export const listSharedReports = secured(listSharedReports_);
+export const getClientReportView = secured(getClientReportView_);
+export const downloadClientReportView = secured(downloadClientReportView_);
 export const listClientReports = secured(listClientReports_);
 export const getClientReport = secured(getClientReport_);
 export const downloadClientReport = secured(downloadClientReport_);

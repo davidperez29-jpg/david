@@ -567,6 +567,7 @@ async function reportsTab(ctx: Awaited<ReturnType<typeof requireStaff>>, clientI
                   {formatDateTime(r.createdAt)}
                   {r.by ? ` · ${r.by}` : ''}
                 </span>
+                {r.sharedAt ? <Badge tone="ok">Compartido</Badge> : null}
                 <a
                   className="text-xs text-accent underline"
                   href={`/api/v1/reports/${r.id}/download?format=pdf`}

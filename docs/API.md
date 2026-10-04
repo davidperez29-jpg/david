@@ -248,6 +248,10 @@ Detalle en `REPORTS.md`. Las respuestas de descarga son archivos (`Content-Dispo
 | `POST /clients/{id}/reports` | `reports:generate` | `{from, to, trainerNotes?}` | Congela la instantánea del periodo (11 apartados) y devuelve `{id, hash}`. |
 | `GET /reports/{id}` | `reports:generate` | — | El informe reconstruido desde la instantánea, con `intact` (comprobación del hash). |
 | `GET /reports/{id}/download?format=pdf\|xlsx\|csv` | `reports:generate` | — | Archivo; auditado como `export`. El PDF es reproducible byte a byte. |
+| `PUT /reports/{id}/share` | `reports:generate` | `{shared}` | Comparte el informe con la app del cliente o deja de compartirlo. Auditado. |
+| `GET /clients/{id}/shared-reports` | `reports:read_shared` | — | Informes compartidos con el cliente: `[{id, from, to, sharedAt}]`. |
+| `GET /reports/{id}/client-view` | `reports:read_shared` | — | Versión del cliente en lenguaje sencillo (7 apartados). Un cliente solo accede a los suyos compartidos; si no, 404. |
+| `GET /reports/{id}/client-view/download` | `reports:read_shared` | — | PDF de la versión del cliente; auditado como `export`. Operación pesada (límite por minuto). |
 | `GET /exports?entity&format[&clientId&planId&from&to]` | `data:export` | `entity`: `clients`, `assessments`, `plan`, `sessions` o `progress`; `format`: `csv` o `xlsx` | Exportación bajo RLS, auditada. |
 | `POST /imports` | `data:import` (+ el de la entidad) | `{entity, fileName, contentBase64}` | Valida el archivo y crea la vista previa: `{id, total, valid, invalid}`. No escribe datos. |
 | `GET /imports` · `GET /imports/{id}` | `data:import` | — | Historial; filas con estado, datos y errores por columna. |

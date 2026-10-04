@@ -1,14 +1,25 @@
-import { clientAssessmentProgress, clientDashboard, clientMonitoring } from '@tp/application';
+import Link from 'next/link';
+import {
+  clientAssessmentProgress,
+  clientDashboard,
+  clientMonitoring,
+  listSharedReports,
+} from '@tp/application';
 import { ProgressView } from '@/components/assessment/progress';
 import { requireClientUser } from '@/server/session';
 
 export default async function ClientProgress() {
   const ctx = await requireClientUser();
-  const [all, m, dash] = await Promise.all([
+  const [all, m, dash, reports] = await Promise.all([
     clientAssessmentProgress(ctx, ctx.actor.clientId!),
     clientMonitoring(ctx, ctx.actor.clientId!),
     clientDashboard(ctx, ctx.actor.clientId!),
+    listSharedReports(ctx, ctx.actor.clientId!),
   ]);
+  const day = (iso: string) =>
+    new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'short', timeZone: 'UTC' }).format(
+      new Date(`${iso}T00:00:00Z`),
+    );
   const a = m.adherence28;
   // Only the tests the trainer chose for this screen (§9.5); none chosen = all.
   const data = dash.visibleTestIds.length
@@ -81,6 +92,25 @@ export default async function ClientProgress() {
                     }).format(new Date(`${x.date}T00:00:00Z`))}
                   </span>
                 ) : null}
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+      {reports.length ? (
+        <section className="rounded-xl border border-border p-5" aria-label="Tus informes">
+          <h2 className="text-xs font-semibold tracking-wide text-muted uppercase">
+            Informes de tu entrenador
+          </h2>
+          <ul className="mt-2 flex flex-col">
+            {reports.map((r) => (
+              <li key={r.id}>
+                <Link
+                  href={`/me/informes/${r.id}`}
+                  className="flex min-h-12 items-center text-accent underline"
+                >
+                  Informe del {day(r.from)} al {day(r.to)}
+                </Link>
               </li>
             ))}
           </ul>

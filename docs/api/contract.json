@@ -79,6 +79,7 @@
     "clients/[clientId]/rule-overrides PUT authenticated",
     "clients/[clientId]/screenings POST authenticated",
     "clients/[clientId]/session-review GET authenticated",
+    "clients/[clientId]/shared-reports GET authenticated",
     "clients/[clientId]/subject-data GET authenticated",
     "clients/[clientId]/summary GET authenticated",
     "clients/[clientId]/tolerances/[toleranceId] DELETE authenticated",
@@ -145,8 +146,11 @@
     "privacy-requests/[id]/resolve POST authenticated",
     "privacy-requests GET authenticated",
     "recommendations/[id]/decision POST authenticated",
+    "reports/[id]/client-view/download GET authenticated",
+    "reports/[id]/client-view GET authenticated",
     "reports/[id]/download GET authenticated",
     "reports/[id] GET authenticated",
+    "reports/[id]/share PUT authenticated",
     "review-inbox GET authenticated",
     "science/claims/[claimId] GET authenticated",
     "science/claims/[claimId] PATCH authenticated",
@@ -5630,6 +5634,17 @@
       },
       "required": [
         "status"
+      ]
+    },
+    "shareReportSchema": {
+      "type": "object",
+      "properties": {
+        "shared": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "shared"
       ]
     },
     "sourceSchema": {
