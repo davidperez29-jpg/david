@@ -27,11 +27,11 @@ const UUIDS = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi;
 export function scrubText(s: string): string {
   const kept: string[] = [];
   return s
-    .replace(UUIDS, (m) => `\u0000${kept.push(m) - 1}\u0000`)
+    .replace(UUIDS, (m) => `\uE000${kept.push(m) - 1}\uE001`)
     .replace(EMAIL, '[email]')
     .replace(TOKENISH, '[token]')
     .replace(LONG_DIGITS, '[número]')
-    .replace(/\u0000(\d+)\u0000/g, (_, i: string) => kept[Number(i)]!)
+    .replace(/\uE000(\d+)\uE001/g, (_, i: string) => kept[Number(i)]!)
     .slice(0, 500);
 }
 
