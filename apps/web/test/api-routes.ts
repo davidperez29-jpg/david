@@ -1,7 +1,11 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-export const API_ROOT = path.resolve(__dirname, '../src/app/api/v1');
+export const API_ROOT = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  '../src/app/api/v1',
+);
 
 function routeFiles(dir: string): string[] {
   return readdirSync(dir)

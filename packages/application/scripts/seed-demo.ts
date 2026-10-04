@@ -18,6 +18,8 @@ import {
   decideRecommendation,
   evaluateAllAdjustments,
   generateClientReport,
+  createImportJob,
+  setExerciseTolerance,
   generatePlanProposal,
   getDecision,
   listAssessmentTests,
@@ -323,6 +325,14 @@ const specs: Spec[] = [
     ],
     days: [2, 5],
     equipment: eq('dumbbells', 'resistance_bands', 'mat'),
+    history: 'Pilates en grupo (2019–2021)',
+    health: {
+      type: 'injury',
+      bodyRegion: 'tobillo derecho',
+      requiresProfessionalAssessment: false,
+      declaredStatus: 'resolved',
+      description: 'Esguince de tobillo (2022), sin molestias actuales',
+    },
     account: true,
   },
   {
@@ -815,7 +825,32 @@ console.log(`Programming engine: ${adj.created} adjustment proposals; 1 plan pro
       'Prioridad: fuerza máxima de tren inferior dos días por semana; mantener el trabajo de velocidad. Reevaluar CMJ y sprint en la semana de evaluación.',
   });
 }
-console.log('Reports: 1 client report (Iker).');
+// Elena (online): her trainer's report and a tolerance noted after the ankle sprain.
+{
+  const elena = created[specs.findIndex((s) => s.basics.firstName === 'Elena')]!;
+  const to = localDate(new Date());
+  await generateClientReport(elena.by, elena.id, { from: addDays(to, -55), to });
+  const [pattern] = (await db.execute(
+    sql`SELECT id FROM movement_patterns WHERE organization_id IS NULL AND slug = 'jump_plyometric' LIMIT 1`,
+  )) as unknown as { id: string }[];
+  if (pattern)
+    await setExerciseTolerance(elena.by, elena.id, {
+      movementPatternId: pattern.id,
+      kind: 'restricted',
+      reason: 'Progresar saltos con prudencia tras el esguince (sin molestias actuales).',
+    });
+}
+console.log('Reports: 2 client reports (Iker, Elena).');
+
+// Imports (§52): a client list validated but not confirmed yet (shown in Informes → importaciones).
+await createImportJob(lucia, {
+  entity: 'clients',
+  fileName: 'altas-octubre.csv',
+  contentBase64: Buffer.from(
+    'Nombre;Apellidos;Fecha nacimiento;Sexo;Email\nSara;Gil Ortega;02/02/1992;mujer;sara.gil@example.com\nTomas;Ruiz;31/02/1990;hombre;\n',
+  ).toString('base64'),
+});
+console.log('Imports: 1 validated client list pending confirmation.');
 
 // Privacy (RGPD): Elena asks to correct a datum from the app (one-month deadline).
 {
