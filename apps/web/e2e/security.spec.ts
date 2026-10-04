@@ -21,10 +21,10 @@ test('security headers on pages and API', async ({ request }) => {
     expect(scriptSrc).toMatch(/'nonce-[A-Za-z0-9+/=]+'/);
     expect(scriptSrc).not.toContain("'unsafe-inline'");
   }
-  const nonce = async () =>
-    (await request.get('/login'))
-      .headers()
-      ['content-security-policy']!.match(/'nonce-([^']+)'/)![1];
+  const nonce = async () => {
+    const csp = (await request.get('/login')).headers()['content-security-policy']!;
+    return csp.match(/'nonce-([^']+)'/)![1];
+  };
   expect(await nonce()).not.toBe(await nonce());
 });
 
