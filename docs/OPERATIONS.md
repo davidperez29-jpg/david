@@ -53,7 +53,11 @@ docker run --rm -e DATABASE_URL=… -e APP_ENCRYPTION_KEY=… -w /app/packages/a
 
 ```bash
 POSTGRES_PASSWORD=… APP_ENCRYPTION_KEY=$(openssl rand -base64 32) docker compose up
+# Con los datos de demostración (usuarios y clientes de prueba; se cargan una sola vez):
+POSTGRES_PASSWORD=… APP_ENCRYPTION_KEY=… docker compose --profile demo up
 ```
+
+El perfil `demo` es solo para probar: nunca en producción (contraseña conocida).
 
 **Orden en cada versión**:
 

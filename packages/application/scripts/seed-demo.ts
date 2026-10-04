@@ -80,6 +80,18 @@ async function acceptAs(link: string, displayName: string): Promise<RequestConte
   return as(s.actor.userId);
 }
 
+// DEMO_IF_EMPTY=1 (docker compose --profile demo): load the demo only once, never on top of it.
+if (process.env.DEMO_IF_EMPTY === '1') {
+  const existing = (await db.execute(
+    sql`SELECT 1 FROM users WHERE email = 'lucia.moreno@example.com'`,
+  )) as unknown as unknown[];
+  if (existing.length) {
+    console.log('Demo data already loaded: nothing to do.');
+    await close();
+    process.exit(0);
+  }
+}
+
 const org = await bootstrapOrganization(db, {
   name: 'Centro Demo',
   slug: 'centro-demo',

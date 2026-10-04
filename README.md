@@ -4,6 +4,19 @@ Sistema profesional para **evaluar, programar, entrenar y hacer seguimiento** de
 
 > **Estado actual: Fases 0–15 completadas.** Plataforma completa: evaluación, bibliotecas científica (verificada en PubMed) y de ejercicios, planificación, app del cliente sin conexión, seguimiento, motores de decisiones y de programación, informes, seguridad y RGPD, pirámide de pruebas con umbrales en CI y, ahora, **optimización y escala**: observabilidad sin datos personales, límites por usuario, CSP con _nonce_, integraciones preparadas, herramientas de equipo e imagen Docker con guía de operación. Tras la Fase 15 se cerraron los pendientes técnicos: imagen mínima, almacenamiento S3, contrato de respuestas, informe compartido con el cliente y PDF del plan. Pendiente: decisiones de despliegue (proveedor UE, email) y validación legal.
 
+## Probarla en tu ordenador (Windows, macOS o Linux)
+
+1. Instala **Docker Desktop** y comprueba que arranca (en Windows necesita la virtualización activada y WSL 2).
+2. Descarga el código: en GitHub, rama `claude/training-platform-system-hm10nq` → **Code → Download ZIP**, y descomprímelo.
+3. En la carpeta del proyecto, crea un archivo `.env` con:
+   ```
+   POSTGRES_PASSWORD=una-contraseña-cualquiera
+   APP_ENCRYPTION_KEY=<32 bytes en base64>
+   ```
+   (en PowerShell: `[Convert]::ToBase64String((1..32 | ForEach-Object { Get-Random -Maximum 256 }))`; solo para pruebas).
+4. Abre una terminal en esa carpeta y ejecuta `docker compose --profile demo up --build`. La primera vez tarda varios minutos.
+5. Abre http://localhost:3000 y entra con `lucia.moreno@example.com` (entrenadora) o `elena.prieto@example.com` (clienta). Contraseña: `demo-entrenamiento-2026`.
+
 ## Arranque rápido
 
 ```bash

@@ -27,6 +27,19 @@ services:
     depends_on:
       db: { condition: service_healthy }
 
+  # Optional demo data (docker compose --profile demo up): demo users and clients, loaded once.
+  demo:
+    profiles: [demo]
+    image: training-platform-jobs:${APP_VERSION:-local}
+    working_dir: /app/packages/application
+    command: ['node', 'node_modules/tsx/dist/cli.mjs', 'scripts/seed-demo.ts']
+    environment:
+      DATABASE_URL: postgres://app:${POSTGRES_PASSWORD}@db:5432/app
+      APP_ENCRYPTION_KEY: ${APP_ENCRYPTION_KEY:?set APP_ENCRYPTION_KEY}
+      DEMO_IF_EMPTY: '1'
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+
   app:
     image: training-platform:${APP_VERSION:-local}
     build: { context: ., target: web }
