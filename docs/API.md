@@ -218,3 +218,22 @@ Detalle en `DECISION_ENGINE.md`. Solo personal: ADMIN de la organización o entr
 | `PUT /decision/rules` | `decision:rules` (ADMIN) | `{rules: [{key, enabled, parameters: {name: number\|null}}], notes?}` | Nueva versión de las reglas (`422` con errores por `regla.parámetro`). |
 
 `PUT /clients/{id}/rule-overrides` (Fase 8) acepta también claves de reglas de decisión.
+
+## Motor de programación (Fase 11)
+
+Detalle en `PROGRAMMING_ENGINE.md`. Solo personal (ADMIN de la organización o entrenador asignado). Ningún endpoint cambia el plan activo salvo al **aceptar** un ajuste.
+
+| Método y ruta | Permiso | Entrada | Descripción |
+|---|---|---|---|
+| `GET /clients/{id}/plan-proposals` | `plans:read` + `decision:read` | — | Propuestas de plan (`PROPOSAL`) con sus notas de generación. |
+| `POST /clients/{id}/plan-proposals` | `plans:write` + `decision:run` | `{startDate, weekdays, templateId?}` | Genera una propuesta desde la última ejecución del motor de decisiones (la ejecuta si no hay). `409` con cribado positivo; `422` si los días no coinciden con la plantilla. |
+| `POST /plans/{id}/proposal/accept` | `plans:write` | `{name?, reason?}` | La propuesta pasa a `CLIENT_PLAN` en borrador. `409` si ya se decidió. |
+| `POST /plans/{id}/proposal/discard` | `plans:write` | `{reason?}` | La propuesta queda archivada. |
+| `GET /clients/{id}/adjustments` | `plans:read` + `decision:read` | — | Ajustes pendientes y decididos (con cambios previstos o aplicados) y la opción de aplicación automática. |
+| `POST /clients/{id}/adjustments/refresh` | `plans:write` | — | Recalcula ahora los ajustes. |
+| `POST /adjustments/{id}/decision` | `plans:write` + `decision:decide` | `{action: accept\|accept_with_changes\|reject\|postpone, params?: {toKg?, setsDelta?, rirDelta?, toExerciseId?}, reason?}` | Al aceptar, aplica a sesiones futuras sin registrar, con revisión del plan y auditoría. `409` si ya está decidida o si nada es aplicable. |
+| `POST /clients/{id}/adjustments/accept` | `plans:write` + `decision:decide` | `{ids, reason?}` | Aceptar en bloque; devuelve `{applied, failed}`. |
+| `POST /adjustments/{id}/revert` | `plans:write` + `decision:decide` | `{reason?}` | Deshace un ajuste aplicado (`reverted`). |
+| `PUT /clients/{id}/auto-apply` | `plans:write` + `decision:decide` | `{enabled}` | Aplicar las progresiones de carga rutinarias sin confirmación (desactivado por defecto; auditado). |
+
+`POST /plans/{id}/status` responde `409` para una propuesta.

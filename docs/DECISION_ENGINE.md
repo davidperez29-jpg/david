@@ -120,6 +120,6 @@ Ver `API.md` («Motor de decisiones»).
 
 ## 9. Pendiente
 
-- Generar el plan a partir de la propuesta y la progresión semana a semana (Fase 11).
+- ~~Generar el plan a partir de la propuesta y la progresión semana a semana~~: hecho en la Fase 11 (`PROGRAMMING_ENGINE.md`).
 - Editor visual de condiciones (hoy se muestran en JSON; solo se editan parámetros y activación).
 - Más rasgos y umbrales por población (por ejemplo, por sexo o categoría).

@@ -267,3 +267,17 @@ Auditoría:
 - `recommendation_evidence` enlaza cada propuesta con sus afirmaciones.
 - `manual_overrides` guarda los cambios campo a campo de «aceptar con cambios».
 - Las reglas de decisión del centro se guardan en `rules` y `rule_sets`, junto a las de alertas: cada versión copia las del otro dominio.
+
+## Motor de programación (Fase 11)
+
+Migración `0019`:
+
+- Valor `reverted` en `recommendation_status`.
+- Nuevas columnas en `recommendations`:
+  - `plan_id`: plan al que se aplica el ajuste;
+  - `key`: situación estable, con índice (`client_id`, `key`). Las recomendaciones del motor de decisiones la tienen a `NULL`, y al recalcular ese motor solo sustituye las suyas;
+  - `applied` jsonb: cambios aplicados, `{sessionExerciseId, field, from, to}[]`, para deshacer.
+- `clients.auto_apply_load_progressions`: booleano, `false` por defecto.
+- `training_plans.generation_notes text[]`: qué adaptó el motor en una propuesta.
+
+Los planes propuestos usan `kind = PROPOSAL`, `status = proposed` y `recommendation_id`/`proposal_of_plan_id`, que ya existían desde la Fase 2. Los ejercicios cambiados por un ajuste guardan `source = progression_rule` y `recommendation_id`.

@@ -2,6 +2,31 @@
 
 Formato: fecha · cambio · motivo · archivos · impacto.
 
+## 2026-10-04 — Fase 11: motor de programación
+
+- **Cambio:** dominio de programación.
+  - **Incluye:**
+    - progresión de carga semana a semana: ajuste por RIR, y doble progresión solo con rango de repeticiones; incremento por material;
+    - descarga y reducción de volumen por respuesta;
+    - sustitución por molestias, sin diagnóstico;
+    - cambios recalculables al editar;
+    - adaptación de plantilla al motor de decisiones: semanas de introducción y sustituciones.
+  - **Archivos:** `packages/domain/src/programming/*`.
+- **Cambio:** propuestas de plan `PROPOSAL` desde la última ejecución del motor de decisiones.
+  - **Incluye:** se aceptan como plan en borrador o se descartan. Nunca se activan directamente; con cribado positivo no se generan.
+- **Cambio:** propuestas de ajuste calculadas tras cada sesión cerrada, cada día y bajo demanda.
+  - **Incluye:** aceptar, editar, rechazar o posponer; en bloque; deshacer.
+  - **Motivo:** la regla dura de §12.2. Solo se aplican al aceptar, a sesiones futuras sin registrar, sin pisar cambios manuales, con revisión del plan y auditoría.
+- **Cambio:** opción por cliente para aplicar progresiones de carga sin confirmación (desactivada por defecto, auditada como `SYSTEM`, reversible).
+- **Cambio:** API y datos.
+  - **Archivos:** `packages/application/src/programming.ts`, migración `0019`, rutas `/plan-proposals`, `/plans/{id}/proposal/*`, `/adjustments*` y `/auto-apply`.
+  - **Impacto:** el trabajo diario también evalúa ajustes. El motor de decisiones ya no sustituye los ajustes al recalcular.
+- **Cambio:** interfaz.
+  - **Incluye:** «Ajustes propuestos» y «Propuesta de plan del motor» en Planificación; aviso en la propuesta de plan; «Ver propuesta de ajuste» en Seguimiento.
+- **Cambio:** demo: el 1RM de Iker se registra antes de su plan, así sus cargas están en kg y tiene progresiones propuestas; también tiene una propuesta de plan.
+- **Cambio:** tests: 310 unitarios, 126 de integración y 29 E2E.
+- **Cambio:** documentación: `PROGRAMMING_ENGINE.md`; `API.md`, `TESTING.md`, `DATABASE.md`, `MONITORING.md`, `DECISION_ENGINE.md`, `ROADMAP.md`, `MASTER_SPECIFICATION.md` y `README.md` actualizados.
+
 ## 2026-10-03 — Fase 10: motor de decisiones
 
 - **Cambio:** dominio del motor (§13).

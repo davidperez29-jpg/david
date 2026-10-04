@@ -108,3 +108,14 @@ Las alertas no son legibles por el cliente por RLS (`alerts`: `client_owned`, `c
 | Propuestas de ajuste aceptables desde la alerta (aplicar la subida o bajada de carga al plan con revisión) | 11 |
 | Notificaciones push y por correo de alertas rojas | 13 |
 | Umbrales por población (p. ej., personas mayores frente a deportistas) | Tras uso real |
+
+## Fase 11: de la alerta a la propuesta de ajuste
+
+Tras cada sesión cerrada, y en `pnpm monitor:daily`, el motor de programación (`PROGRAMMING_ENGINE.md`) lee las alertas abiertas y propone ajustes concretos del plan:
+
+- RPE de sesión alto o bienestar bajo → semana de descarga;
+- adherencia baja o sesiones parciales → menos volumen;
+- RIR fuera del objetivo → carga;
+- molestias en un ejercicio → sustitución.
+
+Nunca se aplican solos: la ficha → Seguimiento enlaza con «Ver propuesta de ajuste».

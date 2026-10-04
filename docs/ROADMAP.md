@@ -15,8 +15,9 @@ Plan completo y criterios de aceptación: `MASTER_SPECIFICATION.md` §16.
 | 8 Feedback + adherencia | ✅ 2026-10-03 | Adherencia (24/21 = 87,5 %), carga interna sRPE, monotonía y tensión descriptivas (sin ACWR), bienestar, valoración por ejercicio, 10 reglas de alerta 🟢🟡🔴 configurables por centro y por cliente, evaluación tras cada evento y trabajo diario, página de alertas, Hoy y ficha de seguimiento. |
 | 9 Dashboard | ✅ 2026-10-03 | Hoy del entrenador según §8.2 (cifras, alertas, sesiones de hoy, feedback reciente, evaluaciones pendientes), calendario global (mes, semana, filtros, estados, evaluaciones, fases y descargas), Resumen del cliente, Hoy y Progreso del cliente (vista previa, racha, hitos, métricas elegidas por el entrenador), modo oscuro elegible, revisión UX con 3 tareas cronometradas. |
 | 10 Motor de decisiones | ✅ 2026-10-03 | Contexto desde la base de datos (con consentimiento), 10 etapas puras y deterministas, DSL sin `eval`, 24 reglas como datos versionadas por centro, umbrales sin valor por defecto, explicación DATOS → … → CONFIANZA con DOI, decisiones del entrenador auditadas, rasgos manuales, desactivación por cliente, métricas de rechazo por regla, pestaña «Necesidades» y editor de reglas. |
-| 11 Motor de programación | ⏭ siguiente | Propuesta de plan desde plantilla y contexto, progresión semana a semana, ajustes por respuesta. |
-| 12–15 | pendiente | Ver especificación. |
+| 11 Motor de programación | ✅ 2026-10-04 | Propuesta de plan (`PROPOSAL`) desde la ejecución del motor de decisiones, con semanas de introducción y sustituciones; aceptar como borrador o descartar. Ajustes semana a semana (carga por RIR o doble progresión, descarga, volumen, sustitución por molestias) que solo se aplican al aceptar, a sesiones futuras, con revisión, auditoría y deshacer. Aplicación automática opcional (desactivada por defecto). |
+| 12 Informes | ⏭ siguiente | Informe de cliente, exportaciones e importaciones validadas. |
+| 13–15 | pendiente | Ver especificación. |
 
 ## Criterios de cierre de la Fase 1 (§63)
 
@@ -143,3 +144,16 @@ Plan completo y criterios de aceptación: `MASTER_SPECIFICATION.md` §16.
 | Documentación | ✅ `DECISION_ENGINE.md`, `API.md`, `TESTING.md` y `DATABASE.md`. |
 | Datos | ✅ Umbrales de futbolista en el centro demo; propuestas calculadas para los 10 clientes; Iker con decisiones que alimentan las métricas. |
 | Pendiente conocido | Generar el plan desde la propuesta (Fase 11). Editor visual de condiciones. Umbrales por sexo o categoría. |
+
+## Criterios de cierre de la Fase 11
+
+| Criterio | Estado |
+|---|---|
+| Funcionalidad | ✅ Propuesta de plan desde plantilla y contexto. Progresión propuesta semana a semana. Propuestas de ajuste por respuesta, aceptables una a una o en bloque, editables, aplazables y reversibles. |
+| Criterio de aceptación §16.2 | ✅ «Nunca modifica un plan activo sin aceptación»: test de integración que compara el plan activo antes y después de registrar, evaluar, ejecutar el trabajo diario, generar propuestas y recalcular el motor de decisiones. |
+| UX | ✅ Revisada con capturas en escritorio y en el móvil: qué cambiaría antes de aceptar, «¿Por qué?», aviso en Seguimiento y en la propuesta de plan. |
+| Seguridad | ✅ Solo personal asignado o ADMIN. Molestias solo con consentimiento. Sustitución sin diagnóstico. La aplicación automática se audita como `SYSTEM` y se puede deshacer. |
+| Tests | ✅ 310 unitarios, 126 de integración y 29 E2E. |
+| Documentación | ✅ `PROGRAMMING_ENGINE.md`, `API.md`, `TESTING.md`, `DATABASE.md` y `MONITORING.md`. |
+| Datos | ✅ La demo tiene progresiones de carga de Iker pendientes, una propuesta de plan para Iker y ajustes por respuesta: descarga (Elena, Javier) y menos volumen (Tomás). |
+| Pendiente conocido | Propuesta como nueva revisión del plan activo. Incremento configurable por ejercicio. Progresión VBT/e1RM. Aplicar ajustes desde la página de alertas. |

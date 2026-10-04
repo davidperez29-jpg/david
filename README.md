@@ -2,7 +2,7 @@
 
 Sistema profesional para **evaluar, programar, entrenar y hacer seguimiento** de clientes, presencial y online, con trazabilidad científica y control total del entrenador.
 
-> **Estado actual: Fase 10 completada**: evaluación, bibliotecas científica (verificada en PubMed) y de ejercicios, planificación, app del cliente sin conexión, seguimiento con alertas, dashboards y, ahora, el **motor de decisiones**: propone necesidades, prioridades, métodos, ejercicios y dosis con un «¿Por qué?» trazable hasta el DOI, y el entrenador acepta, edita, rechaza o pospone cada propuesta. Siguiente: Fase 11 (motor de programación).
+> **Estado actual: Fase 11 completada**: evaluación, bibliotecas científica (verificada en PubMed) y de ejercicios, planificación, app del cliente sin conexión, seguimiento con alertas, dashboards, motor de decisiones y, ahora, el **motor de programación**: genera una propuesta de plan desde la propuesta del motor de decisiones y propone ajustes semana a semana (carga, descarga, volumen, sustitución) que solo se aplican cuando el entrenador los acepta. Siguiente: Fase 12 (informes).
 
 ## Arranque rápido
 
@@ -30,6 +30,7 @@ Usuario demo: `lucia.moreno@example.com` / `demo-entrenamiento-2026`. Más detal
 | [`docs/MONITORING.md`](docs/MONITORING.md)                     | Seguimiento: adherencia, carga interna, reglas y ciclo de vida de las alertas.                                                                                                                            |
 | [`docs/DASHBOARD.md`](docs/DASHBOARD.md)                       | Dashboards del entrenador y del cliente, calendario global, apariencia.                                                                                                                                   |
 | [`docs/DECISION_ENGINE.md`](docs/DECISION_ENGINE.md)           | Motor de decisiones: pipeline, reglas como datos, explicación y control del entrenador.                                                                                                                   |
+| [`docs/PROGRAMMING_ENGINE.md`](docs/PROGRAMMING_ENGINE.md)     | Motor de programación: propuestas de plan y ajustes semana a semana que solo se aplican al aceptar.                                                                                                       |
 | [`docs/UX_REVIEW.md`](docs/UX_REVIEW.md)                       | Revisión UX con 3 tareas cronometradas y protocolo con personas.                                                                                                                                          |
 | [`docs/EXERCISE_LIBRARY.md`](docs/EXERCISE_LIBRARY.md)         | Biblioteca de ejercicios y banco importado.                                                                                                                                                               |
 | [`docs/SECURITY.md`](docs/SECURITY.md)                         | Controles de seguridad y RGPD.                                                                                                                                                                            |

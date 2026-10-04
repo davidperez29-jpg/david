@@ -165,3 +165,23 @@ Pendiente para fases siguientes: evaluación, programa, sesión, ejercicios, fee
   - rasgos manuales; desactivar una regla para un cliente;
   - permisos y aislamiento.
 - E2E: 28 tests ✔. Nuevo `decision.spec.ts`: la pestaña Necesidades con el «¿Por qué?» y su DOI, el rechazo con motivo y el editor de reglas con métricas. Modifica la demo (rechaza un método); en local, vuelve a cargar los datos para repetirlo.
+
+## 11. Resultado en la entrega de la Fase 11
+
+- Unidad: 310 tests ✔. `programming.unit.test.ts` cubre:
+  - doble progresión (solo con rango de repeticiones) y ajuste por RIR (sube y baja), incremento por material;
+  - desplazamiento de la carga planificada en los próximos 14 días; cambios recalculados al editar;
+  - descarga en la primera semana que no ha empezado; reducción de volumen (mínimo 2 series);
+  - sustitución por molestias con la alternativa preaprobada primero y sin diagnóstico;
+  - determinismo;
+  - adaptación de plantilla (semanas de introducción, sustituciones sin mutar la original).
+- Integración: 126 tests ✔. `programming.int.test.ts` cubre:
+  - **regla dura**: el plan activo no cambia sin aceptación;
+  - aceptar solo afecta a sesiones futuras (las pasadas conservan lo prescrito), con revisión; deshacer;
+  - descarga por alerta abierta: aceptar con cambios (`manual_overrides`), posponer, validación;
+  - sustitución por molestias con consentimiento, aceptación en bloque;
+  - aplicación automática auditada como `SYSTEM` y reversible;
+  - propuesta de plan: no aparece entre los planes, no se activa, se acepta como borrador o se descarta;
+  - cribado positivo bloquea la propuesta;
+  - permisos y aislamiento.
+- E2E: 29 tests ✔. Nuevo `programming.spec.ts`: desde Seguimiento → ajuste con «¿Por qué?» y cambios → aceptar → deshacer → aceptar la propuesta de plan como borrador. `planning.spec.ts` se limita ahora a la tarjeta «Nuevo plan», porque la pestaña tiene dos formularios. Modifica la demo: en local, vuelve a cargar los datos para repetirlo.
