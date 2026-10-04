@@ -58,3 +58,9 @@ export function sessionCookieOptions(expiresAt: Date) {
     expires: expiresAt,
   };
 }
+
+/** The id of the current session (to mark it in the sessions list). */
+export async function currentSessionId(): Promise<string | undefined> {
+  const { state } = await currentSession();
+  return state.status === 'authenticated' ? state.sessionId : undefined;
+}
