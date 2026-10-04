@@ -37,7 +37,7 @@ export function toCsv(
         .join(sep),
     )
     .join('\r\n');
-  return ((opts.bom ?? true) ? '﻿' : '') + body + '\r\n';
+  return ((opts.bom ?? true) ? '\uFEFF' : '') + body + '\r\n';
 }
 
 /** Detects the separator from the header line (outside quotes). */
@@ -49,7 +49,7 @@ function detectSeparator(text: string): ';' | ',' | '\t' {
 }
 
 export function parseCsv(input: string): string[][] {
-  const text = input.replace(/^﻿/, '');
+  const text = input.replace(/^\uFEFF/, '');
   const sep = detectSeparator(text);
   const rows: string[][] = [];
   let row: string[] = [];

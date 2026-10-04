@@ -18,7 +18,7 @@ describe('CSV (§14: CSV injection)', () => {
       ['@SUM(A1)', 'línea 1\nlínea 2', -2.5],
       ['Ana; Pérez', null, true],
     ]);
-    expect(csv.startsWith('﻿')).toBe(true);
+    expect(csv.startsWith('\uFEFF')).toBe(true);
     const rows = parseCsv(csv);
     expect(rows[1]![0]).toBe(`'=HYPERLINK("http://x")`);
     expect(rows[1]![1]).toBe(`'+34 600`);
@@ -32,7 +32,7 @@ describe('CSV (§14: CSV injection)', () => {
   });
 
   it('parses comma or semicolon files, BOM, quoted separators and blank lines', () => {
-    expect(parseCsv('﻿a,b\r\n1,"x, y"\r\n\r\n2,z\n')).toEqual([
+    expect(parseCsv('\uFEFFa,b\r\n1,"x, y"\r\n\r\n2,z\n')).toEqual([
       ['a', 'b'],
       ['1', 'x, y'],
       ['2', 'z'],
