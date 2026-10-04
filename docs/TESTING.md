@@ -1,6 +1,6 @@
 # Testing
 
-> Estrategia completa en `MASTER_SPECIFICATION.md` §15. Estado tras la Fase 14: pirámide completa.
+> Estrategia completa en `MASTER_SPECIFICATION.md` §15. Estado tras la Fase 15.
 
 ## 1. Cómo ejecutar
 
@@ -346,4 +346,22 @@ pnpm --filter @tp/web test:e2e -- e2e/perf.spec.ts e2e/perf.mobile.spec.ts
 
 **No incluido en el umbral**: `GET /exports` genera un archivo, no es un listado (≈ 210 ms con 1 000 clientes).
 
-**Pendiente**: crear un plan desde una plantilla tarda ≈ 0,9 s (escritura puntual, fuera del objetivo de listados). Se revisará en la Fase 15.
+**Fase 15**: crear un plan desde una plantilla pasa de ≈ 0,9 s a ≈ 240 ms, porque se escribe por niveles. Los datos de carga se generan en 42 s en lugar de 102 s.
+
+## Resultado de la Fase 15
+
+- **Unidad: 390 tests ✔**, con umbral de cobertura (94,8 % de líneas en el dominio).
+  - `observability.unit.test.ts`: redacción de claves sensibles, depuración de emails, teléfonos y tokens, UUID conservados, una línea JSON por evento, nivel de log, errores sin datos.
+  - Validación de mediciones externas.
+- **Integración: 155 tests ✔.** Nuevos:
+  - `integrations.int.test.ts`: CSV con coma decimal, errores por fila, salud solo con consentimiento, sin duplicados al reimportar, permisos, exportación y supresión;
+  - `team.int.test.ts`: carga por entrenador, traspaso con el rol de principal, solo ADMIN, nunca entre organizaciones;
+  - presupuestos de la API, en `privacy.int.test.ts`.
+- **Seguridad: 566 comprobaciones RLS ✔**, incluidas las mediciones externas, que ya tienen datos demo.
+- **E2E: 41 tests ✔.**
+  - `security.spec.ts`: CSP con *nonce* distinto por petición y sin `'unsafe-inline'`; 429 con `Retry-After`; límites de tamaño del cuerpo.
+  - La nueva ruta de mediciones entra sola en la matriz de acceso cruzado y en las pruebas de rendimiento.
+- **Rendimiento** (con todas las páginas dinámicas por el *nonce*):
+  - todos los listados ≤ 135 ms p95 con 1 000 clientes (`/trainers/workload`, 24 ms);
+  - TTI en móvil ≈ 1,47–1,58 s.
+- **Operación**: imagen Docker y `docker compose` probados; simulacro de copia, supresión, restauración y reaplicación (`OPERATIONS.md` §7).

@@ -328,3 +328,14 @@ Los planes propuestos usan `kind = PROPOSAL`, `status = proposed` y `recommendat
   - un test unitario exige ese trigger (o `inherit_scope`) en toda tabla de esos tipos.
 - **`pnpm db:seed:perf`**: organización «Centro Escala» con 10 entrenadores, 1 000 clientes y planes activos, para las pruebas de rendimiento.
 - **Datos demo**: segunda organización (ADMIN `ane.urrutia@example.com`) para las pruebas de aislamiento; Elena tiene declaración de salud, historial, tolerancia e informe; hay una importación pendiente de confirmar.
+
+## Optimización y escala (Fase 15)
+
+- **Migraciones `0028` y `0029_rls_v9`**: `api_rate_limits`, tabla `system_only` con un contador por usuario, presupuesto y minuto. La purga el trabajo diario.
+- **Migración `0030`**: 14 índices para consultas por cliente o por sesión y para las claves foráneas de tablas hijas grandes.
+  - Antes se revisó `pg_stat_user_tables` tras las pruebas de carga: ninguna tabla grande se recorría entera, salvo `clients` (1 000 filas, ya con índice para el listado ordenado).
+- **Planes**: se escriben con un `INSERT` por nivel y los ids se generan en la aplicación (UUID v7). Crear un plan de 12 semanas pasa de ≈ 900 a ≈ 240 ms.
+- **RGPD**:
+  - `external_measurements` entra en la exportación del interesado;
+  - `external_measurements` e `integration_connections` se borran al suprimir;
+  - cada supresión deja un evento `subject_erased` en los logs, para reaplicarla tras restaurar una copia (`OPERATIONS.md` §6).

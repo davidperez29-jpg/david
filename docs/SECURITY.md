@@ -17,7 +17,7 @@
 | Integridad multi-tenant | Triggers que impiden mezclar organización/cliente en hijos y relaciones | `DATABASE.md` §4 |
 | Rutas | Todo handler de `/api/v1` usa `authedRoute` o `publicRoute`; los públicos están en una lista cerrada (test) | `server/api.ts`, `test/routes.unit.test.ts` |
 | CSRF | `SameSite=Lax` + comprobación de `Origin`/`Referer` en POST/PUT/PATCH/DELETE | `server/api.ts` |
-| Cabeceras | CSP sin orígenes externos, `frame-ancestors 'none'`, HSTS, `nosniff`, `Referrer-Policy`, `Permissions-Policy` | `next.config.ts` |
+| Cabeceras | CSP con *nonce* por petición y sin `'unsafe-inline'` en scripts (Fase 15), sin orígenes externos, `frame-ancestors 'none'`, HSTS, `nosniff`, `Referrer-Policy`, `Permissions-Policy` | `next.config.ts` |
 | Subida de archivos | Solo PNG/JPEG/WebP ≤ 2 MB detectados por contenido, sin SVG; clave de almacenamiento aleatoria y validada (sin *path traversal*); servido con `nosniff` y autorización | `application/storage.ts`, `library.ts` |
 | Vídeos embebidos | Solo YouTube (`youtube-nocookie`) y Vimeo, en iframe con *sandbox*; CSP `frame-src` limitada a esos dos orígenes | `domain/library/video.ts`, `next.config.ts` |
 | Validación | Zod en toda entrada; límite de 256 KB por petición; escape de comodines `LIKE` en búsquedas | `contracts`, `server/api.ts`, `clients.ts` |
@@ -26,7 +26,8 @@
 | Auditoría | Toda escritura sobre cliente, objetivos, salud, consentimientos, asignaciones, usuarios e invitaciones, en la misma transacción; diff por campo; lecturas de salud auditadas (`view_sensitive`); secretos y texto de salud nunca copiados al log; trigger *append-only*; la única excepción es la **supresión RGPD**: la función `redact_client_audit` (solo ADMIN) borra el detalle de los cambios del cliente y conserva quién, cuándo y qué acción | `application/audit.ts`, migraciones `0001` y `0023` |
 | Exportaciones (Fase 12) | Inyección CSV/XLSX neutralizada (celdas de texto que empiezan por `= + - @` con prefijo `'`); alcance por RLS; cada exportación y descarga de informe auditada (`export`); descargas con `Cache-Control: no-store` y `nosniff`; sin declaraciones de salud | `domain/reports/csv.ts`, `application/exports.ts`, `server/api.ts` |
 | Importaciones (Fase 12) | Solo CSV/XLSX, ≤ 2 MB y ≤ 1 000 filas; cada fila validada (zod + catálogos + permisos) antes de escribir nada; alta por los casos de uso normales (permisos, RLS, auditoría); el archivo no se guarda | `application/imports.ts` |
-| Errores | Respuestas sin trazas ni datos internos; `requestId` para correlación; el log de servidor no incluye cuerpos de petición | `server/api.ts` |
+| Errores y logs | Respuestas sin trazas ni datos internos; `X-Request-Id` para correlación; logs JSON sin cuerpos, con redacción de claves sensibles y depuración del texto libre (Fase 15) | `server/api.ts`, `observability.ts` |
+| Límites de la API (Fase 15) | Presupuesto por usuario y minuto (1 000 lecturas, 120 escrituras, 30 operaciones pesadas), en BD; cuerpo de 256 KB salvo subidas de archivos | `api-limits.ts`, `server/api.ts` |
 
 ## 2. RGPD
 
@@ -76,12 +77,10 @@ Una solicitud de supresión no puede marcarse como atendida si la supresión no 
 |---|---|
 | Validación legal de la DPIA, del registro de actividades y de los plazos de retención | Decisión D7 (asesor) |
 | Proveedor de email en la UE y plantillas (avisos de solicitudes RGPD por email) | Decisión D4 |
-| Límite de peticiones por usuario en el resto de la API (el login ya lo tiene, en BD) | 15 |
 | Configuración de proxy de confianza para `X-Forwarded-For` | Despliegue |
-| Copias de seguridad cifradas y propagación de supresiones a las copias (caducidad) | 15 |
+| Contratar las copias cifradas en la UE (el procedimiento y la reaplicación de supresiones están en `OPERATIONS.md` §6) | Despliegue |
 | Auditoría o pentest externo | Opcional (H6) |
 | Actualizar `exceljs` cuando su dependencia `uuid` salga del aviso moderado (no explotable: solo usa `v4`) | Mantenimiento |
-| CSP con *nonces* (sin `'unsafe-inline'` en `script-src`) | 15 |
 
 ## 4. Notificar vulnerabilidades
 

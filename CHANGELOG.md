@@ -2,6 +2,38 @@
 
 Formato: fecha · cambio · motivo · archivos · impacto.
 
+## 2026-10-04 — Fase 15: optimización y escala
+
+- **Cambio:** observabilidad.
+  - **Incluye:**
+    - logs JSON por línea (`http_request` con ruta sin ids, estado y ms; `unexpected_error`; `subject_erased`), con redacción de claves sensibles y depuración del texto libre;
+    - `X-Request-Id`;
+    - _webhook_ opcional para errores;
+    - `GET /api/health` y `GET /api/ready`.
+- **Cambio:** presupuesto de peticiones por usuario y minuto (1 000 lecturas, 120 escrituras, 30 operaciones pesadas), en BD (migraciones `0028` y `0029`); `429` con `Retry-After`.
+  - **Motivo:** PENTEST P-3.
+- **Cambio:** CSP con _nonce_ por petición y `'strict-dynamic'`, sin `'unsafe-inline'` en scripts (`src/proxy.ts`).
+  - **Motivo:** PENTEST P-2.
+- **Cambio:** rendimiento.
+  - **Incluye:**
+    - crear un plan escribe por niveles: ≈ 900 → ≈ 240 ms;
+    - 14 índices tras revisar `pg_stat` bajo carga (migración `0030`);
+    - sin caché en proceso (no hace falta y dificultaría escalar).
+- **Cambio:** integraciones.
+  - **Incluye:** puerto `ExternalDataSource`; adaptadores CSV/JSON; mediciones por cliente con límites técnicos y consentimiento para datos de salud; permiso `integrations:import`; tarjeta «Datos de dispositivos».
+- **Cambio:** equipo. Carga por entrenador y traspaso auditado de clientes entre entrenadores (ADMIN).
+- **Cambio:** operación.
+  - **Incluye:**
+    - `Dockerfile` y `docker-compose.yml`, probados;
+    - CI construye la imagen;
+    - `OPERATIONS.md`: despliegue, escalado, vigilancia, copias y restauración;
+    - `pnpm privacy:reapply-erasures` para que una restauración no devuelva a personas suprimidas (probado con un simulacro).
+- **Corrige:**
+  - los datos de dispositivos no estaban en la exportación del interesado ni se borraban al suprimir;
+  - el cuerpo de las peticiones se limitaba a 256 KB, así que la importación nunca aceptó los archivos de hasta 2 MB documentados en la Fase 12.
+- **Cambio:** tests: 390 unitarios, 155 de integración, 566 comprobaciones RLS y 41 E2E.
+- **Cambio:** documentación: `OPERATIONS.md` e `INTEGRATIONS.md` (nuevos); `API.md`, `DATABASE.md`, `SECURITY.md`, `ASVS_L2.md`, `PENTEST.md`, `TESTING.md`, `ROADMAP.md`, `MASTER_SPECIFICATION.md`, `README.md` y `.env.example`.
+
 ## 2026-10-04 — Fase 14: pruebas
 
 - **Cambio:** cobertura con umbral en CI (`pnpm test:coverage`): ≥ 90 % de líneas y funciones en `packages/domain` y ≥ 90 % de líneas en cada motor.

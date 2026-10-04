@@ -82,7 +82,8 @@
 | Registro de eventos de seguridad: login, fallos, 2FA, códigos, sesiones, contraseñas | ✅ | `audit_logs` |
 | Registro a prueba de manipulación | ✅ | Trigger *append-only*; la única redacción es la supresión RGPD, que conserva quién y cuándo |
 | Sin datos sensibles en los registros | ✅ | Secretos y texto de salud nunca se copian; el log del servidor no incluye cuerpos de petición |
-| Sincronización horaria y retención de los registros | ⏳ | Despliegue |
+| Registro estructurado y sin datos personales | ✅ | JSON por línea, redacción y depuración probadas (`observability.ts`, Fase 15) |
+| Sincronización horaria y retención de los registros | ⏳ | Despliegue (`OPERATIONS.md`) |
 
 ## V8 Protección de datos
 
@@ -114,7 +115,7 @@
 | Control | Estado | Evidencia |
 |---|---|---|
 | Flujos en orden y sin saltos | ✅ | Máquinas de estado: planes, importaciones, solicitudes RGPD, sesiones |
-| Límites antiautomatización en operaciones caras | ◐ | Login limitado; las demás rutas no tienen límite por usuario (Fase 15) |
+| Límites antiautomatización en operaciones caras | ✅ | Login limitado; en la Fase 15, presupuesto por usuario y minuto para lecturas, escrituras y operaciones pesadas (`api-limits.ts`) |
 | Concurrencia | ✅ | Bloqueo optimista; consumo atómico de tokens y códigos; sincronización idempotente |
 
 ## V12 Archivos y recursos
@@ -140,7 +141,7 @@
 |---|---|---|
 | Cabeceras de seguridad (CSP, `nosniff`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, HSTS) | ✅ | `next.config.ts`; E2E `security.spec.ts` |
 | Sin cabecera `X-Powered-By` | ✅ | `poweredByHeader: false` |
-| CSP sin `'unsafe-inline'` en scripts | ◐ | Next necesita *nonces* para quitarlo: Fase 15 |
+| CSP sin `'unsafe-inline'` en scripts | ✅ | *Nonce* por petición y `'strict-dynamic'` (`src/proxy.ts`, Fase 15) |
 | Construcción reproducible y CI con lint, tipos, tests y E2E | ✅ | `.github/workflows` |
 
 ## Resumen
@@ -148,8 +149,6 @@
 - **Parciales**:
   - avisos por email (D4);
   - HSTS y TLS dependen del despliegue;
-  - límites por usuario fuera del login;
-  - CSP con *nonces*;
   - cola sin conexión de la PWA en IndexedDB: transitoria, pero puede incluir molestias (riesgo aceptado en la DPIA, R-6).
 - **Fuera de alcance**: vault de secretos, TLS a la BD y retención de registros del servidor. Son del despliegue (Fase 15).
 - **Ningún parcial es un fallo de autorización ni de aislamiento de datos.**

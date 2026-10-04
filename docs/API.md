@@ -281,3 +281,21 @@ Detalle en `SECURITY.md` §2.2–2.3. Si la organización exige 2FA a ADMIN (`re
 - **Cambio compatible** (ruta nueva, campo opcional nuevo, límite más amplio, valor de enumeración añadido): se acepta con `pnpm contract:update`.
 - **Cambio rompiente** (ruta o campo eliminado, campo nuevo obligatorio, límite más estricto, valor eliminado, ruta que deja de ser pública): necesita una versión nueva de la API, o `pnpm contract:update --breaking` con su entrada en el CHANGELOG.
 - **Límite**: las respuestas no tienen esquema formal; sus cambios se revisan en los tests de integración y E2E.
+
+## Optimización y escala (Fase 15)
+
+- **Límite de peticiones por usuario**: 1 000 lecturas, 120 escrituras y 30 operaciones pesadas por minuto.
+  - Son pesadas: exportaciones, descargas de informes, datos del interesado, importaciones y generación de informes.
+  - Al superarlo: `429` con `Retry-After` en segundos.
+  - Configurable con `API_LIMIT_*`.
+- **Tamaño del cuerpo**: 256 KB por defecto. Más en las rutas que reciben archivos: 3 MB en `POST /imports`, 1,1 MB en `POST /clients/{id}/external-measurements`. Si se supera: `422 «Petición demasiado grande.»`.
+- **Cabecera `X-Request-Id`** en cada respuesta, para cruzarla con los logs.
+
+| Método y ruta | Permiso | Descripción |
+|---|---|---|
+| `GET /api/health` | Pública (fuera de `/v1`) | *Liveness*: `{status, version}` |
+| `GET /api/ready` | Pública (fuera de `/v1`) | *Readiness*: base de datos y migraciones; `503` si no responde |
+| `POST /clients/{id}/external-measurements` | `integrations:import` | Importa mediciones de dispositivos (`INTEGRATIONS.md`) |
+| `GET /clients/{id}/external-measurements` | `clients:read` (+ `health:read` para tipos de salud) | Mediciones |
+| `GET /trainers/workload` | `clients:assign` (ADMIN) | Por entrenador: clientes, principal de, planes activos, alertas abiertas |
+| `POST /trainers/transfer` | `clients:assign` (ADMIN) | `{fromTrainerId, toTrainerId, clientIds?}` → `{moved, alreadyAssigned}`. Auditado por cliente |

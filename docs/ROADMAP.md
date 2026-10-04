@@ -19,7 +19,7 @@ Plan completo y criterios de aceptación: `MASTER_SPECIFICATION.md` §16.
 | 12 Informes | ✅ 2026-10-04 | Informe de cliente con los 11 apartados de §34 (pantalla, PDF reproducible, Excel y CSV desde una instantánea congelada con hash). Exportación CSV/XLSX de clientes, evaluaciones, planificación, sesiones y evolución, bajo RLS, auditada y con protección contra inyección de fórmulas. Importación validada de clientes, ejercicios, evaluaciones y referencias, con vista previa de errores por fila y columna. |
 | 13 Seguridad | ✅ 2026-10-04 | Derechos RGPD ejercitables desde la interfaz (exportación JSON del interesado, solicitudes con plazo de un mes, bandeja de ADMIN, supresión por anonimización con doble confirmación y auditoría redactada); retención configurable con anonimización automática y depuración de registros de seguridad; 2FA obligatorio para ADMIN, códigos de recuperación, códigos TOTP de un solo uso, sesiones visibles y revocables; contraseñas filtradas por k-anonimato; rotación de claves de cifrado; checklist ASVS L2, plantilla de DPIA y pentest ligero automatizado. |
 | 14 Pruebas | ✅ 2026-10-04 | Pirámide completa con umbrales: cobertura ≥ 90 % en el dominio y los motores (umbral en CI), 24 propiedades con fast-check, contrato de la API con detección de cambios rompientes, matriz RLS de todas las tablas, acceso cruzado en todas las rutas, accesibilidad WCAG 2.2 AA en 51 páginas (claro y oscuro), rendimiento con 1 000 clientes (< 300 ms p95) y TTI móvil < 2,5 s, auditoría de dependencias. |
-| 15 Optimización y escala | ⏭ siguiente | Ver especificación. |
+| 15 Optimización y escala | ✅ 2026-10-04 | Observabilidad (logs JSON sin datos personales, `X-Request-Id`, errores depurados con *webhook* opcional, `/api/health` y `/api/ready`); límite de peticiones por usuario en BD; CSP con *nonce*; crear un plan 4× más rápido e índices revisados bajo carga; integraciones preparadas (puerto `ExternalDataSource`, importación CSV/JSON de mediciones con consentimiento para datos de salud); carga del equipo y traspaso de clientes; imagen Docker, *compose* y guía de operación con restauración que reaplica supresiones RGPD. |
 
 ## Criterios de cierre de la Fase 1 (§63)
 
@@ -198,3 +198,16 @@ Plan completo y criterios de aceptación: `MASTER_SPECIFICATION.md` §16.
 | Documentación | ✅ `TESTING.md` (pirámide, áreas obligatorias, rendimiento), `API.md` (contrato), `DATABASE.md`, `SECURITY.md`, `ASVS_L2.md` y `PENTEST.md`. |
 | Datos | ✅ Demo ampliada (otra organización para el aislamiento; Elena con todos sus tipos de datos; importación pendiente) y datos de carga (`pnpm db:seed:perf`). |
 | Pendiente conocido | Crear un plan desde una plantilla tarda ≈ 0,9 s. CSP con *nonces*. Límite de peticiones por usuario en la API. Las respuestas de la API no tienen esquema formal. |
+
+## Criterios de cierre de la Fase 15
+
+| Criterio | Estado |
+|---|---|
+| Funcionalidad | ✅ Rendimiento, caché (decidida: no hace falta), índices, observabilidad y preparación de integraciones (§16.2). Además: multi-entrenador a escala, límites de la API, CSP con *nonce* y operación. |
+| Criterio de aceptación §16.2 «p95 objetivos de §2.3 con 1 000 clientes simulados» | ✅ Todos los listados ≤ 135 ms p95 (objetivo < 300 ms) con 10 entrenadores y 1 000 clientes; TTI móvil ≈ 1,5 s (objetivo < 2,5 s). Medido en CI en cada cambio. |
+| UX | ✅ «Datos de dispositivos» en Seguimiento; «Carga del equipo» con traspaso en Usuarios. |
+| Seguridad | ✅ Cerrados PENTEST P-2 (CSP) y P-3 (límites). Corregido: los datos de dispositivos no estaban ni en la exportación ni en la supresión RGPD. |
+| Tests | ✅ 390 unitarios, 155 de integración, 566 comprobaciones RLS y 41 E2E. |
+| Documentación | ✅ `OPERATIONS.md`, `INTEGRATIONS.md`; `API.md`, `DATABASE.md`, `SECURITY.md`, `ASVS_L2.md`, `PENTEST.md` y `TESTING.md` actualizados. |
+| Datos | ✅ Una semana de mediciones de reloj de Elena; los datos de carga se generan en 42 s. |
+| Pendiente conocido | Elegir el proveedor de despliegue (región UE, copias, monitorización) y el de email (D4). Validación legal (D7). Adaptador de almacenamiento de objetos para los archivos. Imagen más pequeña (`standalone`). Conexiones con fabricantes cuando haya necesidad. |
