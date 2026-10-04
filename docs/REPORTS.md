@@ -50,7 +50,7 @@ Tiene 11 apartados, siempre en este orden. Si un apartado no tiene datos, el inf
 - **Auditoría**: cada exportación y cada descarga de un informe queda auditada (`action = export`).
 - **Inyección CSV/XLSX**: las celdas de texto que empiezan por `= + - @` (o tabulador/retorno) se prefijan con `'`. Los números siguen siendo números.
 - **Formato CSV para Excel en español**: separador `;`, coma decimal y BOM UTF-8.
-- **Datos de salud**: no se exportan declaraciones de salud. La exportación del interesado (RGPD) llega en la Fase 13.
+- **Datos de salud**: no se exportan declaraciones de salud. La exportación completa del interesado (RGPD) está en `SECURITY.md` §2.2 (Fase 13).
 
 ## 3. Importación validada (§52)
 

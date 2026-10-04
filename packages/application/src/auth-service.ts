@@ -185,12 +185,7 @@ async function consumeTotp(
   const [ok] = await db
     .update(users)
     .set({ totpLastStep: step })
-    .where(
-      and(
-        eq(users.id, u.id),
-        or(isNull(users.totpLastStep), lt(users.totpLastStep, step)),
-      ),
-    )
+    .where(and(eq(users.id, u.id), or(isNull(users.totpLastStep), lt(users.totpLastStep, step))))
     .returning({ id: users.id });
   return ok != null;
 }

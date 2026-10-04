@@ -254,3 +254,22 @@ Detalle en `REPORTS.md`. Las respuestas de descarga son archivos (`Content-Dispo
 | `POST /imports/{id}/confirm` | `data:import` | — | Importa las filas válidas: `{imported, failed}`. `409` si ya se confirmó o se canceló. |
 | `POST /imports/{id}/cancel` | `data:import` | — | Cancela sin importar. |
 | `GET /imports/templates/{entity}?format=csv\|xlsx` | `data:import` | — | Plantilla con ejemplo (y hoja de ayuda en XLSX). |
+
+## Seguridad y RGPD (Fase 13)
+
+Detalle en `SECURITY.md` §2.2–2.3. Si la organización exige 2FA a ADMIN (`requireAdmin2fa`, activo por defecto), un ADMIN sin 2FA recibe `403` en toda la API salvo `/auth/*`.
+
+| Método y ruta | Permiso | Entrada | Descripción |
+|---|---|---|---|
+| `GET /clients/{id}/subject-data` | `privacy:export_subject` (ADMIN: organización; cliente: el suyo) | — | JSON con todos los datos del interesado, descifrados, y su registro de actividad. Auditado como `export`; si lo descarga el propio cliente, queda como solicitud de portabilidad atendida. |
+| `GET /clients/{id}/privacy-requests` | `privacy:request` | — | Solicitudes del cliente. |
+| `POST /clients/{id}/privacy-requests` | `privacy:request` | `{type, details?}`; `type`: `access`, `portability`, `rectification`, `erasure`, `restriction` u `objection` | Crea la solicitud con plazo de un mes (`dueOn`). `409` si ya hay una pendiente del mismo tipo. |
+| `POST /privacy-requests/{id}/cancel` | `privacy:request` | — | Cancela una solicitud pendiente. |
+| `GET /privacy-requests` | `privacy:manage` | — | Bandeja de ADMIN: pendientes primero, por plazo, con `overdue`. |
+| `POST /privacy-requests/{id}/resolve` | `privacy:manage` | `{status: completed\|rejected, response}` | Responde al interesado. Una supresión solo se puede marcar como atendida si el cliente ya está anonimizado (`409`). |
+| `POST /clients/{id}/erase` | `privacy:erase_subject` (solo ADMIN) | `{confirmation, reason}` | Supresión irreversible (anonimización). `confirmation` debe ser el nombre completo del cliente (sin distinguir mayúsculas); si no, `422`. |
+| `GET /privacy/settings` · `PUT /privacy/settings` | `privacy:manage` | `{retentionMonths: 1–240 \| null, requireAdmin2fa}` | Plazo de conservación de clientes archivados y 2FA obligatorio para ADMIN. |
+| `POST /auth/2fa/confirm` | sesión | `{code}` | Activa el 2FA y devuelve `{recoveryCodes}` (10, se muestran una sola vez). |
+| `POST /auth/2fa/recovery-codes` | sesión | `{code}` (TOTP) | Regenera los códigos de recuperación; los anteriores dejan de valer. |
+| `POST /auth/2fa/verify` | pública (sesión pendiente del 2FA) | `{code}`: TOTP de 6 dígitos o código de recuperación `XXXX-XXXX` | Cada código TOTP vale **una sola vez**; cada código de recuperación, también. |
+| `DELETE /auth/sessions/{id}` | sesión | — | Cierra una de las sesiones propias. |

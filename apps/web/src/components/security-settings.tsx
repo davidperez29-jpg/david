@@ -171,7 +171,30 @@ export function SecuritySettings({
           </div>
         )}
       </Card>
-      <Card title="Sesiones abiertas">
+      <Card
+        title="Sesiones abiertas"
+        actions={
+          status.sessions.some((x) => !x.current) ? (
+            <Button
+              size="sm"
+              variant="secondary"
+              disabled={revoke.pending}
+              onClick={async () => {
+                const others = status.sessions.filter((x) => !x.current);
+                for (const [i, x] of others.entries())
+                  if (
+                    !(await revoke.run(`/auth/sessions/${x.id}`, 'DELETE', undefined, {
+                      refresh: i === others.length - 1,
+                    }))
+                  )
+                    break;
+              }}
+            >
+              Cerrar las demás sesiones
+            </Button>
+          ) : null
+        }
+      >
         <ul className="divide-y divide-border text-sm">
           {status.sessions.map((x) => (
             <li key={x.id} className="flex flex-wrap items-center gap-2 py-2">

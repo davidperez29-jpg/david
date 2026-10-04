@@ -293,3 +293,20 @@ Los planes propuestos usan `kind = PROPOSAL`, `status = proposed` y `recommendat
   - el estado del trabajo (`pending`, `succeeded`, `cancelled`);
   - cada fila con sus datos normalizados, los valores originales (`data.raw`), los errores por columna, su estado (`valid`, `invalid`, `imported`, `skipped`) y la entidad creada.
 - RLS: `reports` solo para el personal (`client_optional`, sin acceso del cliente); `import_*` solo para el personal de la organización.
+
+## Seguridad y RGPD (Fase 13)
+
+- Migración `0021_privacy`:
+  - `privacy_requests`: tipo (`access`, `portability`, `rectification`, `erasure`, `restriction`, `objection`), estado (`pending`, `completed`, `rejected`, `cancelled`), `due_on` (un mes), quién la pide y quién la resuelve, y respuesta;
+  - `user_recovery_codes`: SHA-256 de cada código y `used_at`;
+  - `organizations.retention_months` (nulo = sin anonimización automática) y `organizations.require_admin_2fa` (por defecto `true`);
+  - `clients.anonymized_at`.
+- Migración `0022_rls_v5`:
+  - `privacy_requests` es `client_owned`: el cliente lee y crea las suyas;
+  - `user_recovery_codes` solo los ve y usa su propietario;
+  - ADMIN puede actualizar su organización.
+- Migración `0023_audit_redaction`: el trigger *append-only* de `audit_logs` admite un UPDATE solo con `app.audit_redaction = on` y sin tocar las columnas de identidad (quién, cuándo, acción, entidad).
+  - `redact_client_audit(cliente)` (`SECURITY DEFINER`, solo ADMIN de la organización del cliente o el proceso del sistema) sustituye el detalle por «[suprimido: derecho de supresión]».
+  - `EXECUTE` solo para `app_runtime`.
+- Migración `0024_rls_v6`: ADMIN puede borrar los códigos de recuperación de un cliente de su organización (al suprimirlo).
+- Migración `0025`: `users.totp_last_step`, el último paso de 30 s aceptado; un código TOTP no se acepta dos veces.

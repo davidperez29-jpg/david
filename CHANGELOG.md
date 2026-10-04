@@ -2,6 +2,33 @@
 
 Formato: fecha · cambio · motivo · archivos · impacto.
 
+## 2026-10-04 — Fase 13: seguridad y RGPD
+
+- **Cambio:** derechos del interesado desde la interfaz.
+  - **Incluye:**
+    - `/me/privacidad`: descarga JSON de sus datos, solicitudes de los 6 derechos con plazo de un mes, estado y cancelación;
+    - menú **Privacidad** de ADMIN: bandeja con «Fuera de plazo» y respuesta obligatoria;
+    - ficha → Privacidad: exportar y **suprimir** con doble confirmación.
+  - **Motivo:** criterio de aceptación «derechos ejercitables desde UI» (RGPD arts. 12–21).
+  - **Archivos:** `packages/application/src/privacy.ts`, `components/privacy/*`, `app/app/admin/privacidad`.
+- **Cambio:** supresión por **anonimización** irreversible.
+  - **Incluye:** borra salud, molestias, comentarios, archivos y la cuenta; sustituye los identificadores; redacta la auditoría del cliente con una función `SECURITY DEFINER` que conserva quién y cuándo (migración `0023`); mantiene el entrenamiento como dato anónimo.
+- **Cambio:** retención.
+  - **Incluye:** plazo para clientes archivados que fija ADMIN (sin valor por defecto, [REQUIERE VALIDACIÓN LEGAL]); `pnpm privacy:daily` anonimiza los vencidos y depura sesiones, intentos de inicio de sesión, tokens y filas de importación.
+- **Cambio:** autenticación.
+  - **Incluye:**
+    - 2FA obligatorio para ADMIN (ajuste de la organización, activo por defecto; la demo lo desactiva);
+    - 10 códigos de recuperación de un solo uso;
+    - sesiones abiertas visibles y revocables;
+    - contraseñas filtradas por k-anonimato (`PWNED_PASSWORDS_CHECK=on`).
+- **Cambio:** **códigos TOTP de un solo uso** (`users.totp_last_step`, migración `0025`).
+  - **Motivo:** hallazgo P-1 del pentest ligero: un código interceptado podía reutilizarse durante su ventana.
+- **Cambio:** rotación de la clave de cifrado.
+  - **Incluye:** `APP_ENCRYPTION_KEYS_PREVIOUS` para leer y `pnpm keys:rotate` para re-cifrar.
+- **Cambio:** migraciones `0021`–`0025`; permisos `privacy:request`, `privacy:manage` y `privacy:erase_subject`.
+- **Cambio:** tests: 348 unitarios, 146 de integración y 34 E2E (nuevos `privacy.spec.ts` y `security.spec.ts`).
+- **Cambio:** documentación: `ASVS_L2.md`, `DPIA.md` (plantilla), `PENTEST.md`; `SECURITY.md`, `API.md`, `DATABASE.md`, `TESTING.md`, `ROADMAP.md`, `MASTER_SPECIFICATION.md`, `README.md` y `.env.example` actualizados.
+
 ## 2026-10-04 — Fase 12: informes, exportación e importación
 
 - **Cambio:** informe de cliente con los 11 apartados del encargo §34.

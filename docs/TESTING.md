@@ -209,3 +209,39 @@ Pendiente para fases siguientes: evaluación, programa, sesión, ejercicios, fee
   - ejercicios (borrador para revisar, patrón y material desconocidos);
   - columnas obligatorias, formato no admitido y plantillas.
 - E2E: 30 tests ✔. Nuevo `reports.spec.ts`: generar el informe, comprobar sus apartados y descargar el PDF; importar un CSV con una fila errónea (errores visibles, solo la válida importada); exportar a XLSX.
+
+## 13. Resultado en la entrega de la Fase 13
+
+- Unidad: 348 tests ✔.
+  - `security13.unit.test.ts`:
+    - códigos de recuperación (formato, normalización, hash);
+    - k-anonimato de contraseñas filtradas (solo sale el prefijo de 5 caracteres; si falla, no bloquea);
+    - anillo de claves con claves anteriores.
+  - `privacy.unit.test.ts`: plazo de un mes (con fin de mes), caducidad de la retención y campos anonimizados.
+  - `auth.unit.test.ts`: paso de tiempo del código TOTP (±1 paso).
+- Integración: 146 tests ✔.
+  - `privacy.int.test.ts`:
+    - exportación del interesado (descifrada, auditada, registrada) y quién no puede exportarla;
+    - solicitudes y su resolución (la supresión no se cierra sin ejecutarla);
+    - supresión: solo ADMIN, con el nombre completo; se borran salud, cuenta e identificadores y se conservan los datos de entrenamiento; auditoría redactada;
+    - auditoría *append-only* para todo lo demás;
+    - retención: nada sin plazo; con plazo, se anonimizan los archivados vencidos;
+    - rotación de claves;
+    - códigos de recuperación de un solo uso;
+    - sesiones y 2FA obligatorio para ADMIN;
+    - contraseñas filtradas.
+  - `auth.int.test.ts`: un código TOTP no se acepta dos veces.
+- E2E: 34 tests ✔.
+  - Nuevo `privacy.spec.ts`:
+    - el cliente descarga sus datos y presenta una solicitud;
+    - ADMIN la atiende desde la bandeja;
+    - ADMIN suprime un cliente con doble confirmación.
+  - Nuevo `security.spec.ts`, el pentest ligero repetible (`PENTEST.md`):
+    - cabeceras;
+    - 401 sin trazas;
+    - flags de la cookie;
+    - CSRF;
+    - IDOR → 404;
+    - supresión fuera de rol;
+    - descargas sin caché.
+  - Modifica la demo: en local, vuelve a cargar los datos para repetirlo.

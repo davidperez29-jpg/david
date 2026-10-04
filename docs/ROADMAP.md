@@ -17,8 +17,9 @@ Plan completo y criterios de aceptación: `MASTER_SPECIFICATION.md` §16.
 | 10 Motor de decisiones | ✅ 2026-10-03 | Contexto desde la base de datos (con consentimiento), 10 etapas puras y deterministas, DSL sin `eval`, 24 reglas como datos versionadas por centro, umbrales sin valor por defecto, explicación DATOS → … → CONFIANZA con DOI, decisiones del entrenador auditadas, rasgos manuales, desactivación por cliente, métricas de rechazo por regla, pestaña «Necesidades» y editor de reglas. |
 | 11 Motor de programación | ✅ 2026-10-04 | Propuesta de plan (`PROPOSAL`) desde la ejecución del motor de decisiones, con semanas de introducción y sustituciones; aceptar como borrador o descartar. Ajustes semana a semana (carga por RIR o doble progresión, descarga, volumen, sustitución por molestias) que solo se aplican al aceptar, a sesiones futuras, con revisión, auditoría y deshacer. Aplicación automática opcional (desactivada por defecto). |
 | 12 Informes | ✅ 2026-10-04 | Informe de cliente con los 11 apartados de §34 (pantalla, PDF reproducible, Excel y CSV desde una instantánea congelada con hash). Exportación CSV/XLSX de clientes, evaluaciones, planificación, sesiones y evolución, bajo RLS, auditada y con protección contra inyección de fórmulas. Importación validada de clientes, ejercicios, evaluaciones y referencias, con vista previa de errores por fila y columna. |
-| 13 Seguridad | ⏭ siguiente | Revisión ASVS L2, DPIA, retención, exportación/supresión RGPD, pentest ligero. |
-| 14–15 | pendiente | Ver especificación. |
+| 13 Seguridad | ✅ 2026-10-04 | Derechos RGPD ejercitables desde la interfaz (exportación JSON del interesado, solicitudes con plazo de un mes, bandeja de ADMIN, supresión por anonimización con doble confirmación y auditoría redactada); retención configurable con anonimización automática y depuración de registros de seguridad; 2FA obligatorio para ADMIN, códigos de recuperación, códigos TOTP de un solo uso, sesiones visibles y revocables; contraseñas filtradas por k-anonimato; rotación de claves de cifrado; checklist ASVS L2, plantilla de DPIA y pentest ligero automatizado. |
+| 14 Pruebas | ⏭ siguiente | Ver especificación. |
+| 15 | pendiente | Ver especificación. |
 
 ## Criterios de cierre de la Fase 1 (§63)
 
@@ -31,7 +32,7 @@ Plan completo y criterios de aceptación: `MASTER_SPECIFICATION.md` §16.
 | Documentación | ✅ `ARCHITECTURE.md`, `SECURITY.md`, `TESTING.md`, `API.md`, `ROADMAP.md`, `CHANGELOG.md`. |
 | Manejo de errores | ✅ Errores de dominio tipados, mensajes en español, estados vacíos. |
 | Datos de prueba | ✅ `pnpm db:seed:demo`. |
-| Pendiente conocido | Envío real de emails (D4); exportación y supresión RGPD (Fase 13). |
+| Pendiente conocido | Envío real de emails (D4); exportación y supresión RGPD (hecho en la Fase 13). |
 
 ## Criterios de cierre de la Fase 2
 
@@ -171,3 +172,16 @@ Plan completo y criterios de aceptación: `MASTER_SPECIFICATION.md` §16.
 | Documentación | ✅ `REPORTS.md`, `API.md`, `TESTING.md`, `DATABASE.md` y `SECURITY.md`. |
 | Datos | ✅ Informe de Iker en la demo. |
 | Pendiente conocido | Informe para el cliente en su app. PDF del plan. Importación de referencias normativas. Trabajos en segundo plano para archivos grandes. |
+
+## Criterios de cierre de la Fase 13
+
+| Criterio | Estado |
+|---|---|
+| Funcionalidad | ✅ Exportación del interesado, solicitudes de los 6 derechos, bandeja de ADMIN, supresión, retención, 2FA obligatorio para ADMIN, códigos de recuperación, sesiones, contraseñas filtradas y rotación de claves. |
+| Criterio de aceptación (§16) | ✅ «Checklist completo»: `ASVS_L2.md`, revisado capítulo a capítulo, con los parciales justificados (la correspondencia requisito a requisito queda [REQUIERE VERIFICACIÓN]). ✅ «Derechos ejercitables desde UI»: el cliente descarga sus datos y presenta solicitudes en `/me/privacidad`; ADMIN las atiende en **Privacidad** y suprime desde la ficha. Cubierto por E2E. |
+| UX | ✅ Revisada con capturas: privacidad del cliente en el móvil, bandeja de ADMIN, supresión con doble confirmación (el botón se activa solo con el nombre exacto) y Ajustes. Mejora tras la revisión: «Cerrar las demás sesiones», porque la lista de sesiones puede ser larga. |
+| Seguridad | ✅ Pentest ligero (`PENTEST.md`): un hallazgo medio (reutilización de códigos TOTP), corregido. Sin fallos de autorización ni de aislamiento. |
+| Tests | ✅ 348 unitarios, 146 de integración y 34 E2E. |
+| Documentación | ✅ `SECURITY.md`, `ASVS_L2.md`, `DPIA.md` (plantilla, [REQUIERE VALIDACIÓN LEGAL]), `PENTEST.md`, `API.md`, `DATABASE.md` y `TESTING.md`. |
+| Datos | ✅ La demo tiene una solicitud de rectificación pendiente de Elena. Por ser demo, no exige 2FA a ADMIN. |
+| Pendiente conocido | Validación legal de la DPIA y de los plazos (D7). Avisos por email (D4). CSP con *nonces*. Límite de peticiones por usuario fuera del login. Análisis de dependencias en CI. |
