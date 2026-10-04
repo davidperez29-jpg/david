@@ -43,7 +43,17 @@ jobs:
       - run: pnpm depcruise
       - name: Unit tests + coverage gate (domain ≥ 90 % lines)
         run: pnpm test:coverage
+      - name: S3-compatible server for the object-storage tests (test credentials only)
+        run: |
+          docker run -d --name s3 --network host -v "$PWD/.github/s3:/cfg" chrislusf/seaweedfs \
+            server -s3 -s3.port=9100 -s3.config=/cfg/s3.json -master.port=9333 -volume.port=8085 -filer.port=8889 -ip=127.0.0.1
+          for i in $(seq 1 30); do docker exec s3 sh -c 'echo "s3.bucket.create -name tp-test" | weed shell -master=127.0.0.1:9333' && break; sleep 2; done
       - run: pnpm test:integration
+        env:
+          S3_TEST_ENDPOINT: http://127.0.0.1:9100
+          S3_TEST_BUCKET: tp-test
+          S3_TEST_ACCESS_KEY_ID: testkey
+          S3_TEST_SECRET_ACCESS_KEY: testsecret123
       - name: Build
         run: pnpm build
       - name: Demo data

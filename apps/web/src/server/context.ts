@@ -1,6 +1,6 @@
 import 'server-only';
 import {
-  LocalDiskStorage,
+  storageFromEnv,
   MemoryMailer,
   type AppContext,
   type FileStorage,
@@ -30,8 +30,8 @@ function singletons() {
       ),
       // No email provider configured yet (Phase 1): messages are kept in memory and logged in dev.
       mailer: new DevMailer(),
-      // Local disk until an S3-compatible bucket in the EU is configured.
-      storage: new LocalDiskStorage(process.env.FILE_STORAGE_DIR || `${process.cwd()}/.data/files`),
+      // S3-compatible bucket (EU) when S3_BUCKET is set; local disk otherwise (OPERATIONS.md).
+      storage: storageFromEnv(process.env, `${process.cwd()}/.data/files`),
     };
   }
   return g.__tp;

@@ -11,7 +11,7 @@
 |---|---|---|
 | App web + API | Next.js (`apps/web`), imagen `web` del `Dockerfile`: servidor autónomo (`standalone`), ≈ 480 MB | **Sin estado**: varias réplicas detrás de un balanceador |
 | Base de datos | PostgreSQL 16 | Única fuente de verdad: sesiones, límites de peticiones, auditoría, datos |
-| Archivos subidos | Siluetas de ejercicios (`FILE_STORAGE_DIR`) | Volumen compartido si hay más de una réplica *[o almacenamiento de objetos UE: adaptador pendiente]* |
+| Archivos subidos | Siluetas de ejercicios | **Almacenamiento de objetos S3 compatible** (`S3_*`; bucket privado en la UE) o, sin él, `FILE_STORAGE_DIR` (volumen compartido si hay varias réplicas) |
 | Trabajos diarios | `monitor:daily` (alertas) y `privacy:daily` (retención y depuración) | Un *cron* del proveedor, una vez al día, con la imagen `jobs` |
 | Migraciones y trabajos | Imagen `jobs` (todo el *workspace*, ≈ 1,9 GB): `db:migrate` + catálogos (`db:seed`, idempotente), `monitor:daily`, `privacy:daily`, `keys:rotate`, `privacy:reapply-erasures` | Trabajos puntuales o programados |
 
@@ -23,7 +23,8 @@
 | `APP_ENCRYPTION_KEY` | Sí | 32 bytes en base64. Cifra el teléfono, el texto de salud y los secretos TOTP |
 | `APP_ENCRYPTION_KEYS_PREVIOUS` | No | Claves anteriores durante una rotación (§5) |
 | `APP_BASE_URL` | Sí | URL pública: enlaces de invitación y recuperación |
-| `FILE_STORAGE_DIR` | No | `/data/files` en la imagen |
+| `FILE_STORAGE_DIR` | No | `/data/files` en la imagen; solo si no hay `S3_BUCKET` |
+| `S3_ENDPOINT` · `S3_REGION` · `S3_BUCKET` · `S3_ACCESS_KEY_ID` · `S3_SECRET_ACCESS_KEY` · `S3_SSE` | No | Almacenamiento de objetos. Firma AWS SigV4 con URL de tipo *path* (AWS, Scaleway, OVH, MinIO…). Bucket **privado**, en la UE, sin versionado o con caducidad corta de versiones antiguas, para que una supresión RGPD borre de verdad |
 | `PWNED_PASSWORDS_CHECK` | No | `on` = rechazar contraseñas filtradas (k-anonimato) |
 | `LOG_LEVEL` | No | `debug`, `info` (por defecto), `warn` o `error` |
 | `ERROR_WEBHOOK_URL` | No | Recibe los errores inesperados ya depurados (JSON). Por ejemplo, un colector o un *relay* de Sentry en la UE *[Completar]* |
@@ -132,8 +133,8 @@ Las copias se cifran en reposo y se guardan en la UE, en otra cuenta o proyecto 
 | `docker compose up` | Migraciones (31) y catálogos aplicados; la app sana; `/api/ready` → `ready`; `/login` 200; API sin sesión 401; logs `http_request` en JSON |
 | Copia → supresión → restauración → reaplicación | El cliente suprimido vuelve con la copia; el script lo anonimiza de nuevo |
 | Arranque sin red | La imagen no descarga nada al arrancar (se ejecuta con `node`, sin pnpm) |
+| Almacenamiento de objetos | Subir, leer y borrar contra un servidor S3 real que valida las firmas (SeaweedFS, también en CI); una clave secreta errónea se rechaza |
 
 **Pendiente**:
 
-- **Archivos**: adaptador de almacenamiento de objetos (UE) para no depender de un volumen compartido.
 - **Plataforma**: proveedor, región y herramienta de monitorización *[Completar al desplegar]*.
