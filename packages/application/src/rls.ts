@@ -1,4 +1,5 @@
 import { bindActor, type Database } from '@tp/db';
+import { reportError } from './observability';
 import type { RequestContext } from './context';
 
 const BOUND = new WeakSet<RequestContext>();
@@ -56,7 +57,7 @@ export function secured<A extends unknown[], R>(
           try {
             await hook(ctx);
           } catch (e) {
-            console.error(`afterCommit ${key} failed`, e);
+            reportError(e, { hook: key });
           }
         }
         return result;

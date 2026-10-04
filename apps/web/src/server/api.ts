@@ -1,7 +1,10 @@
 import 'server-only';
 import {
   adminMissing2fa,
+  log,
+  reportError,
   resolveSession,
+  routePattern,
   type AppContext,
   type RequestContext,
 } from '@tp/application';
@@ -46,7 +49,7 @@ export function errorResponse(e: unknown, requestId: string): NextResponse {
       STATUS[e.code],
     );
   }
-  console.error(`[api] request ${requestId} failed`, e instanceof Error ? e.name : 'unknown');
+  reportError(e, { requestId });
   return json({ error: { code: 'internal', message: 'Error interno.', requestId } }, 500);
 }
 
@@ -85,6 +88,24 @@ function build<C>(
 ) {
   const fn = async (req: NextRequest, segment: { params?: Promise<Params> }) => {
     const requestId = randomUUID();
+    const started = performance.now();
+    const res = await run(req, segment, requestId);
+    // One structured line per request: no bodies, no ids in the route, no personal data.
+    log(res.status >= 500 ? 'error' : 'info', 'http_request', {
+      requestId,
+      method: req.method,
+      route: routePattern(req.nextUrl.pathname),
+      status: res.status,
+      ms: Math.round(performance.now() - started),
+    });
+    res.headers.set('X-Request-Id', requestId);
+    return res;
+  };
+  const run = async (
+    req: NextRequest,
+    segment: { params?: Promise<Params> },
+    requestId: string,
+  ): Promise<Response> => {
     try {
       if (!sameOrigin(req)) throw new DomainError('forbidden', 'Origen no permitido.');
       const base = baseContext({ ip: clientIp(req.headers), requestId });

@@ -28,3 +28,5 @@ export * from './reports';
 export * from './exports';
 export * from './imports';
 export * from './privacy';
+export * from './observability';
+export * from './ops';
