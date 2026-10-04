@@ -1,17 +1,54 @@
-import { listUsers } from '@tp/application';
+import { listUsers, trainerWorkload } from '@tp/application';
 import { redirect } from 'next/navigation';
 import { Badge, Card } from '@/components/ui/card';
 import { formatDateTime, label } from '@/lib/labels';
 import { requireStaff } from '@/server/session';
 import { InviteStaffForm, UserStatusButton } from './forms';
+import { TransferClientsForm } from './team';
 
 export default async function UsersPage() {
   const ctx = await requireStaff();
   if (!ctx.actor.roles.includes('ADMIN')) redirect('/app');
-  const { users, pendingInvitations } = await listUsers(ctx);
+  const [{ users, pendingInvitations }, team] = await Promise.all([
+    listUsers(ctx),
+    trainerWorkload(ctx),
+  ]);
   return (
     <div className="flex flex-col gap-4">
       <h1 className="text-2xl font-semibold">Usuarios</h1>
+      <Card title="Carga del equipo">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="text-left text-xs text-muted uppercase">
+              <tr>
+                <th className="py-2">Entrenador/a</th>
+                <th>Clientes</th>
+                <th>Principal de</th>
+                <th>Planes activos</th>
+                <th>Alertas abiertas</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {team.map((t) => (
+                <tr key={t.trainerId}>
+                  <td className="py-2 font-medium">
+                    {t.name} {t.active ? null : <Badge>Inactivo</Badge>}
+                  </td>
+                  <td>{t.clients}</td>
+                  <td>{t.primary}</td>
+                  <td>{t.activePlans}</td>
+                  <td>
+                    {t.redAlerts ? <Badge tone="danger">{t.redAlerts} rojas</Badge> : null}{' '}
+                    {t.yellowAlerts ? <Badge tone="warn">{t.yellowAlerts} amarillas</Badge> : null}
+                    {!t.redAlerts && !t.yellowAlerts ? <span className="text-muted">—</span> : null}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <TransferClientsForm trainers={team} />
+      </Card>
       <Card title="Cuentas">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">

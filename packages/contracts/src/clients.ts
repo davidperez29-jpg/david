@@ -156,3 +156,15 @@ export const assignTrainerSchema = z.object({
   trainerId: z.uuid(),
   role: z.enum(['primary', 'collaborator']).default('collaborator'),
 });
+
+/** ADMIN moves clients from one trainer to another (Phase 15); all of them when `clientIds` is absent. */
+export const transferClientsSchema = z
+  .object({
+    fromTrainerId: z.uuid(),
+    toTrainerId: z.uuid(),
+    clientIds: z.array(z.uuid()).min(1).max(1000).optional(),
+  })
+  .refine((d) => d.fromTrainerId !== d.toTrainerId, {
+    message: 'Elige dos entrenadores distintos.',
+    path: ['toTrainerId'],
+  });

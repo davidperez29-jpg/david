@@ -186,6 +186,8 @@
     "substitutions POST authenticated",
     "sync POST authenticated",
     "trainers GET authenticated",
+    "trainers/transfer POST authenticated",
+    "trainers/workload GET authenticated",
     "users/[userId]/status POST authenticated",
     "users GET authenticated"
   ],
@@ -6389,6 +6391,35 @@
       "required": [
         "trait",
         "value"
+      ]
+    },
+    "transferClientsSchema": {
+      "type": "object",
+      "properties": {
+        "fromTrainerId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "toTrainerId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "clientIds": {
+          "minItems": 1,
+          "maxItems": 1000,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          }
+        }
+      },
+      "required": [
+        "fromTrainerId",
+        "toTrainerId"
       ]
     },
     "updateBlockSchema": {
