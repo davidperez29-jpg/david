@@ -281,3 +281,15 @@ Migración `0019`:
 - `training_plans.generation_notes text[]`: qué adaptó el motor en una propuesta.
 
 Los planes propuestos usan `kind = PROPOSAL`, `status = proposed` y `recommendation_id`/`proposal_of_plan_id`, que ya existían desde la Fase 2. Los ejercicios cambiados por un ajuste guardan `source = progression_rule` y `recommendation_id`.
+
+## Informes e importaciones (Fase 12)
+
+- Migración `0020`:
+  - `reports.snapshot` jsonb: la entrada congelada del informe;
+  - `reports.hash`: sha256 del JSON estable de la instantánea;
+  - `import_jobs.file_name`.
+- Los informes de cliente usan `type = 'client_report'` y `format = 'json'` (el formato se elige al descargar).
+- `import_jobs`/`import_rows`, ya existentes desde la Fase 2, guardan:
+  - el estado del trabajo (`pending`, `succeeded`, `cancelled`);
+  - cada fila con sus datos normalizados, los valores originales (`data.raw`), los errores por columna, su estado (`valid`, `invalid`, `imported`, `skipped`) y la entidad creada.
+- RLS: `reports` solo para el personal (`client_optional`, sin acceso del cliente); `import_*` solo para el personal de la organización.

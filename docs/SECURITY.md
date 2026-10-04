@@ -24,6 +24,8 @@
 | Bloqueo optimista | `version` en clientes: un cambio concurrente devuelve 409 | `updateClient` |
 | Cifrado de columna | AES-256-GCM (IV aleatorio, etiqueta de autenticación) para teléfono, texto libre de salud y secreto TOTP | `auth/crypto.ts` |
 | Auditoría | Toda escritura sobre cliente, objetivos, salud, consentimientos, asignaciones, usuarios e invitaciones, en la misma transacción; diff por campo; lecturas de salud auditadas (`view_sensitive`); secretos y texto de salud nunca copiados al log; trigger *append-only* | `application/audit.ts`, migración `0001` |
+| Exportaciones (Fase 12) | Inyección CSV/XLSX neutralizada (celdas de texto que empiezan por `= + - @` con prefijo `'`); alcance por RLS; cada exportación y descarga de informe auditada (`export`); descargas con `Cache-Control: no-store` y `nosniff`; sin declaraciones de salud | `domain/reports/csv.ts`, `application/exports.ts`, `server/api.ts` |
+| Importaciones (Fase 12) | Solo CSV/XLSX, ≤ 2 MB y ≤ 1 000 filas; cada fila validada (zod + catálogos + permisos) antes de escribir nada; alta por los casos de uso normales (permisos, RLS, auditoría); el archivo no se guarda | `application/imports.ts` |
 | Errores | Respuestas sin trazas ni datos internos; `requestId` para correlación; el log de servidor no incluye cuerpos de petición | `server/api.ts` |
 
 ## 2. RGPD implementado en Fase 1

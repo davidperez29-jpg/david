@@ -2,6 +2,30 @@
 
 Formato: fecha · cambio · motivo · archivos · impacto.
 
+## 2026-10-04 — Fase 12: informes, exportación e importación
+
+- **Cambio:** informe de cliente con los 11 apartados del encargo §34.
+  - **Incluye:** la interpretación de cambios es frente al error de medida y nunca un diagnóstico; los datos de salud solo aparecen con consentimiento; las recomendaciones son solo las aceptadas por el entrenador, más las suyas, con DOI.
+  - **Archivos:** `packages/domain/src/reports/report.ts`, `packages/application/src/reports.ts`.
+- **Cambio:** instantánea congelada con sha256 (migración `0020`). Pantalla, PDF, Excel y CSV salen del mismo modelo de bloques.
+  - **Motivo:** el informe es reproducible; el PDF es idéntico byte a byte.
+- **Cambio:** PDF con **pdfkit**, sin navegador en el servidor.
+  - **Motivo:** es una desviación de §5 (Playwright/Chromium): evita depender de Chromium en el despliegue y da bytes reproducibles. Está documentada en `REPORTS.md`.
+- **Cambio:** exportación CSV/XLSX de clientes, evaluaciones, planificación, sesiones y evolución.
+  - **Incluye:** RLS; auditoría; protección contra inyección de fórmulas; CSV para Excel en español.
+- **Cambio:** importación validada de clientes, ejercicios, evaluaciones y referencias desde CSV/XLSX.
+  - **Incluye:**
+    - vista previa con errores por fila y columna antes de escribir nada;
+    - alta por los casos de uso normales;
+    - ejercicios como borrador para revisar y referencias no verificadas;
+    - plantillas con ayuda.
+- **Cambio:** permisos `reports:generate`, `data:export` y `data:import`.
+- **Cambio:** interfaz.
+  - **Incluye:** menú «Informes» (exportar, importaciones); asistente de importación; pestaña «Informes» de la ficha; página del informe con descargas.
+- **Cambio:** demo con un informe de Iker.
+- **Cambio:** tests: 330 unitarios, 136 de integración y 30 E2E.
+- **Cambio:** documentación: `REPORTS.md`; `API.md`, `TESTING.md`, `DATABASE.md`, `SECURITY.md`, `ROADMAP.md`, `MASTER_SPECIFICATION.md` y `README.md` actualizados.
+
 ## 2026-10-04 — Fase 11: motor de programación
 
 - **Cambio:** dominio de programación.

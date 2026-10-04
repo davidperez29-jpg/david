@@ -185,3 +185,27 @@ Pendiente para fases siguientes: evaluación, programa, sesión, ejercicios, fee
   - cribado positivo bloquea la propuesta;
   - permisos y aislamiento.
 - E2E: 29 tests ✔. Nuevo `programming.spec.ts`: desde Seguimiento → ajuste con «¿Por qué?» y cambios → aceptar → deshacer → aceptar la propuesta de plan como borrador. `planning.spec.ts` se limita ahora a la tarjeta «Nuevo plan», porque la pestaña tiene dos formularios. Modifica la demo: en local, vuelve a cargar los datos para repetirlo.
+
+## 12. Resultado en la entrega de la Fase 12
+
+- Unidad: 330 tests ✔.
+  - `reports.unit.test.ts` cubre:
+    - CSV con protección contra inyección (sin tocar los números negativos), coma decimal, comillas, BOM y lectura con `;` o `,`;
+    - los 11 apartados en orden;
+    - la interpretación frente al MDC;
+    - sin molestias sin consentimiento y aviso con cribado positivo;
+    - mensajes explícitos cuando faltan datos;
+    - determinismo.
+  - `contracts/test/imports.unit.test.ts` cubre la conversión de la entrada en español: fechas reales, enumeraciones, intentos con coma decimal, DOI y diseño.
+- Integración: 136 tests ✔. `reports.int.test.ts` cubre:
+  - informe con los 11 apartados, con y sin consentimiento;
+  - **instantánea congelada** (datos posteriores no lo cambian);
+  - **PDF idéntico byte a byte**; XLSX y CSV con los mismos apartados;
+  - descargas auditadas; permisos y aislamiento;
+  - exportación de clientes (ADMIN frente a entrenador, por RLS) con fórmula neutralizada; evaluaciones, evolución y XLSX;
+  - importación de clientes (CSV, errores por columna, duplicados, catálogo, nada escrito antes de confirmar, doble confirmación `409`, cancelación);
+  - evaluaciones (solo asignados, agrupadas, tests por lado);
+  - referencias desde XLSX (no verificadas, duplicados de DOI);
+  - ejercicios (borrador para revisar, patrón y material desconocidos);
+  - columnas obligatorias, formato no admitido y plantillas.
+- E2E: 30 tests ✔. Nuevo `reports.spec.ts`: generar el informe, comprobar sus apartados y descargar el PDF; importar un CSV con una fila errónea (errores visibles, solo la válida importada); exportar a XLSX.

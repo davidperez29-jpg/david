@@ -16,8 +16,9 @@ Plan completo y criterios de aceptación: `MASTER_SPECIFICATION.md` §16.
 | 9 Dashboard | ✅ 2026-10-03 | Hoy del entrenador según §8.2 (cifras, alertas, sesiones de hoy, feedback reciente, evaluaciones pendientes), calendario global (mes, semana, filtros, estados, evaluaciones, fases y descargas), Resumen del cliente, Hoy y Progreso del cliente (vista previa, racha, hitos, métricas elegidas por el entrenador), modo oscuro elegible, revisión UX con 3 tareas cronometradas. |
 | 10 Motor de decisiones | ✅ 2026-10-03 | Contexto desde la base de datos (con consentimiento), 10 etapas puras y deterministas, DSL sin `eval`, 24 reglas como datos versionadas por centro, umbrales sin valor por defecto, explicación DATOS → … → CONFIANZA con DOI, decisiones del entrenador auditadas, rasgos manuales, desactivación por cliente, métricas de rechazo por regla, pestaña «Necesidades» y editor de reglas. |
 | 11 Motor de programación | ✅ 2026-10-04 | Propuesta de plan (`PROPOSAL`) desde la ejecución del motor de decisiones, con semanas de introducción y sustituciones; aceptar como borrador o descartar. Ajustes semana a semana (carga por RIR o doble progresión, descarga, volumen, sustitución por molestias) que solo se aplican al aceptar, a sesiones futuras, con revisión, auditoría y deshacer. Aplicación automática opcional (desactivada por defecto). |
-| 12 Informes | ⏭ siguiente | Informe de cliente, exportaciones e importaciones validadas. |
-| 13–15 | pendiente | Ver especificación. |
+| 12 Informes | ✅ 2026-10-04 | Informe de cliente con los 11 apartados de §34 (pantalla, PDF reproducible, Excel y CSV desde una instantánea congelada con hash). Exportación CSV/XLSX de clientes, evaluaciones, planificación, sesiones y evolución, bajo RLS, auditada y con protección contra inyección de fórmulas. Importación validada de clientes, ejercicios, evaluaciones y referencias, con vista previa de errores por fila y columna. |
+| 13 Seguridad | ⏭ siguiente | Revisión ASVS L2, DPIA, retención, exportación/supresión RGPD, pentest ligero. |
+| 14–15 | pendiente | Ver especificación. |
 
 ## Criterios de cierre de la Fase 1 (§63)
 
@@ -157,3 +158,16 @@ Plan completo y criterios de aceptación: `MASTER_SPECIFICATION.md` §16.
 | Documentación | ✅ `PROGRAMMING_ENGINE.md`, `API.md`, `TESTING.md`, `DATABASE.md` y `MONITORING.md`. |
 | Datos | ✅ La demo tiene progresiones de carga de Iker pendientes, una propuesta de plan para Iker y ajustes por respuesta: descarga (Elena, Javier) y menos volumen (Tomás). |
 | Pendiente conocido | Propuesta como nueva revisión del plan activo. Incremento configurable por ejercicio. Progresión VBT/e1RM. Aplicar ajustes desde la página de alertas. |
+
+## Criterios de cierre de la Fase 12
+
+| Criterio | Estado |
+|---|---|
+| Funcionalidad | ✅ Informe de cliente (11 apartados), exportaciones (5 entidades, CSV/XLSX) e importaciones validadas (4 entidades, CSV/XLSX) con plantillas. |
+| Criterio de aceptación §16.2 | ✅ «PDF reproducible»: el test de integración descarga dos veces y compara byte a byte; el informe congelado no cambia aunque cambien los datos. ✅ «CSV/XLSX con validación previa y errores por fila»: vista previa con errores por columna antes de escribir nada; tests con CSV y XLSX. |
+| UX | ✅ Revisada con capturas: informe en pantalla con gráficos, PDF de 4 páginas sin páginas en blanco, vista previa de importación con celdas marcadas. |
+| Seguridad | ✅ Permisos `reports:generate`, `data:export` y `data:import` (más el de cada entidad); RLS; inyección CSV/XLSX neutralizada; exportaciones auditadas; salud solo con consentimiento; el archivo importado no se guarda. |
+| Tests | ✅ 330 unitarios, 136 de integración y 30 E2E. |
+| Documentación | ✅ `REPORTS.md`, `API.md`, `TESTING.md`, `DATABASE.md` y `SECURITY.md`. |
+| Datos | ✅ Informe de Iker en la demo. |
+| Pendiente conocido | Informe para el cliente en su app. PDF del plan. Importación de referencias normativas. Trabajos en segundo plano para archivos grandes. |

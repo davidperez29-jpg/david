@@ -2,7 +2,7 @@
 
 Sistema profesional para **evaluar, programar, entrenar y hacer seguimiento** de clientes, presencial y online, con trazabilidad científica y control total del entrenador.
 
-> **Estado actual: Fase 11 completada**: evaluación, bibliotecas científica (verificada en PubMed) y de ejercicios, planificación, app del cliente sin conexión, seguimiento con alertas, dashboards, motor de decisiones y, ahora, el **motor de programación**: genera una propuesta de plan desde la propuesta del motor de decisiones y propone ajustes semana a semana (carga, descarga, volumen, sustitución) que solo se aplican cuando el entrenador los acepta. Siguiente: Fase 12 (informes).
+> **Estado actual: Fase 12 completada**: evaluación, bibliotecas científica (verificada en PubMed) y de ejercicios, planificación, app del cliente sin conexión, seguimiento, dashboards, motores de decisiones y de programación y, ahora, **informes, exportación e importación**: informe de cliente con 11 apartados en pantalla, PDF reproducible, Excel y CSV; exportaciones auditadas; importación de CSV/Excel validada fila a fila antes de escribir nada. Siguiente: Fase 13 (seguridad y RGPD).
 
 ## Arranque rápido
 
@@ -31,6 +31,7 @@ Usuario demo: `lucia.moreno@example.com` / `demo-entrenamiento-2026`. Más detal
 | [`docs/DASHBOARD.md`](docs/DASHBOARD.md)                       | Dashboards del entrenador y del cliente, calendario global, apariencia.                                                                                                                                   |
 | [`docs/DECISION_ENGINE.md`](docs/DECISION_ENGINE.md)           | Motor de decisiones: pipeline, reglas como datos, explicación y control del entrenador.                                                                                                                   |
 | [`docs/PROGRAMMING_ENGINE.md`](docs/PROGRAMMING_ENGINE.md)     | Motor de programación: propuestas de plan y ajustes semana a semana que solo se aplican al aceptar.                                                                                                       |
+| [`docs/REPORTS.md`](docs/REPORTS.md)                           | Informe de cliente (11 apartados), exportación CSV/XLSX e importación validada.                                                                                                                           |
 | [`docs/UX_REVIEW.md`](docs/UX_REVIEW.md)                       | Revisión UX con 3 tareas cronometradas y protocolo con personas.                                                                                                                                          |
 | [`docs/EXERCISE_LIBRARY.md`](docs/EXERCISE_LIBRARY.md)         | Biblioteca de ejercicios y banco importado.                                                                                                                                                               |
 | [`docs/SECURITY.md`](docs/SECURITY.md)                         | Controles de seguridad y RGPD.                                                                                                                                                                            |

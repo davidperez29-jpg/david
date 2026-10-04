@@ -237,3 +237,20 @@ Detalle en `PROGRAMMING_ENGINE.md`. Solo personal (ADMIN de la organización o e
 | `PUT /clients/{id}/auto-apply` | `plans:write` + `decision:decide` | `{enabled}` | Aplicar las progresiones de carga rutinarias sin confirmación (desactivado por defecto; auditado). |
 
 `POST /plans/{id}/status` responde `409` para una propuesta.
+
+## Informes, exportación e importación (Fase 12)
+
+Detalle en `REPORTS.md`. Las respuestas de descarga son archivos (`Content-Disposition: attachment`, `Cache-Control: no-store`).
+
+| Método y ruta | Permiso | Entrada | Descripción |
+|---|---|---|---|
+| `GET /clients/{id}/reports` | `reports:generate` | — | Informes generados del cliente. |
+| `POST /clients/{id}/reports` | `reports:generate` | `{from, to, trainerNotes?}` | Congela la instantánea del periodo (11 apartados) y devuelve `{id, hash}`. |
+| `GET /reports/{id}` | `reports:generate` | — | El informe reconstruido desde la instantánea, con `intact` (comprobación del hash). |
+| `GET /reports/{id}/download?format=pdf\|xlsx\|csv` | `reports:generate` | — | Archivo; auditado como `export`. El PDF es reproducible byte a byte. |
+| `GET /exports?entity&format[&clientId&planId&from&to]` | `data:export` | `entity`: `clients`, `assessments`, `plan`, `sessions` o `progress`; `format`: `csv` o `xlsx` | Exportación bajo RLS, auditada. |
+| `POST /imports` | `data:import` (+ el de la entidad) | `{entity, fileName, contentBase64}` | Valida el archivo y crea la vista previa: `{id, total, valid, invalid}`. No escribe datos. |
+| `GET /imports` · `GET /imports/{id}` | `data:import` | — | Historial; filas con estado, datos y errores por columna. |
+| `POST /imports/{id}/confirm` | `data:import` | — | Importa las filas válidas: `{imported, failed}`. `409` si ya se confirmó o se canceló. |
+| `POST /imports/{id}/cancel` | `data:import` | — | Cancela sin importar. |
+| `GET /imports/templates/{entity}?format=csv\|xlsx` | `data:import` | — | Plantilla con ejemplo (y hoja de ayuda en XLSX). |
