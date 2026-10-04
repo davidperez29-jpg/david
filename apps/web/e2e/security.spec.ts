@@ -82,3 +82,24 @@ test('session cookie flags, CSRF origin check, IDOR and download caching', async
   expect(own.headers()['cache-control']).toContain('no-store');
   expect(own.headers()['content-disposition']).toMatch(/attachment/);
 });
+
+test('per-user API budget: heavy operations beyond the limit get 429 with Retry-After', async ({
+  page,
+}) => {
+  await login(page, 'iker.arrieta@example.com');
+  // Default heavy budget: 30 per minute per user (API_LIMIT_HEAVY). Exports are refused to a
+  // client (403) but still count.
+  // Up to two windows: if the minute changes mid-test the count restarts once.
+  const statuses: number[] = [];
+  let retryAfter: string | undefined;
+  for (let i = 0; i < 65 && !retryAfter; i++) {
+    const r = await page.request.get('/api/v1/exports?entity=clients&format=csv');
+    statuses.push(r.status());
+    if (r.status() === 429) retryAfter = r.headers()['retry-after'];
+  }
+  expect(statuses.at(-1)).toBe(429);
+  expect(statuses.length - 1).toBeGreaterThanOrEqual(30);
+  expect(statuses.slice(0, -1).every((s) => s === 403)).toBe(true);
+  expect(Number(retryAfter)).toBeGreaterThan(0);
+  expect(Number(retryAfter)).toBeLessThanOrEqual(60);
+});

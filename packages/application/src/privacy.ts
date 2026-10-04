@@ -528,12 +528,18 @@ export async function applyRetention(app: Pick<AppContext, 'storage' | 'now'> & 
         oldJobs.map((j) => j.id),
       ),
     );
+  // API budget counters only matter for the current minute.
+  const budgets = await app.db
+    .delete(s.apiRateLimits)
+    .where(lt(s.apiRateLimits.windowStart, days(1)))
+    .returning({ b: s.apiRateLimits.bucket });
   return {
     anonymized,
     sessions: sessions.length,
     attempts: attempts.length,
     resets: resets.length,
     importJobs: oldJobs.length,
+    apiBudgets: budgets.length,
   };
 }
 

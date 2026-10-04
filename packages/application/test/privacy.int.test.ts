@@ -7,6 +7,8 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import {
   addHealthDeclaration,
   applyRetention,
+  budgetFor,
+  consumeApiBudget,
   beginTotpEnrollment,
   cancelPrivacyRequest,
   changePassword,
@@ -333,3 +335,37 @@ describe('authentication hardening', () => {
   });
 });
 void addDays;
+
+describe('per-user API budgets (Phase 15)', () => {
+  it('counts per user and minute, refuses beyond the limit and tells when to retry', async () => {
+    const fresh = await buildOrg();
+    process.env.API_LIMIT_HEAVY = '3';
+    try {
+      const at = new Date('2026-10-05T10:00:20Z');
+      const app = { db: db(), now: () => at };
+      const userId = fresh.admin.actor.userId;
+      const results = [];
+      for (let i = 0; i < 4; i++) results.push(await consumeApiBudget(app, userId, 'heavy'));
+      expect(results.map((r) => r.allowed)).toEqual([true, true, true, false]);
+      expect(results[3]).toMatchObject({ limit: 3, remaining: 0, retryAfter: 40 });
+      // Another user and another budget are independent; the next minute starts again.
+      expect((await consumeApiBudget(app, fresh.trainer2.actor.userId, 'heavy')).allowed).toBe(
+        true,
+      );
+      expect((await consumeApiBudget(app, userId, 'write')).allowed).toBe(true);
+      const later = { db: db(), now: () => new Date('2026-10-05T10:01:01Z') };
+      expect((await consumeApiBudget(later, userId, 'heavy')).allowed).toBe(true);
+    } finally {
+      delete process.env.API_LIMIT_HEAVY;
+    }
+  });
+
+  it('classifies requests: exports, downloads and imports are heavy; GET reads; the rest writes', () => {
+    expect(budgetFor('GET', '/api/v1/exports')).toBe('heavy');
+    expect(budgetFor('GET', '/api/v1/clients/x/subject-data')).toBe('heavy');
+    expect(budgetFor('POST', '/api/v1/imports')).toBe('heavy');
+    expect(budgetFor('GET', '/api/v1/imports')).toBe('read');
+    expect(budgetFor('GET', '/api/v1/clients')).toBe('read');
+    expect(budgetFor('PATCH', '/api/v1/clients/x')).toBe('write');
+  });
+});

@@ -1,6 +1,8 @@
 import 'server-only';
 import {
   adminMissing2fa,
+  budgetFor,
+  consumeApiBudget,
   log,
   reportError,
   resolveSession,
@@ -44,6 +46,15 @@ function json(body: unknown, status = 200): NextResponse {
 
 export function errorResponse(e: unknown, requestId: string): NextResponse {
   if (e instanceof DomainError) {
+    if (e.code === 'rate_limited') {
+      const res = json(
+        { error: { code: e.code, message: e.message, details: e.details ?? null, requestId } },
+        429,
+      );
+      const d = e.details as { retryAfter?: string[] } | undefined;
+      res.headers.set('Retry-After', d?.retryAfter?.[0] ?? '60');
+      return res;
+    }
     return json(
       { error: { code: e.code, message: e.message, details: e.details ?? null, requestId } },
       STATUS[e.code],
@@ -151,6 +162,16 @@ export function authedRoute(handler: Handler<RequestContext & { sessionId: strin
           'forbidden',
           'Activa la verificación en dos pasos (obligatoria para administración) en Ajustes.',
         );
+      // §14 / PENTEST P-3: per-user budget per minute (reads, writes, heavy operations).
+      const budget = await consumeApiBudget(
+        base,
+        state.actor.userId,
+        budgetFor(req.method, req.nextUrl.pathname),
+      );
+      if (!budget.allowed)
+        throw new DomainError('rate_limited', 'Demasiadas peticiones. Espera un momento.', {
+          retryAfter: [String(budget.retryAfter)],
+        });
       return { ...base, actor: state.actor, sessionId: state.sessionId };
     },
     handler,

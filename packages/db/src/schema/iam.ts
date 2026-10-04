@@ -6,6 +6,7 @@ import {
   jsonb,
   pgEnum,
   pgTable,
+  primaryKey,
   text,
   timestamp,
   uniqueIndex,
@@ -122,6 +123,20 @@ export const authSessions = pgTable(
 );
 
 /** Login attempts for rate limiting / lockout (keys are hashed, no raw IP or email). */
+/**
+ * Per-user API budget (Phase 15): one counter per user, budget class and minute. Stateless for
+ * the app (works with several replicas); old windows are purged by the daily privacy job.
+ */
+export const apiRateLimits = pgTable(
+  'api_rate_limits',
+  {
+    bucket: text('bucket').notNull(),
+    windowStart: timestamp('window_start', { withTimezone: true }).notNull(),
+    count: integer('count').notNull().default(0),
+  },
+  (t) => [primaryKey({ columns: [t.bucket, t.windowStart] })],
+);
+
 export const loginAttempts = pgTable(
   'login_attempts',
   {
