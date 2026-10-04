@@ -20,13 +20,18 @@ const SENSITIVE =
 const EMAIL = /[\w.+-]+@[\w-]+(\.[\w-]+)+/g;
 const LONG_DIGITS = /\+?\d[\d\s-]{7,}\d/g;
 const TOKENISH = /\b[A-Za-z0-9_-]{32,}\b/g;
+/** UUIDs are pseudonymous record ids (request ids, client ids): kept for correlation. */
+const UUIDS = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi;
 
 /** Removes personal data from free text (error messages from the database included). */
 export function scrubText(s: string): string {
+  const kept: string[] = [];
   return s
+    .replace(UUIDS, (m) => `\u0000${kept.push(m) - 1}\u0000`)
     .replace(EMAIL, '[email]')
     .replace(TOKENISH, '[token]')
     .replace(LONG_DIGITS, '[número]')
+    .replace(/\u0000(\d+)\u0000/g, (_, i: string) => kept[Number(i)]!)
     .slice(0, 500);
 }
 

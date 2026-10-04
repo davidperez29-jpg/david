@@ -38,6 +38,15 @@ describe('observability: logs without personal or health data', () => {
     expect(r.client).toEqual({ firstName: '[redactado]', healthNotes: '[redactado]', id: 'c1' });
   });
 
+  it('keeps request ids (UUIDs) for correlation', () => {
+    log('info', 'http_request', { requestId: '0b1e4a52-6c1d-4f7e-9a3b-2d5e8f9c1a7b' });
+    expect(JSON.parse(lines[0]!).requestId).toBe('0b1e4a52-6c1d-4f7e-9a3b-2d5e8f9c1a7b');
+    // Digit-heavy UUIDs are not mistaken for phone numbers.
+    expect(scrubText('client 01a10705-2034-7bd8-9e1f-ba9a18b543eb, tel 600123456')).toBe(
+      'client 01a10705-2034-7bd8-9e1f-ba9a18b543eb, tel [número]',
+    );
+  });
+
   it('routes aggregate without ids', () => {
     expect(routePattern('/api/v1/clients/01a10705-20a4-7bd8-9e1f-ba9a18b543eb/reports/12')).toBe(
       '/api/v1/clients/:id/reports/:n',

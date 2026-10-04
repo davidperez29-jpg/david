@@ -45,6 +45,7 @@ import { writeAudit } from './audit';
 import { authorizeClient, requirePermission } from './authz';
 import type { AppContext, RequestContext } from './context';
 import type { FileOut } from './reports';
+import { log } from './observability';
 import { secured } from './rls';
 import { parse } from './validation';
 
@@ -402,6 +403,8 @@ async function eraseClient_(ctx: RequestContext, clientId: string, input: unknow
       confirmation: ['mismatch'],
     });
   const r = await anonymizeClient(ctx, clientId);
+  // Kept in the logs (outside the database): re-applied after restoring a backup (OPERATIONS.md).
+  log('info', 'subject_erased', { clientId, trigger: 'request' });
   await ctx.db
     .update(s.privacyRequests)
     .set({
@@ -488,6 +491,7 @@ export async function applyRetention(app: Pick<AppContext, 'storage' | 'now'> & 
     for (const c of due)
       if (retentionExpired(c.archivedAt, o.months, now)) {
         await anonymizeClient(app, c.id);
+        log('info', 'subject_erased', { clientId: c.id, trigger: 'retention' });
         await writeAudit(
           app.db,
           { ...app, requestId: undefined, ipHash: null } as never,

@@ -1,0 +1,55 @@
+# Local production-like stack (docs/OPERATIONS.md): database, one-off migrations, app.
+# Secrets come from the environment (.env next to this file is read by compose): never commit them.
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+      POSTGRES_DB: app
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U app']
+      interval: 5s
+      retries: 10
+
+  migrate:
+    image: training-platform:${APP_VERSION:-local}
+    build: .
+    working_dir: /app/packages/db
+    # Migrations, then the reference catalogues (idempotent: safe on every deploy).
+    command:
+      - sh
+      - -c
+      - node node_modules/tsx/dist/cli.mjs scripts/migrate.ts && node node_modules/tsx/dist/cli.mjs scripts/seed.ts
+    environment:
+      DATABASE_URL: postgres://app:${POSTGRES_PASSWORD}@db:5432/app
+    depends_on:
+      db: { condition: service_healthy }
+
+  app:
+    image: training-platform:${APP_VERSION:-local}
+    build: .
+    ports: ['3000:3000']
+    environment:
+      DATABASE_URL: postgres://app:${POSTGRES_PASSWORD}@db:5432/app
+      APP_BASE_URL: ${APP_BASE_URL:-http://localhost:3000}
+      APP_ENCRYPTION_KEY: ${APP_ENCRYPTION_KEY:?set APP_ENCRYPTION_KEY}
+      APP_VERSION: ${APP_VERSION:-local}
+      FILE_STORAGE_DIR: /data/files
+      LOG_LEVEL: info
+    volumes: [files:/data/files]
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:3000/api/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+      interval: 15s
+      retries: 5
+
+volumes:
+  pgdata:
+  files:

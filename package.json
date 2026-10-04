@@ -29,7 +29,8 @@
     "monitor:daily": "pnpm --filter @tp/application monitor:daily",
     "db:reset": "pnpm --filter @tp/db reset",
     "privacy:daily": "pnpm --filter @tp/application privacy:daily",
-    "keys:rotate": "pnpm --filter @tp/application keys:rotate"
+    "keys:rotate": "pnpm --filter @tp/application keys:rotate",
+    "privacy:reapply-erasures": "pnpm --filter @tp/application privacy:reapply-erasures"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
