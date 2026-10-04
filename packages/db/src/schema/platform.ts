@@ -76,6 +76,10 @@ export const reports = pgTable(
     type: text('type').notNull(),
     format: reportFormat('format').notNull(),
     parameters: jsonb('parameters'),
+    /** Frozen input of the report (Phase 12): every format is rendered from it, so it reproduces. */
+    snapshot: jsonb('snapshot'),
+    /** sha256 of the stable JSON of the snapshot. */
+    hash: text('hash'),
     status: jobStatus('status').notNull().default('pending'),
     fileId: uuid('file_id').references(() => files.id),
     error: text('error'),
@@ -89,6 +93,7 @@ export const importJobs = pgTable('import_jobs', {
   id: id(),
   organizationId: orgOwned(),
   entity: text('entity').notNull(),
+  fileName: text('file_name'),
   fileId: uuid('file_id').references(() => files.id),
   status: jobStatus('status').notNull().default('pending'),
   totalRows: integer('total_rows'),

@@ -1,0 +1,415 @@
+import { z } from 'zod';
+import { STUDY_DESIGNS } from './science';
+import { isoDate, optionalText } from './common';
+
+// ── Reports and exports ───────────────────────────────────────────────────────
+
+export const generateReportSchema = z
+  .object({
+    from: isoDate,
+    to: isoDate,
+    /** The trainer's own recommendations (section 10); the report never invents them. */
+    trainerNotes: optionalText(3000),
+  })
+  .refine((d) => d.from <= d.to, {
+    message: 'La fecha inicial debe ser anterior a la final.',
+    path: ['to'],
+  });
+
+export const REPORT_FORMATS = ['pdf', 'xlsx', 'csv'] as const;
+export const EXPORT_ENTITIES = ['clients', 'assessments', 'plan', 'sessions', 'progress'] as const;
+export type ExportEntity = (typeof EXPORT_ENTITIES)[number];
+
+export const exportQuerySchema = z.object({
+  entity: z.enum(EXPORT_ENTITIES),
+  format: z.enum(['csv', 'xlsx']),
+  clientId: z.uuid().optional(),
+  planId: z.uuid().optional(),
+  from: isoDate.optional(),
+  to: isoDate.optional(),
+});
+
+// ── Imports (validated row by row before anything is written) ─────────────────
+
+export const IMPORT_ENTITIES = ['clients', 'exercises', 'assessments', 'references'] as const;
+export type ImportEntity = (typeof IMPORT_ENTITIES)[number];
+
+export const createImportSchema = z.object({
+  entity: z.enum(IMPORT_ENTITIES),
+  fileName: z.string().trim().min(1).max(200),
+  /** Base64 of the CSV/XLSX file (2 MB max). */
+  contentBase64: z.string().min(4).max(2_800_000),
+});
+
+export interface ImportColumn {
+  /** Normalized header (lowercase, no accents, `_`). */
+  key: string;
+  /** Header as shown in templates. */
+  header: string;
+  required: boolean;
+  example: string;
+  help: string;
+  aliases?: string[];
+}
+
+export const IMPORT_COLUMNS: Record<ImportEntity, ImportColumn[]> = {
+  clients: [
+    { key: 'nombre', header: 'Nombre', required: true, example: 'Ana', help: 'Nombre' },
+    {
+      key: 'apellidos',
+      header: 'Apellidos',
+      required: true,
+      example: 'García López',
+      help: 'Apellidos',
+    },
+    {
+      key: 'fecha_nacimiento',
+      header: 'Fecha nacimiento',
+      required: false,
+      example: '14/03/1995',
+      help: 'dd/mm/aaaa o aaaa-mm-dd',
+      aliases: ['fecha_de_nacimiento', 'nacimiento'],
+    },
+    {
+      key: 'sexo',
+      header: 'Sexo',
+      required: false,
+      example: 'mujer',
+      help: 'mujer, hombre, otro o vacío',
+    },
+    {
+      key: 'email',
+      header: 'Email',
+      required: false,
+      example: 'ana@example.com',
+      help: 'Se usa para detectar duplicados',
+      aliases: ['correo', 'correo_electronico'],
+    },
+    { key: 'telefono', header: 'Teléfono', required: false, example: '600123123', help: '' },
+    {
+      key: 'modalidad',
+      header: 'Modalidad',
+      required: false,
+      example: 'presencial',
+      help: 'presencial, online o híbrido',
+    },
+    {
+      key: 'experiencia',
+      header: 'Experiencia',
+      required: false,
+      example: 'principiante',
+      help: 'ninguna, principiante, intermedio o avanzado',
+    },
+    {
+      key: 'sesiones_semana',
+      header: 'Sesiones semana',
+      required: false,
+      example: '3',
+      help: '1–14',
+      aliases: ['sesiones_por_semana'],
+    },
+    {
+      key: 'objetivo',
+      header: 'Objetivo',
+      required: false,
+      example: 'Salud general',
+      help: 'Nombre o clave del catálogo de objetivos',
+    },
+    {
+      key: 'deporte',
+      header: 'Deporte',
+      required: false,
+      example: '',
+      help: 'Nombre o clave del catálogo de deportes',
+    },
+  ],
+  exercises: [
+    { key: 'nombre', header: 'Nombre', required: true, example: 'Sentadilla goblet', help: '' },
+    {
+      key: 'patron',
+      header: 'Patrón',
+      required: false,
+      example: 'Dominante de rodilla',
+      help: 'Nombre o clave del patrón de movimiento',
+      aliases: ['patron_de_movimiento'],
+    },
+    {
+      key: 'nivel',
+      header: 'Nivel',
+      required: false,
+      example: 'principiante',
+      help: 'principiante, intermedio o avanzado',
+    },
+    {
+      key: 'region',
+      header: 'Región',
+      required: false,
+      example: 'inferior',
+      help: 'inferior, superior, tronco o cuerpo completo',
+    },
+    {
+      key: 'material',
+      header: 'Material',
+      required: false,
+      example: 'Kettlebell',
+      help: 'Nombres o claves separados por |',
+    },
+    {
+      key: 'descripcion_cliente',
+      header: 'Descripción cliente',
+      required: false,
+      example: 'Sentadilla con peso al pecho.',
+      help: 'Texto para el cliente',
+    },
+    {
+      key: 'descripcion_entrenador',
+      header: 'Descripción entrenador',
+      required: false,
+      example: '',
+      help: '',
+    },
+  ],
+  assessments: [
+    {
+      key: 'email_cliente',
+      header: 'Email cliente',
+      required: true,
+      example: 'ana@example.com',
+      help: 'Cliente existente (y asignado a ti)',
+      aliases: ['email', 'cliente'],
+    },
+    {
+      key: 'fecha',
+      header: 'Fecha',
+      required: true,
+      example: '01/09/2026',
+      help: 'dd/mm/aaaa o aaaa-mm-dd',
+    },
+    {
+      key: 'test',
+      header: 'Test',
+      required: true,
+      example: 'CMJ',
+      help: 'Nombre o clave del test del catálogo',
+    },
+    {
+      key: 'valor',
+      header: 'Valor',
+      required: true,
+      example: '31,2',
+      help: 'Un valor o intentos separados por | (30,1|31,4)',
+      aliases: ['valores', 'intentos'],
+    },
+    {
+      key: 'lado',
+      header: 'Lado',
+      required: false,
+      example: '',
+      help: 'vacío, izquierdo o derecho',
+    },
+    { key: 'contexto', header: 'Contexto', required: false, example: 'Reevaluación', help: '' },
+  ],
+  references: [
+    {
+      key: 'titulo',
+      header: 'Título',
+      required: true,
+      example: 'Effects of resistance training…',
+      help: '',
+    },
+    {
+      key: 'autores',
+      header: 'Autores',
+      required: false,
+      example: 'Smith J|Pérez L',
+      help: 'Separados por |',
+    },
+    {
+      key: 'anio',
+      header: 'Año',
+      required: false,
+      example: '2021',
+      help: '',
+      aliases: ['ano', 'year'],
+    },
+    { key: 'revista', header: 'Revista', required: false, example: 'Sports Med', help: '' },
+    {
+      key: 'doi',
+      header: 'DOI',
+      required: false,
+      example: '10.1007/s40279-021-01492-5',
+      help: 'Empieza por 10.',
+    },
+    { key: 'pmid', header: 'PMID', required: false, example: '', help: 'Solo números' },
+    { key: 'url', header: 'URL', required: false, example: '', help: '' },
+    {
+      key: 'diseno',
+      header: 'Diseño',
+      required: false,
+      example: 'revisión sistemática',
+      help: 'Tipo de estudio; vacío = opinión de experto',
+    },
+  ],
+};
+
+// Value parsers shared by the row schemas (Spanish input → canonical values).
+const norm = (s: string) => s.trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+const blank = (v: unknown) => v == null || (typeof v === 'string' && v.trim() === '');
+const opt = <T extends z.ZodType>(t: T) =>
+  z.preprocess((v) => (blank(v) ? undefined : typeof v === 'string' ? v.trim() : v), t.optional());
+
+/** dd/mm/yyyy, d/m/yyyy or yyyy-mm-dd → yyyy-mm-dd (real calendar dates only). */
+export const importDate = z.preprocess((v) => {
+  if (typeof v !== 'string') return v;
+  const s = v.trim();
+  const m = /^(\d{1,2})[/.-](\d{1,2})[/.-](\d{4})$/.exec(s);
+  return m ? `${m[3]}-${m[2]!.padStart(2, '0')}-${m[1]!.padStart(2, '0')}` : s;
+}, isoDate);
+
+const decimal = z.preprocess(
+  (v) => (typeof v === 'string' ? Number(v.trim().replace(/\s/g, '').replace(',', '.')) : v),
+  z.number({ error: 'Número no válido' }).finite(),
+);
+
+const mapped = <T extends string>(map: Record<string, T>, label: string) =>
+  z.preprocess(
+    (v) => (typeof v === 'string' ? (map[norm(v)] ?? v) : v),
+    z.enum(Object.values(map) as [T, ...T[]], { error: `${label} no válido` }),
+  );
+
+const SEX_MAP = {
+  mujer: 'female',
+  femenino: 'female',
+  f: 'female',
+  hombre: 'male',
+  masculino: 'male',
+  m: 'male',
+  h: 'male',
+  otro: 'other',
+  'no indica': 'undisclosed',
+  female: 'female',
+  male: 'male',
+  other: 'other',
+} as const;
+const MODALITY_MAP = {
+  presencial: 'in_person',
+  online: 'online',
+  hibrido: 'hybrid',
+  hibrida: 'hybrid',
+} as const;
+const EXPERIENCE_MAP = {
+  ninguna: 'none',
+  principiante: 'beginner',
+  intermedio: 'intermediate',
+  intermedia: 'intermediate',
+  avanzado: 'advanced',
+  avanzada: 'advanced',
+} as const;
+const LEVEL_MAP = {
+  principiante: 'beginner',
+  intermedio: 'intermediate',
+  avanzado: 'advanced',
+} as const;
+const REGION_MAP = {
+  inferior: 'lower',
+  'tren inferior': 'lower',
+  superior: 'upper',
+  'tren superior': 'upper',
+  tronco: 'trunk',
+  core: 'trunk',
+  'cuerpo completo': 'full_body',
+} as const;
+const SIDE_MAP = {
+  izquierdo: 'left',
+  izquierda: 'left',
+  izq: 'left',
+  derecho: 'right',
+  derecha: 'right',
+  der: 'right',
+  ambos: 'both',
+  bilateral: 'both',
+} as const;
+const DESIGN_MAP: Record<string, (typeof STUDY_DESIGNS)[number]> = {
+  ...Object.fromEntries(STUDY_DESIGNS.map((d) => [d, d])),
+  guia: 'guideline',
+  'guia de practica clinica': 'guideline',
+  posicionamiento: 'position_stand',
+  consenso: 'consensus',
+  'revision paraguas': 'umbrella_review',
+  'revision sistematica': 'systematic_review',
+  metaanalisis: 'meta_analysis',
+  'meta-analisis': 'meta_analysis',
+  'ensayo aleatorizado': 'rct',
+  eca: 'rct',
+  'ensayo no aleatorizado': 'non_randomized_trial',
+  cohortes: 'cohort',
+  transversal: 'cross_sectional',
+  'serie de casos': 'case_series',
+  mecanistico: 'mechanistic',
+  'revision narrativa': 'narrative_review',
+  'opinion de experto': 'expert_opinion',
+  libro: 'book',
+  web: 'website',
+};
+
+export const importRowSchemas = {
+  clients: z.object({
+    nombre: z.string().trim().min(1, 'Obligatorio').max(80),
+    apellidos: z.string().trim().min(1, 'Obligatorio').max(120),
+    fecha_nacimiento: opt(importDate),
+    sexo: opt(mapped(SEX_MAP, 'Sexo')),
+    email: opt(
+      z
+        .email('Email no válido')
+        .max(254)
+        .transform((e) => e.toLowerCase()),
+    ),
+    telefono: opt(z.string().max(30)),
+    modalidad: opt(mapped(MODALITY_MAP, 'Modalidad')),
+    experiencia: opt(mapped(EXPERIENCE_MAP, 'Experiencia')),
+    sesiones_semana: opt(z.coerce.number().int('Número entero').min(1).max(14)),
+    objetivo: opt(z.string().max(120)),
+    deporte: opt(z.string().max(120)),
+  }),
+  exercises: z.object({
+    nombre: z.string().trim().min(2, 'Mínimo 2 caracteres').max(120),
+    patron: opt(z.string().max(120)),
+    nivel: opt(mapped(LEVEL_MAP, 'Nivel')),
+    region: opt(mapped(REGION_MAP, 'Región')),
+    material: opt(z.string().max(500)),
+    descripcion_cliente: opt(z.string().max(600)),
+    descripcion_entrenador: opt(z.string().max(4000)),
+  }),
+  assessments: z.object({
+    email_cliente: z.email('Email no válido').transform((e) => e.toLowerCase()),
+    fecha: importDate,
+    test: z.string().trim().min(1, 'Obligatorio').max(120),
+    valor: z.preprocess(
+      (v) => (typeof v === 'string' ? v.split('|').filter((x) => x.trim() !== '') : v),
+      z.array(decimal).min(1, 'Obligatorio').max(10),
+    ),
+    lado: opt(mapped(SIDE_MAP, 'Lado')),
+    contexto: opt(z.string().max(200)),
+  }),
+  references: z.object({
+    titulo: z.string().trim().min(5, 'Mínimo 5 caracteres').max(500),
+    autores: z.preprocess(
+      (v) =>
+        typeof v === 'string'
+          ? v
+              .split('|')
+              .map((x) => x.trim())
+              .filter(Boolean)
+          : v,
+      z.array(z.string().max(120)).max(60),
+    ),
+    anio: opt(z.coerce.number().int().min(1900).max(2100)),
+    revista: opt(z.string().max(200)),
+    doi: opt(z.string().regex(/^10\.[0-9]{4,9}\/\S+$/, 'DOI no válido (debe empezar por 10.)')),
+    pmid: opt(z.string().regex(/^[0-9]{1,9}$/, 'PMID no válido')),
+    url: opt(z.url('URL no válida').max(500)),
+    diseno: opt(mapped(DESIGN_MAP, 'Diseño')),
+  }),
+} as const;
+
+export type ImportRow<E extends ImportEntity> = z.infer<(typeof importRowSchemas)[E]>;

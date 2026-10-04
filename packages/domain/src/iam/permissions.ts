@@ -51,6 +51,9 @@ export const PERMISSIONS = [
   'decision:decide',
   'decision:rules',
   'privacy:export_subject',
+  'reports:generate',
+  'data:export',
+  'data:import',
 ] as const;
 export type Permission = (typeof PERMISSIONS)[number];
 
@@ -100,6 +103,10 @@ export const ROLE_PERMISSIONS: Matrix = {
     // Decision rules and thresholds are organization policy (§13.4, §13.9).
     'decision:rules': 'org',
     'privacy:export_subject': 'org',
+    // Reports, exports and validated imports (§34, §52, §53); exports and imports are audited.
+    'reports:generate': 'org',
+    'data:export': 'org',
+    'data:import': 'org',
   },
   TRAINER: {
     'clients:read': 'assigned',
@@ -143,6 +150,11 @@ export const ROLE_PERMISSIONS: Matrix = {
     'decision:read': 'assigned',
     'decision:run': 'assigned',
     'decision:decide': 'assigned',
+    // Reports and exports of assigned clients; imports into the organization (imported clients are
+    // assigned to the trainer who imports them; assessments only for assigned clients).
+    'reports:generate': 'assigned',
+    'data:export': 'assigned',
+    'data:import': 'org',
   },
   CLIENT: {
     'clients:read': 'own',
