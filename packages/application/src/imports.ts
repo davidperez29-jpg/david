@@ -106,7 +106,12 @@ async function validate(
     const errors: Errors = {};
     if (!r.success)
       for (const i of r.error.issues) add(errors, String(i.path[0] ?? 'fila'), i.message);
-    return { rowNumber, data: r.success ? (r.data as Record<string, unknown>) : raw, errors };
+    // The values as written in the file are kept for the preview (`raw`).
+    return {
+      rowNumber,
+      data: { ...(r.success ? (r.data as Record<string, unknown>) : raw), raw },
+      errors,
+    };
   });
   const ok = out.filter((r) => !Object.keys(r.errors).length);
   const seen = new Map<string, number>();

@@ -6,6 +6,8 @@ import {
   clientSessionReview,
   clientAssessmentProgress,
   getClient,
+  defaultReportPeriod,
+  listClientReports,
   getDecision,
   listAdjustments,
   listPlanProposals,
@@ -37,6 +39,7 @@ import { WeeklyLoadChart } from '@/components/monitoring/charts';
 import { SeverityBadge } from '@/components/monitoring/severity';
 import { NewAssessmentForm } from '../../assessments/forms';
 import { NewPlanForm } from '../../plans/forms';
+import { ExportForm, GenerateReportForm } from '@/components/reports/actions';
 import { AdjustmentsCard } from '@/components/programming/adjustments-card';
 import { GenerateProposalForm } from '@/components/programming/actions';
 import { Badge, Card, EmptyState } from '@/components/ui/card';
@@ -68,6 +71,7 @@ const TABS = [
   ['salud', 'Salud declarada'],
   ['privacidad', 'Consentimientos'],
   ['equipo', 'Entrenadores'],
+  ['informes', 'Informes'],
   ['historial', 'Historial de cambios'],
 ] as const;
 
@@ -210,6 +214,8 @@ export default async function ClientPage({
       {tab === 'necesidades' ? (
         <DecisionTab ctx={ctx} clientId={client.id} isAdmin={isAdmin} />
       ) : null}
+
+      {tab === 'informes' ? await reportsTab(ctx, client.id) : null}
 
       {tab === 'planificacion' ? await plansTab(ctx, client.id) : null}
 
@@ -485,6 +491,49 @@ async function plansTab(ctx: Awaited<ReturnType<typeof requireStaff>>, clientId:
       </Card>
       <Card title="Nuevo plan">
         <NewPlanForm clientId={clientId} templates={templates} />
+      </Card>
+    </div>
+  );
+}
+
+async function reportsTab(ctx: Awaited<ReturnType<typeof requireStaff>>, clientId: string) {
+  const list = await listClientReports(ctx, clientId);
+  const period = defaultReportPeriod(ctx.now());
+  return (
+    <div className="flex flex-col gap-4">
+      <Card title="Nuevo informe">
+        <GenerateReportForm clientId={clientId} defaultFrom={period.from} defaultTo={period.to} />
+      </Card>
+      <Card title="Informes generados">
+        {list.length === 0 ? (
+          <EmptyState>Sin informes todavía.</EmptyState>
+        ) : (
+          <ul className="divide-y divide-border text-sm">
+            {list.map((r) => (
+              <li key={r.id} className="flex flex-wrap items-center gap-2 py-2">
+                <Link
+                  href={`/app/clients/${clientId}/informes/${r.id}`}
+                  className="font-medium hover:underline"
+                >
+                  {formatDate(r.parameters.from)} – {formatDate(r.parameters.to)}
+                </Link>
+                <span className="text-xs text-muted">
+                  {formatDateTime(r.createdAt)}
+                  {r.by ? ` · ${r.by}` : ''}
+                </span>
+                <a
+                  className="text-xs text-accent underline"
+                  href={`/api/v1/reports/${r.id}/download?format=pdf`}
+                >
+                  PDF
+                </a>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Card>
+      <Card title="Exportar datos de este cliente">
+        <ExportForm clients={[]} clientId={clientId} />
       </Card>
     </div>
   );

@@ -77,7 +77,7 @@ export async function reportPdf(report: ClientReport): Promise<Buffer> {
       .fillColor(C.accent)
       .font('Helvetica-Bold')
       .fontSize(13)
-      .text(pdfText(`${sec.number}. ${sec.title}`));
+      .text(pdfText(`${sec.number}. ${sec.title}`), M, doc.y, { width });
     doc
       .moveTo(M, doc.y + 2)
       .lineTo(M + width, doc.y + 2)
@@ -85,17 +85,36 @@ export async function reportPdf(report: ClientReport): Promise<Buffer> {
       .lineWidth(0.5)
       .stroke();
     doc.moveDown(0.5);
-    for (const b of sec.blocks) block(doc, b, width, ensure);
+    // Consecutive charts are drawn as a compact two-column grid.
+    for (let i = 0; i < sec.blocks.length; i++) {
+      const b = sec.blocks[i]!;
+      if (b.kind !== 'chart') {
+        block(doc, b, width, ensure);
+        continue;
+      }
+      const run: Extract<ReportBlock, { kind: 'chart' }>[] = [];
+      while (sec.blocks[i]?.kind === 'chart')
+        run.push(sec.blocks[i++] as Extract<ReportBlock, { kind: 'chart' }>);
+      i--;
+      chartGrid(doc, run, width, ensure);
+    }
+    doc.x = M;
     doc.moveDown(0.6);
   }
-
-  ensure(40);
-  doc.moveDown(0.5).fillColor(C.muted).font('Helvetica').fontSize(8);
-  for (const f of report.footer) doc.text(pdfText(f), { width });
 
   const range = doc.bufferedPageRange();
   for (let i = 0; i < range.count; i++) {
     doc.switchToPage(range.start + i);
+    // The page footer sits inside the bottom margin: lift it, or pdfkit would add a page.
+    doc.page.margins.bottom = 0;
+    if (i === range.count - 1)
+      report.footer.forEach((f, k) =>
+        doc
+          .fillColor(C.muted)
+          .font('Helvetica')
+          .fontSize(7)
+          .text(pdfText(f), M, doc.page.height - M - 24 + k * 9, { width, lineBreak: false }),
+      );
     doc
       .fillColor(C.muted)
       .fontSize(8)
@@ -136,6 +155,7 @@ function block(
       doc.text(t, M + 12, y, { width: width - 12 });
       doc.moveDown(0.15);
     }
+    doc.x = M;
     doc.moveDown(0.2);
   }
   if (b.kind === 'table') {
@@ -169,71 +189,89 @@ function block(
     doc.x = M;
     doc.moveDown(0.5);
   }
-  if (b.kind === 'chart') chart(doc, b, width, ensure);
+}
+
+const tick = (v: number, range: number) =>
+  (Math.round(v * (range < 1 ? 100 : 10)) / (range < 1 ? 100 : 10)).toLocaleString('es-ES');
+
+function chartGrid(
+  doc: PDFKit.PDFDocument,
+  charts: Extract<ReportBlock, { kind: 'chart' }>[],
+  width: number,
+  ensure: (h: number) => void,
+) {
+  const gap = 16;
+  const cw = (width - gap) / 2;
+  const h = 56;
+  const cell = h + 34;
+  for (let i = 0; i < charts.length; i += 2) {
+    ensure(cell);
+    const top = doc.y;
+    charts.slice(i, i + 2).forEach((b, j) => chart(doc, b, M + j * (cw + gap), top, cw, h));
+    doc.x = M;
+    doc.y = top + cell;
+  }
+  doc.moveDown(0.3);
 }
 
 function chart(
   doc: PDFKit.PDFDocument,
   b: Extract<ReportBlock, { kind: 'chart' }>,
-  width: number,
-  ensure: (h: number) => void,
+  x0: number,
+  top: number,
+  cw: number,
+  h: number,
 ) {
-  const h = 110;
-  ensure(h + 30);
-  const top = doc.y;
   doc
     .font('Helvetica-Bold')
-    .fontSize(9)
+    .fontSize(8)
     .fillColor(C.text)
-    .text(pdfText(`${b.title} (${b.unit})`), M, top);
+    .text(pdfText(`${b.title} (${b.unit})`), x0, top, {
+      width: cw,
+      height: 10,
+      ellipsis: true,
+      lineBreak: false,
+    });
   const y0 = top + 14;
-  const left = M + 40;
-  const w = Math.min(width - 40, 360);
+  const left = x0 + 30;
+  const w = cw - 40;
   const values = b.points.map((p) => p.value);
   let min = Math.min(...values);
   let max = Math.max(...values);
   if (min === max) {
-    min -= 1;
-    max += 1;
+    min -= Math.abs(min) * 0.1 || 1;
+    max += Math.abs(max) * 0.1 || 1;
   }
   const pad = (max - min) * 0.1;
   min -= pad;
   max += pad;
+  const range = max - min;
   const px = (i: number) =>
     left + (b.points.length === 1 ? w / 2 : (i / (b.points.length - 1)) * w);
-  const py = (v: number) => y0 + h - ((v - min) / (max - min)) * h;
+  const py = (v: number) => y0 + h - ((v - min) / range) * h;
   doc.strokeColor(C.line).lineWidth(0.5);
   doc
     .moveTo(left, y0)
     .lineTo(left, y0 + h)
     .lineTo(left + w, y0 + h)
     .stroke();
-  doc.font('Helvetica').fontSize(7).fillColor(C.muted);
-  doc.text((Math.round(max * 10) / 10).toLocaleString('es-ES'), M, y0 - 3, {
-    width: 36,
-    align: 'right',
-  });
-  doc.text((Math.round(min * 10) / 10).toLocaleString('es-ES'), M, y0 + h - 6, {
-    width: 36,
-    align: 'right',
-  });
-  doc.strokeColor(C.accent).lineWidth(1.5);
+  doc.font('Helvetica').fontSize(6.5).fillColor(C.muted);
+  doc.text(tick(max, range), x0, y0 - 2, { width: 27, align: 'right', lineBreak: false });
+  doc.text(tick(min, range), x0, y0 + h - 5, { width: 27, align: 'right', lineBreak: false });
+  doc.strokeColor(C.accent).lineWidth(1.4);
   b.points.forEach((p, i) =>
     i === 0 ? doc.moveTo(px(i), py(p.value)) : doc.lineTo(px(i), py(p.value)),
   );
   doc.stroke();
   b.points.forEach((p, i) => {
-    doc.circle(px(i), py(p.value), 2.5).fillColor(C.accent).fill();
+    doc.circle(px(i), py(p.value), 2).fillColor(C.accent).fill();
     doc
       .fillColor(C.muted)
-      .fontSize(7)
-      .text(reportDate(p.date), px(i) - 25, y0 + h + 3, {
-        width: 50,
+      .fontSize(6.5)
+      .text(reportDate(p.date), px(i) - 24, y0 + h + 3, {
+        width: 48,
         align: 'center',
         lineBreak: false,
       });
   });
-  doc.x = M;
-  doc.y = y0 + h + 16;
-  doc.moveDown(0.3);
 }

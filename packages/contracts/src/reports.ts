@@ -259,12 +259,15 @@ const opt = <T extends z.ZodType>(t: T) =>
   z.preprocess((v) => (blank(v) ? undefined : typeof v === 'string' ? v.trim() : v), t.optional());
 
 /** dd/mm/yyyy, d/m/yyyy or yyyy-mm-dd → yyyy-mm-dd (real calendar dates only). */
-export const importDate = z.preprocess((v) => {
-  if (typeof v !== 'string') return v;
-  const s = v.trim();
-  const m = /^(\d{1,2})[/.-](\d{1,2})[/.-](\d{4})$/.exec(s);
-  return m ? `${m[3]}-${m[2]!.padStart(2, '0')}-${m[1]!.padStart(2, '0')}` : s;
-}, isoDate);
+export const importDate = z.preprocess(
+  (v) => {
+    if (typeof v !== 'string') return v;
+    const s = v.trim();
+    const m = /^(\d{1,2})[/.-](\d{1,2})[/.-](\d{4})$/.exec(s);
+    return m ? `${m[3]}-${m[2]!.padStart(2, '0')}-${m[1]!.padStart(2, '0')}` : s;
+  },
+  z.iso.date({ error: 'Fecha no válida (dd/mm/aaaa o aaaa-mm-dd)' }),
+);
 
 const decimal = z.preprocess(
   (v) => (typeof v === 'string' ? Number(v.trim().replace(/\s/g, '').replace(',', '.')) : v),

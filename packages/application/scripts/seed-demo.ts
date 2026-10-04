@@ -16,6 +16,7 @@ import {
   createAssessment,
   decideRecommendation,
   evaluateAllAdjustments,
+  generateClientReport,
   generatePlanProposal,
   getDecision,
   listAssessmentTests,
@@ -797,6 +798,18 @@ const adj = await evaluateAllAdjustments(ctx);
   await generatePlanProposal(iker.by, iker.id, { startDate: nextMonday, weekdays: [1, 3, 5] });
 }
 console.log(`Programming engine: ${adj.created} adjustment proposals; 1 plan proposal (Iker).`);
+
+// Reports (§34): one client report for Iker over the last 12 weeks, with the trainer's notes.
+{
+  const to = localDate(new Date());
+  await generateClientReport(iker.by, iker.id, {
+    from: addDays(to, -83),
+    to,
+    trainerNotes:
+      'Prioridad: fuerza máxima de tren inferior dos días por semana; mantener el trabajo de velocidad. Reevaluar CMJ y sprint en la semana de evaluación.',
+  });
+}
+console.log('Reports: 1 client report (Iker).');
 
 // Exercise library: the user's methodology bank as reviewable drafts (skip with DEMO_SKIP_BANK=1).
 if (!process.env.DEMO_SKIP_BANK) {

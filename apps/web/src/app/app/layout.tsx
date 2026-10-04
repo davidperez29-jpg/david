@@ -37,6 +37,7 @@ export default async function StaffLayout({ children }: { children: ReactNode })
             <NavLink href="/app/assessments">Evaluación</NavLink>
             <NavLink href="/app/plans">Planificación</NavLink>
             <NavLink href="/app/science">Ciencia</NavLink>
+            <NavLink href="/app/informes">Informes</NavLink>
             {isAdmin ? <NavLink href="/app/admin/users">Usuarios</NavLink> : null}
             <NavLink href="/app/settings">Ajustes</NavLink>
           </nav>
