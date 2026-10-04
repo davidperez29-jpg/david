@@ -9,11 +9,11 @@
 
 | Pieza | Qué es | Estado |
 |---|---|---|
-| App web + API | Next.js (`apps/web`), una imagen Docker (`Dockerfile`) | **Sin estado**: varias réplicas detrás de un balanceador |
+| App web + API | Next.js (`apps/web`), imagen `web` del `Dockerfile`: servidor autónomo (`standalone`), ≈ 480 MB | **Sin estado**: varias réplicas detrás de un balanceador |
 | Base de datos | PostgreSQL 16 | Única fuente de verdad: sesiones, límites de peticiones, auditoría, datos |
 | Archivos subidos | Siluetas de ejercicios (`FILE_STORAGE_DIR`) | Volumen compartido si hay más de una réplica *[o almacenamiento de objetos UE: adaptador pendiente]* |
-| Trabajos diarios | `monitor:daily` (alertas) y `privacy:daily` (retención y depuración) | Un *cron* del proveedor, una vez al día, con la misma imagen |
-| Migraciones | `db:migrate` + catálogos (`db:seed`, idempotente) | Un trabajo puntual antes de cada despliegue |
+| Trabajos diarios | `monitor:daily` (alertas) y `privacy:daily` (retención y depuración) | Un *cron* del proveedor, una vez al día, con la imagen `jobs` |
+| Migraciones y trabajos | Imagen `jobs` (todo el *workspace*, ≈ 1,9 GB): `db:migrate` + catálogos (`db:seed`, idempotente), `monitor:daily`, `privacy:daily`, `keys:rotate`, `privacy:reapply-erasures` | Trabajos puntuales o programados |
 
 ## 2. Variables de entorno
 
@@ -35,13 +35,17 @@ Los secretos van en el gestor de secretos del proveedor, nunca en el repositorio
 ## 3. Desplegar
 
 ```bash
-docker build -t training-platform:$VERSION .
+docker build --target web  -t training-platform:$VERSION .
+docker build --target jobs -t training-platform-jobs:$VERSION .
 # 1. Migraciones y catálogos (una vez por despliegue; las migraciones solo avanzan)
-docker run --rm -e DATABASE_URL=… -w /app/packages/db training-platform:$VERSION \
+docker run --rm -e DATABASE_URL=… training-platform-jobs:$VERSION \
   sh -c 'node node_modules/tsx/dist/cli.mjs scripts/migrate.ts && node node_modules/tsx/dist/cli.mjs scripts/seed.ts'
 # 2. App (tantas réplicas como haga falta)
 docker run -d -p 3000:3000 -e DATABASE_URL=… -e APP_ENCRYPTION_KEY=… -e APP_BASE_URL=… \
   -v files:/data/files training-platform:$VERSION
+# Trabajos diarios (cron del proveedor), con la imagen jobs:
+docker run --rm -e DATABASE_URL=… -e APP_ENCRYPTION_KEY=… -w /app/packages/application \
+  training-platform-jobs:$VERSION node node_modules/tsx/dist/cli.mjs scripts/privacy-daily.ts
 ```
 
 `docker-compose.yml` hace lo mismo en local:
@@ -123,13 +127,13 @@ Las copias se cifran en reposo y se guardan en la UE, en otra cuenta o proyecto 
 
 | Prueba | Resultado |
 |---|---|
-| `docker build` (también en CI, trabajo `image`) | Imagen construida (≈ 1,7 GB sin optimizar) |
+| `docker build` de `web` y `jobs` (también en CI, trabajo `image`) | `web` ≈ 480 MB (antes 1,7 GB); `jobs` ≈ 1,9 GB |
+| Imagen `web` con datos demo | Inicio de sesión 200; PDF y Excel de un informe generados dentro del contenedor (comprueba que las fuentes de pdfkit van en la imagen) |
 | `docker compose up` | Migraciones (31) y catálogos aplicados; la app sana; `/api/ready` → `ready`; `/login` 200; API sin sesión 401; logs `http_request` en JSON |
 | Copia → supresión → restauración → reaplicación | El cliente suprimido vuelve con la copia; el script lo anonimiza de nuevo |
 | Arranque sin red | La imagen no descarga nada al arrancar (se ejecuta con `node`, sin pnpm) |
 
 **Pendiente**:
 
-- **Imagen**: es grande porque incluye las dependencias de desarrollo, que las migraciones necesitan (`tsx`). Separar una imagen de trabajos de otra mínima con `output: 'standalone'` la reduciría.
 - **Archivos**: adaptador de almacenamiento de objetos (UE) para no depender de un volumen compartido.
 - **Plataforma**: proveedor, región y herramienta de monitorización *[Completar al desplegar]*.
