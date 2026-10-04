@@ -487,6 +487,8 @@ async function runDecision_(
       and(
         eq(recommendations.clientId, clientId),
         inArray(recommendations.status, ['proposed', 'postponed']),
+        // Programming adjustments (Phase 11) carry a situation key and live on their own.
+        isNull(recommendations.key),
       ),
     );
 

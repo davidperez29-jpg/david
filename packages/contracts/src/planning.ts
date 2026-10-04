@@ -44,7 +44,7 @@ const int = (min: number, max: number) =>
   z.coerce.number().int().min(min).max(max).nullable().optional();
 const dec = (min: number, max: number) =>
   z.coerce.number().finite().min(min).max(max).nullable().optional();
-const weekdays = z
+export const weekdays = z
   .array(z.coerce.number().int().min(1).max(7))
   .min(1)
   .max(7)

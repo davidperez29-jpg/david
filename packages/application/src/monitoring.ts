@@ -86,7 +86,7 @@ async function latestRuleSet(db: Database, organizationId: string) {
   return rs ?? null;
 }
 
-async function organizationRules(db: Database, organizationId: string) {
+export async function organizationRules(db: Database, organizationId: string) {
   const rs = await latestRuleSet(db, organizationId);
   const rows = rs
     ? await db

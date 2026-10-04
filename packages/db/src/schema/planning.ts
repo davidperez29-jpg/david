@@ -134,6 +134,11 @@ export const trainingPlans = pgTable(
     basedOnTemplateId: uuid('based_on_template_id'),
     proposalOfPlanId: uuid('proposal_of_plan_id'),
     recommendationId: uuid('recommendation_id'),
+    /** For PROPOSAL plans: what the programming engine adapted and why. */
+    generationNotes: text('generation_notes')
+      .array()
+      .notNull()
+      .default(sql`'{}'::text[]`),
     publishedToClientAt: timestamp('published_to_client_at', { withTimezone: true }),
     ...timestamps(),
     ...authorship(),

@@ -41,7 +41,7 @@ export async function writeAudit(
   tx: Executor,
   ctx: RequestContext | (AppContext & { actor?: undefined }),
   entry: AuditEntry,
-  actorOverride?: { userId: string; organizationId: string; roles: string[] },
+  actorOverride?: { userId: string | null; organizationId: string; roles: string[] },
 ): Promise<void> {
   const actor = actorOverride ?? ctx.actor;
   const changes = Array.isArray(entry.changes) ? redact(entry.changes) : (entry.changes ?? null);

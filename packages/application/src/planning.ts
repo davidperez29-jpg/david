@@ -136,7 +136,11 @@ function toColumns(p: Prescription) {
 
 // ── Loading helpers ───────────────────────────────────────────────────────────
 
-async function loadPlan(ctx: RequestContext, id: string, permission: 'plans:read' | 'plans:write') {
+export async function loadPlan(
+  ctx: RequestContext,
+  id: string,
+  permission: 'plans:read' | 'plans:write',
+) {
   const [p] = await ctx.db.select().from(trainingPlans).where(eq(trainingPlans.id, id));
   if (!p || p.organizationId !== ctx.actor.organizationId || !p.clientId)
     throw new DomainError('not_found', 'Plan no encontrado.');
@@ -258,7 +262,7 @@ async function listPlanTemplates_(ctx: RequestContext) {
 }
 export type PlanTemplateSummary = Awaited<ReturnType<typeof listPlanTemplates_>>[number];
 
-async function resolveExercises(ctx: RequestContext, refs: string[]) {
+export async function resolveExercises(ctx: RequestContext, refs: string[]) {
   const ids = refs.filter((r) => UUID_RE.test(r));
   const slugs = refs.filter((r) => !UUID_RE.test(r));
   const conds = [];
@@ -353,14 +357,14 @@ export type PlanTemplateDetail = Awaited<ReturnType<typeof getPlanTemplate_>>;
 
 // ── Materialization (template definition → plan rows) ─────────────────────────
 
-interface Conflict {
+export interface Conflict {
   week: number;
   session: string;
   exercise: string;
   message: string;
 }
 
-async function materialize(
+export async function materialize(
   ctx: RequestContext,
   tx: Executor,
   plan: { id: string; organizationId: string; clientId: string },
@@ -948,7 +952,7 @@ function diffSnapshots(a: Snapshot | null, b: Snapshot) {
   };
 }
 
-async function writeRevision(
+export async function writeRevision(
   ctx: RequestContext,
   tx: Executor,
   plan: { id: string; organizationId: string; clientId: string | null; currentRevision: number },
@@ -1021,6 +1025,11 @@ async function setPlanStatus_(ctx: RequestContext, id: string, input: unknown): 
   const { status, reason } = parse(planStatusSchema, input);
   const p = await loadPlan(ctx, id, 'plans:write');
   if (status === p.status) return;
+  if (p.kind === 'PROPOSAL')
+    throw new DomainError(
+      'conflict',
+      'Es una propuesta: acéptala primero (se convierte en un plan en borrador) o descártala.',
+    );
   if (status === 'active') {
     const [other] = await ctx.db
       .select({ id: trainingPlans.id, name: trainingPlans.name })

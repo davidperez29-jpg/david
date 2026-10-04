@@ -58,6 +58,8 @@ export const recommendationStatus = pgEnum('recommendation_status', [
   'superseded',
   'expired',
   'postponed',
+  /** Applied and then undone by the trainer (Phase 11). */
+  'reverted',
 ]);
 export const recConfidence = pgEnum('recommendation_confidence', ['high', 'moderate', 'low']);
 export const alertSeverity = pgEnum('alert_severity', ['green', 'yellow', 'red']);
@@ -150,10 +152,17 @@ export const recommendations = pgTable(
     decidedBy: uuid('decided_by'),
     decidedAt: timestamp('decided_at', { withTimezone: true }),
     decisionReason: text('decision_reason'),
+    /** Plan the adjustment applies to (Phase 11 programming engine). */
+    planId: uuid('plan_id'),
+    /** Stable situation key: the same situation is not proposed twice while pending. */
+    key: text('key'),
+    /** Changes actually applied ({sessionExerciseId, field, from, to}[]), for undo. */
+    applied: jsonb('applied'),
     ...timestamps(),
   },
   (t) => [
     index('recommendations_client_idx').on(t.clientId, t.status),
+    index('recommendations_key_idx').on(t.clientId, t.key),
     check(
       'recommendations_decided_ck',
       sql`${t.status} = 'proposed' OR ${t.status} = 'superseded' OR ${t.status} = 'expired' OR ${t.decidedAt} IS NOT NULL`,

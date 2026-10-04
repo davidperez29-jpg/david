@@ -106,6 +106,8 @@ export const clients = pgTable(
       .array()
       .notNull()
       .default(sql`'{}'::uuid[]`),
+    /** §12.2: apply routine load progressions without confirmation (off by default; audited, reversible). */
+    autoApplyLoadProgressions: boolean('auto_apply_load_progressions').notNull().default(false),
     archivedAt: timestamp('archived_at', { withTimezone: true }),
     ...timestamps(),
     ...authorship(),
