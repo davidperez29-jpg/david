@@ -20,7 +20,7 @@ import {
   totpUri,
   validateSession,
   verifyPassword,
-  verifyTotp,
+  totpMatchedStep,
 } from '@tp/auth';
 import {
   changePasswordSchema,
@@ -30,7 +30,7 @@ import {
 } from '@tp/contracts';
 import { schema } from '@tp/db';
 import { checkPassword, DomainError, type Actor } from '@tp/domain';
-import { and, eq, gt, isNull, sql } from 'drizzle-orm';
+import { and, eq, gt, isNull, lt, or, sql } from 'drizzle-orm';
 import { loadActor, rolesOf } from './actor';
 import { writeAudit } from './audit';
 import type { AppContext, RequestContext } from './context';
@@ -168,6 +168,33 @@ export async function resolveSession(
   return { status: 'authenticated', sessionId: s.sessionId, actor };
 }
 
+/**
+ * Accepts a TOTP code once: the matched time step must be newer than the last one used, recorded
+ * atomically (a replay of the same code, even within its 30–90 s window, fails).
+ */
+async function consumeTotp(
+  db: AppContext['db'],
+  keys: AppContext['keys'],
+  u: { id: string; totpSecretEnc: string | null },
+  code: string,
+  now: Date,
+): Promise<boolean> {
+  if (!u.totpSecretEnc) return false;
+  const step = totpMatchedStep(openSecret(keys, u.totpSecretEnc), code, now.getTime());
+  if (step == null) return false;
+  const [ok] = await db
+    .update(users)
+    .set({ totpLastStep: step })
+    .where(
+      and(
+        eq(users.id, u.id),
+        or(isNull(users.totpLastStep), lt(users.totpLastStep, step)),
+      ),
+    )
+    .returning({ id: users.id });
+  return ok != null;
+}
+
 export async function verifySecondFactor(
   ctx: AppContext,
   token: string,
@@ -207,7 +234,7 @@ export async function verifySecondFactor(
       { action: 'recovery_code_used', entityType: 'user', entityId: u.id },
       { userId: u.id, organizationId: u.organizationId, roles: [] },
     );
-  } else if (!verifyTotp(openSecret(ctx.keys, u.totpSecretEnc), code)) {
+  } else if (!(await consumeTotp(ctx.db, ctx.keys, u, code, ctx.now()))) {
     await recordAttempt(ctx.db, emailHash, ctx.ipHash ?? null, false, ctx.now());
     throw new DomainError('unauthenticated', 'Código incorrecto.');
   }
@@ -250,7 +277,7 @@ async function confirmTotpEnrollment_(
   if (!u?.totpSecretEnc || u.totpEnabledAt) {
     throw new DomainError('conflict', 'No hay una activación pendiente.');
   }
-  if (!verifyTotp(openSecret(ctx.keys, u.totpSecretEnc), code)) {
+  if (!(await consumeTotp(ctx.db, ctx.keys, u, code, ctx.now()))) {
     throw new DomainError('validation', 'Código incorrecto.', { code: ['invalid'] });
   }
   await ctx.db.update(users).set({ totpEnabledAt: ctx.now() }).where(eq(users.id, u.id));
@@ -267,7 +294,7 @@ async function regenerateRecoveryCodes_(
   const [u] = await ctx.db.select().from(users).where(eq(users.id, ctx.actor.userId));
   if (!u?.totpSecretEnc || !u.totpEnabledAt)
     throw new DomainError('conflict', 'Activa antes la verificación en dos pasos.');
-  if (!verifyTotp(openSecret(ctx.keys, u.totpSecretEnc), code))
+  if (!(await consumeTotp(ctx.db, ctx.keys, u, code, ctx.now())))
     throw new DomainError('validation', 'Código incorrecto.', { code: ['invalid'] });
   const recoveryCodes = await storeRecoveryCodes(ctx, u.id);
   await writeAudit(ctx.db, ctx, {

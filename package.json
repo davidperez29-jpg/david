@@ -23,7 +23,9 @@
     "db:seed": "pnpm --filter @tp/db seed",
     "db:seed:demo": "pnpm --filter @tp/application seed:demo",
     "monitor:daily": "pnpm --filter @tp/application monitor:daily",
-    "db:reset": "pnpm --filter @tp/db reset"
+    "db:reset": "pnpm --filter @tp/db reset",
+    "privacy:daily": "pnpm --filter @tp/application privacy:daily",
+    "keys:rotate": "pnpm --filter @tp/application keys:rotate"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

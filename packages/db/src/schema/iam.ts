@@ -45,6 +45,8 @@ export const users = pgTable(
     /** TOTP secret, AES-256-GCM encrypted (§14.1). */
     totpSecretEnc: text('totp_secret_enc'),
     totpEnabledAt: timestamp('totp_enabled_at', { withTimezone: true }),
+    /** Last TOTP time step accepted: a code is single-use within its window. */
+    totpLastStep: integer('totp_last_step'),
     failedLoginCount: integer('failed_login_count').notNull().default(0),
     lockedUntil: timestamp('locked_until', { withTimezone: true }),
     lastLoginAt: timestamp('last_login_at', { withTimezone: true }),

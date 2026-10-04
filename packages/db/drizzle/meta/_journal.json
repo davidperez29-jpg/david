@@ -176,6 +176,13 @@
       "when": 1791115571422,
       "tag": "0024_rls_v6",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1791116813253,
+      "tag": "0025_totp_last_step",
+      "breakpoints": true
     }
   ]
 }

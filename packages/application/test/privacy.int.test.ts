@@ -1,4 +1,4 @@
-import { currentTotp, encrypt, keyRingFromBase64, openSecret } from '@tp/auth';
+import { currentTotp, encrypt, keyRingFromBase64, openSecret, totpAt } from '@tp/auth';
 import { schema } from '@tp/db';
 import { addDays, localDate } from '@tp/domain';
 import { createHash, randomBytes } from 'node:crypto';
@@ -288,7 +288,11 @@ describe('authentication hardening', () => {
     await expect(regenerateRecoveryCodes(fresh.admin, '000000')).rejects.toMatchObject({
       code: 'validation',
     });
-    const again = await regenerateRecoveryCodes(fresh.admin, currentTotp(secret));
+    const later = Date.now() + 30_000;
+    const again = await regenerateRecoveryCodes(
+      { ...fresh.admin, now: () => new Date(later) },
+      totpAt(secret, later),
+    );
     expect(again.recoveryCodes).toHaveLength(10);
     expect((await getSecurityStatus(fresh.admin)).recoveryCodesLeft).toBe(10);
   });

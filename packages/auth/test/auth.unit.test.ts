@@ -8,6 +8,8 @@ import {
   keyRingFromBase64,
   sessionLifetimes,
   verifyPassword,
+  totpAt,
+  totpMatchedStep,
   verifyTotp,
 } from '../src';
 
@@ -47,6 +49,16 @@ describe('totp', () => {
     expect(verifyTotp(s, currentTotp(s))).toBe(true);
     expect(verifyTotp(s, '12345')).toBe(false);
     expect(verifyTotp(s, 'abcdef')).toBe(false);
+  });
+
+  it('reports the time step a code belongs to (±1 step of clock skew)', () => {
+    const s = generateTotpSecret();
+    const t = 1_800_000_000_000;
+    const step = Math.floor(t / 30_000);
+    expect(totpMatchedStep(s, totpAt(s, t), t)).toBe(step);
+    expect(totpMatchedStep(s, totpAt(s, t - 30_000), t)).toBe(step - 1);
+    expect(totpMatchedStep(s, totpAt(s, t - 120_000), t)).toBeNull();
+    expect(totpMatchedStep(s, 'abcdef', t)).toBeNull();
   });
 });
 

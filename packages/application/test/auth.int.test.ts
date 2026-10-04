@@ -1,5 +1,5 @@
 import { schema } from '@tp/db';
-import { currentTotp } from '@tp/auth';
+import { currentTotp, totpAt } from '@tp/auth';
 import { eq } from 'drizzle-orm';
 import { beforeAll, describe, expect, it } from 'vitest';
 import {
@@ -86,15 +86,23 @@ describe('two-factor authentication', () => {
       code: 'validation',
     });
     await confirmTotpEnrollment(fresh.admin, currentTotp(secret));
-    const ctx = appContext();
+    // Next time step: the enrolment code cannot be reused.
+    const later = new Date(Date.now() + 30_000);
+    const ctx = appContext({ now: () => later });
     const r = await login(ctx, { email: `admin-${fresh.tag}@example.com`, password: PASSWORD });
     expect(r.requiresSecondFactor).toBe(true);
     expect((await resolveSession(ctx, r.token)).status).toBe('second_factor_required');
     await expect(verifySecondFactor(ctx, r.token, '123456')).rejects.toMatchObject({
       code: 'unauthenticated',
     });
-    await verifySecondFactor(ctx, r.token, currentTotp(secret));
+    const code = totpAt(secret, later.getTime());
+    await verifySecondFactor(ctx, r.token, code);
     expect((await resolveSession(ctx, r.token)).status).toBe('authenticated');
+    // Replay: the same code is single-use, even inside its validity window.
+    const r2 = await login(ctx, { email: `admin-${fresh.tag}@example.com`, password: PASSWORD });
+    await expect(verifySecondFactor(ctx, r2.token, code)).rejects.toMatchObject({
+      code: 'unauthenticated',
+    });
     // the TOTP secret is stored encrypted
     const [u] = await testDb()
       .db.select()
