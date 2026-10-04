@@ -14,7 +14,18 @@ test('security headers on pages and API', async ({ request }) => {
     expect(h['referrer-policy']).toBe('same-origin');
     expect(h['strict-transport-security']).toContain('max-age=');
     expect(h['x-powered-by']).toBeUndefined();
+    // Phase 15: scripts only with a per-request nonce, never 'unsafe-inline'.
+    const scriptSrc = h['content-security-policy']!.split(';').find((d) =>
+      d.trim().startsWith('script-src'),
+    )!;
+    expect(scriptSrc).toMatch(/'nonce-[A-Za-z0-9+/=]+'/);
+    expect(scriptSrc).not.toContain("'unsafe-inline'");
   }
+  const nonce = async () =>
+    (await request.get('/login'))
+      .headers()
+      ['content-security-policy']!.match(/'nonce-([^']+)'/)![1];
+  expect(await nonce()).not.toBe(await nonce());
 });
 
 test('unauthenticated API calls are rejected without leaking internals', async ({ request }) => {
