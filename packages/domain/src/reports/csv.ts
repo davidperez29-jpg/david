@@ -32,7 +32,7 @@ export function toCsv(
       r
         .map((c) => {
           const s = formatCell(c, dec);
-          return /[";\n\r,]/.test(s) || s.includes(sep) ? `"${s.replace(/"/g, '""')}"` : s;
+          return /[";\n\r,\t]/.test(s) || s.includes(sep) ? `"${s.replace(/"/g, '""')}"` : s;
         })
         .join(sep),
     )
@@ -40,11 +40,16 @@ export function toCsv(
   return ((opts.bom ?? true) ? '\uFEFF' : '') + body + '\r\n';
 }
 
-/** Detects the separator from the header line (outside quotes). */
+/** Detects the separator from the header line, counting only characters outside quotes. */
 function detectSeparator(text: string): ';' | ',' | '\t' {
-  const first = text.split(/\r?\n/, 1)[0] ?? '';
-  const count = (ch: string) => first.split(ch).length - 1;
-  const c = { ';': count(';'), ',': count(','), '\t': count('\t') };
+  const c = { ';': 0, ',': 0, '\t': 0 };
+  let quoted = false;
+  for (const ch of text) {
+    if (ch === '"') quoted = !quoted;
+    else if (!quoted && (ch === '\n' || ch === '\r')) break;
+    else if (!quoted && ch in c) c[ch as keyof typeof c]++;
+  }
+  // Ties (including no separator at all) keep the Spanish-Excel default `;`.
   return (Object.entries(c).sort((a, b) => b[1] - a[1])[0]![0] as ';' | ',' | '\t') ?? ';';
 }
 

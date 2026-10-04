@@ -1,7 +1,24 @@
 import { defineConfig } from 'vitest/config';
 
+/**
+ * Coverage gate (MASTER_SPECIFICATION §2.3 and §15.1): ≥ 90 % of lines in the pure domain package,
+ * and in each calculation engine. Run with `pnpm test:coverage` (CI).
+ */
+const ENGINES = ['assessment', 'monitoring', 'planning', 'decision', 'programming', 'reports'];
+
 export default defineConfig({
   test: {
+    coverage: {
+      provider: 'v8',
+      include: ['packages/domain/src/**/*.ts'],
+      reporter: ['text-summary', 'text', 'json-summary'],
+      reportsDirectory: 'coverage',
+      thresholds: {
+        lines: 90,
+        functions: 90,
+        ...Object.fromEntries(ENGINES.map((e) => [`packages/domain/src/${e}/**`, { lines: 90 }])),
+      },
+    },
     projects: [
       {
         test: {
