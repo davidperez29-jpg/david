@@ -14,7 +14,8 @@
     "exercise-bank:normalize": "tsx scripts/exercise-bank/normalize.ts",
     "exercise-bank:import": "tsx scripts/exercise-bank/import.ts",
     "privacy:daily": "tsx scripts/privacy-daily.ts",
-    "keys:rotate": "tsx scripts/rotate-keys.ts"
+    "keys:rotate": "tsx scripts/rotate-keys.ts",
+    "seed:perf": "tsx scripts/seed-perf.ts"
   },
   "dependencies": {
     "@tp/auth": "workspace:*",

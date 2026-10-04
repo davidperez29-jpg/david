@@ -32,6 +32,16 @@ describe('structural catalogues', () => {
 });
 
 describe('RLS map', () => {
+  it('every client_owned/client_optional table keeps its client inside its organization (trigger)', () => {
+    // The per-role access rule of these policies trusts organization_id: a trigger must guarantee
+    // that the row's client belongs to that organization (check_client_org or inherit_scope).
+    const unguarded = Object.entries(RLS_POLICIES)
+      .filter(([, p]) => p.kind === 'client_owned' || p.kind === 'client_optional')
+      .map(([t]) => t)
+      .filter((t) => !(t in INHERIT_SCOPE) && !CHECK_CLIENT_ORG.includes(t));
+    expect(unguarded).toEqual([]);
+  });
+
   it('scope triggers and client/org checks only target mapped tables', () => {
     for (const t of [...Object.keys(INHERIT_SCOPE), ...CHECK_CLIENT_ORG])
       expect(RLS_POLICIES[t]).toBeDefined();

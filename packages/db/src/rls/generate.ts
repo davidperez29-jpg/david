@@ -199,10 +199,15 @@ END $$;`);
       }
       case 'client_owned':
       case 'client_optional': {
+        // Same rule as app_can_access_client(), without re-entering the clients and assignments
+        // policies for every row (Phase 14: 1 000 clients). Safe because the policy also requires
+        // organization_id = app_org_id() and check_client_org/inherit_scope keep the row's client
+        // in that organization.
+        const byRole = `(app_has_role('ADMIN') OR (app_has_role('TRAINER') AND app_trainer_assigned(client_id)) OR (app_has_role('CLIENT') AND client_id = app_client_id()))`;
         const access =
           p.kind === 'client_owned'
-            ? `app_can_access_client(client_id)`
-            : `(CASE WHEN client_id IS NULL THEN app_is_staff() ELSE app_can_access_client(client_id) END)`;
+            ? byRole
+            : `(CASE WHEN client_id IS NULL THEN app_is_staff() ELSE ${byRole} END)`;
         const read = p.clientRead ? access : `${access} AND app_is_staff()`;
         const write = p.clientWrite ? access : `${access} AND app_is_staff()`;
         stmt(

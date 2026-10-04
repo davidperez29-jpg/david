@@ -50,6 +50,10 @@ jobs:
           pnpm db:seed:demo
       - name: Security suite (RLS matrix on the demo data)
         run: pnpm test:security
+      - name: Load data for performance (10 trainers, 1 000 clients)
+        run: pnpm db:seed:perf
+        env:
+          PERF_PLANS: '100'
       - name: E2E (production build + demo data; includes the route cross-access matrix)
         run: |
           pnpm --filter @tp/web exec playwright install --with-deps chromium

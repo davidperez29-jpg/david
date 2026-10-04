@@ -65,40 +65,53 @@ async function calendarEvents_(ctx: RequestContext, query: unknown) {
     ? sql`${clients.id} IN (SELECT client_id FROM trainer_client_assignments WHERE trainer_id = ${q.trainerId} AND ended_at IS NULL)`
     : undefined;
   const clientFilter = q.clientId ? eq(clients.id, q.clientId) : undefined;
-  const [sessionRows, assessmentRows] = await Promise.all([
+  const ranked = ctx.db
+    .select({
+      id: sessions.id,
+      date: sessions.scheduledDate,
+      time: sessions.scheduledTime,
+      title: sessions.title,
+      dayLabel: sessions.dayLabel,
+      published: sessions.published,
+      planId: sql<string>`${trainingPlans.id}`.as('plan_id'),
+      planStatus: sql<string>`${trainingPlans.status}`.as('plan_status'),
+      weekType: microcycles.weekType,
+      attendance: sql<string | null>`${attendance.status}`.as('attendance_status'),
+      clientId: sql<string>`${clients.id}`.as('client_id'),
+      firstName: clients.firstName,
+      lastName: clients.lastName,
+      // Per-day rank and total: a month of a large centre returns a few sessions per day and the
+      // number of the rest (Phase 14: 1 000 clients).
+      rn: sql<number>`row_number() OVER (PARTITION BY ${sessions.scheduledDate} ORDER BY ${sessions.scheduledTime} NULLS FIRST, ${clients.lastName}, ${sessions.id})`.as(
+        'rn',
+      ),
+      dayTotal: sql<number>`count(*) OVER (PARTITION BY ${sessions.scheduledDate})::int`.as(
+        'day_total',
+      ),
+    })
+    .from(sessions)
+    .innerJoin(clients, eq(clients.id, sessions.clientId))
+    .innerJoin(microcycles, eq(microcycles.id, sessions.microcycleId))
+    .innerJoin(mesocycles, eq(mesocycles.id, microcycles.mesocycleId))
+    .innerJoin(phases, eq(phases.id, mesocycles.phaseId))
+    .innerJoin(trainingPlans, eq(trainingPlans.id, phases.planId))
+    .leftJoin(attendance, eq(attendance.sessionId, sessions.id))
+    .where(
+      and(
+        inArray(trainingPlans.status, ['active', 'completed']),
+        gte(sessions.scheduledDate, q.from),
+        lte(sessions.scheduledDate, q.to),
+        clientFilter,
+        byTrainer,
+      ),
+    )
+    .as('cal');
+  const [rankedRows, assessmentRows] = await Promise.all([
     ctx.db
-      .select({
-        id: sessions.id,
-        date: sessions.scheduledDate,
-        time: sessions.scheduledTime,
-        title: sessions.title,
-        dayLabel: sessions.dayLabel,
-        published: sessions.published,
-        planId: trainingPlans.id,
-        planStatus: trainingPlans.status,
-        weekType: microcycles.weekType,
-        attendance: attendance.status,
-        clientId: clients.id,
-        firstName: clients.firstName,
-        lastName: clients.lastName,
-      })
-      .from(sessions)
-      .innerJoin(clients, eq(clients.id, sessions.clientId))
-      .innerJoin(microcycles, eq(microcycles.id, sessions.microcycleId))
-      .innerJoin(mesocycles, eq(mesocycles.id, microcycles.mesocycleId))
-      .innerJoin(phases, eq(phases.id, mesocycles.phaseId))
-      .innerJoin(trainingPlans, eq(trainingPlans.id, phases.planId))
-      .leftJoin(attendance, eq(attendance.sessionId, sessions.id))
-      .where(
-        and(
-          inArray(trainingPlans.status, ['active', 'completed']),
-          gte(sessions.scheduledDate, q.from),
-          lte(sessions.scheduledDate, q.to),
-          clientFilter,
-          byTrainer,
-        ),
-      )
-      .orderBy(asc(sessions.scheduledDate), asc(sessions.scheduledTime), asc(clients.lastName)),
+      .select()
+      .from(ranked)
+      .where(q.perDay ? lte(ranked.rn, q.perDay) : undefined)
+      .orderBy(asc(ranked.date), asc(ranked.rn)),
     ctx.db
       .select({
         id: assessments.id,
@@ -159,11 +172,15 @@ async function calendarEvents_(ctx: RequestContext, query: unknown) {
     from: q.from,
     to: q.to,
     today: localDate(ctx.now()),
-    sessions: sessionRows.map((r) => ({
+    sessions: rankedRows.map(({ rn: _rn, dayTotal: _t, ...r }) => ({
       ...r,
+      planStatus: r.planStatus as (typeof trainingPlans.$inferSelect)['status'],
+      attendance: r.attendance as (typeof attendance.$inferSelect)['status'] | null,
       date: r.date!,
       title: r.title ?? `Sesión ${r.dayLabel}`,
     })),
+    /** Sessions per day before the per-day limit. */
+    sessionTotals: Object.fromEntries(rankedRows.map((r) => [r.date!, Number(r.dayTotal)])),
     assessments: assessmentRows,
     spans,
   };

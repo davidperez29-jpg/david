@@ -246,4 +246,7 @@ export const CHECK_CLIENT_ORG = [
   'reports',
   'integration_connections',
   'external_measurements',
+  'decision_runs',
+  'client_trait_flags',
+  'privacy_requests',
 ];

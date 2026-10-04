@@ -25,6 +25,7 @@
     "db:migrate": "pnpm --filter @tp/db migrate",
     "db:seed": "pnpm --filter @tp/db seed",
     "db:seed:demo": "pnpm --filter @tp/application seed:demo",
+    "db:seed:perf": "pnpm --filter @tp/application seed:perf",
     "monitor:daily": "pnpm --filter @tp/application monitor:daily",
     "db:reset": "pnpm --filter @tp/db reset",
     "privacy:daily": "pnpm --filter @tp/application privacy:daily",

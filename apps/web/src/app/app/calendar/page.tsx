@@ -55,6 +55,8 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
       to,
       clientId: sp.cliente || undefined,
       trainerId: sp.entrenador || undefined,
+      // A large centre (hundreds of sessions a day): the month shows a few per day, the week more.
+      perDay: week ? 40 : 4,
     }),
     listClients(ctx, { limit: 100 }),
     calendarTrainers(ctx),
@@ -84,6 +86,8 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
   const DayContent = ({ d, compact }: { d: string; compact: boolean }) => {
     const x = byDay(d);
     const max = compact ? 4 : 99;
+    // Sessions of the day beyond those returned (per-day limit) plus those not drawn here.
+    const total = x.assessments.length + (data.sessionTotals[d] ?? 0);
     const items = [
       ...x.assessments.map((a) => (
         <li key={`a-${a.id}`}>
@@ -119,6 +123,7 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
         );
       }),
     ];
+    const hidden = total - Math.min(items.length, max);
     return (
       <>
         {x.spans
@@ -132,12 +137,16 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
             </p>
           ))}
         <ul className="flex flex-col gap-0.5 text-xs">{items.slice(0, max)}</ul>
-        {items.length > max ? (
+        {hidden > 0 && !compact ? (
+          <p className="text-[11px] text-muted">
+            +{hidden} más: filtra por entrenador/a o cliente para verlas.
+          </p>
+        ) : hidden > 0 ? (
           <Link
             href={href({ vista: 'semana', semana: d })}
             className="inline-flex min-h-6 items-center text-[11px] text-accent underline"
           >
-            +{items.length - max} más
+            +{hidden} más
           </Link>
         ) : null}
       </>
