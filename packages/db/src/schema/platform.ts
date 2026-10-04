@@ -54,18 +54,22 @@ export const notifications = pgTable(
   (t) => [index('notifications_user_idx').on(t.userId, t.readAt)],
 );
 
-export const files = pgTable('files', {
-  id: id(),
-  organizationId: orgOwned(),
-  storageKey: text('storage_key').notNull().unique(),
-  contentType: text('content_type').notNull(),
-  sizeBytes: integer('size_bytes').notNull(),
-  sha256: text('sha256'),
-  purpose: text('purpose').notNull(),
-  clientId: uuid('client_id').references(() => clients.id, { onDelete: 'cascade' }),
-  createdBy: uuid('created_by'),
-  ...timestamps(),
-});
+export const files = pgTable(
+  'files',
+  {
+    id: id(),
+    organizationId: orgOwned(),
+    storageKey: text('storage_key').notNull().unique(),
+    contentType: text('content_type').notNull(),
+    sizeBytes: integer('size_bytes').notNull(),
+    sha256: text('sha256'),
+    purpose: text('purpose').notNull(),
+    clientId: uuid('client_id').references(() => clients.id, { onDelete: 'cascade' }),
+    createdBy: uuid('created_by'),
+    ...timestamps(),
+  },
+  (t) => [index('files_client_idx').on(t.clientId)],
+);
 
 export const reports = pgTable(
   'reports',

@@ -221,18 +221,22 @@ export const clientGoals = pgTable(
   ],
 );
 
-export const clientHistoryEntries = pgTable('client_history_entries', {
-  id: id(),
-  clientId: uuid('client_id')
-    .notNull()
-    .references(() => clients.id, { onDelete: 'cascade' }),
-  kind: historyKind('kind').notNull(),
-  periodStart: date('period_start'),
-  periodEnd: date('period_end'),
-  description: text('description').notNull(),
-  ...timestamps(),
-  ...authorship(),
-});
+export const clientHistoryEntries = pgTable(
+  'client_history_entries',
+  {
+    id: id(),
+    clientId: uuid('client_id')
+      .notNull()
+      .references(() => clients.id, { onDelete: 'cascade' }),
+    kind: historyKind('kind').notNull(),
+    periodStart: date('period_start'),
+    periodEnd: date('period_end'),
+    description: text('description').notNull(),
+    ...timestamps(),
+    ...authorship(),
+  },
+  (t) => [index('client_history_client_idx').on(t.clientId)],
+);
 
 /** [SALUD] Declared health information — never a diagnosis (§6.1.7, §14.5). */
 export const healthDeclarations = pgTable(
@@ -267,19 +271,23 @@ export const healthDeclarations = pgTable(
  * (e.g. PAR-Q+). Questions are not reproduced in-app until a verified, licensed version is
  * loaded as data; only questionnaire identity, version and outcome are stored.
  */
-export const screeningResponses = pgTable('screening_responses', {
-  id: id(),
-  clientId: uuid('client_id')
-    .notNull()
-    .references(() => clients.id, { onDelete: 'cascade' }),
-  questionnaire: text('questionnaire').notNull(),
-  questionnaireVersion: text('questionnaire_version'),
-  result: screeningResult('result').notNull(),
-  answers: jsonb('answers'),
-  completedOn: date('completed_on').notNull(),
-  ...timestamps(),
-  ...authorship(),
-});
+export const screeningResponses = pgTable(
+  'screening_responses',
+  {
+    id: id(),
+    clientId: uuid('client_id')
+      .notNull()
+      .references(() => clients.id, { onDelete: 'cascade' }),
+    questionnaire: text('questionnaire').notNull(),
+    questionnaireVersion: text('questionnaire_version'),
+    result: screeningResult('result').notNull(),
+    answers: jsonb('answers'),
+    completedOn: date('completed_on').notNull(),
+    ...timestamps(),
+    ...authorship(),
+  },
+  (t) => [index('screening_client_idx').on(t.clientId)],
+);
 
 export const consents = pgTable(
   'consents',

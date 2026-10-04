@@ -392,6 +392,7 @@ export const sessionExercises = pgTable(
   (t) => [
     unique('session_exercises_pos_uq').on(t.blockId, t.position),
     ...prescriptionChecks(t, 'session_exercises'),
+    index('session_exercises_exercise_idx').on(t.exerciseId),
   ],
 );
 

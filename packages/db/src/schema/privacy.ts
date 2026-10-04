@@ -43,7 +43,10 @@ export const privacyRequests = pgTable(
     response: text('response'),
     ...timestamps(),
   },
-  (t) => [index('privacy_requests_org_idx').on(t.organizationId, t.status)],
+  (t) => [
+    index('privacy_requests_org_idx').on(t.organizationId, t.status),
+    index('privacy_requests_client_idx').on(t.clientId),
+  ],
 );
 
 /** One-time 2FA recovery codes (only the SHA-256 is stored). */

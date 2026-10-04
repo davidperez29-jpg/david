@@ -16,7 +16,7 @@ import {
   updateSessionExerciseSchema,
   updateSessionSchema,
 } from '@tp/contracts';
-import { schema, type Executor } from '@tp/db';
+import { schema, uuidv7, type Executor } from '@tp/db';
 import {
   addDays,
   defaultWeekTypes,
@@ -453,89 +453,104 @@ export async function materialize(
 
   const conflicts: Conflict[] = [];
   const scope = { organizationId: plan.organizationId, clientId: plan.clientId };
+  // Phase 15: ids are generated here (UUID v7, as the column default) so the whole tree is written
+  // with one INSERT per level instead of one per row (a 12-week plan has hundreds of rows).
+  const rows = {
+    phases: [] as (typeof phases.$inferInsert)[],
+    mesocycles: [] as (typeof mesocycles.$inferInsert)[],
+    microcycles: [] as (typeof microcycles.$inferInsert)[],
+    sessions: [] as (typeof sessions.$inferInsert)[],
+    blocks: [] as (typeof sessionBlocks.$inferInsert)[],
+    exercises: [] as (typeof sessionExercises.$inferInsert)[],
+  };
+  const allMethodSlugs = [
+    ...new Set(
+      expanded.phases.flatMap((p) =>
+        p.mesocycles.flatMap((m) =>
+          m.microcycles.flatMap((w) =>
+            w.sessions.flatMap((x) =>
+              x.blocks.flatMap((b) => b.exercises.flatMap((e) => e.methods ?? [])),
+            ),
+          ),
+        ),
+      ),
+    ),
+  ];
+  const methodIds = allMethodSlugs.length
+    ? new Map(
+        (
+          await tx
+            .select({ id: methods.id, slug: methods.slug })
+            .from(methods)
+            .where(and(isNull(methods.organizationId), inArray(methods.slug, allMethodSlugs)))
+        ).map((r) => [r.slug, r.id]),
+      )
+    : new Map<string, string>();
   for (const [pi, ph] of expanded.phases.entries()) {
-    const [phRow] = await tx
-      .insert(phases)
-      .values({
-        ...scope,
-        planId: plan.id,
-        position: pi + 1,
-        name: ph.name,
-        objective: ph.objective ?? null,
-        startWeek: ph.startWeek,
-        endWeek: ph.endWeek,
-        emphasis: ph.emphasis ?? null,
-        sessionsPerWeek: ph.sessionsPerWeek ?? null,
-      })
-      .returning({ id: phases.id });
+    const phaseId = uuidv7();
+    rows.phases.push({
+      id: phaseId,
+      ...scope,
+      planId: plan.id,
+      position: pi + 1,
+      name: ph.name,
+      objective: ph.objective ?? null,
+      startWeek: ph.startWeek,
+      endWeek: ph.endWeek,
+      emphasis: ph.emphasis ?? null,
+      sessionsPerWeek: ph.sessionsPerWeek ?? null,
+    });
     for (const [mi, m] of ph.mesocycles.entries()) {
-      const [meRow] = await tx
-        .insert(mesocycles)
-        .values({
-          ...scope,
-          phaseId: phRow!.id,
-          position: mi + 1,
-          name: m.name,
-          weeks: m.weeks,
-          focus: m.focus ?? null,
-          assessmentPlanned: m.assessmentPlanned ?? false,
-        })
-        .returning({ id: mesocycles.id });
+      const mesocycleId = uuidv7();
+      rows.mesocycles.push({
+        id: mesocycleId,
+        ...scope,
+        phaseId,
+        position: mi + 1,
+        name: m.name,
+        weeks: m.weeks,
+        focus: m.focus ?? null,
+        assessmentPlanned: m.assessmentPlanned ?? false,
+      });
       for (const w of m.microcycles) {
-        const [miRow] = await tx
-          .insert(microcycles)
-          .values({
-            ...scope,
-            mesocycleId: meRow!.id,
-            weekIndex: w.weekIndex,
-            weekType: w.weekType,
-            startDate: w.startDate,
-          })
-          .returning({ id: microcycles.id });
+        const microcycleId = uuidv7();
+        rows.microcycles.push({
+          id: microcycleId,
+          ...scope,
+          mesocycleId,
+          weekIndex: w.weekIndex,
+          weekType: w.weekType,
+          startDate: w.startDate,
+        });
         for (const [si, sess] of w.sessions.entries()) {
-          const [seRow] = await tx
-            .insert(sessions)
-            .values({
-              ...scope,
-              microcycleId: miRow!.id,
-              dayLabel: sess.dayLabel,
-              position: si + 1,
-              scheduledDate: sess.date,
-              title: sess.title,
-              objective: sess.objective ?? null,
-              estimatedDurationMin: sess.durationMin ?? null,
-              notesForClient: sess.notesForClient ?? null,
-              createdBy: ctx.actor.userId,
-            })
-            .returning({ id: sessions.id });
+          const sessionId = uuidv7();
+          rows.sessions.push({
+            id: sessionId,
+            ...scope,
+            microcycleId,
+            dayLabel: sess.dayLabel,
+            position: si + 1,
+            scheduledDate: sess.date,
+            title: sess.title,
+            objective: sess.objective ?? null,
+            estimatedDurationMin: sess.durationMin ?? null,
+            notesForClient: sess.notesForClient ?? null,
+            createdBy: ctx.actor.userId,
+          });
           for (const [bi, b] of sess.blocks.entries()) {
-            const [blRow] = await tx
-              .insert(sessionBlocks)
-              .values({
-                ...scope,
-                sessionId: seRow!.id,
-                position: bi + 1,
-                label: b.label ?? null,
-                type: b.type as 'custom',
-                organization: (b.organization ?? 'straight_sets') as 'straight_sets',
-                rounds: b.rounds ?? null,
-                restBetweenRoundsS: b.restBetweenRoundsS ?? null,
-                notes: b.notes ?? null,
-              })
-              .returning({ id: sessionBlocks.id });
-            const methodSlugs = [...new Set(b.exercises.flatMap((e) => e.methods ?? []))];
-            const methodIds = methodSlugs.length
-              ? new Map(
-                  (
-                    await tx
-                      .select({ id: methods.id, slug: methods.slug })
-                      .from(methods)
-                      .where(
-                        and(isNull(methods.organizationId), inArray(methods.slug, methodSlugs)),
-                      )
-                  ).map((r) => [r.slug, r.id]),
-                )
-              : new Map<string, string>();
+            const blockId = uuidv7();
+            rows.blocks.push({
+              id: blockId,
+              ...scope,
+              sessionId,
+              position: bi + 1,
+              label: b.label ?? null,
+              type: b.type as 'custom',
+              organization: (b.organization ?? 'straight_sets') as 'straight_sets',
+              rounds: b.rounds ?? null,
+              restBetweenRoundsS: b.restBetweenRoundsS ?? null,
+              notes: b.notes ?? null,
+            });
             for (const [ei, e] of b.exercises.entries()) {
               const target = ex.get(e.exercise)!;
               const p: Prescription = { ...e.prescription };
@@ -560,9 +575,9 @@ export async function materialize(
                     message: conflict,
                   });
               }
-              await tx.insert(sessionExercises).values({
+              rows.exercises.push({
                 ...scope,
-                blockId: blRow!.id,
+                blockId,
                 exerciseId: target.id,
                 position: ei + 1,
                 pairingLabel: e.pairingLabel ?? null,
@@ -584,6 +599,17 @@ export async function materialize(
       }
     }
   }
+  // Parents first; chunks keep each statement well below PostgreSQL's 65 535 parameters.
+  const insertAll = async <T>(table: Parameters<typeof tx.insert>[0], values: T[]) => {
+    for (let i = 0; i < values.length; i += 500)
+      await tx.insert(table).values(values.slice(i, i + 500) as never);
+  };
+  await insertAll(phases, rows.phases);
+  await insertAll(mesocycles, rows.mesocycles);
+  await insertAll(microcycles, rows.microcycles);
+  await insertAll(sessions, rows.sessions);
+  await insertAll(sessionBlocks, rows.blocks);
+  await insertAll(sessionExercises, rows.exercises);
   return { conflicts, weeks: expanded.totalWeeks };
 }
 

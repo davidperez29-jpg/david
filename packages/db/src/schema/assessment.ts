@@ -279,6 +279,7 @@ export const assessmentResults = pgTable(
     index('assessment_results_assessment_idx').on(t.assessmentId, t.testId),
     index('assessment_results_client_test_idx').on(t.clientId, t.testId),
     unique('assessment_results_one_per_side_uq').on(t.assessmentId, t.testId, t.side),
+    index('assessment_results_test_idx').on(t.testId),
   ],
 );
 
@@ -305,5 +306,6 @@ export const derivedMetrics = pgTable(
   (t) => [
     index('derived_metrics_client_idx').on(t.clientId, t.metric),
     unique('derived_metrics_assessment_metric_uq').on(t.assessmentId, t.metric),
+    index('derived_metrics_result_idx').on(t.resultId),
   ],
 );

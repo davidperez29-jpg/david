@@ -133,6 +133,7 @@ export const setLogs = pgTable(
     scale010('set_logs_rir_ck', t.rir),
     check('set_logs_rpe_ck', sql`${t.rpe} IS NULL OR ${t.rpe} BETWEEN 1 AND 10`),
     check('set_logs_nonneg_ck', sql`coalesce(${t.loadKg},0) >= 0 AND coalesce(${t.reps},0) >= 0`),
+    index('set_logs_session_exercise_idx').on(t.sessionExerciseId),
   ],
 );
 
@@ -161,6 +162,7 @@ export const feedback = pgTable(
     scale010('feedback_pain_ck', t.pain),
     scale010('feedback_motivation_ck', t.motivation),
     check('feedback_srpe_ck', sql`${t.sessionRpe} IS NULL OR ${t.sessionRpe} BETWEEN 0 AND 10`),
+    index('feedback_client_idx').on(t.clientId),
   ],
 );
 
@@ -184,6 +186,7 @@ export const exerciseFeedback = pgTable(
     unique('exercise_feedback_uq').on(t.sessionExerciseId),
     scale010('exercise_feedback_difficulty_ck', t.difficulty),
     scale010('exercise_feedback_pain_ck', t.pain),
+    index('exercise_feedback_session_idx').on(t.sessionId),
   ],
 );
 
@@ -233,6 +236,7 @@ export const painLogs = pgTable(
   (t) => [
     index('pain_logs_client_idx').on(t.clientId, t.occurredOn),
     scale010('pain_logs_intensity_ck', t.intensity),
+    index('pain_logs_session_idx').on(t.sessionId),
   ],
 );
 
@@ -257,7 +261,10 @@ export const exerciseSubstitutions = pgTable(
     clientMutationId: text('client_mutation_id').unique(),
     ...timestamps(),
   },
-  (t) => [index('exercise_substitutions_client_idx').on(t.clientId)],
+  (t) => [
+    index('exercise_substitutions_client_idx').on(t.clientId),
+    index('substitutions_session_idx').on(t.sessionId),
+  ],
 );
 
 /** [SALUD] What the client tolerates or not, per exercise or movement pattern. */
@@ -277,5 +284,6 @@ export const exerciseTolerances = pgTable(
       'exercise_tolerances_target_ck',
       sql`(${t.exerciseId} IS NULL) <> (${t.movementPatternId} IS NULL)`,
     ),
+    index('tolerances_client_idx').on(t.clientId),
   ],
 );

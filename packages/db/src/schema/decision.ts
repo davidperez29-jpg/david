@@ -234,7 +234,10 @@ export const manualOverrides = pgTable(
     userId: uuid('user_id').notNull(),
     occurredAt: timestamp('occurred_at', { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [index('manual_overrides_entity_idx').on(t.entityType, t.entityId)],
+  (t) => [
+    index('manual_overrides_entity_idx').on(t.entityType, t.entityId),
+    index('manual_overrides_client_idx').on(t.clientId),
+  ],
 );
 
 /**
