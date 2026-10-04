@@ -20,15 +20,20 @@ function ClaimTrace({ claim }: { claim: ClaimView | null }) {
   }
   return (
     <details className="text-sm">
-      <summary className="cursor-pointer">
+      {/* No links inside <summary> (nested interactive controls): the link goes in the body. */}
+      <summary className="cursor-pointer py-1">
         <span className="inline-flex flex-wrap items-center gap-2">
           <LevelBadge level={claim.level} />
-          <Link href={`/app/science/claims/${claim.id}`} className="underline">
-            {claim.statement}
-          </Link>
+          {claim.statement}
         </span>
       </summary>
       <div className="mt-2 flex flex-col gap-2 border-l-2 border-border pl-3">
+        <Link
+          href={`/app/science/claims/${claim.id}`}
+          className="inline-flex min-h-6 items-center self-start text-xs text-accent underline"
+        >
+          Abrir la afirmación
+        </Link>
         <p className="text-xs text-muted">
           {label('epistemic', claim.epistemicType)} · confianza{' '}
           {label('confidence', claim.confidence).toLowerCase()} ·{' '}

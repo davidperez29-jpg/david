@@ -89,7 +89,7 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
         <li key={`a-${a.id}`}>
           <Link
             href={`/app/clients/${a.clientId}/assessments/${a.id}`}
-            className="block truncate rounded bg-surface px-1 hover:underline"
+            className="block min-h-6 truncate rounded bg-surface px-1 leading-6 hover:underline"
             title={`Evaluación de ${a.firstName} ${a.lastName} (${label('assessmentStatus', a.status)})`}
           >
             📋 {sp.cliente ? 'Evaluación' : `${a.firstName} ${a.lastName[0]}.`}
@@ -103,7 +103,7 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
           <li key={s.id}>
             <Link
               href={`/app/clients/${s.clientId}/sessions/${s.id}`}
-              className="flex gap-1 truncate hover:underline"
+              className="flex min-h-6 items-center gap-1 truncate hover:underline"
               title={`${s.firstName} ${s.lastName} · ${s.title} · ${m.text}`}
             >
               <span className={m.cls} aria-hidden>
@@ -135,7 +135,7 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
         {items.length > max ? (
           <Link
             href={href({ vista: 'semana', semana: d })}
-            className="text-[11px] text-accent underline"
+            className="inline-flex min-h-6 items-center text-[11px] text-accent underline"
           >
             +{items.length - max} más
           </Link>
