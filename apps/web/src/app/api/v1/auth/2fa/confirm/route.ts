@@ -6,6 +6,6 @@ import { authedRoute, readJson } from '@/server/api';
 export const POST = authedRoute(async ({ req, ctx }) => {
   const body = totpCodeSchema.safeParse(await readJson(req));
   if (!body.success) throw new DomainError('validation', 'Código no válido.');
-  await confirmTotpEnrollment(ctx, body.data.code);
-  return { ok: true };
+  // The recovery codes are shown once; only their hashes are stored.
+  return confirmTotpEnrollment(ctx, body.data.code);
 });

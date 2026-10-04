@@ -1,5 +1,10 @@
 import 'server-only';
-import { resolveSession, type RequestContext, type SessionState } from '@tp/application';
+import {
+  adminMissing2fa,
+  resolveSession,
+  type RequestContext,
+  type SessionState,
+} from '@tp/application';
 import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { cache } from 'react';
@@ -33,6 +38,8 @@ export async function requireRequestContext(): Promise<RequestContext> {
 export async function requireStaff(): Promise<RequestContext> {
   const rctx = await requireRequestContext();
   if (!rctx.actor.roles.some((r) => r === 'ADMIN' || r === 'TRAINER')) redirect('/me');
+  // §14.1: mandatory 2FA for ADMIN (Ajustes uses requireRequestContext, so it stays reachable).
+  if (await adminMissing2fa(rctx, rctx.actor)) redirect('/app/settings?2fa=obligatoria');
   return rctx;
 }
 

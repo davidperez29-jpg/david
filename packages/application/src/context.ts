@@ -24,6 +24,8 @@ export interface AppContext {
   now: () => Date;
   requestId?: string;
   ipHash?: string | null;
+  /** Breached-password range lookup (HIBP k-anonymity); absent = only the local policy. */
+  pwnedPasswords?: (prefix: string) => Promise<string>;
 }
 
 export interface RequestContext extends AppContext {

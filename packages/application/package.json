@@ -12,7 +12,9 @@
     "monitor:daily": "tsx scripts/monitor-daily.ts",
     "create-org": "tsx scripts/create-org.ts",
     "exercise-bank:normalize": "tsx scripts/exercise-bank/normalize.ts",
-    "exercise-bank:import": "tsx scripts/exercise-bank/import.ts"
+    "exercise-bank:import": "tsx scripts/exercise-bank/import.ts",
+    "privacy:daily": "tsx scripts/privacy-daily.ts",
+    "keys:rotate": "tsx scripts/rotate-keys.ts"
   },
   "dependencies": {
     "@tp/auth": "workspace:*",

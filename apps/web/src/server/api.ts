@@ -1,5 +1,10 @@
 import 'server-only';
-import { resolveSession, type AppContext, type RequestContext } from '@tp/application';
+import {
+  adminMissing2fa,
+  resolveSession,
+  type AppContext,
+  type RequestContext,
+} from '@tp/application';
 import { DomainError, type ErrorCode } from '@tp/domain';
 import { NextResponse, type NextRequest } from 'next/server';
 import { randomUUID } from 'node:crypto';
@@ -116,6 +121,15 @@ export function authedRoute(handler: Handler<RequestContext & { sessionId: strin
       const state = await resolveSession(base, req.cookies.get(SESSION_COOKIE)?.value);
       if (state.status !== 'authenticated')
         throw new DomainError('unauthenticated', 'Inicia sesión.');
+      // §14.1: ADMIN without the mandatory 2FA may only authenticate and set it up.
+      if (
+        !req.nextUrl.pathname.startsWith('/api/v1/auth/') &&
+        (await adminMissing2fa(base, state.actor))
+      )
+        throw new DomainError(
+          'forbidden',
+          'Activa la verificación en dos pasos (obligatoria para administración) en Ajustes.',
+        );
       return { ...base, actor: state.actor, sessionId: state.sessionId };
     },
     handler,

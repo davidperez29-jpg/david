@@ -27,3 +27,4 @@ export * from './programming';
 export * from './reports';
 export * from './exports';
 export * from './imports';
+export * from './privacy';

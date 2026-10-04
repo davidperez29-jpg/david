@@ -22,7 +22,12 @@ export type AuditAction =
   | 'unassign'
   | 'grant'
   | 'revoke'
-  | 'clear';
+  | 'clear'
+  | 'recovery_code_used'
+  | 'recovery_codes_regenerated'
+  | 'session_revoked'
+  | 'anonymize'
+  | 'privacy_request';
 
 export interface AuditEntry {
   action: AuditAction;

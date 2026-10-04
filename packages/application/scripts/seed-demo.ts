@@ -14,6 +14,7 @@ import {
   addHistoryEntry,
   bootstrapOrganization,
   createAssessment,
+  createPrivacyRequest,
   decideRecommendation,
   evaluateAllAdjustments,
   generateClientReport,
@@ -85,6 +86,11 @@ const org = await bootstrapOrganization(db, {
     lastName: 'Moreno',
   },
 });
+// DEMO ONLY: the shared demo accounts log in without 2FA. Real organizations keep the default
+// (mandatory 2FA for ADMIN, §14.1).
+await db.execute(
+  sql`UPDATE organizations SET require_admin_2fa = false WHERE id = ${org.organizationId}`,
+);
 const lucia = await as(org.adminUserId);
 const pablo = await acceptAs(
   (
@@ -810,6 +816,16 @@ console.log(`Programming engine: ${adj.created} adjustment proposals; 1 plan pro
   });
 }
 console.log('Reports: 1 client report (Iker).');
+
+// Privacy (RGPD): Elena asks to correct a datum from the app (one-month deadline).
+{
+  const elena = created[specs.findIndex((s) => s.basics.firstName === 'Elena')]!;
+  await createPrivacyRequest(elena.user!, elena.id, {
+    type: 'rectification',
+    details: 'Mi segundo apellido está mal escrito.',
+  });
+}
+console.log('Privacy: 1 pending rights request (Elena).');
 
 // Exercise library: the user's methodology bank as reviewable drafts (skip with DEMO_SKIP_BANK=1).
 if (!process.env.DEMO_SKIP_BANK) {

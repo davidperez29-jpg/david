@@ -6,7 +6,7 @@ import {
   type FileStorage,
   type Mailer,
 } from '@tp/application';
-import { keyedHash, keyRingFromBase64, type KeyRing } from '@tp/auth';
+import { hibpFetcher, keyedHash, keyRingFromBase64, type KeyRing } from '@tp/auth';
 import { createDb, type DbHandle } from '@tp/db';
 import { randomUUID } from 'node:crypto';
 
@@ -57,6 +57,8 @@ export function baseContext(meta: { ip?: string | null; requestId?: string } = {
     now: () => new Date(),
     requestId: meta.requestId ?? randomUUID(),
     ipHash: meta.ip ? keyedHash(s.keys.hashKey, meta.ip) : null,
+    // §14.1 breached-password check (k-anonymity, HIBP); opt-in because it needs outbound HTTPS.
+    ...(process.env.PWNED_PASSWORDS_CHECK === 'on' ? { pwnedPasswords: hibpFetcher() } : {}),
   };
 }
 

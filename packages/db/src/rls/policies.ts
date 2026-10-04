@@ -183,7 +183,9 @@ CREATE POLICY notifications_insert ON notifications FOR INSERT WITH CHECK (organ
   privacy_requests: { kind: 'client_owned', clientWrite: true, clientRead: true },
   user_recovery_codes: {
     kind: 'custom',
-    sql: `CREATE POLICY user_recovery_codes_own ON user_recovery_codes FOR ALL USING (user_id = app_user_id()) WITH CHECK (user_id = app_user_id());`,
+    // Own codes only; ADMIN may delete them when erasing a client of the organization.
+    sql: `CREATE POLICY user_recovery_codes_own ON user_recovery_codes FOR ALL USING (user_id = app_user_id()) WITH CHECK (user_id = app_user_id());
+CREATE POLICY user_recovery_codes_admin_delete ON user_recovery_codes FOR DELETE USING (app_has_role('ADMIN') AND EXISTS (SELECT 1 FROM users u WHERE u.id = user_recovery_codes.user_id));`,
   },
   import_jobs: {
     kind: 'custom',

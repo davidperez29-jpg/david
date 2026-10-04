@@ -1,10 +1,12 @@
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 /** Storage port for binary files (silhouettes, images, reports). S3-compatible adapter later. */
 export interface FileStorage {
   put(key: string, bytes: Uint8Array, contentType: string): Promise<void>;
   get(key: string): Promise<Uint8Array | null>;
+  /** Erasure (RGPD art. 17): removing a missing key is not an error. */
+  delete(key: string): Promise<void>;
 }
 
 export class MemoryStorage implements FileStorage {
@@ -14,6 +16,9 @@ export class MemoryStorage implements FileStorage {
   }
   async get(key: string): Promise<Uint8Array | null> {
     return this.files.get(key) ?? null;
+  }
+  async delete(key: string): Promise<void> {
+    this.files.delete(key);
   }
 }
 
@@ -38,6 +43,9 @@ export class LocalDiskStorage implements FileStorage {
     } catch {
       return null;
     }
+  }
+  async delete(key: string): Promise<void> {
+    await rm(this.resolve(key), { force: true });
   }
 }
 

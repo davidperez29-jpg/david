@@ -1,5 +1,9 @@
 import {
   burnPasswordCheck,
+  generateRecoveryCodes,
+  hashRecoveryCode,
+  looksLikeRecoveryCode,
+  pwnedCount,
   createSession,
   openSecret,
   encrypt,
@@ -33,7 +37,7 @@ import type { AppContext, RequestContext } from './context';
 import { parse } from './validation';
 import { secured } from './rls';
 
-const { users, passwordResetTokens } = schema;
+const { users, passwordResetTokens, userRecoveryCodes, authSessions, organizations } = schema;
 
 const LOCK_AFTER_FAILURES = 5;
 const LOCK_MS = 15 * 60_000;
@@ -52,6 +56,18 @@ function assertPasswordPolicy(password: string, email?: string): void {
       password: problems,
     });
   }
+}
+
+/** §14.1: passwords known from breaches are refused (k-anonymity; fails open without network). */
+export async function assertPasswordNotBreached(ctx: AppContext, password: string): Promise<void> {
+  if (!ctx.pwnedPasswords) return;
+  const n = await pwnedCount(password, ctx.pwnedPasswords);
+  if (n && n > 0)
+    throw new DomainError(
+      'validation',
+      'Esta contraseña aparece en filtraciones de datos conocidas: elige otra.',
+      { password: ['breached'] },
+    );
 }
 
 export async function login(
@@ -168,7 +184,30 @@ export async function verifySecondFactor(
   if (await isRateLimited(ctx.db, emailHash, ctx.ipHash ?? null, ctx.now())) {
     throw new DomainError('rate_limited', 'Demasiados intentos. Inténtalo de nuevo más tarde.');
   }
-  if (!verifyTotp(openSecret(ctx.keys, u.totpSecretEnc), code)) {
+  if (looksLikeRecoveryCode(code)) {
+    // One-time recovery code (lost phone): consumed atomically, audited.
+    const [used] = await ctx.db
+      .update(userRecoveryCodes)
+      .set({ usedAt: ctx.now() })
+      .where(
+        and(
+          eq(userRecoveryCodes.userId, u.id),
+          eq(userRecoveryCodes.codeHash, hashRecoveryCode(code)),
+          isNull(userRecoveryCodes.usedAt),
+        ),
+      )
+      .returning({ id: userRecoveryCodes.id });
+    if (!used) {
+      await recordAttempt(ctx.db, emailHash, ctx.ipHash ?? null, false, ctx.now());
+      throw new DomainError('unauthenticated', 'Código incorrecto.');
+    }
+    await writeAudit(
+      ctx.db,
+      ctx,
+      { action: 'recovery_code_used', entityType: 'user', entityId: u.id },
+      { userId: u.id, organizationId: u.organizationId, roles: [] },
+    );
+  } else if (!verifyTotp(openSecret(ctx.keys, u.totpSecretEnc), code)) {
     await recordAttempt(ctx.db, emailHash, ctx.ipHash ?? null, false, ctx.now());
     throw new DomainError('unauthenticated', 'Código incorrecto.');
   }
@@ -194,7 +233,19 @@ async function beginTotpEnrollment_(ctx: RequestContext): Promise<{ secret: stri
   return { secret, uri: totpUri(secret, u.email) };
 }
 
-async function confirmTotpEnrollment_(ctx: RequestContext, code: string): Promise<void> {
+async function storeRecoveryCodes(ctx: RequestContext, userId: string): Promise<string[]> {
+  const codes = generateRecoveryCodes();
+  await ctx.db.delete(userRecoveryCodes).where(eq(userRecoveryCodes.userId, userId));
+  await ctx.db
+    .insert(userRecoveryCodes)
+    .values(codes.map((c) => ({ userId, codeHash: hashRecoveryCode(c) })));
+  return codes;
+}
+
+async function confirmTotpEnrollment_(
+  ctx: RequestContext,
+  code: string,
+): Promise<{ recoveryCodes: string[] }> {
   const [u] = await ctx.db.select().from(users).where(eq(users.id, ctx.actor.userId));
   if (!u?.totpSecretEnc || u.totpEnabledAt) {
     throw new DomainError('conflict', 'No hay una activación pendiente.');
@@ -202,10 +253,29 @@ async function confirmTotpEnrollment_(ctx: RequestContext, code: string): Promis
   if (!verifyTotp(openSecret(ctx.keys, u.totpSecretEnc), code)) {
     throw new DomainError('validation', 'Código incorrecto.', { code: ['invalid'] });
   }
-  await ctx.db.transaction(async (tx) => {
-    await tx.update(users).set({ totpEnabledAt: ctx.now() }).where(eq(users.id, u.id));
-    await writeAudit(tx, ctx, { action: 'totp_enabled', entityType: 'user', entityId: u.id });
+  await ctx.db.update(users).set({ totpEnabledAt: ctx.now() }).where(eq(users.id, u.id));
+  await writeAudit(ctx.db, ctx, { action: 'totp_enabled', entityType: 'user', entityId: u.id });
+  // Shown once: only their hashes are kept.
+  return { recoveryCodes: await storeRecoveryCodes(ctx, u.id) };
+}
+
+/** New set of recovery codes (the old ones stop working); requires a current TOTP code. */
+async function regenerateRecoveryCodes_(
+  ctx: RequestContext,
+  code: string,
+): Promise<{ recoveryCodes: string[] }> {
+  const [u] = await ctx.db.select().from(users).where(eq(users.id, ctx.actor.userId));
+  if (!u?.totpSecretEnc || !u.totpEnabledAt)
+    throw new DomainError('conflict', 'Activa antes la verificación en dos pasos.');
+  if (!verifyTotp(openSecret(ctx.keys, u.totpSecretEnc), code))
+    throw new DomainError('validation', 'Código incorrecto.', { code: ['invalid'] });
+  const recoveryCodes = await storeRecoveryCodes(ctx, u.id);
+  await writeAudit(ctx.db, ctx, {
+    action: 'recovery_codes_regenerated',
+    entityType: 'user',
+    entityId: u.id,
   });
+  return { recoveryCodes };
 }
 
 async function changePassword_(
@@ -221,6 +291,7 @@ async function changePassword_(
     });
   }
   assertPasswordPolicy(newPassword, u.email);
+  await assertPasswordNotBreached(ctx, newPassword);
   const hash = await hashPassword(newPassword);
   await ctx.db.transaction(async (tx) => {
     await tx.update(users).set({ passwordHash: hash }).where(eq(users.id, u.id));
@@ -274,6 +345,7 @@ export async function resetPassword(ctx: AppContext, input: unknown): Promise<vo
       token: ['invalid'],
     });
   assertPasswordPolicy(password, row.u.email);
+  await assertPasswordNotBreached(ctx, password);
   const hash = await hashPassword(password);
   const roles = await rolesOf(ctx.db, row.u.id);
   await ctx.db.transaction(async (tx) => {
@@ -297,15 +369,67 @@ export async function resetPassword(ctx: AppContext, input: unknown): Promise<vo
 
 export { assertPasswordPolicy };
 
-async function getSecurityStatus_(
-  ctx: RequestContext,
-): Promise<{ totpEnabled: boolean; email: string }> {
+async function getSecurityStatus_(ctx: RequestContext, currentSessionId?: string) {
   const [u] = await ctx.db
     .select({ totp: users.totpEnabledAt, email: users.email })
     .from(users)
     .where(eq(users.id, ctx.actor.userId));
   if (!u) throw new DomainError('not_found', 'Usuario no encontrado.');
-  return { totpEnabled: u.totp != null, email: u.email };
+  const [{ left } = { left: 0 }] = await ctx.db
+    .select({ left: sql<number>`count(*)::int` })
+    .from(userRecoveryCodes)
+    .where(and(eq(userRecoveryCodes.userId, ctx.actor.userId), isNull(userRecoveryCodes.usedAt)));
+  const [org] = await ctx.db
+    .select({ require: organizations.requireAdmin2fa })
+    .from(organizations)
+    .where(eq(organizations.id, ctx.actor.organizationId));
+  const now = ctx.now();
+  const sessions = await ctx.db
+    .select({
+      id: authSessions.id,
+      createdAt: authSessions.createdAt,
+      lastSeenAt: authSessions.lastSeenAt,
+      ipHash: authSessions.ipHash,
+    })
+    .from(authSessions)
+    .where(
+      and(
+        eq(authSessions.userId, ctx.actor.userId),
+        isNull(authSessions.revokedAt),
+        gt(authSessions.idleExpiresAt, now),
+        gt(authSessions.absoluteExpiresAt, now),
+      ),
+    )
+    .orderBy(sql`${authSessions.lastSeenAt} DESC`);
+  return {
+    totpEnabled: u.totp != null,
+    email: u.email,
+    recoveryCodesLeft: left,
+    /** §14.1: this ADMIN must enable 2FA before using the app. */
+    twoFactorRequired:
+      ctx.actor.roles.includes('ADMIN') && (org?.require ?? true) && u.totp == null,
+    sessions: sessions.map((x) => ({
+      id: x.id,
+      createdAt: x.createdAt,
+      lastSeenAt: x.lastSeenAt,
+      current: x.id === currentSessionId,
+    })),
+  };
+}
+
+/** Closes one of the user's own sessions (another device). */
+async function revokeMySession_(ctx: RequestContext, sessionId: string): Promise<void> {
+  const [s] = await ctx.db
+    .select()
+    .from(authSessions)
+    .where(and(eq(authSessions.id, sessionId), eq(authSessions.userId, ctx.actor.userId)));
+  if (!s) throw new DomainError('not_found', 'Sesión no encontrada.');
+  await revokeSession(ctx.db, s.id, ctx.now());
+  await writeAudit(ctx.db, ctx, {
+    action: 'session_revoked',
+    entityType: 'user',
+    entityId: ctx.actor.userId,
+  });
 }
 
 // Use cases run under Row Level Security (see rls.ts).
@@ -313,3 +437,20 @@ export const beginTotpEnrollment = secured(beginTotpEnrollment_);
 export const confirmTotpEnrollment = secured(confirmTotpEnrollment_);
 export const changePassword = secured(changePassword_);
 export const getSecurityStatus = secured(getSecurityStatus_);
+export const regenerateRecoveryCodes = secured(regenerateRecoveryCodes_);
+export const revokeMySession = secured(revokeMySession_);
+export type SecurityStatus = Awaited<ReturnType<typeof getSecurityStatus_>>;
+
+/**
+ * §14.1: an ADMIN of an organization that requires it must have 2FA before using the app (pages
+ * redirect to settings; the API refuses everything but authentication and 2FA setup).
+ */
+export async function adminMissing2fa(ctx: AppContext, actor: Actor): Promise<boolean> {
+  if (!actor.roles.includes('ADMIN')) return false;
+  const [r] = await ctx.db
+    .select({ totp: users.totpEnabledAt, required: organizations.requireAdmin2fa })
+    .from(users)
+    .innerJoin(organizations, eq(organizations.id, users.organizationId))
+    .where(eq(users.id, actor.userId));
+  return !!r && r.required && r.totp == null;
+}

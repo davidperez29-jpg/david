@@ -5,7 +5,7 @@ import { DomainError, type Role } from '@tp/domain';
 import { and, eq, gt, isNull, sql } from 'drizzle-orm';
 import { writeAudit } from './audit';
 import { authorizeClient, requirePermission } from './authz';
-import { assertPasswordPolicy, type LoginResult } from './auth-service';
+import { assertPasswordNotBreached, assertPasswordPolicy, type LoginResult } from './auth-service';
 import type { AppContext, RequestContext } from './context';
 import { parse } from './validation';
 import { secured } from './rls';
@@ -118,6 +118,7 @@ export async function acceptInvitation(ctx: AppContext, input: unknown): Promise
       token: ['invalid'],
     });
   assertPasswordPolicy(data.password, inv.email);
+  await assertPasswordNotBreached(ctx, data.password);
   const passwordHash = await hashPassword(data.password);
 
   return ctx.db.transaction(async (tx) => {
