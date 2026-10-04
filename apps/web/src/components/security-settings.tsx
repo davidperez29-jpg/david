@@ -24,7 +24,10 @@ function RecoveryCodes({ codes }: { codes: string[] }) {
       <p className="text-xs text-muted">
         Guárdalos en un lugar seguro. Cada uno sirve una sola vez para entrar si pierdes el móvil.
       </p>
-      <ul className="mt-2 grid grid-cols-2 gap-1 font-mono text-sm" aria-label="Códigos de recuperación">
+      <ul
+        className="mt-2 grid grid-cols-2 gap-1 font-mono text-sm"
+        aria-label="Códigos de recuperación"
+      >
         {codes.map((c) => (
           <li key={c}>{c}</li>
         ))}
@@ -151,9 +154,13 @@ export function SecuritySettings({
               <Button
                 disabled={confirm.pending || code.length !== 6}
                 onClick={async () => {
-                  const r = await confirm.run<{ recoveryCodes: string[] }>('/auth/2fa/confirm', 'POST', {
-                    code,
-                  });
+                  const r = await confirm.run<{ recoveryCodes: string[] }>(
+                    '/auth/2fa/confirm',
+                    'POST',
+                    {
+                      code,
+                    },
+                  );
                   if (r) setCodes(r.recoveryCodes);
                 }}
               >

@@ -248,6 +248,7 @@ async function getClient_(ctx: RequestContext, clientId: string) {
     preferences: c.preferences,
     progressTestIds: c.progressTestIds,
     hasAccount: c.userId != null,
+    anonymizedAt: c.anonymizedAt,
     version: c.version,
     profile: profile
       ? {

@@ -20,6 +20,7 @@ import {
   listCatalog,
   listClientAudit,
   listConsents,
+  listClientPrivacyRequests,
   listExerciseTolerances,
   listHealthDeclarations,
   listLibraryTaxonomies,
@@ -58,6 +59,37 @@ import {
   TolerancesPanel,
 } from './panels';
 import { DecisionTab } from './decision-tab';
+import { SubjectRightsPanel } from '@/components/privacy/erase';
+import { PrivacyStatusBadge, rightName, type PrivacyRequestRow } from '@/components/privacy/labels';
+
+function ClientRequestsCard({ requests }: { requests: PrivacyRequestRow[] }) {
+  return (
+    <Card
+      title="Solicitudes de derechos"
+      actions={
+        <Link className="text-sm text-accent underline" href="/app/admin/privacidad">
+          Bandeja
+        </Link>
+      }
+    >
+      {requests.length === 0 ? (
+        <EmptyState>Sin solicitudes.</EmptyState>
+      ) : (
+        <ul className="flex flex-col divide-y divide-border text-sm">
+          {requests.map((r) => (
+            <li key={r.id} className="flex flex-wrap items-center gap-2 py-2">
+              <span className="font-medium">{rightName(r.type)}</span>
+              <PrivacyStatusBadge status={r.status} />
+              <span className="ml-auto text-muted">
+                {formatDate(r.createdAt)} · plazo {formatDate(r.dueOn)}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </Card>
+  );
+}
 
 const TABS = [
   ['resumen', 'Resumen'],
@@ -243,7 +275,19 @@ export default async function ClientPage({
       ) : null}
 
       {tab === 'privacidad' ? (
-        <ConsentsPanel clientId={client.id} data={await listConsents(ctx, client.id)} />
+        <div className="flex flex-col gap-4">
+          <ConsentsPanel clientId={client.id} data={await listConsents(ctx, client.id)} />
+          {isAdmin ? (
+            <>
+              <ClientRequestsCard requests={await listClientPrivacyRequests(ctx, client.id)} />
+              <SubjectRightsPanel
+                clientId={client.id}
+                fullName={`${client.firstName} ${client.lastName}`}
+                anonymized={client.anonymizedAt != null}
+              />
+            </>
+          ) : null}
+        </div>
       ) : null}
 
       {tab === 'equipo' ? (
