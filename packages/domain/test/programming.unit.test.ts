@@ -83,6 +83,12 @@ describe('week-to-week load (§12.7)', () => {
     ).toBeNull();
   });
 
+  it('fixed reps (5×5) are not progressed by double progression', () => {
+    const h = squatHistory([[{ reps: 5, rir: 2 }]]);
+    Object.assign(h.sessions[0]!.target, { repsMin: 5, repsMax: 5 });
+    expect(proposeLoadChange(h)).toBeNull();
+  });
+
   it('increment by equipment (practical, level F)', () => {
     expect(loadIncrementFor(['barbell'])).toBe(2.5);
     expect(loadIncrementFor(['dumbbells'])).toBe(2);

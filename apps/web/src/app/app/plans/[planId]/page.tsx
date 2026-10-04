@@ -7,6 +7,7 @@ import { formatDate, formatDateTime, label } from '@/lib/labels';
 import { requireStaff } from '@/server/session';
 import { PublishButton } from '@/components/sessions/publish-button';
 import { CopyWeekButton, PlanActions, WeekTypeSelect } from '../forms';
+import { ProposalActions } from '@/components/programming/actions';
 
 type SP = { view?: string };
 
@@ -117,6 +118,32 @@ export default async function PlanPage({
           {` · revisión ${p.currentRevision}`}
         </span>
       </div>
+      {p.kind === 'PROPOSAL' ? (
+        <Card
+          title={
+            p.status === 'proposed' ? 'Propuesta del motor de programación' : 'Propuesta descartada'
+          }
+          className="border-accent"
+        >
+          <p className="text-sm">
+            Generada a partir de la última propuesta del motor de decisiones. Revísala y edítala
+            como cualquier plan: no se publica ni se activa hasta que la aceptes, y no cambia el
+            plan activo del cliente.
+          </p>
+          {p.generationNotes.length ? (
+            <ul className="mt-2 list-disc pl-5 text-sm text-muted">
+              {p.generationNotes.map((n) => (
+                <li key={n}>{n}</li>
+              ))}
+            </ul>
+          ) : null}
+          {p.status === 'proposed' ? (
+            <div className="mt-3">
+              <ProposalActions planId={planId} clientId={client.id} name={p.name} />
+            </div>
+          ) : null}
+        </Card>
+      ) : null}
       <div className="flex flex-wrap items-center gap-2 text-sm">
         <span className="text-muted">
           {allWeeks.flatMap((w) => w.sessions).filter((s) => s.published).length} de{' '}
@@ -271,7 +298,13 @@ export default async function PlanPage({
       {view === 'gestion' ? (
         <div className="grid gap-4 md:grid-cols-2">
           <Card title="Acciones">
-            <PlanActions planId={planId} status={p.status} />
+            {p.kind === 'PROPOSAL' ? (
+              <p className="text-sm text-muted">
+                Es una propuesta: acéptala o descártala desde el aviso de arriba.
+              </p>
+            ) : (
+              <PlanActions planId={planId} status={p.status} />
+            )}
           </Card>
           <Card title="Revisiones">
             {revisions.length === 0 ? (

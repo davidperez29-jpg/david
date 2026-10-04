@@ -770,39 +770,24 @@ export async function evaluateAdjustments(app: App, clientId: string) {
   const candidates = proposeAdjustments(input);
   const keys = new Set(candidates.map((c) => c.key));
   const known = new Set(pendingOf.map((r) => r.key));
-  // Situations that are gone (or targets already performed) expire.
+  // Situations that are gone (or targets already performed) expire; a pending load proposal for
+  // an exercise that now has a newer one (new logged session) is superseded by it.
+  const exerciseOf = (key: string) => (key.startsWith('load:') ? key.split(':')[1] : null);
+  const newerLoad = new Set(candidates.map((x) => exerciseOf(x.key)).filter(Boolean));
   const gone = pending.filter((r) => !keys.has(r.key!) || r.planId !== plan.id);
-  if (gone.length)
-    await db
-      .update(recommendations)
-      .set({ status: 'expired' })
-      .where(
-        inArray(
-          recommendations.id,
-          gone.map((r) => r.id),
-        ),
-      );
+  for (const status of ['superseded', 'expired'] as const) {
+    const ids = gone
+      .filter((r) => (status === 'superseded') === newerLoad.has(exerciseOf(r.key!)))
+      .map((r) => r.id);
+    if (ids.length)
+      await db.update(recommendations).set({ status }).where(inArray(recommendations.id, ids));
+  }
 
   const [c] = await db.select().from(clients).where(eq(clients.id, clientId));
   let created = 0;
   let autoApplied = 0;
   for (const cand of candidates) {
     if (known.has(cand.key)) continue;
-    // A newer load proposal for the same exercise replaces the older pending one.
-    if (cand.kind === 'load_progression') {
-      const prefix = cand.key.split(':').slice(0, 2).join(':') + ':';
-      const older = pending.filter((r) => r.key!.startsWith(prefix) && keys.has(r.key!));
-      if (older.length)
-        await db
-          .update(recommendations)
-          .set({ status: 'superseded' })
-          .where(
-            inArray(
-              recommendations.id,
-              older.map((r) => r.id),
-            ),
-          );
-    }
     const payload: AdjustmentPayload = {
       kind: cand.kind,
       title: cand.title,

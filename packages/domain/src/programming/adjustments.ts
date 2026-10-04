@@ -93,6 +93,7 @@ export interface ExerciseChange {
   to: number | string | null;
 }
 
+const day = (iso: string) => iso.split('-').reverse().join('/');
 const kg = (n: number) => `${n.toLocaleString('es-ES')} kg`;
 
 /** Smallest practical load jump by equipment (level F, configurable per exercise in the future). */
@@ -125,7 +126,12 @@ export function proposeLoadChange(h: ExerciseHistory) {
     );
     if (r.action !== 'hold') return { ...r, rule: 'rir_adjustment' as const, increment: inc };
   }
-  if (last.target.repsMax != null) {
+  // Double progression needs a range of reps (6–8); fixed reps are progressed by RIR or by hand.
+  if (
+    last.target.repsMax != null &&
+    last.target.repsMin != null &&
+    last.target.repsMin < last.target.repsMax
+  ) {
     const r = doubleProgression(
       { repsMax: last.target.repsMax, rirMin: last.target.rirMin, loadKg: last.target.loadKg },
       last.sets,
@@ -243,7 +249,7 @@ export function proposeAdjustments(input: ProgrammingInput): AdjustmentCandidate
       explanation: practical(
         `${up ? 'Subir' : 'Bajar'} ${kg(Math.abs(r.toKg - r.fromKg))} en ${h.exerciseName} en las próximas ${targets.length} sesiones.`,
         [
-          `Última sesión (${last.date}): ${last.sets.map((s) => `${s.reps}${s.loadKg != null ? ` × ${kg(s.loadKg)}` : ''}${s.rir != null ? ` @RIR ${s.rir}` : ''}`).join(', ')}.`,
+          `Última sesión (${day(last.date)}): ${last.sets.map((s) => `${s.reps}${s.loadKg != null ? ` × ${kg(s.loadKg)}` : ''}${s.rir != null ? ` @RIR ${s.rir}` : ''}`).join(', ')}.`,
           `Objetivo: ${last.target.repsMin ?? '?'}–${last.target.repsMax ?? '?'} repeticiones${last.target.rirMin != null ? ` @RIR ${last.target.rirMin}–${last.target.rirMax}` : ''} con ${kg(last.target.loadKg!)}.`,
           `Sesiones registradas de este ejercicio: ${h.sessions.length}.`,
         ],
@@ -340,7 +346,9 @@ export function proposeAdjustments(input: ProgrammingInput): AdjustmentCandidate
       options,
       explanation: practical(
         `Sustituir ${last.exerciseName} en las ${targets.length} sesiones previstas mientras haya molestias.`,
-        ps.map((p) => `Molestias declaradas en ${p.exerciseName} el ${p.date}: ${p.intensity}/10.`),
+        ps.map(
+          (p) => `Molestias declaradas en ${p.exerciseName} el ${day(p.date)}: ${p.intensity}/10.`,
+        ),
         [
           'Cambiar el ejercicio por una alternativa del mismo patrón mientras se resuelven las molestias.',
           'No es un diagnóstico. Si las molestias persisten o aumentan: requiere valoración por profesional sanitario.',

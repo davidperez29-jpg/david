@@ -13,18 +13,22 @@ test('trainer creates a 12-week, 3-day plan from a template and edits a session'
     .getByRole('link', { name: 'Planificación' })
     .click();
 
-  await page.getByLabel('Plantilla').selectOption({ label: 'Hipertrofia · 3 días (full body)' });
-  await page.getByLabel('Nombre').fill(`Plan E2E ${Date.now()}`);
-  await page.getByLabel('Inicio').fill('2026-11-02');
+  // The tab also offers the engine's plan proposal (Phase 11): use the "Nuevo plan" card.
+  const form = page.locator('section').filter({
+    has: page.getByRole('heading', { name: 'Nuevo plan' }),
+  });
+  await form.getByLabel('Plantilla').selectOption({ label: 'Hipertrofia · 3 días (full body)' });
+  await form.getByLabel('Nombre').fill(`Plan E2E ${Date.now()}`);
+  await form.getByLabel('Inicio').fill('2026-11-02');
   for (const day of ['Martes', 'Jueves']) {
-    const b = page.getByRole('button', { name: day, exact: true });
+    const b = form.getByRole('button', { name: day, exact: true });
     if ((await b.getAttribute('aria-pressed')) === 'true') await b.click();
   }
   for (const day of ['Lunes', 'Miércoles', 'Viernes']) {
-    const b = page.getByRole('button', { name: day, exact: true });
+    const b = form.getByRole('button', { name: day, exact: true });
     if ((await b.getAttribute('aria-pressed')) !== 'true') await b.click();
   }
-  await page.getByRole('button', { name: 'Crear plan' }).click();
+  await form.getByRole('button', { name: 'Crear plan' }).click();
   await expect(page.getByText('12 semanas · 3 sesiones/semana', { exact: false })).toBeVisible();
   await expect(page.locator('span', { hasText: /^Semana 12$/ })).toBeVisible();
 

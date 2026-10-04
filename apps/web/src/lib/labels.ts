@@ -405,6 +405,7 @@ export const LABELS = {
     postponed: 'Pospuesta',
     superseded: 'Sustituida',
     expired: 'Caducada',
+    reverted: 'Deshecha',
   },
   decisionDomain: {
     screening: 'Cribado',

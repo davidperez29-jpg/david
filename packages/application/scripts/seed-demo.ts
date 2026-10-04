@@ -15,6 +15,8 @@ import {
   bootstrapOrganization,
   createAssessment,
   decideRecommendation,
+  evaluateAllAdjustments,
+  generatePlanProposal,
   getDecision,
   listAssessmentTests,
   runDecision,
@@ -544,6 +546,22 @@ for (const [i, c] of created.entries()) {
 }
 console.log(`Assessments: ${assessmentsCreated} demo assessments with fictitious results.`);
 
+// Iker (footballer) also has a recent strength test, so his plan's %1RM loads are in kg.
+const iker = created[specs.findIndex((s) => s.basics.firstName === 'Iker')]!;
+{
+  // A recent strength test for the footballer (1RM 98 kg at 75 kg → 1.31 × BW, below 1.5).
+  const all = await listAssessmentTests(iker.by);
+  const tid = (slug: string) => all.find((t) => t.slug === slug)!.id;
+  const { id: aid } = await createAssessment(iker.by, iker.id, {
+    assessedOn: addDays(localDate(new Date()), -10),
+    testIds: [tid('one_rm_back_squat'), tid('body_mass')],
+    context: 'Fuerza de pretemporada',
+  });
+  await recordAssessmentResult(iker.by, aid, { testId: tid('one_rm_back_squat'), attempts: [98] });
+  await recordAssessmentResult(iker.by, aid, { testId: tid('body_mass'), attempts: [75] });
+  await setAssessmentStatus(iker.by, aid, { status: 'completed' });
+}
+
 // Plans (§15 demo data): a 12-week plan from the template matching each client's main goal.
 const templates = await listPlanTemplates(lucia);
 const GOAL_TEMPLATE: Record<string, string> = {
@@ -756,20 +774,6 @@ await updateDecisionRules(lucia, {
   ],
   notes: 'Umbrales del centro para futbolistas (demo)',
 });
-const iker = created[specs.findIndex((s) => s.basics.firstName === 'Iker')]!;
-{
-  // A recent strength test for the footballer (1RM 98 kg at 75 kg → 1.31 × BW, below 1.5).
-  const all = await listAssessmentTests(iker.by);
-  const tid = (slug: string) => all.find((t) => t.slug === slug)!.id;
-  const { id: aid } = await createAssessment(iker.by, iker.id, {
-    assessedOn: addDays(localDate(new Date()), -10),
-    testIds: [tid('one_rm_back_squat'), tid('body_mass')],
-    context: 'Fuerza de pretemporada',
-  });
-  await recordAssessmentResult(iker.by, aid, { testId: tid('one_rm_back_squat'), attempts: [98] });
-  await recordAssessmentResult(iker.by, aid, { testId: tid('body_mass'), attempts: [75] });
-  await setAssessmentStatus(iker.by, aid, { status: 'completed' });
-}
 for (const c of created) await runDecision(c.by, c.id);
 {
   const recs = (await getDecision(iker.by, iker.id)).recommendations;
@@ -783,6 +787,16 @@ for (const c of created) await runDecision(c.by, c.id);
     });
 }
 console.log(`Decision engine: proposals for ${created.length} clients (rules version 1).`);
+
+// Programming engine (§12.2): adjustment proposals from what was logged (they never change a plan
+// on their own) and a plan proposal for Iker from his decision run, starting next Monday.
+const adj = await evaluateAllAdjustments(ctx);
+{
+  const today = localDate(new Date());
+  const nextMonday = addDays(today, 8 - isoWeekday(today));
+  await generatePlanProposal(iker.by, iker.id, { startDate: nextMonday, weekdays: [1, 3, 5] });
+}
+console.log(`Programming engine: ${adj.created} adjustment proposals; 1 plan proposal (Iker).`);
 
 // Exercise library: the user's methodology bank as reviewable drafts (skip with DEMO_SKIP_BANK=1).
 if (!process.env.DEMO_SKIP_BANK) {

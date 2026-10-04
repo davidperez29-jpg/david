@@ -6,6 +6,9 @@ import {
   clientSessionReview,
   clientAssessmentProgress,
   getClient,
+  getDecision,
+  listAdjustments,
+  listPlanProposals,
   listAssessmentTests,
   listBatteries,
   listClientAssessments,
@@ -34,6 +37,8 @@ import { WeeklyLoadChart } from '@/components/monitoring/charts';
 import { SeverityBadge } from '@/components/monitoring/severity';
 import { NewAssessmentForm } from '../../assessments/forms';
 import { NewPlanForm } from '../../plans/forms';
+import { AdjustmentsCard } from '@/components/programming/adjustments-card';
+import { GenerateProposalForm } from '@/components/programming/actions';
 import { Badge, Card, EmptyState } from '@/components/ui/card';
 import { formatDate, formatDateTime, label, LABELS } from '@/lib/labels';
 import { requireStaff } from '@/server/session';
@@ -389,12 +394,72 @@ async function assessmentsTab(
 }
 
 async function plansTab(ctx: Awaited<ReturnType<typeof requireStaff>>, clientId: string) {
-  const [plans, templates] = await Promise.all([
+  const [plans, templates, proposals, adjustments, decision] = await Promise.all([
     listClientPlans(ctx, clientId),
     listPlanTemplates(ctx),
+    listPlanProposals(ctx, clientId),
+    listAdjustments(ctx, clientId),
+    getDecision(ctx, clientId),
   ]);
+  const proposedSlug = decision.run?.result.planSkeleton?.templateSlug ?? null;
+  const proposedTpl = templates.find((t) => t.slug === proposedSlug) ?? null;
+  const nextMonday = (() => {
+    const d = new Date();
+    d.setUTCDate(d.getUTCDate() + ((8 - (d.getUTCDay() || 7)) % 7 || 7));
+    return d.toISOString().slice(0, 10);
+  })();
+  const open = proposals.filter((p) => p.status === 'proposed');
   return (
     <div className="flex flex-col gap-4">
+      {plans.some((p) => p.status === 'active') ? (
+        <AdjustmentsCard
+          clientId={clientId}
+          items={adjustments.items}
+          autoApply={adjustments.autoApplyLoadProgressions}
+        />
+      ) : null}
+      <Card title="Propuesta de plan del motor">
+        {open.length ? (
+          <ul className="mb-3 divide-y divide-border">
+            {open.map((p) => (
+              <li key={p.id} className="flex flex-wrap items-center gap-2 py-2 text-sm">
+                <Link href={`/app/plans/${p.id}`} className="font-medium hover:underline">
+                  {p.name}
+                </Link>
+                <Badge tone="accent">Propuesta</Badge>
+                <span className="text-xs text-muted">
+                  {p.startDate ? `desde ${formatDate(p.startDate)}` : ''} · creada{' '}
+                  {formatDateTime(p.createdAt)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+        {decision.run ? (
+          <>
+            <p className="mb-3 text-sm text-muted">
+              Parte de una plantilla y la adapta al resultado del motor de decisiones (fase de
+              introducción, ejercicios no tolerados o sin material). Se crea como propuesta
+              editable: tu plan activo no cambia. Al aceptarla pasa a ser un plan en borrador.
+              {proposedTpl ? ` Plantilla propuesta: «${proposedTpl.name}».` : ''}
+            </p>
+            <GenerateProposalForm
+              clientId={clientId}
+              proposed={proposedTpl}
+              templates={templates}
+              defaultStart={nextMonday}
+            />
+          </>
+        ) : (
+          <EmptyState>
+            Calcula primero las propuestas en{' '}
+            <Link href="?tab=necesidades" className="text-accent underline">
+              Necesidades
+            </Link>
+            .
+          </EmptyState>
+        )}
+      </Card>
       <Card title="Planes">
         {plans.length === 0 ? (
           <EmptyState>Sin planes todavía.</EmptyState>
@@ -473,9 +538,30 @@ const pct = (v: number | null) =>
   v == null ? '—' : `${v.toLocaleString('es-ES', { maximumFractionDigits: 1 })} %`;
 
 async function monitoringTab(ctx: Awaited<ReturnType<typeof requireStaff>>, clientId: string) {
-  const [m, rules] = await Promise.all([clientMonitoring(ctx, clientId), getMonitoringRules(ctx)]);
+  const [m, rules, adj] = await Promise.all([
+    clientMonitoring(ctx, clientId),
+    getMonitoringRules(ctx),
+    listAdjustments(ctx, clientId),
+  ]);
+  const pendingAdj = adj.items.filter((i) => i.status === 'proposed' || i.status === 'postponed');
   return (
     <div className="flex flex-col gap-4">
+      {pendingAdj.length ? (
+        <p className="flex flex-wrap items-center gap-2 rounded-md border border-accent p-3 text-sm">
+          {pendingAdj.length === 1
+            ? 'Hay 1 propuesta de ajuste del plan'
+            : `Hay ${pendingAdj.length} propuestas de ajuste del plan`}{' '}
+          (
+          {pendingAdj
+            .map((a) => a.title)
+            .slice(0, 2)
+            .join(' · ')}
+          {pendingAdj.length > 2 ? '…' : ''}).
+          <Link href="?tab=planificacion#ajustes" className="text-accent underline">
+            Ver propuesta de ajuste
+          </Link>
+        </p>
+      ) : null}
       <div className="grid gap-3 sm:grid-cols-3">
         <Card title="Adherencia 4 semanas">
           <p className="text-2xl font-semibold tabular-nums">{pct(m.adherence28.percent)}</p>
