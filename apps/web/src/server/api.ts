@@ -121,3 +121,15 @@ export function authedRoute(handler: Handler<RequestContext & { sessionId: strin
     handler,
   );
 }
+
+/** A generated file (report, export, template) as a download; never cached. */
+export function fileResponse(f: { fileName: string; contentType: string; body: Buffer }): Response {
+  return new Response(new Uint8Array(f.body), {
+    headers: {
+      'Content-Type': f.contentType,
+      'Content-Disposition': `attachment; filename="${f.fileName.replace(/[^A-Za-z0-9._-]/g, '_')}"; filename*=UTF-8''${encodeURIComponent(f.fileName)}`,
+      'Cache-Control': 'no-store',
+      'X-Content-Type-Options': 'nosniff',
+    },
+  });
+}

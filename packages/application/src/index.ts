@@ -24,3 +24,6 @@ export * from './monitoring';
 export * from './dashboard';
 export * from './decision';
 export * from './programming';
+export * from './reports';
+export * from './exports';
+export * from './imports';

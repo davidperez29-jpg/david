@@ -65,7 +65,7 @@ export const IMPORT_COLUMNS: Record<ImportEntity, ImportColumn[]> = {
     {
       key: 'fecha_nacimiento',
       header: 'Fecha nacimiento',
-      required: false,
+      required: true,
       example: '14/03/1995',
       help: 'dd/mm/aaaa o aaaa-mm-dd',
       aliases: ['fecha_de_nacimiento', 'nacimiento'],
@@ -356,7 +356,7 @@ export const importRowSchemas = {
   clients: z.object({
     nombre: z.string().trim().min(1, 'Obligatorio').max(80),
     apellidos: z.string().trim().min(1, 'Obligatorio').max(120),
-    fecha_nacimiento: opt(importDate),
+    fecha_nacimiento: importDate,
     sexo: opt(mapped(SEX_MAP, 'Sexo')),
     email: opt(
       z
