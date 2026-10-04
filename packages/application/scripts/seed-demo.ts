@@ -839,9 +839,29 @@ if (!process.env.DEMO_SKIP_BANK) {
   );
 }
 
+// Security tests (Phase 14): a second, separate organization whose ADMIN attacks the first one
+// (cross-tenant access must always be refused). It holds no client data.
+{
+  const north = await bootstrapOrganization(db, {
+    name: 'Centro Norte (pruebas de aislamiento)',
+    slug: 'centro-norte',
+    admin: {
+      email: 'ane.urrutia@example.com',
+      password: PASSWORD,
+      firstName: 'Ane',
+      lastName: 'Urrutia',
+    },
+  });
+  // DEMO ONLY (see above).
+  await db.execute(
+    sql`UPDATE organizations SET require_admin_2fa = false WHERE id = ${north.organizationId}`,
+  );
+}
+
 await close();
 console.log(`Demo data created.
   ADMIN + trainer : lucia.moreno@example.com
   Trainers        : pablo.ibarra@example.com, nerea.soto@example.com
   Clients w/ app  : marcos.villalba@example.com, elena.prieto@example.com, iker.arrieta@example.com
+  Other org ADMIN : ane.urrutia@example.com (isolation tests only)
   Password (all)  : ${PASSWORD}`);

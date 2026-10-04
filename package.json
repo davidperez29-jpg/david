@@ -18,6 +18,7 @@
     "test:coverage": "vitest run --project unit --coverage",
     "contract:update": "node scripts/contract-update.mjs",
     "test:integration": "vitest run --project integration",
+    "test:security": "vitest run --project security",
     "test:e2e": "pnpm --filter @tp/web test:e2e",
     "depcruise": "depcruise apps packages --config .dependency-cruiser.cjs",
     "db:generate": "pnpm --filter @tp/db generate",

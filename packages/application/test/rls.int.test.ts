@@ -79,6 +79,52 @@ describe('RLS isolation with raw SQL', () => {
     expect(goals).toHaveLength(0);
   });
 
+  it('assignments: a trainer sees only those of their clients and cannot assign or unassign', async () => {
+    const tca = schema.trainerClientAssignments;
+    const visible = await asActor(o.trainer2, (tx) => tx.select({ c: tca.clientId }).from(tca));
+    expect([...new Set(visible.map((r) => r.c))]).toEqual([o.clientB]);
+    // Self-assignment to someone else's client, even with raw SQL: refused.
+    await expect(
+      asActor(o.trainer2, (tx) =>
+        tx.insert(tca).values({
+          organizationId: o.admin.actor.organizationId,
+          trainerId: o.trainer2.actor.trainerId!,
+          clientId: o.clientA,
+          role: 'primary',
+        }),
+      ),
+    ).rejects.toSatisfy((e) => /row-level security/.test(pgError(e)));
+    // Ending an assignment is for ADMIN (clients:assign).
+    const ended = await asActor(o.trainer2, (tx) =>
+      tx
+        .update(tca)
+        .set({ endedAt: new Date() })
+        .where(sql`client_id = ${o.clientB}`)
+        .returning(),
+    );
+    expect(ended).toHaveLength(0);
+    const byAdmin = await asActor(o.admin, (tx) => tx.select({ id: tca.id }).from(tca));
+    expect(byAdmin.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('invitations: staff invitations only for ADMIN; client invitations only for staff with access', async () => {
+    const inv = schema.invitations;
+    const staffInvites = await asActor(o.trainer2, (tx) =>
+      tx
+        .select({ id: inv.id })
+        .from(inv)
+        .where(sql`client_id IS NULL`),
+    );
+    expect(staffInvites).toHaveLength(0);
+    const adminSees = await asActor(o.admin, (tx) =>
+      tx
+        .select({ id: inv.id })
+        .from(inv)
+        .where(sql`client_id IS NULL`),
+    );
+    expect(adminSees.length).toBeGreaterThanOrEqual(1);
+  });
+
   it('client only sees themselves', async () => {
     const rows = await asActor(o.clientUser, (tx) =>
       tx.select({ id: schema.clients.id }).from(schema.clients),

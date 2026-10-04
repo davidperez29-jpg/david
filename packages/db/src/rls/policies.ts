@@ -56,7 +56,10 @@ CREATE POLICY user_roles_write ON user_roles FOR ALL USING (organization_id = ap
   },
   invitations: {
     kind: 'custom',
-    sql: `CREATE POLICY invitations_all ON invitations FOR ALL USING (organization_id = app_org_id() AND app_is_staff()) WITH CHECK (organization_id = app_org_id() AND app_is_staff());`,
+    // Staff invitations: ADMIN only. Client invitations: staff who can access that client.
+    sql: `CREATE POLICY invitations_all ON invitations FOR ALL
+  USING (organization_id = app_org_id() AND app_is_staff() AND (CASE WHEN client_id IS NULL THEN app_has_role('ADMIN') ELSE app_can_access_client(client_id) END))
+  WITH CHECK (organization_id = app_org_id() AND app_is_staff() AND (CASE WHEN client_id IS NULL THEN app_has_role('ADMIN') ELSE app_can_access_client(client_id) END));`,
   },
   trainers: {
     kind: 'custom',
@@ -79,8 +82,12 @@ CREATE POLICY clients_delete ON clients FOR DELETE USING (organization_id = app_
   },
   trainer_client_assignments: {
     kind: 'custom',
-    sql: `CREATE POLICY tca_select ON trainer_client_assignments FOR SELECT USING (organization_id = app_org_id() AND (app_is_staff() OR client_id = app_client_id()));
-CREATE POLICY tca_write ON trainer_client_assignments FOR ALL USING (organization_id = app_org_id() AND app_is_staff()) WITH CHECK (organization_id = app_org_id() AND app_is_staff());`,
+    // ADMIN manages assignments (clients:assign); a trainer sees those of their own clients and
+    // can only assign themselves to a client they have just created.
+    sql: `CREATE POLICY tca_select ON trainer_client_assignments FOR SELECT USING (organization_id = app_org_id() AND (app_has_role('ADMIN') OR client_id = app_client_id() OR (app_has_role('TRAINER') AND app_trainer_assigned(client_id))));
+CREATE POLICY tca_insert ON trainer_client_assignments FOR INSERT WITH CHECK (organization_id = app_org_id() AND (app_has_role('ADMIN') OR (app_has_role('TRAINER') AND trainer_id = app_trainer_id() AND app_new_client_of_mine(client_id))));
+CREATE POLICY tca_update ON trainer_client_assignments FOR UPDATE USING (organization_id = app_org_id() AND app_has_role('ADMIN')) WITH CHECK (organization_id = app_org_id() AND app_has_role('ADMIN'));
+CREATE POLICY tca_delete ON trainer_client_assignments FOR DELETE USING (organization_id = app_org_id() AND app_has_role('ADMIN'));`,
   },
   client_training_profiles: { kind: 'client_child', clientWrite: false },
   client_availability: { kind: 'client_child', clientWrite: true },

@@ -52,6 +52,22 @@ export function generateRlsSql(): string {
   stmt(
     `CREATE OR REPLACE FUNCTION app_can_access_client(cid uuid) RETURNS boolean LANGUAGE sql STABLE AS $$ SELECT EXISTS (SELECT 1 FROM clients c WHERE c.id = cid) $$;`,
   );
+  // Trainer ↔ client assignment checks that must not go through RLS (the assignments policy itself
+  // uses them, and clients' visibility depends on assignments).
+  stmt(`CREATE OR REPLACE FUNCTION app_trainer_assigned(cid uuid) RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$
+    SELECT EXISTS (SELECT 1 FROM trainer_client_assignments a
+      WHERE a.client_id = cid AND a.trainer_id = app_trainer_id() AND a.ended_at IS NULL)
+  $$;`);
+  // A trainer may assign themselves only to a client they have just created (no active trainer yet).
+  stmt(`CREATE OR REPLACE FUNCTION app_new_client_of_mine(cid uuid) RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$
+    SELECT EXISTS (SELECT 1 FROM clients c
+      WHERE c.id = cid AND c.organization_id = app_org_id() AND c.created_by = app_user_id())
+    AND NOT EXISTS (SELECT 1 FROM trainer_client_assignments a WHERE a.client_id = cid AND a.ended_at IS NULL)
+  $$;`);
+  for (const f of ['app_trainer_assigned(uuid)', 'app_new_client_of_mine(uuid)']) {
+    stmt(`REVOKE ALL ON FUNCTION ${f} FROM PUBLIC;`);
+    stmt(`GRANT EXECUTE ON FUNCTION ${f} TO app_runtime;`);
+  }
   // Global e-mail uniqueness check that does not leak which organization uses it.
   stmt(
     `CREATE OR REPLACE FUNCTION email_in_use(e text) RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$ SELECT EXISTS (SELECT 1 FROM users WHERE lower(email) = lower(e)) $$;`,
@@ -119,6 +135,23 @@ export function generateRlsSql(): string {
       `DROP TRIGGER IF EXISTS ${table}_check_client_org ON ${table}; CREATE TRIGGER ${table}_check_client_org BEFORE INSERT OR UPDATE ON ${table} FOR EACH ROW EXECUTE FUNCTION check_client_org();`,
     );
   }
+
+  // A client may update their own record (contact details), but only the self-editable columns
+  // (CLIENT_SELF_EDITABLE_FIELDS in the domain); the use case checks it too.
+  stmt(`CREATE OR REPLACE FUNCTION clients_client_self_update() RETURNS trigger LANGUAGE plpgsql AS $$
+  BEGIN
+    IF app_has_role('CLIENT') AND NOT app_is_staff() AND
+       (to_jsonb(NEW) - ARRAY['email','phone_enc','preferences','updated_at','updated_by','version'])
+         IS DISTINCT FROM
+       (to_jsonb(OLD) - ARRAY['email','phone_enc','preferences','updated_at','updated_by','version']) THEN
+      RAISE EXCEPTION 'permission denied: a client may only change email, phone and preferences'
+        USING ERRCODE = 'insufficient_privilege';
+    END IF;
+    RETURN NEW;
+  END $$;`);
+  stmt(
+    `DROP TRIGGER IF EXISTS clients_client_self_update ON clients; CREATE TRIGGER clients_client_self_update BEFORE UPDATE ON clients FOR EACH ROW EXECUTE FUNCTION clients_client_self_update();`,
+  );
 
   // Policies.
   for (const [table, p] of Object.entries(RLS_POLICIES)) {

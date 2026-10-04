@@ -22,6 +22,16 @@ export default defineConfig({
     projects: [
       {
         test: {
+          // Security suite on the demo database (pnpm db:reset && pnpm db:seed:demo): RLS matrix.
+          name: 'security',
+          include: ['packages/*/test/**/*.security.test.ts'],
+          environment: 'node',
+          testTimeout: 120_000,
+          hookTimeout: 60_000,
+        },
+      },
+      {
+        test: {
           name: 'unit',
           include: ['packages/*/test/**/*.unit.test.ts', 'apps/web/test/**/*.unit.test.ts'],
           environment: 'node',
