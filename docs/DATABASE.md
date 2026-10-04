@@ -156,7 +156,12 @@ Restricciones relevantes:
 - **Denegación por defecto**: sin variables de sesión, las funciones auxiliares devuelven `NULL` y toda comparación falla, así que no se ve ninguna fila.
 
 ### 5.2 Funciones auxiliares
-`app_org_id()`, `app_user_id()`, `app_client_id()`, `app_trainer_id()`, `app_has_role(r)`, `app_is_staff()`, `app_client_visible(id, org)`, `app_can_access_client(id)` (que pasa a su vez por la RLS de `clients`) y `email_in_use(email)` (SECURITY DEFINER: comprueba un email en todas las organizaciones sin revelar cuál lo usa).
+- `app_org_id()`, `app_user_id()`, `app_client_id()`, `app_trainer_id()`, `app_has_role(r)`, `app_is_staff()`.
+- `app_client_visible(id, org)` y `app_can_access_client(id)`, que pasa a su vez por la RLS de `clients`.
+- `email_in_use(email)` (SECURITY DEFINER): comprueba un email en todas las organizaciones sin revelar cuál lo usa.
+- Fase 14, ambas SECURITY DEFINER y solo ejecutables por `app_runtime`:
+  - `app_trainer_assigned(cliente)`: ¿asignación activa del entrenador actual?;
+  - `app_new_client_of_mine(cliente)`: ¿cliente creado por el usuario actual y aún sin entrenador?
 
 ### 5.3 Tipos de política (`packages/db/src/rls/policies.ts`)
 | Tipo | Lectura | Escritura |
@@ -164,7 +169,7 @@ Restricciones relevantes:
 | `catalog` | Global (`organization_id NULL`) o de la propia organización | Staff, solo en su organización (lo global no es editable) |
 | `catalog_child` | Si el padre es visible | Staff, si el padre es de su organización |
 | `client_child` | Si el cliente es visible | Staff; el cliente solo en `client_availability` y `consents` |
-| `client_owned` | Organización + cliente visible (algunas tablas solo staff) | Según la tabla: seguimiento sí para el cliente; evaluación, decisiones y salud no |
+| `client_owned` | Organización + acceso por rol: ADMIN, entrenador asignado (`app_trainer_assigned`) o el propio cliente (algunas tablas solo staff) | Según la tabla: seguimiento sí para el cliente; evaluación, decisiones y salud no |
 | `client_optional` | Como `client_owned`; `client_id NULL` (plantillas) solo staff | Staff |
 | `system_only` | — | — (sin privilegios) |
 | `global_readonly` | Todos (sin RLS) | — |
@@ -310,3 +315,16 @@ Los planes propuestos usan `kind = PROPOSAL`, `status = proposed` y `recommendat
   - `EXECUTE` solo para `app_runtime`.
 - Migración `0024_rls_v6`: ADMIN puede borrar los códigos de recuperación de un cliente de su organización (al suprimirlo).
 - Migración `0025`: `users.totp_last_step`, el último paso de 30 s aceptado; un código TOTP no se acepta dos veces.
+
+## Pruebas y rendimiento (Fase 14)
+
+- **Migración `0026_rls_v7`**, correcciones de la matriz RLS:
+  - `trainer_client_assignments`: ADMIN las ve y gestiona todas. Un entrenador solo ve las de sus clientes y solo puede asignarse a sí mismo un cliente que acaba de crear (`app_new_client_of_mine`). Antes veía todas y, con SQL directo, podía asignarse cualquier cliente.
+  - `invitations`: las de staff, solo ADMIN; las de cliente, el personal con acceso a ese cliente.
+  - `clients`: trigger `clients_client_self_update`. Una sesión CLIENT solo puede cambiar `email`, `phone_enc` y `preferences` de su ficha.
+- **Migración `0027_rls_v8`**, rendimiento:
+  - las políticas `client_owned`/`client_optional` comprueban el rol directamente, en vez de llamar a `app_can_access_client()` en cada fila;
+  - `decision_runs`, `client_trait_flags` y `privacy_requests` pasan a tener el trigger `check_client_org`;
+  - un test unitario exige ese trigger (o `inherit_scope`) en toda tabla de esos tipos.
+- **`pnpm db:seed:perf`**: organización «Centro Escala» con 10 entrenadores, 1 000 clientes y planes activos, para las pruebas de rendimiento.
+- **Datos demo**: segunda organización (ADMIN `ane.urrutia@example.com`) para las pruebas de aislamiento; Elena tiene declaración de salud, historial, tolerancia e informe; hay una importación pendiente de confirmar.

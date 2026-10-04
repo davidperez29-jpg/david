@@ -2,6 +2,36 @@
 
 Formato: fecha · cambio · motivo · archivos · impacto.
 
+## 2026-10-04 — Fase 14: pruebas
+
+- **Cambio:** cobertura con umbral en CI (`pnpm test:coverage`): ≥ 90 % de líneas y funciones en `packages/domain` y ≥ 90 % de líneas en cada motor.
+  - **Resultado:** 94,7 % de líneas.
+- **Cambio:** 24 propiedades con fast-check sobre los motores de cálculo.
+  - **Incluye:** agregación, SD, SEM/MDC, cambio frente al error, tendencia, asimetría, adherencia, carga y monotonía, bienestar, progresiones, fechas, plazos RGPD, retención, CSV.
+  - **Corrige:** la detección del separador CSV contaba separadores entre comillas (encontrado por una propiedad). Las celdas con tabulador ahora se entrecomillan.
+- **Cambio:** contrato de la API (`docs/api/contract.json`, `pnpm contract:update`) con reglas de cambio rompiente.
+- **Cambio:** suite de seguridad.
+  - **Incluye:**
+    - matriz RLS de todas las tablas, positiva y negativa (`pnpm test:security`);
+    - acceso cruzado en las 180 rutas autenticadas con tres atacantes (`e2e/security-routes.spec.ts`).
+  - **Corrige** (RLS v7, migración `0026`):
+    - un entrenador podía, con SQL directo, leer todas las asignaciones y asignarse clientes;
+    - un entrenador podía leer invitaciones de staff y de clientes no asignados;
+    - un cliente podía cambiar cualquier columna de su ficha (ahora lo impide un trigger).
+- **Cambio:** accesibilidad (axe-core, WCAG 2.2 AA) en 51 páginas, temas claro y oscuro.
+  - **Corrige:** tamaño de los enlaces del calendario; enlace dentro de `<summary>`.
+- **Cambio:** rendimiento.
+  - **Incluye:** `pnpm db:seed:perf` (1 000 clientes); `e2e/perf.spec.ts` (listados < 300 ms p95); `e2e/perf.mobile.spec.ts` (TTI < 2,5 s).
+  - **Corrige:**
+    - las políticas por cliente reentraban en la RLS de `clients` en cada fila. Ahora usan un acceso por rol (RLS v8, migración `0027`): el resumen de seguimiento pasa de 1 185 a 36 ms y las páginas del entrenador, de ≈ 1,2 s a menos de 150 ms;
+    - límite de sesiones por día en el calendario (`perDay`): el mes del ADMIN pasa de 340 a 147 ms.
+  - **Nota:** el commit decía que la respuesta del calendario bajaba a «unos KB». Medido: 41 KB en la API y 281 KB de HTML con 100 planes activos (antes, 1,8 y 1,9 MB con 300).
+- **Cambio:** auditoría de dependencias en CI (`pnpm audit --prod --audit-level high`).
+- **Cambio:** demo.
+  - **Incluye:** organización de aislamiento (ADMIN `ane.urrutia@example.com`); Elena con declaración de salud, historial, tolerancia e informe; importación pendiente.
+- **Cambio:** tests: 379 unitarios, 148 de integración, 560 comprobaciones RLS y 39 E2E.
+- **Cambio:** documentación: `TESTING.md` (pirámide, áreas obligatorias, rendimiento), `API.md`, `DATABASE.md`, `SECURITY.md`, `ASVS_L2.md`, `PENTEST.md`, `ROADMAP.md`, `MASTER_SPECIFICATION.md` y `README.md`.
+
 ## 2026-10-04 — Fase 13: seguridad y RGPD
 
 - **Cambio:** derechos del interesado desde la interfaz.

@@ -195,7 +195,7 @@ Detalle en `DASHBOARD.md`.
 
 | Método y ruta | Permiso | Entrada | Descripción |
 |---|---|---|---|
-| `GET /calendar?from&to&clientId&trainerId` | `sessions:read` (solo personal) | Rango de 9 semanas como máximo | Sesiones, evaluaciones y, con `clientId`, fases y semanas de descarga (`spans`). `trainerId` es el filtro de ADMIN. |
+| `GET /calendar?from&to&clientId&trainerId&perDay` | `sessions:read` (solo personal) | Rango de 9 semanas como máximo; `perDay` 1–200 (opcional) | Sesiones, evaluaciones y, con `clientId`, fases y semanas de descarga (`spans`). `trainerId` es el filtro de ADMIN. Con `perDay`, como mucho ese número de sesiones por día; `sessionTotals` da siempre el total de cada día (Fase 14). |
 | `GET /dashboard/trainer` | `sessions:review` | — | Clientes activos, evaluaciones pendientes o vencidas y feedback reciente. |
 | `GET /clients/{id}/summary` | `monitoring:read` (personal) | — | Plan activo con fase y semana, próxima sesión, adherencia, alertas y métricas clave. |
 | `GET /clients/{id}/dashboard` | `sessions:read` | — | Próxima sesión con vista previa, racha, adherencia, hitos, próxima evaluación y tests visibles. |
@@ -273,3 +273,11 @@ Detalle en `SECURITY.md` §2.2–2.3. Si la organización exige 2FA a ADMIN (`re
 | `POST /auth/2fa/recovery-codes` | sesión | `{code}` (TOTP) | Regenera los códigos de recuperación; los anteriores dejan de valer. |
 | `POST /auth/2fa/verify` | pública (sesión pendiente del 2FA) | `{code}`: TOTP de 6 dígitos o código de recuperación `XXXX-XXXX` | Cada código TOTP vale **una sola vez**; cada código de recuperación, también. |
 | `DELETE /auth/sessions/{id}` | sesión | — | Cierra una de las sesiones propias. |
+
+## Contrato de la API (Fase 14)
+
+- **Archivo**: `docs/api/contract.json` es el contrato de `/api/v1`. Contiene cada ruta con su método y acceso, y el JSON Schema de entrada de cada petición, generado desde los esquemas zod.
+- **Test**: `apps/web/test/contract.unit.test.ts` falla ante cualquier diferencia.
+- **Cambio compatible** (ruta nueva, campo opcional nuevo, límite más amplio, valor de enumeración añadido): se acepta con `pnpm contract:update`.
+- **Cambio rompiente** (ruta o campo eliminado, campo nuevo obligatorio, límite más estricto, valor eliminado, ruta que deja de ser pública): necesita una versión nueva de la API, o `pnpm contract:update --breaking` con su entrada en el CHANGELOG.
+- **Límite**: las respuestas no tienen esquema formal; sus cambios se revisan en los tests de integración y E2E.

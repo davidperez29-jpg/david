@@ -48,9 +48,9 @@
 | Control | Estado | Evidencia |
 |---|---|---|
 | Denegar por defecto; permisos por rol y ámbito (`org` / `assigned` / `own`) | ✅ | `domain/iam/permissions.ts`, `policy.ts` |
-| IDOR: los recursos fuera de ámbito responden 404 | ✅ | `authz.ts`; E2E `trainer.spec.ts` y `security.spec.ts` |
+| IDOR: los recursos fuera de ámbito responden 404 | ✅ | `authz.ts`; E2E `trainer.spec.ts` y `security.spec.ts`; en la Fase 14, **todas las rutas** con 3 atacantes (`security-routes.spec.ts`) |
 | Ninguna ruta sin autorización | ✅ | `routes.unit.test.ts` enumera todas las rutas |
-| Aislamiento entre organizaciones | ✅ | RLS + triggers de integridad; tests de integración multi-tenant |
+| Aislamiento entre organizaciones | ✅ | RLS + triggers de integridad; tests de integración multi-tenant; matriz RLS de todas las tablas (Fase 14) |
 | Operaciones sensibles con confirmación adicional | ✅ | Supresión RGPD con doble confirmación; 2FA para ADMIN |
 | CSRF | ✅ | `SameSite=Lax` + comprobación de `Origin`/`Referer` |
 
@@ -107,7 +107,7 @@
 | Control | Estado | Evidencia |
 |---|---|---|
 | Dependencias fijadas en un *lockfile*; sin scripts de terceros en el navegador | ✅ | `pnpm-lock.yaml`; CSP sin orígenes externos para scripts |
-| Análisis de dependencias en CI | ◐ | Pendiente de añadir `pnpm audit` o Dependabot (Fase 14) |
+| Análisis de dependencias en CI | ✅ | `pnpm audit --prod --audit-level high` en CI (Fase 14); 1 moderada aceptada (`PENTEST.md` P-9) |
 
 ## V11 Lógica de negocio
 
@@ -140,7 +140,7 @@
 |---|---|---|
 | Cabeceras de seguridad (CSP, `nosniff`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, HSTS) | ✅ | `next.config.ts`; E2E `security.spec.ts` |
 | Sin cabecera `X-Powered-By` | ✅ | `poweredByHeader: false` |
-| CSP sin `'unsafe-inline'` en scripts | ◐ | Next necesita *nonces* para quitarlo: Fase 14–15 |
+| CSP sin `'unsafe-inline'` en scripts | ◐ | Next necesita *nonces* para quitarlo: Fase 15 |
 | Construcción reproducible y CI con lint, tipos, tests y E2E | ✅ | `.github/workflows` |
 
 ## Resumen
@@ -148,7 +148,6 @@
 - **Parciales**:
   - avisos por email (D4);
   - HSTS y TLS dependen del despliegue;
-  - análisis de dependencias en CI;
   - límites por usuario fuera del login;
   - CSP con *nonces*;
   - cola sin conexión de la PWA en IndexedDB: transitoria, pero puede incluir molestias (riesgo aceptado en la DPIA, R-6).

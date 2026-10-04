@@ -1,22 +1,66 @@
 # Testing
 
-> Estrategia completa en `MASTER_SPECIFICATION.md` §15. Estado tras la Fase 3.
+> Estrategia completa en `MASTER_SPECIFICATION.md` §15. Estado tras la Fase 14: pirámide completa.
 
 ## 1. Cómo ejecutar
 
 | Comando | Qué ejecuta | Requisitos |
 |---|---|---|
-| `pnpm test:unit` | Dominio, primitivas de auth, cobertura de rutas | — |
-| `pnpm test:integration` | Casos de uso contra PostgreSQL real | `TEST_DATABASE_URL` (se **borra y recrea**) |
-| `pnpm test` | Unidad + integración | ídem |
-| `pnpm test:e2e` | Playwright (escritorio + móvil) contra `next start` | `pnpm build`, `pnpm db:reset && pnpm db:seed:demo`; Chromium (`PW_CHROMIUM` para usar uno ya instalado) |
+| `pnpm test:unit` | Dominio (incluidas propiedades con fast-check), contratos, auth, rutas y contrato de la API | — |
+| `pnpm test:coverage` | Unidad + **umbral de cobertura**: ≥ 90 % de líneas y funciones en `packages/domain`, y ≥ 90 % de líneas en cada motor de cálculo | — |
+| `pnpm test:integration` | Casos de uso y RLS contra PostgreSQL real | `TEST_DATABASE_URL` (se **borra y recrea**) |
+| `pnpm test:security` | **Matriz RLS** de todas las tablas sobre los datos demo, en transacciones que se deshacen | `pnpm db:reset && pnpm db:seed:demo` |
+| `pnpm test:e2e` | Playwright contra `next start`, en escritorio y móvil: flujos, accesibilidad, matriz de acceso cruzado de todas las rutas y rendimiento | `pnpm build`, datos demo; `pnpm db:seed:perf` para el rendimiento (si no, ese test se salta); Chromium (`PW_CHROMIUM` para usar uno ya instalado) |
+| `pnpm contract:update` | Acepta el contrato actual de la API en `docs/api/contract.json` (`--breaking` acepta cambios rompientes) | — |
 | `pnpm lint` · `pnpm typecheck` · `pnpm format:check` · `pnpm depcruise` | Calidad y capas | — |
 
-CI (`.github/workflows/ci.yml`) ejecuta todo lo anterior con un servicio PostgreSQL 16.
+CI (`.github/workflows/ci.yml`) ejecuta, por este orden:
+
+1. formato, lint, tipos y capas;
+2. unidad con umbral de cobertura;
+3. integración;
+4. *build*;
+5. datos demo;
+6. suite de seguridad;
+7. datos de carga (1 000 clientes);
+8. E2E.
 
 Los tests de integración no truncan tablas (la auditoría es *append-only*): cada test crea su **propia organización** (`buildOrg()` en `packages/application/test/fixtures.ts`), lo que además ejercita el aislamiento entre organizaciones.
 
-## 2. Cobertura por área (Fase 1)
+## 2. Pirámide (§15.1)
+
+| Nivel | Herramienta | Qué cubre | Umbral | Resultado (Fase 14) |
+|---|---|---|---|---|
+| Unidad (dominio) | Vitest + fast-check | Fórmulas, reglas, progresiones, explicaciones; **24 propiedades** (límites, monotonía, invariancias, ida y vuelta) | ≥ 90 % líneas en `packages/domain` y en cada motor | ✅ 94,7 % líneas, 96,2 % funciones; motores ≥ 90 % |
+| Contrato | Zod → JSON Schema + diff propio | Rutas (método y acceso) y esquema de entrada de cada petición | Sin cambios rompientes sin versión | ✅ `docs/api/contract.json`: 155 rutas y 113 esquemas; el test falla ante cualquier cambio no aceptado |
+| Integración | Vitest + PostgreSQL 16 real | Casos de uso, RLS, transacciones y auditoría, migraciones | Todas las políticas RLS con test positivo y negativo | ✅ 148 tests; **matriz RLS**: cada tabla del mapa, cada tipo de política y cada política a medida, con datos (560 comprobaciones) |
+| Seguridad | Playwright (HTTP) | Acceso cruzado en **cada ruta**: sin sesión, ADMIN de otra organización, otro cliente, entrenador no asignado | 100 % de rutas | ✅ 180 *handlers* autenticados, 471 ataques con ids reales; ninguno pasa ni filtra datos |
+| E2E | Playwright (escritorio + Pixel 7) | Flujos §8.4 y §9, incluido sin conexión | Flujos críticos en cada PR | ✅ 39 tests en CI |
+| Accesibilidad | axe-core en E2E | WCAG 2.2 AA (`wcag2a/aa`, `wcag21a/aa`, `wcag22aa`), temas claro y oscuro | 0 infracciones graves | ✅ 44 páginas del entrenador y 7 del cliente, 0 graves o críticas |
+| Rendimiento | Playwright | Listados con 1 000 clientes; TTI en móvil | < 300 ms p95; TTI < 2,5 s en 4G | ✅ máx. 147 ms p95; TTI ≈ 1,4–1,6 s (ver «Rendimiento») |
+| Científico | Casos dorados | Salida del motor de decisiones y su explicación | Revisión humana en cambios de reglas | ✅ desde la Fase 10 (`decision.unit.test.ts`) |
+| Datos | Validadores de *seed* | Referencias con fuente verificada; fuentes con DOI/PMID | CI bloquea si falla | ✅ `evidence.unit.test.ts`, `assessment-seed.unit.test.ts` |
+
+## 3. Áreas obligatorias (§15.2, encargo §57)
+
+| Área | Casos (resumen) | Archivos |
+|---|---|---|
+| Login | Credenciales, mismo mensaje ante usuario inexistente, bloqueo, límites por email e IP, 2FA con código TOTP de un solo uso y códigos de recuperación, sesiones visibles y revocables | `auth.int.test.ts`, `privacy.int.test.ts`, `auth.unit.test.ts`, `security13.unit.test.ts` |
+| Permisos | Matriz pura (*deny by default*), RLS por tabla y por rol, acceso cruzado en cada ruta | `policy.unit.test.ts`, `rls.int.test.ts`, `rls-matrix.security.test.ts`, `e2e/security-routes.spec.ts` |
+| Cliente | Alta transaccional, bloqueo optimista, auditoría por campo, autoservicio de contacto (también por trigger), archivado, asignaciones | `clients.int.test.ts`, `e2e/trainer.spec.ts` |
+| Evaluación | Agregación de intentos, cambio frente al error de medida, referencias, tests por lado, baterías | `assessment.unit.test.ts`, `properties.unit.test.ts`, `assessments.int.test.ts`, `e2e/assessment.spec.ts` |
+| Programa | Esqueleto y fechas, prescripción, progresiones, plantillas, revisiones, propuesta del motor | `planning.*`, `programming.*`, `e2e/planning.spec.ts`, `e2e/programming.spec.ts` |
+| Sesión | Registro de series, sustituciones, finalización, sincronización idempotente sin conexión, modo sala | `sessions.*`, `e2e/sessions*.spec.ts` |
+| Ejercicios | Búsqueda, filtros, publicación, vídeos, progresiones, banco importado | `library.*`, `exercise-bank.unit.test.ts`, `e2e/library.spec.ts` |
+| Feedback | RPE, bienestar, molestias solo con consentimiento, feedback por ejercicio | `sessions.int.test.ts`, `monitoring.int.test.ts` |
+| Adherencia | 24/21 = 87,5 %; propiedades (0 ≤ hechas ≤ planificadas, orden irrelevante, reprogramadas fuera) | `monitoring.unit.test.ts`, `properties.unit.test.ts` |
+| Cálculos | sRPE, monotonía, SEM/MDC, asimetría, tendencia, plazos RGPD; cobertura ≥ 90 % | `*.unit.test.ts`, `properties.unit.test.ts` |
+| Informes | 11 apartados, PDF idéntico byte a byte, CSV/XLSX, importación validada; CSV de ida y vuelta | `reports.*`, `imports.unit.test.ts`, `e2e/reports.spec.ts` |
+| Filtros | Búsqueda sin tildes, por patrón, músculo y material; listados por ámbito; calendario por cliente y entrenador | `library.int.test.ts`, `clients.int.test.ts`, `e2e/monitoring.spec.ts` |
+| Sustitución | Filtros duros con motivo, dolor → menos carga axial, tolerancias del cliente | `library.unit.test.ts`, `library.int.test.ts` |
+| Seguridad | Cabeceras, CSRF, IDOR, cookies, sin trazas, RLS, rutas, supresión RGPD, auditoría inmutable | `security.int.test.ts`, `e2e/security*.spec.ts`, `PENTEST.md` |
+
+## Cobertura por área (Fase 1)
 
 | Área (§57) | Tests | Archivo |
 |---|---|---|
@@ -36,14 +80,14 @@ Los tests de integración no truncan tablas (la auditoría es *append-only*): ca
 | Rutas | Todos los handlers usan `authedRoute`/`publicRoute`; lista cerrada de públicos | `apps/web/test/routes.unit.test.ts` |
 | E2E | Alta de cliente con asistente + consentimiento + cribado + historial; aislamiento entre entrenadores; cliente no accede al área de entrenador ni a la API de usuarios; CSRF; API sin sesión; experiencia móvil (consentimiento, perfil, objetivos táctiles ≥ 48 px) | `apps/web/e2e/*.spec.ts` |
 
-Pendiente para fases siguientes: evaluación, programa, sesión, ejercicios, feedback, adherencia, informes, filtros avanzados y sustitución (las funciones aún no existen), accesibilidad automatizada con axe-core (Fase 14) y cobertura de líneas ≥ 90 % en `domain` (se medirá cuando existan los motores).
+Las áreas que entonces quedaban pendientes se cubrieron en las fases siguientes; el estado actual está en §3.
 
-## 3. Resultado en la entrega de la Fase 3
+## Resultado de la Fase 3
 
 - Unidad: 102 tests ✔ · Integración: 63 tests ✔ (todos bajo RLS) · E2E: 8 tests ✔ (Chromium, escritorio y Pixel 7); los E2E son repetibles sin reiniciar la base de datos.
 - `lint`, `typecheck`, `format:check` y `depcruise` sin errores.
 
-## 4. Resultado en la entrega de la Fase 4
+## Resultado de la Fase 4
 
 - Unidad: 138 tests ✔ (incluye la gradación, el QA, la aplicabilidad y la coherencia de los archivos de evidencia) · Integración: 76 tests ✔ · E2E: 11 tests ✔.
 - Integración científica (`science.int.test.ts`, `evidence-seed.int.test.ts`):
@@ -62,7 +106,7 @@ Pendiente para fases siguientes: evaluación, programa, sesión, ejercicios, fee
 - La base de datos de integración se crea con la biblioteca científica global importada (`prepareTestDatabase`).
 - `lint`, `typecheck`, `format:check` y `depcruise` sin errores.
 
-## 5. Resultado en la entrega de la Fase 5
+## Resultado de la Fase 5
 
 - Unidad: 176 tests ✔, entre ellos:
   - agregación, interpretación frente al MDC, errores combinados, tendencia, métricas derivadas, aplicabilidad de referencias, puntos de corte descriptivos y clínicos, y propuesta de batería;
@@ -75,7 +119,7 @@ Pendiente para fases siguientes: evaluación, programa, sesión, ejercicios, fee
   - alcance entre entrenadores, organizaciones y clientes.
 - E2E: 14 tests ✔. Nuevos: el entrenador revisa el progreso, crea y registra una evaluación y la completa; otro entrenador no ve al cliente; el cliente ve su progreso en el móvil.
 
-## 6. Resultado en la entrega de la Fase 6
+## Resultado de la Fase 6
 
 - Unidad: 217 tests ✔, entre ellos:
   - textos y validación de la prescripción, fechas, expansión de plantillas, progresión por semana y descarga, propuestas post-sesión e indicadores;
@@ -90,7 +134,7 @@ Pendiente para fases siguientes: evaluación, programa, sesión, ejercicios, fee
   - esqueleto manual y alcance.
 - E2E: 16 tests ✔. Nuevos: plan de 12 semanas y 3 días desde plantilla, editado y activado; el cliente no accede a la API de plantillas.
 
-## 7. Resultado en la entrega de la Fase 7
+## Resultado de la Fase 7
 
 - Unidad: 238 tests ✔. Nuevos: «hoy» y próxima sesión, validación de series (RIR o RPE), precarga, sustitución en vivo y dolor, conflictos de sincronización, cumplimiento y fecha local española.
 - Integración: 100 tests ✔. `sessions.int.test.ts` cubre:
@@ -105,7 +149,7 @@ Pendiente para fases siguientes: evaluación, programa, sesión, ejercicios, fee
   - revisión del entrenador, decisión sobre una sustitución y modo sala;
   - publicación visible en el plan.
 
-## 8. Resultado en la entrega de la Fase 8
+## Resultado de la Fase 8
 
 - Unidad: 261 tests ✔. `monitoring.unit.test.ts` cubre:
   - **24 planificadas / 21 realizadas = 87,5 %** (criterio de aceptación);
@@ -131,7 +175,7 @@ Pendiente para fases siguientes: evaluación, programa, sesión, ejercicios, fee
   - umbrales de solo lectura para el entrenador (y 403 en la API) y nueva versión guardada por ADMIN;
   - «Tu constancia» del cliente.
 
-## 9. Resultado en la entrega de la Fase 9
+## Resultado de la Fase 9
 
 - Unidad: 270 tests ✔. `dashboard.unit.test.ts` cubre:
   - racha: la sesión de hoy no la rompe; las reprogramadas no cuentan;
@@ -148,7 +192,7 @@ Pendiente para fases siguientes: evaluación, programa, sesión, ejercicios, fee
   - **3 tareas UX cronometradas** con umbrales de interacciones y tiempo (`UX_REVIEW.md`).
 - Repetibilidad: la tarea UX 1 resuelve la alerta roja de dolor de la demo. Para repetirla en local, vuelve a cargar los datos (`pnpm db:reset && pnpm db:seed:demo`); CI siempre parte de datos nuevos.
 
-## 10. Resultado en la entrega de la Fase 10
+## Resultado de la Fase 10
 
 - Unidad: 288 tests ✔. `decision.unit.test.ts` cubre:
   - DSL: operadores, datos que faltan, operadores y parámetros desconocidos;
@@ -166,7 +210,7 @@ Pendiente para fases siguientes: evaluación, programa, sesión, ejercicios, fee
   - permisos y aislamiento.
 - E2E: 28 tests ✔. Nuevo `decision.spec.ts`: la pestaña Necesidades con el «¿Por qué?» y su DOI, el rechazo con motivo y el editor de reglas con métricas. Modifica la demo (rechaza un método); en local, vuelve a cargar los datos para repetirlo.
 
-## 11. Resultado en la entrega de la Fase 11
+## Resultado de la Fase 11
 
 - Unidad: 310 tests ✔. `programming.unit.test.ts` cubre:
   - doble progresión (solo con rango de repeticiones) y ajuste por RIR (sube y baja), incremento por material;
@@ -186,7 +230,7 @@ Pendiente para fases siguientes: evaluación, programa, sesión, ejercicios, fee
   - permisos y aislamiento.
 - E2E: 29 tests ✔. Nuevo `programming.spec.ts`: desde Seguimiento → ajuste con «¿Por qué?» y cambios → aceptar → deshacer → aceptar la propuesta de plan como borrador. `planning.spec.ts` se limita ahora a la tarjeta «Nuevo plan», porque la pestaña tiene dos formularios. Modifica la demo: en local, vuelve a cargar los datos para repetirlo.
 
-## 12. Resultado en la entrega de la Fase 12
+## Resultado de la Fase 12
 
 - Unidad: 330 tests ✔.
   - `reports.unit.test.ts` cubre:
@@ -210,7 +254,7 @@ Pendiente para fases siguientes: evaluación, programa, sesión, ejercicios, fee
   - columnas obligatorias, formato no admitido y plantillas.
 - E2E: 30 tests ✔. Nuevo `reports.spec.ts`: generar el informe, comprobar sus apartados y descargar el PDF; importar un CSV con una fila errónea (errores visibles, solo la válida importada); exportar a XLSX.
 
-## 13. Resultado en la entrega de la Fase 13
+## Resultado de la Fase 13
 
 - Unidad: 348 tests ✔.
   - `security13.unit.test.ts`:
@@ -245,3 +289,61 @@ Pendiente para fases siguientes: evaluación, programa, sesión, ejercicios, fee
     - supresión fuera de rol;
     - descargas sin caché.
   - Modifica la demo: en local, vuelve a cargar los datos para repetirlo.
+
+## Resultado de la Fase 14
+
+- **Unidad: 379 tests ✔**, con umbral de cobertura.
+  - `properties.unit.test.ts`: 24 propiedades con fast-check.
+  - **Fallo encontrado por las propiedades y corregido**: la detección del separador CSV contaba separadores dentro de comillas, de modo que un `;` entre comillas en una cabecera separada por `,` se leía mal. Ahora solo cuenta fuera de comillas, y las celdas con tabulador se entrecomillan.
+  - `contract.unit.test.ts`: contrato de la API y reglas de cambio rompiente.
+- **Integración: 148 tests ✔.** Nuevos en `rls.int.test.ts`: asignaciones e invitaciones.
+- **Seguridad (`pnpm test:security`): 560 comprobaciones ✔.**
+  - **Hallazgos corregidos** (RLS v7, migración `0026`):
+    - un entrenador podía leer todas las asignaciones de la organización y, con SQL directo, asignarse cualquier cliente o terminar asignaciones ajenas;
+    - un entrenador podía leer las invitaciones de staff y las de clientes no asignados;
+    - un cliente podía cambiar cualquier columna de su ficha con SQL directo (la aplicación ya lo impedía); ahora lo impide también un trigger.
+- **E2E: 39 tests ✔.** Nuevos:
+  - `security-routes.spec.ts`: todas las rutas;
+  - `a11y.spec.ts` y `a11y.mobile.spec.ts`: 51 páginas, temas claro y oscuro;
+  - `perf.spec.ts` y `perf.mobile.spec.ts`.
+- **Accesibilidad**: corregidos el tamaño de los enlaces del calendario (≥ 24 px, WCAG 2.2) y un enlace dentro de `<summary>` en la página de método.
+
+## Rendimiento (§2.3)
+
+**Cómo se mide**:
+
+```bash
+pnpm db:reset && pnpm db:seed:demo && pnpm db:seed:perf && pnpm build
+pnpm --filter @tp/web test:e2e -- e2e/perf.spec.ts e2e/perf.mobile.spec.ts
+```
+
+- Organización «Centro Escala»: 10 entrenadores y 1 000 clientes (100 por entrenador), con 300 planes activos en local (100 en CI).
+- **Listados**: cada `GET` de la API sin parámetros de ruta y las páginas principales del entrenador. 20 peticiones tras 2 de calentamiento; se mide el p95.
+- **Móvil**:
+  - emulación de Pixel 7, caché fría;
+  - perfil de Lighthouse para móvil (RTT 150 ms, 1,6 Mbps de bajada, 750 kbps de subida, CPU 4× más lenta), más exigente que un 4G medio;
+  - TTI aproximado como Lighthouse: fin de la última tarea larga antes de una ventana tranquila, nunca antes de `DOMContentLoaded`.
+
+**Resultados** (máquina de desarrollo, 300 planes activos):
+
+| Medida | Antes | Después | Objetivo |
+|---|---|---|---|
+| `GET /monitoring/overview` (ADMIN, 1 000 clientes) | 1 185 ms | 36 ms | < 300 ms |
+| Cualquier página del entrenador (la cabecera muestra las alertas) | ≈ 1 100–1 300 ms | 43–128 ms | < 300 ms |
+| Calendario, mes (ADMIN) | 1 941 ms → 340 ms tras la RLS | 147 ms | < 300 ms |
+| Peor listado de la API (calendario del mes, ADMIN) | — | 128 ms | < 300 ms |
+| TTI móvil (`/login`, `/me`, `/me/calendario`, `/me/progreso`) | — | 1,4–1,6 s (≈ 150 KB) | < 2,5 s |
+
+**Qué se cambió**:
+
+1. **RLS sin políticas anidadas** (RLS v8, migración `0027`).
+   - Las tablas por cliente comprobaban `app_can_access_client()`, que vuelve a pasar por las políticas de `clients` y de asignaciones en **cada fila de cada tabla unida**: unos 0,15 ms por fila.
+   - Ahora comprueban el rol directamente: ADMIN, entrenador asignado (`app_trainer_assigned`, con índice) o el propio cliente. Se mantiene la condición de organización, y un trigger garantiza que el cliente de la fila es de esa organización (lo exige un test unitario).
+   - La matriz RLS y los tests de integración confirman que la semántica no cambia.
+2. **Calendario con límite por día** (`perDay`):
+   - el mes pide 4 sesiones por día y la semana 40, con los totales reales para el «+N más»;
+   - con 100 planes activos, la respuesta del mes pasa a 41 KB en la API y 281 KB de HTML; antes eran 1,8 MB y 1,9 MB con 300 planes.
+
+**No incluido en el umbral**: `GET /exports` genera un archivo, no es un listado (≈ 210 ms con 1 000 clientes).
+
+**Pendiente**: crear un plan desde una plantilla tarda ≈ 0,9 s (escritura puntual, fuera del objetivo de listados). Se revisará en la Fase 15.

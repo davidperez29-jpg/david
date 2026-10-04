@@ -2,7 +2,7 @@
 
 Sistema profesional para **evaluar, programar, entrenar y hacer seguimiento** de clientes, presencial y online, con trazabilidad científica y control total del entrenador.
 
-> **Estado actual: Fase 13 completada**: evaluación, bibliotecas científica (verificada en PubMed) y de ejercicios, planificación, app del cliente sin conexión, seguimiento, dashboards, motores de decisiones y de programación, informes y, ahora, **seguridad y RGPD**: el cliente descarga sus datos y ejerce sus derechos desde la app; ADMIN atiende las solicitudes y suprime datos con doble confirmación; retención configurable; 2FA obligatorio para administración con códigos de recuperación; checklist ASVS L2, plantilla de DPIA y pentest ligero automatizado. Siguiente: Fase 14 (pruebas).
+> **Estado actual: Fase 14 completada**: plataforma completa (evaluación, bibliotecas científica y de ejercicios, planificación, app del cliente sin conexión, seguimiento, motores de decisiones y de programación, informes, seguridad y RGPD) y, ahora, **pirámide de pruebas con umbrales en CI**: cobertura ≥ 90 % en el dominio, propiedades con fast-check, contrato de la API, matriz RLS de todas las tablas, acceso cruzado en todas las rutas, accesibilidad WCAG 2.2 AA y rendimiento con 1 000 clientes. Siguiente: Fase 15 (optimización y escala).
 
 ## Arranque rápido
 

@@ -1,6 +1,6 @@
 # MASTER SPECIFICATION — Plataforma de evaluación, programación, entrenamiento y seguimiento
 
-> **Estado:** Fases 0–13 completadas. Documento vivo; lo implementado se detalla en `ARCHITECTURE.md`.
+> **Estado:** Fases 0–14 completadas. Documento vivo; lo implementado se detalla en `ARCHITECTURE.md`.
 > **Versión:** 0.1.0 · **Fecha:** 2026-10-03
 > **Ámbito:** fuente única de verdad del diseño. Los documentos `/docs/ARCHITECTURE.md`, `/docs/DATABASE.md`, etc. se derivarán de este documento al inicio de cada fase (ver §16.4) para evitar dos versiones divergentes del mismo diseño.
 > **Anexos de investigación (Fase 0):** `/docs/research/` — análisis de los documentos aportados, registro de evidencia verificada, base de tests y QA de referencias.

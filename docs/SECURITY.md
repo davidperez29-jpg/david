@@ -13,7 +13,7 @@
 | 2FA | TOTP (RFC 6238); **obligatorio para ADMIN** (ajuste de la organización, activo por defecto: sin 2FA, la API solo permite `/auth/*` y la interfaz lleva a Ajustes), recomendado para el resto del staff; secreto cifrado; la sesión queda en `second_factor_required` hasta verificar; **10 códigos de recuperación** de un solo uso (solo su SHA-256 en BD, se muestran una vez, regenerables con un código TOTP; su uso queda auditado) | `totp.ts`, `recovery.ts`, `/login/2fa`, `/app/settings` |
 | Invitaciones | Únicas, de 7 días, de un solo uso, token hasheado; una nueva anula las pendientes del mismo email; solo ADMIN invita a staff | `invitations.ts` |
 | Autorización | RBAC + ámbito (`org` / `assigned` / `own`), *deny by default*; recursos fuera de ámbito → 404 | `domain/iam/policy.ts`, `application/authz.ts` |
-| Row Level Security | Segunda barrera en PostgreSQL para **todas** las tablas: rol `app_runtime` sin `BYPASSRLS`, actor por transacción, denegación sin contexto, tablas de seguridad solo para el sistema, auditoría no falsificable (`actor_user_id = app_user_id()`) | `packages/db/src/rls`, `application/rls.ts`, `DATABASE.md` §5 |
+| Row Level Security | Segunda barrera en PostgreSQL para **todas** las tablas, probada tabla a tabla con una matriz positiva y negativa (Fase 14): rol `app_runtime` sin `BYPASSRLS`, actor por transacción, denegación sin contexto, tablas de seguridad solo para el sistema, auditoría no falsificable (`actor_user_id = app_user_id()`) | `packages/db/src/rls`, `application/rls.ts`, `DATABASE.md` §5 |
 | Integridad multi-tenant | Triggers que impiden mezclar organización/cliente en hijos y relaciones | `DATABASE.md` §4 |
 | Rutas | Todo handler de `/api/v1` usa `authedRoute` o `publicRoute`; los públicos están en una lista cerrada (test) | `server/api.ts`, `test/routes.unit.test.ts` |
 | CSRF | `SameSite=Lax` + comprobación de `Origin`/`Referer` en POST/PUT/PATCH/DELETE | `server/api.ts` |
@@ -80,7 +80,8 @@ Una solicitud de supresión no puede marcarse como atendida si la supresión no 
 | Configuración de proxy de confianza para `X-Forwarded-For` | Despliegue |
 | Copias de seguridad cifradas y propagación de supresiones a las copias (caducidad) | 15 |
 | Auditoría o pentest externo | Opcional (H6) |
-| CSP con *nonces* (sin `'unsafe-inline'` en `script-src`) | 14–15 |
+| Actualizar `exceljs` cuando su dependencia `uuid` salga del aviso moderado (no explotable: solo usa `v4`) | Mantenimiento |
+| CSP con *nonces* (sin `'unsafe-inline'` en `script-src`) | 15 |
 
 ## 4. Notificar vulnerabilidades
 

@@ -18,8 +18,8 @@ Plan completo y criterios de aceptación: `MASTER_SPECIFICATION.md` §16.
 | 11 Motor de programación | ✅ 2026-10-04 | Propuesta de plan (`PROPOSAL`) desde la ejecución del motor de decisiones, con semanas de introducción y sustituciones; aceptar como borrador o descartar. Ajustes semana a semana (carga por RIR o doble progresión, descarga, volumen, sustitución por molestias) que solo se aplican al aceptar, a sesiones futuras, con revisión, auditoría y deshacer. Aplicación automática opcional (desactivada por defecto). |
 | 12 Informes | ✅ 2026-10-04 | Informe de cliente con los 11 apartados de §34 (pantalla, PDF reproducible, Excel y CSV desde una instantánea congelada con hash). Exportación CSV/XLSX de clientes, evaluaciones, planificación, sesiones y evolución, bajo RLS, auditada y con protección contra inyección de fórmulas. Importación validada de clientes, ejercicios, evaluaciones y referencias, con vista previa de errores por fila y columna. |
 | 13 Seguridad | ✅ 2026-10-04 | Derechos RGPD ejercitables desde la interfaz (exportación JSON del interesado, solicitudes con plazo de un mes, bandeja de ADMIN, supresión por anonimización con doble confirmación y auditoría redactada); retención configurable con anonimización automática y depuración de registros de seguridad; 2FA obligatorio para ADMIN, códigos de recuperación, códigos TOTP de un solo uso, sesiones visibles y revocables; contraseñas filtradas por k-anonimato; rotación de claves de cifrado; checklist ASVS L2, plantilla de DPIA y pentest ligero automatizado. |
-| 14 Pruebas | ⏭ siguiente | Ver especificación. |
-| 15 | pendiente | Ver especificación. |
+| 14 Pruebas | ✅ 2026-10-04 | Pirámide completa con umbrales: cobertura ≥ 90 % en el dominio y los motores (umbral en CI), 24 propiedades con fast-check, contrato de la API con detección de cambios rompientes, matriz RLS de todas las tablas, acceso cruzado en todas las rutas, accesibilidad WCAG 2.2 AA en 51 páginas (claro y oscuro), rendimiento con 1 000 clientes (< 300 ms p95) y TTI móvil < 2,5 s, auditoría de dependencias. |
+| 15 Optimización y escala | ⏭ siguiente | Ver especificación. |
 
 ## Criterios de cierre de la Fase 1 (§63)
 
@@ -185,3 +185,16 @@ Plan completo y criterios de aceptación: `MASTER_SPECIFICATION.md` §16.
 | Documentación | ✅ `SECURITY.md`, `ASVS_L2.md`, `DPIA.md` (plantilla, [REQUIERE VALIDACIÓN LEGAL]), `PENTEST.md`, `API.md`, `DATABASE.md` y `TESTING.md`. |
 | Datos | ✅ La demo tiene una solicitud de rectificación pendiente de Elena. Por ser demo, no exige 2FA a ADMIN. |
 | Pendiente conocido | Validación legal de la DPIA y de los plazos (D7). Avisos por email (D4). CSP con *nonces*. Límite de peticiones por usuario fuera del login. Análisis de dependencias en CI. |
+
+## Criterios de cierre de la Fase 14
+
+| Criterio | Estado |
+|---|---|
+| Funcionalidad | ✅ Todos los niveles de la pirámide de §15.1 tienen herramienta, test y umbral en CI. |
+| Criterio de aceptación §16.2 «Umbrales de §15» | ✅ Cobertura de líneas en el dominio 94,7 % (≥ 90 %, también por motor). Contrato sin cambios rompientes sin versión. Todas las políticas RLS con test positivo y negativo. Acceso cruzado en el 100 % de las rutas. Flujos críticos en E2E (escritorio y móvil). 0 infracciones graves de accesibilidad. Listados con 1 000 clientes: máximo 147 ms p95. TTI móvil ≈ 1,4–1,6 s. |
+| UX | ✅ Accesibilidad: enlaces del calendario de al menos 24 px y sin controles anidados en la página de método. Calendario de un centro grande: 4 sesiones por día en el mes y «+N más». |
+| Seguridad | ✅ La matriz RLS encontró tres huecos en la segunda barrera (asignaciones, invitaciones, columnas que el cliente podía cambiar), corregidos en RLS v7. Auditoría de dependencias en CI. |
+| Tests | ✅ 379 unitarios, 148 de integración, 560 comprobaciones RLS y 39 E2E. |
+| Documentación | ✅ `TESTING.md` (pirámide, áreas obligatorias, rendimiento), `API.md` (contrato), `DATABASE.md`, `SECURITY.md`, `ASVS_L2.md` y `PENTEST.md`. |
+| Datos | ✅ Demo ampliada (otra organización para el aislamiento; Elena con todos sus tipos de datos; importación pendiente) y datos de carga (`pnpm db:seed:perf`). |
+| Pendiente conocido | Crear un plan desde una plantilla tarda ≈ 0,9 s. CSP con *nonces*. Límite de peticiones por usuario en la API. Las respuestas de la API no tienen esquema formal. |
