@@ -19,6 +19,7 @@ import {
   evaluateAllAdjustments,
   generateClientReport,
   createImportJob,
+  importExternalMeasurements,
   setExerciseTolerance,
   generatePlanProposal,
   getDecision,
@@ -841,6 +842,38 @@ console.log(`Programming engine: ${adj.created} adjustment proposals; 1 plan pro
     });
 }
 console.log('Reports: 2 client reports (Iker, Elena).');
+
+// Integrations (Phase 15): a week of a watch export for Elena (steps; resting heart rate with her
+// health-data consent). Fictitious values.
+{
+  const elena = created[specs.findIndex((s) => s.basics.firstName === 'Elena')]!;
+  const today = localDate(new Date());
+  const measurements = Array.from({ length: 7 }, (_, i) => {
+    const d = addDays(today, -7 + i);
+    return [
+      {
+        id: `steps-${d}`,
+        type: 'steps',
+        value: 6500 + ((i * 1370) % 4200),
+        unit: 'pasos',
+        measuredAt: `${d}T21:00:00Z`,
+      },
+      {
+        id: `rhr-${d}`,
+        type: 'resting_heart_rate',
+        value: 58 + (i % 4),
+        unit: 'bpm',
+        measuredAt: `${d}T07:00:00Z`,
+      },
+    ];
+  }).flat();
+  const r = await importExternalMeasurements(elena.by, elena.id, {
+    provider: 'json',
+    content: JSON.stringify(measurements),
+    device: 'Reloj (exportación)',
+  });
+  console.log(`Integrations: ${r.imported} device measurements (Elena).`);
+}
 
 // Imports (§52): a client list validated but not confirmed yet (shown in Informes → importaciones).
 await createImportJob(lucia, {

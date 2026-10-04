@@ -12,3 +12,4 @@ export * from './decision';
 export * from './programming';
 export * from './reports';
 export * from './privacy';
+export * from './integrations';

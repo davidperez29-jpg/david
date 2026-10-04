@@ -20,6 +20,7 @@ import {
   listCatalog,
   listClientAudit,
   listConsents,
+  listExternalMeasurements,
   listClientPrivacyRequests,
   listExerciseTolerances,
   listHealthDeclarations,
@@ -59,6 +60,7 @@ import {
   TolerancesPanel,
 } from './panels';
 import { DecisionTab } from './decision-tab';
+import { ExternalImportForm } from '@/components/integrations/external-import';
 import { SubjectRightsPanel } from '@/components/privacy/erase';
 import { PrivacyStatusBadge, rightName, type PrivacyRequestRow } from '@/components/privacy/labels';
 
@@ -631,10 +633,11 @@ const pct = (v: number | null) =>
   v == null ? '—' : `${v.toLocaleString('es-ES', { maximumFractionDigits: 1 })} %`;
 
 async function monitoringTab(ctx: Awaited<ReturnType<typeof requireStaff>>, clientId: string) {
-  const [m, rules, adj] = await Promise.all([
+  const [m, rules, adj, ext] = await Promise.all([
     clientMonitoring(ctx, clientId),
     getMonitoringRules(ctx),
     listAdjustments(ctx, clientId),
+    listExternalMeasurements(ctx, clientId, {}),
   ]);
   const pendingAdj = adj.items.filter((i) => i.status === 'proposed' || i.status === 'postponed');
   return (
@@ -832,6 +835,44 @@ async function monitoringTab(ctx: Awaited<ReturnType<typeof requireStaff>>, clie
               })}
           </ul>
         </details>
+      </Card>
+      <Card title="Datos de dispositivos">
+        <p className="mb-2 text-xs text-muted">
+          Mediciones importadas de relojes, apps o dispositivos (CSV o JSON). Frecuencia cardiaca,
+          variabilidad y sueño son datos de salud: solo con el consentimiento del cliente. Formato
+          en docs/INTEGRATIONS.md.
+        </p>
+        {ext.length === 0 ? (
+          <EmptyState>Sin mediciones importadas.</EmptyState>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="text-left text-xs text-muted">
+                <tr>
+                  <th className="py-1">Fecha</th>
+                  <th>Medida</th>
+                  <th>Valor</th>
+                  <th>Dispositivo</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {ext.slice(0, 15).map((x) => (
+                  <tr key={x.id}>
+                    <td className="py-1">{formatDateTime(x.measuredAt)}</td>
+                    <td>{x.label}</td>
+                    <td>
+                      {x.value.toLocaleString('es-ES')} {x.unit}
+                    </td>
+                    <td className="text-muted">{x.device ?? '—'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+        <div className="mt-3">
+          <ExternalImportForm clientId={clientId} />
+        </div>
       </Card>
     </div>
   );

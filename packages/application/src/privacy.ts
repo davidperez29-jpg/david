@@ -80,6 +80,8 @@ const SECTIONS: [string, PgTable][] = [
   ['propuestas_del_motor', s.recommendations],
   ['informes', s.reports],
   ['solicitudes_de_privacidad', s.privacyRequests],
+  // Device data (Phase 15). Connections are not exported: they only hold encrypted tokens.
+  ['mediciones_de_dispositivos', s.externalMeasurements],
 ];
 const HIDDEN = new Set(['organizationId', 'clientId', 'snapshot', 'codeHash']);
 
@@ -313,6 +315,9 @@ export async function anonymizeClient(
     s.alerts,
     s.reports,
     s.invitations,
+    // Device data and the tokens of the client's connections (Phase 15).
+    s.externalMeasurements,
+    s.integrationConnections,
   ])
     await db.delete(t).where(byClient(t));
   await db

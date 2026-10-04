@@ -57,6 +57,7 @@ export const PERMISSIONS = [
   'privacy:request',
   'privacy:manage',
   'privacy:erase_subject',
+  'integrations:import',
 ] as const;
 export type Permission = (typeof PERMISSIONS)[number];
 
@@ -114,6 +115,7 @@ export const ROLE_PERMISSIONS: Matrix = {
     'privacy:request': 'org',
     'privacy:manage': 'org',
     'privacy:erase_subject': 'org',
+    'integrations:import': 'org',
   },
   TRAINER: {
     'clients:read': 'assigned',
@@ -124,6 +126,7 @@ export const ROLE_PERMISSIONS: Matrix = {
     'goals:write': 'assigned',
     'health:read': 'assigned',
     'health:write': 'assigned',
+    'integrations:import': 'assigned',
     'consents:read': 'assigned',
     // Trainers record paper/verbal consent collected in person.
     'consents:write': 'assigned',

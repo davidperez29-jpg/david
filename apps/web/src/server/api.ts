@@ -82,12 +82,18 @@ function sameOrigin(req: NextRequest): boolean {
   }
 }
 
-export async function readJson(req: NextRequest): Promise<unknown> {
+/** JSON body, 256 KB by default; routes that receive files pass a larger limit. */
+export async function readJson(req: NextRequest, maxBytes = 256 * 1024): Promise<unknown> {
   const len = Number(req.headers.get('content-length') ?? '0');
-  if (len > 256 * 1024) throw new DomainError('validation', 'Petición demasiado grande.');
+  if (len > maxBytes) throw new DomainError('validation', 'Petición demasiado grande.');
   try {
-    return await req.json();
-  } catch {
+    const text = await req.text();
+    // The header can be missing or wrong (chunked uploads): check what actually arrived.
+    if (Buffer.byteLength(text) > maxBytes)
+      throw new DomainError('validation', 'Petición demasiado grande.');
+    return JSON.parse(text);
+  } catch (e) {
+    if (e instanceof DomainError) throw e;
     throw new DomainError('validation', 'JSON no válido.');
   }
 }

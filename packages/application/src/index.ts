@@ -31,3 +31,4 @@ export * from './privacy';
 export * from './observability';
 export * from './ops';
 export * from './api-limits';
+export * from './integrations';

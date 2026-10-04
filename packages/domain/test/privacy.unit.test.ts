@@ -28,3 +28,45 @@ describe('data-subject rights and retention (RGPD)', () => {
     });
   });
 });
+
+describe('external measurements (Phase 15)', () => {
+  const now = new Date('2026-10-04T12:00:00Z');
+  it('known type, its unit, technical bounds and no future dates', async () => {
+    const { validateMeasurement } = await import('../src');
+    expect(
+      validateMeasurement(
+        { type: 'steps', value: 1000, unit: 'pasos', measuredAt: '2026-10-04T08:00:00Z' },
+        now,
+      ),
+    ).toEqual({});
+    expect(
+      Object.keys(
+        validateMeasurement({ type: 'vo2', value: 50, unit: 'x', measuredAt: '2026-10-04' }, now),
+      ),
+    ).toEqual(['type']);
+    expect(
+      Object.keys(
+        validateMeasurement(
+          { type: 'body_mass', value: 72, unit: 'lb', measuredAt: '2026-10-04' },
+          now,
+        ),
+      ),
+    ).toEqual(['unit']);
+    expect(
+      Object.keys(
+        validateMeasurement(
+          { type: 'resting_heart_rate', value: 900, unit: 'bpm', measuredAt: '2026-10-04' },
+          now,
+        ),
+      ),
+    ).toEqual(['value']);
+    expect(
+      Object.keys(
+        validateMeasurement(
+          { type: 'steps', value: 1, unit: 'pasos', measuredAt: '2027-01-01' },
+          now,
+        ),
+      ),
+    ).toEqual(['measuredAt']);
+  });
+});
