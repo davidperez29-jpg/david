@@ -22,7 +22,8 @@ const config: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   transpilePackages: ['@tp/application', '@tp/auth', '@tp/contracts', '@tp/db', '@tp/domain'],
-  serverExternalPackages: ['@node-rs/argon2', 'postgres'],
+  // pdfkit reads its font metrics from disk and exceljs is large: keep them out of the bundle.
+  serverExternalPackages: ['@node-rs/argon2', 'postgres', 'pdfkit', 'exceljs'],
   async headers() {
     return [
       {
