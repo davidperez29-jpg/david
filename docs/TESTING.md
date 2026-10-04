@@ -12,6 +12,7 @@
 | `pnpm test:security` | **Matriz RLS** de todas las tablas sobre los datos demo, en transacciones que se deshacen | `pnpm db:reset && pnpm db:seed:demo` |
 | `pnpm test:e2e` | Playwright contra `next start`, en escritorio y móvil: flujos, accesibilidad, matriz de acceso cruzado de todas las rutas y rendimiento | `pnpm build`, datos demo; `pnpm db:seed:perf` para el rendimiento (si no, ese test se salta); Chromium (`PW_CHROMIUM` para usar uno ya instalado) |
 | `pnpm contract:update` | Acepta el contrato actual de la API en `docs/api/contract.json` (`--breaking` acepta cambios rompientes) | — |
+| `pnpm contract:responses` | Añade al contrato de respuestas (`docs/api/responses.json`) los campos nuevos de cada `GET` | `pnpm build`, datos demo |
 | `pnpm lint` · `pnpm typecheck` · `pnpm format:check` · `pnpm depcruise` | Calidad y capas | — |
 
 CI (`.github/workflows/ci.yml`) ejecuta, por este orden:
@@ -32,7 +33,7 @@ Los tests de integración no truncan tablas (la auditoría es *append-only*): ca
 | Nivel | Herramienta | Qué cubre | Umbral | Resultado (Fase 14) |
 |---|---|---|---|---|
 | Unidad (dominio) | Vitest + fast-check | Fórmulas, reglas, progresiones, explicaciones; **24 propiedades** (límites, monotonía, invariancias, ida y vuelta) | ≥ 90 % líneas en `packages/domain` y en cada motor | ✅ 94,7 % líneas, 96,2 % funciones; motores ≥ 90 % |
-| Contrato | Zod → JSON Schema + diff propio | Rutas (método y acceso) y esquema de entrada de cada petición | Sin cambios rompientes sin versión | ✅ `docs/api/contract.json`: 155 rutas y 113 esquemas; el test falla ante cualquier cambio no aceptado |
+| Contrato | Zod → JSON Schema + diff propio | Rutas (método y acceso), esquema de entrada de cada petición y forma de la respuesta de cada `GET` | Sin cambios rompientes sin versión | ✅ `docs/api/contract.json`: 155 rutas y 113 esquemas; `docs/api/responses.json`: 65 respuestas (E2E `contract-responses.spec.ts`); los tests fallan ante cualquier cambio no aceptado |
 | Integración | Vitest + PostgreSQL 16 real | Casos de uso, RLS, transacciones y auditoría, migraciones | Todas las políticas RLS con test positivo y negativo | ✅ 148 tests; **matriz RLS**: cada tabla del mapa, cada tipo de política y cada política a medida, con datos (560 comprobaciones) |
 | Seguridad | Playwright (HTTP) | Acceso cruzado en **cada ruta**: sin sesión, ADMIN de otra organización, otro cliente, entrenador no asignado | 100 % de rutas | ✅ 180 *handlers* autenticados, 471 ataques con ids reales; ninguno pasa ni filtra datos |
 | E2E | Playwright (escritorio + Pixel 7) | Flujos §8.4 y §9, incluido sin conexión | Flujos críticos en cada PR | ✅ 39 tests en CI |
@@ -296,6 +297,7 @@ Las áreas que entonces quedaban pendientes se cubrieron en las fases siguientes
   - `properties.unit.test.ts`: 24 propiedades con fast-check.
   - **Fallo encontrado por las propiedades y corregido**: la detección del separador CSV contaba separadores dentro de comillas, de modo que un `;` entre comillas en una cabecera separada por `,` se leía mal. Ahora solo cuenta fuera de comillas, y las celdas con tabulador se entrecomillan.
   - `contract.unit.test.ts`: contrato de la API y reglas de cambio rompiente.
+  - `response-shape.unit.test.ts`: reglas del contrato de respuestas (campo eliminado o tipo cambiado rompe; campo nuevo, `null`, lista vacía o mapa libre no).
 - **Integración: 148 tests ✔.** Nuevos en `rls.int.test.ts`: asignaciones e invitaciones.
 - **Seguridad (`pnpm test:security`): 560 comprobaciones ✔.**
   - **Hallazgos corregidos** (RLS v7, migración `0026`):

@@ -280,7 +280,11 @@ Detalle en `SECURITY.md` §2.2–2.3. Si la organización exige 2FA a ADMIN (`re
 - **Test**: `apps/web/test/contract.unit.test.ts` falla ante cualquier diferencia.
 - **Cambio compatible** (ruta nueva, campo opcional nuevo, límite más amplio, valor de enumeración añadido): se acepta con `pnpm contract:update`.
 - **Cambio rompiente** (ruta o campo eliminado, campo nuevo obligatorio, límite más estricto, valor eliminado, ruta que deja de ser pública): necesita una versión nueva de la API, o `pnpm contract:update --breaking` con su entrada en el CHANGELOG.
-- **Límite**: las respuestas no tienen esquema formal; sus cambios se revisan en los tests de integración y E2E.
+- **Respuestas**: `docs/api/responses.json` guarda la **forma** (claves y tipos, no valores) de la respuesta de cada `GET` autenticado (65 rutas; los archivos se registran por su tipo, p. ej. `file:application/pdf`).
+  - **Test**: `apps/web/e2e/contract-responses.spec.ts` llama a cada ruta como la ADMIN demo, con ids reales, y falla si un campo desaparece o cambia de tipo.
+  - **No rompen**: un campo nuevo, un `null` o una lista vacía (dependen de los datos). Los mapas libres (`changes`, `payload`, `params`, `data`…) solo prometen ser un objeto.
+  - **Aceptar campos nuevos**: `pnpm contract:responses` (necesita la *build* y los datos demo). Un cambio rompiente necesita una versión nueva de la API o una entrada en el CHANGELOG antes de regenerar.
+  - **Límite**: solo cubre `GET`; las respuestas de las mutaciones se comprueban en los tests de integración y E2E.
 
 ## Optimización y escala (Fase 15)
 

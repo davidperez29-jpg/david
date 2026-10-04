@@ -1,0 +1,3477 @@
+{
+  "GET alerts": [
+    {
+      "clientId": "string",
+      "createdAt": "string",
+      "data": "object",
+      "firstName": "string",
+      "id": "string",
+      "lastName": "string",
+      "message": "string",
+      "resolutionNote": "null",
+      "resolvedAt": "null",
+      "severity": "string",
+      "status": "string",
+      "type": "string",
+      "updatedAt": "string"
+    }
+  ],
+  "GET assessment-batteries": [
+    {
+      "description": "string",
+      "goalFamily": "string",
+      "id": "string",
+      "isGlobal": "boolean",
+      "name": "string",
+      "slug": "string",
+      "testIds": {
+        "bia_body_fat": "string",
+        "body_mass": "string",
+        "chair_stand_30s": "string",
+        "cmj_height": "string",
+        "cooper_test": "string",
+        "drop_jump_rsi": "string",
+        "handgrip_strength": "string",
+        "height": "string",
+        "ift_30_15": "string",
+        "imtp_peak_force": "string",
+        "modified_agility_t_test": "string",
+        "one_rm_back_squat": "string",
+        "one_rm_bench_press": "string",
+        "one_rm_lv_estimate": "string",
+        "sprint_10m": "string",
+        "sprint_20m": "string",
+        "sprint_30m": "string",
+        "srpe": "string",
+        "test_505": "string",
+        "waist_circumference": "string",
+        "weight_bearing_lunge_distance": "string",
+        "wellness_hooper": "string",
+        "yo_yo_ir1": "string"
+      },
+      "tests": [
+        {
+          "isCore": "boolean",
+          "name": "string",
+          "slug": "string"
+        }
+      ]
+    }
+  ],
+  "GET assessment-tests": [
+    {
+      "betterDirection": "string",
+      "category": "string",
+      "id": "string",
+      "isEstimate": "boolean",
+      "isGlobal": "boolean",
+      "name": "string",
+      "references": "number",
+      "reliability": "number",
+      "sided": "boolean",
+      "slug": "string",
+      "status": "string",
+      "unit": "string"
+    }
+  ],
+  "GET assessment-tests/[testId]": {
+    "aggregation": "string",
+    "aggregationLabel": "string",
+    "aggregationN": "null",
+    "betterDirection": "string",
+    "category": "string",
+    "createdAt": "string",
+    "createdBy": "null",
+    "defaultAttempts": "number",
+    "derivedFormulas": [],
+    "equipment": [
+      "string"
+    ],
+    "formulas": [
+      {
+        "definition": "string",
+        "id": "string",
+        "name": "string"
+      }
+    ],
+    "id": "string",
+    "isEstimate": "boolean",
+    "isGlobal": "boolean",
+    "limitations": "string",
+    "name": "string",
+    "organizationId": "null",
+    "protocol": "string",
+    "protocolVersion": "string",
+    "purpose": "string",
+    "references": [],
+    "reliability": [
+      {
+        "createdAt": "string",
+        "cvPercent": "string",
+        "icc": "string",
+        "iccModel": "null",
+        "id": "string",
+        "isLocal": "boolean",
+        "mdc95": "null",
+        "measurementMethod": "string",
+        "notes": "string",
+        "organizationId": "null",
+        "population": "string",
+        "populationId": "string",
+        "sem": "null",
+        "semUnit": "null",
+        "source": {
+          "authors": [
+            "string"
+          ],
+          "doi": "string",
+          "id": "string",
+          "label": "string",
+          "pmid": "string",
+          "title": "string",
+          "verificationStatus": "string",
+          "year": "number"
+        },
+        "sourceId": "string",
+        "swc": "null",
+        "testId": "string",
+        "updatedAt": "string"
+      }
+    ],
+    "sided": "boolean",
+    "slug": "string",
+    "sourceIds": [
+      "string"
+    ],
+    "sources": [
+      {
+        "authors": [
+          "string"
+        ],
+        "doi": "string",
+        "id": "string",
+        "label": "string",
+        "pmid": "string",
+        "title": "string",
+        "verificationMethod": "string",
+        "verificationStatus": "string",
+        "year": "number"
+      }
+    ],
+    "status": "string",
+    "targetPopulations": "string",
+    "unit": "string",
+    "updatedAt": "string",
+    "updatedBy": "null",
+    "valueType": "string",
+    "version": "number"
+  },
+  "GET assessments/[assessmentId]": {
+    "assessedOn": "string",
+    "assessorUserId": "string",
+    "battery": "string",
+    "batteryId": "string",
+    "clientId": "string",
+    "conditions": "null",
+    "context": "string",
+    "createdAt": "string",
+    "createdBy": "string",
+    "derived": [
+      {
+        "assessmentId": "string",
+        "clientId": "string",
+        "createdAt": "string",
+        "errorEstimate": "null",
+        "formula": "string",
+        "formulaVersion": "string",
+        "id": "string",
+        "inputs": "object",
+        "isEstimate": "boolean",
+        "metric": "string",
+        "name": "string",
+        "organizationId": "string",
+        "resultId": "null",
+        "unit": "string",
+        "updatedAt": "string",
+        "value": "number"
+      }
+    ],
+    "flags": [],
+    "id": "string",
+    "notes": "null",
+    "organizationId": "string",
+    "planId": "null",
+    "plannedTestIds": [
+      "string"
+    ],
+    "results": [
+      {
+        "assessmentId": "string",
+        "attempts": [
+          "number"
+        ],
+        "change": "null",
+        "clientId": "string",
+        "createdAt": "string",
+        "createdBy": "string",
+        "cvIntraPercent": "number",
+        "device": "null",
+        "id": "string",
+        "measurementMethod": "null",
+        "notes": "null",
+        "organizationId": "string",
+        "protocolVersion": "string",
+        "references": [
+          {
+            "applicable": "boolean",
+            "band": "null",
+            "doi": "string",
+            "flag": "null",
+            "pmid": "string",
+            "population": "string",
+            "reasons": [
+              "string"
+            ],
+            "referenceId": "string",
+            "source": "string",
+            "summary": "string",
+            "zScore": "number"
+          }
+        ],
+        "side": "string",
+        "source": "string",
+        "test": {
+          "aggregation": "string",
+          "betterDirection": "string",
+          "id": "string",
+          "isEstimate": "boolean",
+          "name": "string",
+          "slug": "string",
+          "unit": "string"
+        },
+        "testId": "string",
+        "unit": "string",
+        "updatedAt": "string",
+        "updatedBy": "null",
+        "valid": "boolean",
+        "value": "number",
+        "valueBest": "number",
+        "valueMean": "number"
+      }
+    ],
+    "startTime": "null",
+    "status": "string",
+    "tests": [
+      {
+        "aggregation": "string",
+        "category": "string",
+        "defaultAttempts": "number",
+        "id": "string",
+        "isEstimate": "boolean",
+        "name": "string",
+        "protocol": "string",
+        "recorded": "boolean",
+        "sided": "boolean",
+        "slug": "string",
+        "unit": "string"
+      }
+    ],
+    "updatedAt": "string",
+    "updatedBy": "string",
+    "version": "number"
+  },
+  "GET calendar": {
+    "assessments": [
+      {
+        "battery": "string",
+        "clientId": "string",
+        "date": "string",
+        "firstName": "string",
+        "id": "string",
+        "lastName": "string",
+        "status": "string"
+      }
+    ],
+    "from": "string",
+    "sessionTotals": {
+      "2026-09-01": "number",
+      "2026-09-02": "number",
+      "2026-09-03": "number",
+      "2026-09-04": "number",
+      "2026-09-07": "number",
+      "2026-09-08": "number",
+      "2026-09-09": "number",
+      "2026-09-10": "number",
+      "2026-09-11": "number",
+      "2026-09-14": "number",
+      "2026-09-15": "number",
+      "2026-09-16": "number",
+      "2026-09-17": "number",
+      "2026-09-18": "number",
+      "2026-09-21": "number",
+      "2026-09-22": "number",
+      "2026-09-23": "number",
+      "2026-09-24": "number",
+      "2026-09-25": "number",
+      "2026-09-28": "number",
+      "2026-09-29": "number",
+      "2026-09-30": "number",
+      "2026-10-01": "number",
+      "2026-10-02": "number",
+      "2026-10-05": "number",
+      "2026-10-06": "number",
+      "2026-10-07": "number",
+      "2026-10-08": "number",
+      "2026-10-09": "number",
+      "2026-10-12": "number",
+      "2026-10-13": "number",
+      "2026-10-14": "number",
+      "2026-10-15": "number",
+      "2026-10-16": "number",
+      "2026-10-19": "number",
+      "2026-10-20": "number",
+      "2026-10-21": "number",
+      "2026-10-22": "number",
+      "2026-10-23": "number",
+      "2026-10-26": "number",
+      "2026-10-27": "number",
+      "2026-10-28": "number",
+      "2026-10-29": "number",
+      "2026-10-30": "number"
+    },
+    "sessions": [
+      {
+        "attendance": "string",
+        "clientId": "string",
+        "date": "string",
+        "dayLabel": "string",
+        "firstName": "string",
+        "id": "string",
+        "lastName": "string",
+        "planId": "string",
+        "planStatus": "string",
+        "published": "boolean",
+        "time": "null",
+        "title": "string",
+        "weekType": "string"
+      }
+    ],
+    "spans": [],
+    "to": "string",
+    "today": "string"
+  },
+  "GET catalog": {
+    "equipment": [
+      {
+        "category": "string",
+        "id": "string",
+        "name": "string",
+        "slug": "string"
+      }
+    ],
+    "goals": [
+      {
+        "description": "null",
+        "family": "string",
+        "id": "string",
+        "name": "string",
+        "slug": "string"
+      }
+    ],
+    "sports": [
+      {
+        "family": "string",
+        "id": "string",
+        "name": "string",
+        "slug": "string"
+      }
+    ]
+  },
+  "GET clients": {
+    "items": [
+      {
+        "age": "number",
+        "firstName": "string",
+        "hasAccount": "boolean",
+        "id": "string",
+        "lastName": "string",
+        "modality": "string",
+        "primaryGoal": "string",
+        "status": "string",
+        "trainers": [
+          "string"
+        ]
+      }
+    ],
+    "limit": "number",
+    "offset": "number",
+    "total": "number"
+  },
+  "GET clients/[clientId]": {
+    "age": "number",
+    "anonymizedAt": "null",
+    "assignments": [
+      {
+        "id": "string",
+        "name": "string",
+        "role": "string",
+        "trainerId": "string"
+      }
+    ],
+    "availability": [
+      {
+        "endTime": "null",
+        "maxDurationMin": "null",
+        "startTime": "null",
+        "weekday": "number"
+      }
+    ],
+    "birthDate": "string",
+    "email": "string",
+    "equipment": [
+      {
+        "equipmentId": "string",
+        "location": "string",
+        "name": "string"
+      }
+    ],
+    "firstName": "string",
+    "goals": [
+      {
+        "competitiveLevel": "null",
+        "goalId": "string",
+        "id": "string",
+        "isPrimary": "boolean",
+        "name": "string",
+        "notes": "null",
+        "priorityWeight": "number",
+        "sportId": "null",
+        "sportName": "null",
+        "targetDate": "null"
+      }
+    ],
+    "hasAccount": "boolean",
+    "history": [
+      {
+        "clientId": "string",
+        "createdAt": "string",
+        "createdBy": "string",
+        "description": "string",
+        "id": "string",
+        "kind": "string",
+        "periodEnd": "null",
+        "periodStart": "null",
+        "updatedAt": "string",
+        "updatedBy": "null"
+      }
+    ],
+    "id": "string",
+    "joinedAt": "string",
+    "lastName": "string",
+    "modality": "string",
+    "phone": "null",
+    "preferences": "null",
+    "profile": {
+      "experienceLevel": "string",
+      "location": "string",
+      "notes": "null",
+      "sessionDurationMin": "number",
+      "sessionsPerWeek": "number",
+      "yearsTraining": "null"
+    },
+    "progressTestIds": [],
+    "referral": {
+      "required": "boolean",
+      "text": "null"
+    },
+    "sex": "string",
+    "status": "string",
+    "version": "number"
+  },
+  "GET clients/[clientId]/adjustments": {
+    "autoApplyLoadProgressions": "boolean",
+    "items": [
+      {
+        "applied": "null",
+        "createdAt": "string",
+        "decidedAt": "null",
+        "decidedBy": "null",
+        "decisionReason": "null",
+        "explanation": {
+          "applicability": [],
+          "confidence": "string",
+          "data": [
+            "string"
+          ],
+          "evidence": [],
+          "interpretation": [
+            "string"
+          ],
+          "limitations": [
+            "string"
+          ],
+          "proposal": "string",
+          "rules": [
+            {
+              "key": "string",
+              "version": "number"
+            }
+          ]
+        },
+        "id": "string",
+        "kind": "string",
+        "options": [],
+        "params": "object",
+        "preview": [
+          {
+            "field": "string",
+            "from": "number",
+            "sessionExerciseId": "string",
+            "to": "number"
+          }
+        ],
+        "status": "string",
+        "targets": [
+          {
+            "date": "string",
+            "exerciseId": "string",
+            "exerciseName": "string",
+            "loadKg": "null",
+            "repsMax": "number",
+            "repsMin": "number",
+            "rirMax": "number",
+            "rirMin": "number",
+            "sessionExerciseId": "string",
+            "sessionId": "string",
+            "sets": "number",
+            "weekIndex": "number"
+          }
+        ],
+        "title": "string",
+        "type": "string"
+      }
+    ]
+  },
+  "GET clients/[clientId]/agenda": {
+    "assessments": [
+      {
+        "date": "string",
+        "id": "string",
+        "status": "string"
+      }
+    ],
+    "from": "string",
+    "next": {
+      "attendance": "null",
+      "date": "string",
+      "dayLabel": "string",
+      "estimatedDurationMin": "number",
+      "id": "string",
+      "isToday": "boolean",
+      "objective": "string",
+      "planId": "string",
+      "planName": "string",
+      "published": "boolean",
+      "time": "null",
+      "title": "string",
+      "weekIndex": "number",
+      "weekType": "string"
+    },
+    "sessions": [
+      {
+        "attendance": "string",
+        "date": "string",
+        "dayLabel": "string",
+        "estimatedDurationMin": "number",
+        "id": "string",
+        "objective": "string",
+        "planId": "string",
+        "planName": "string",
+        "published": "boolean",
+        "time": "null",
+        "title": "string",
+        "weekIndex": "number",
+        "weekType": "string"
+      }
+    ],
+    "to": "string",
+    "today": "string"
+  },
+  "GET clients/[clientId]/assessments": [
+    {
+      "assessedOn": "string",
+      "battery": "string",
+      "context": "string",
+      "id": "string",
+      "planned": "number",
+      "results": "number",
+      "status": "string"
+    }
+  ],
+  "GET clients/[clientId]/assessments/progress": {
+    "derived": [
+      {
+        "definition": "string",
+        "metric": "string",
+        "name": "string",
+        "overall": {
+          "delta": "number",
+          "deltaPercent": "number",
+          "error": "null",
+          "label": "string",
+          "post": "number",
+          "pre": "number",
+          "verdict": "string",
+          "warnings": []
+        },
+        "points": [
+          {
+            "on": "string",
+            "value": "number"
+          }
+        ],
+        "unit": "string"
+      }
+    ],
+    "series": [
+      {
+        "comparable": "boolean",
+        "lastStep": {
+          "delta": "number",
+          "deltaPercent": "number",
+          "error": {
+            "basis": "string",
+            "label": "string",
+            "mdc95": "number",
+            "origin": "string",
+            "swc": "null",
+            "te": "number"
+          },
+          "label": "string",
+          "post": "number",
+          "pre": "number",
+          "verdict": "string",
+          "warnings": [
+            "string"
+          ]
+        },
+        "note": "null",
+        "overall": {
+          "delta": "number",
+          "deltaPercent": "number",
+          "error": {
+            "basis": "string",
+            "label": "string",
+            "mdc95": "number",
+            "origin": "string",
+            "swc": "null",
+            "te": "number"
+          },
+          "label": "string",
+          "post": "number",
+          "pre": "number",
+          "verdict": "string",
+          "warnings": [
+            "string"
+          ]
+        },
+        "points": [
+          {
+            "assessmentId": "string",
+            "method": "null",
+            "on": "string",
+            "protocolVersion": "string",
+            "value": "number"
+          }
+        ],
+        "references": [
+          {
+            "applicable": "boolean",
+            "band": "null",
+            "doi": "string",
+            "flag": "null",
+            "pmid": "string",
+            "population": "string",
+            "reasons": [
+              "string"
+            ],
+            "referenceId": "string",
+            "source": "string",
+            "summary": "string",
+            "zScore": "number"
+          }
+        ],
+        "side": "string",
+        "test": {
+          "betterDirection": "string",
+          "category": "string",
+          "id": "string",
+          "isEstimate": "boolean",
+          "name": "string",
+          "slug": "string",
+          "unit": "string"
+        },
+        "trend": "string"
+      }
+    ],
+    "subject": {
+      "age": "number",
+      "sex": "string"
+    }
+  },
+  "GET clients/[clientId]/assessments/proposal": {
+    "batteryId": "string",
+    "batteryName": "string",
+    "explanation": [
+      "string"
+    ],
+    "screening": "string",
+    "tests": [
+      {
+        "included": "boolean",
+        "isCore": "boolean",
+        "name": "string",
+        "reason": "null",
+        "slug": "string",
+        "testId": "string"
+      }
+    ]
+  },
+  "GET clients/[clientId]/audit": [
+    {
+      "action": "string",
+      "actor": "string",
+      "changes": "object",
+      "entityType": "string",
+      "id": "string",
+      "occurredAt": "string",
+      "reason": "null"
+    }
+  ],
+  "GET clients/[clientId]/consents": {
+    "history": [
+      {
+        "clientId": "string",
+        "grantedAt": "string",
+        "id": "string",
+        "method": "string",
+        "purpose": "string",
+        "recordedBy": "string",
+        "revokedAt": "null",
+        "textVersion": "string"
+      }
+    ],
+    "status": [
+      {
+        "active": "boolean",
+        "currentVersion": "string",
+        "purpose": "string"
+      }
+    ]
+  },
+  "GET clients/[clientId]/dashboard": {
+    "adherence28": {
+      "completed": "number",
+      "done": "number",
+      "missed": "number",
+      "partial": "number",
+      "percent": "number",
+      "planned": "number",
+      "unrecorded": "number"
+    },
+    "milestones": [
+      {
+        "date": "string",
+        "key": "string",
+        "text": "string"
+      }
+    ],
+    "next": {
+      "attendance": "null",
+      "date": "string",
+      "dayLabel": "string",
+      "estimatedDurationMin": "number",
+      "id": "string",
+      "isToday": "boolean",
+      "objective": "string",
+      "planId": "string",
+      "planName": "string",
+      "preview": [
+        {
+          "name": "string",
+          "short": "string"
+        }
+      ],
+      "published": "boolean",
+      "time": "null",
+      "title": "string",
+      "weekIndex": "number",
+      "weekType": "string"
+    },
+    "nextAssessment": {
+      "date": "string",
+      "id": "string",
+      "status": "string"
+    },
+    "own": "boolean",
+    "streak": "number",
+    "today": "string",
+    "visibleTestIds": []
+  },
+  "GET clients/[clientId]/decision": {
+    "disabledRules": [],
+    "recommendations": [
+      {
+        "confidence": "string",
+        "decidedAt": "null",
+        "decisionReason": "null",
+        "explanation": {
+          "applicability": [
+            "string"
+          ],
+          "confidence": "string",
+          "data": [
+            "string"
+          ],
+          "evidence": [
+            {
+              "claimKey": "string",
+              "confidence": "string",
+              "sources": [
+                "object"
+              ],
+              "statement": "string"
+            }
+          ],
+          "interpretation": [
+            "string"
+          ],
+          "limitations": [
+            "string"
+          ],
+          "proposal": "string",
+          "rules": [
+            {
+              "key": "string",
+              "version": "number"
+            }
+          ]
+        },
+        "id": "string",
+        "payload": "object",
+        "ruleKeys": [
+          "string"
+        ],
+        "status": "string",
+        "type": "string"
+      }
+    ],
+    "run": {
+      "context": {
+        "availability": {
+          "daysPerWeek": "number",
+          "minutesPerSession": "number"
+        },
+        "derived": {},
+        "equipment": [
+          "string"
+        ],
+        "goals": {
+          "primary": {
+            "family": "string",
+            "slug": "string",
+            "sport": "null",
+            "sportType": "null"
+          },
+          "secondary": [
+            {
+              "slug": "string",
+              "sport": "null",
+              "weight": "number"
+            }
+          ]
+        },
+        "manualTraits": {},
+        "metrics": {
+          "body_mass": {
+            "change": "string",
+            "date": "string",
+            "name": "string",
+            "reference": "null",
+            "testSlug": "string",
+            "unit": "string",
+            "value": "number"
+          },
+          "chair_stand_30s": {
+            "change": "string",
+            "date": "string",
+            "name": "string",
+            "reference": "null",
+            "testSlug": "string",
+            "unit": "string",
+            "value": "number"
+          },
+          "cmj_height": {
+            "change": "string",
+            "date": "string",
+            "name": "string",
+            "reference": "string",
+            "testSlug": "string",
+            "unit": "string",
+            "value": "number"
+          },
+          "height": {
+            "change": "string",
+            "date": "string",
+            "name": "string",
+            "reference": "null",
+            "testSlug": "string",
+            "unit": "string",
+            "value": "number"
+          },
+          "waist_circumference": {
+            "change": "string",
+            "date": "string",
+            "name": "string",
+            "reference": "null",
+            "testSlug": "string",
+            "unit": "string",
+            "value": "number"
+          }
+        },
+        "missing": [
+          "string"
+        ],
+        "modality": "string",
+        "person": {
+          "age": "number",
+          "experience": "string",
+          "sex": "string",
+          "yearsTraining": "null"
+        },
+        "populations": [
+          "string"
+        ],
+        "response": {
+          "adherence28": "number",
+          "painFlag": "boolean",
+          "srpeHigh": "boolean"
+        },
+        "screening": "string",
+        "today": "string",
+        "tolerances": {
+          "notToleratedExerciseIds": [],
+          "restrictedPatterns": []
+        }
+      },
+      "createdAt": "string",
+      "id": "string",
+      "inputHash": "string",
+      "result": {
+        "doses": [
+          {
+            "claimKey": "string",
+            "max": "number",
+            "method": "string",
+            "min": "number",
+            "note": "null",
+            "suggested": "number",
+            "unit": "string",
+            "variable": "string"
+          }
+        ],
+        "excludedMethods": [],
+        "exercises": [
+          {
+            "candidates": [
+              {
+                "exerciseId": "string",
+                "name": "string",
+                "reasons": [
+                  "string"
+                ],
+                "score": "number"
+              }
+            ],
+            "excluded": [
+              {
+                "exerciseId": "string",
+                "name": "string",
+                "reason": "string"
+              }
+            ],
+            "method": "string",
+            "slot": "string"
+          }
+        ],
+        "inputHash": "string",
+        "introPhase": {
+          "explanation": {
+            "applicability": [
+              "string"
+            ],
+            "confidence": "string",
+            "data": [],
+            "evidence": [
+              {
+                "claimKey": "string",
+                "confidence": "string",
+                "sources": [
+                  "object"
+                ],
+                "statement": "string"
+              }
+            ],
+            "interpretation": [
+              "string"
+            ],
+            "limitations": [
+              "string"
+            ],
+            "proposal": "string",
+            "rules": [
+              {
+                "key": "string",
+                "version": "number"
+              }
+            ]
+          },
+          "level": "string",
+          "reasons": [
+            "string"
+          ],
+          "score": "number",
+          "weeks": "string"
+        },
+        "methods": [
+          {
+            "excluded": "boolean",
+            "explanation": {
+              "applicability": [
+                "string"
+              ],
+              "confidence": "string",
+              "data": [
+                "string"
+              ],
+              "evidence": [
+                "object"
+              ],
+              "interpretation": [
+                "string"
+              ],
+              "limitations": [
+                "string"
+              ],
+              "proposal": "string",
+              "rules": [
+                "object"
+              ]
+            },
+            "method": "string",
+            "name": "string",
+            "quality": "string",
+            "rationale": "string"
+          }
+        ],
+        "needs": [
+          {
+            "direction": "string",
+            "explanation": {
+              "applicability": [
+                "string"
+              ],
+              "confidence": "string",
+              "data": [
+                "string"
+              ],
+              "evidence": [
+                "object"
+              ],
+              "interpretation": [
+                "string"
+              ],
+              "limitations": [
+                "string"
+              ],
+              "proposal": "string",
+              "rules": [
+                "object"
+              ]
+            },
+            "label": "string",
+            "quality": "string",
+            "score": "number"
+          }
+        ],
+        "pendingRules": [],
+        "planSkeleton": {
+          "explanation": {
+            "applicability": [],
+            "confidence": "string",
+            "data": [
+              "string"
+            ],
+            "evidence": [],
+            "interpretation": [
+              "string"
+            ],
+            "limitations": [
+              "string"
+            ],
+            "proposal": "string",
+            "rules": [
+              {
+                "key": "string",
+                "version": "number"
+              }
+            ]
+          },
+          "reassessmentEveryWeeks": "number",
+          "sessionsPerWeek": "number",
+          "templateName": "string",
+          "templateSlug": "string"
+        },
+        "priorities": [
+          {
+            "label": "string",
+            "minutesPerWeek": "number",
+            "quality": "string",
+            "rank": "number",
+            "sessionsPerWeek": "number"
+          }
+        ],
+        "ruleSetVersion": "number",
+        "screening": {
+          "reasons": [],
+          "status": "string"
+        },
+        "traits": [
+          {
+            "basis": "string",
+            "detail": "string",
+            "key": "string",
+            "label": "string",
+            "value": "boolean"
+          }
+        ],
+        "warnings": [
+          "string"
+        ]
+      },
+      "ruleSetVersion": "number"
+    },
+    "traitFlags": []
+  },
+  "GET clients/[clientId]/decision/context": {
+    "availability": {
+      "daysPerWeek": "number",
+      "minutesPerSession": "number"
+    },
+    "derived": {},
+    "equipment": [
+      "string"
+    ],
+    "goals": {
+      "primary": {
+        "family": "string",
+        "slug": "string",
+        "sport": "null",
+        "sportType": "null"
+      },
+      "secondary": [
+        {
+          "slug": "string",
+          "sport": "null",
+          "weight": "number"
+        }
+      ]
+    },
+    "manualTraits": {},
+    "metrics": {
+      "body_mass": {
+        "change": "string",
+        "date": "string",
+        "name": "string",
+        "reference": "null",
+        "testSlug": "string",
+        "unit": "string",
+        "value": "number"
+      },
+      "chair_stand_30s": {
+        "change": "string",
+        "date": "string",
+        "name": "string",
+        "reference": "null",
+        "testSlug": "string",
+        "unit": "string",
+        "value": "number"
+      },
+      "cmj_height": {
+        "change": "string",
+        "date": "string",
+        "name": "string",
+        "reference": "string",
+        "testSlug": "string",
+        "unit": "string",
+        "value": "number"
+      },
+      "height": {
+        "change": "string",
+        "date": "string",
+        "name": "string",
+        "reference": "null",
+        "testSlug": "string",
+        "unit": "string",
+        "value": "number"
+      },
+      "waist_circumference": {
+        "change": "string",
+        "date": "string",
+        "name": "string",
+        "reference": "null",
+        "testSlug": "string",
+        "unit": "string",
+        "value": "number"
+      }
+    },
+    "missing": [
+      "string"
+    ],
+    "modality": "string",
+    "person": {
+      "age": "number",
+      "experience": "string",
+      "sex": "string",
+      "yearsTraining": "null"
+    },
+    "populations": [
+      "string"
+    ],
+    "response": {
+      "adherence28": "number",
+      "painFlag": "boolean",
+      "srpeHigh": "boolean"
+    },
+    "screening": "string",
+    "today": "string",
+    "tolerances": {
+      "notToleratedExerciseIds": [],
+      "restrictedPatterns": [
+        "string"
+      ]
+    }
+  },
+  "GET clients/[clientId]/external-measurements": [
+    {
+      "device": "string",
+      "id": "string",
+      "label": "string",
+      "measuredAt": "string",
+      "source": "string",
+      "type": "string",
+      "unit": "string",
+      "value": "number"
+    }
+  ],
+  "GET clients/[clientId]/health": {
+    "declarations": [
+      {
+        "bodyRegion": "string",
+        "clearanceNote": "null",
+        "clearedAt": "null",
+        "declaredOn": "string",
+        "declaredStatus": "string",
+        "description": "string",
+        "id": "string",
+        "requiresProfessionalAssessment": "boolean",
+        "type": "string"
+      }
+    ],
+    "referral": {
+      "required": "boolean",
+      "text": "null"
+    },
+    "screenings": [
+      {
+        "completedOn": "string",
+        "id": "string",
+        "questionnaire": "string",
+        "questionnaireVersion": "string",
+        "result": "string"
+      }
+    ]
+  },
+  "GET clients/[clientId]/monitoring": {
+    "adherence28": {
+      "completed": "number",
+      "done": "number",
+      "missed": "number",
+      "partial": "number",
+      "percent": "number",
+      "planned": "number",
+      "unrecorded": "number"
+    },
+    "adherence84": {
+      "completed": "number",
+      "done": "number",
+      "missed": "number",
+      "partial": "number",
+      "percent": "number",
+      "planned": "number",
+      "unrecorded": "number"
+    },
+    "alerts": [
+      {
+        "alertKey": "string",
+        "clientId": "string",
+        "createdAt": "string",
+        "data": "object",
+        "id": "string",
+        "message": "string",
+        "organizationId": "string",
+        "resolutionNote": "null",
+        "resolvedAt": "null",
+        "resolvedBy": "null",
+        "ruleKey": "string",
+        "ruleSetVersion": "null",
+        "severity": "string",
+        "status": "string",
+        "type": "string",
+        "updatedAt": "string"
+      }
+    ],
+    "disabledRules": [],
+    "readiness": [
+      {
+        "date": "string",
+        "energy": "number",
+        "score": "number",
+        "sleepQuality": "number",
+        "soreness": "number"
+      }
+    ],
+    "recent": [
+      {
+        "comment": "string",
+        "date": "string",
+        "durationMin": "number",
+        "fatigue": "number",
+        "id": "string",
+        "load": "number",
+        "sessionRpe": "number",
+        "status": "string",
+        "targetRpe": "null",
+        "title": "string"
+      }
+    ],
+    "today": "string",
+    "weeks": [
+      {
+        "adherence": {
+          "completed": "number",
+          "done": "number",
+          "missed": "number",
+          "partial": "number",
+          "percent": "null",
+          "planned": "number",
+          "unrecorded": "number"
+        },
+        "load": "number",
+        "monotony": "null",
+        "sessions": "number",
+        "strain": "null",
+        "weekStart": "string",
+        "withLoad": "number"
+      }
+    ]
+  },
+  "GET clients/[clientId]/plan-proposals": [],
+  "GET clients/[clientId]/plans": [
+    {
+      "durationMonths": "number",
+      "endDate": "string",
+      "id": "string",
+      "name": "string",
+      "revision": "number",
+      "sessionsPerWeek": "number",
+      "startDate": "string",
+      "status": "string",
+      "template": "string",
+      "weeks": "number"
+    }
+  ],
+  "GET clients/[clientId]/privacy-requests": [
+    {
+      "clientId": "string",
+      "createdAt": "string",
+      "details": "string",
+      "dueOn": "string",
+      "id": "string",
+      "organizationId": "string",
+      "requestedBy": "string",
+      "resolvedAt": "null",
+      "resolvedBy": "null",
+      "response": "null",
+      "status": "string",
+      "type": "string",
+      "updatedAt": "string"
+    }
+  ],
+  "GET clients/[clientId]/reports": [
+    {
+      "by": "string",
+      "createdAt": "string",
+      "hash": "string",
+      "id": "string",
+      "parameters": "object"
+    }
+  ],
+  "GET clients/[clientId]/session-review": [
+    {
+      "comment": "string",
+      "date": "string",
+      "dayLabel": "string",
+      "fatigue": "number",
+      "flaggedLogs": "number",
+      "id": "string",
+      "pain": "null",
+      "pendingSubstitutions": "number",
+      "performedDate": "string",
+      "planName": "string",
+      "published": "boolean",
+      "reasonCode": "string",
+      "sessionRpe": "number",
+      "status": "string",
+      "title": "string"
+    }
+  ],
+  "GET clients/[clientId]/subject-data": {
+    "alertas": [
+      {
+        "alertKey": "string",
+        "createdAt": "string",
+        "data": "object",
+        "id": "string",
+        "message": "string",
+        "resolutionNote": "string",
+        "resolvedAt": "string",
+        "resolvedBy": "null",
+        "ruleKey": "string",
+        "ruleSetVersion": "null",
+        "severity": "string",
+        "status": "string",
+        "type": "string",
+        "updatedAt": "string"
+      }
+    ],
+    "asistencia": [
+      {
+        "createdAt": "string",
+        "durationMin": "number",
+        "id": "string",
+        "performedDate": "string",
+        "reasonCode": "string",
+        "reasonText": "null",
+        "recordedBy": "string",
+        "sessionId": "string",
+        "startTime": "null",
+        "status": "string",
+        "updatedAt": "string"
+      }
+    ],
+    "bienestar": [
+      {
+        "comment": "string",
+        "createdAt": "string",
+        "energy": "number",
+        "fatigue": "null",
+        "id": "string",
+        "motivation": "null",
+        "recordedOn": "string",
+        "sleepHours": "null",
+        "sleepQuality": "number",
+        "soreness": "number",
+        "stress": "null",
+        "updatedAt": "string"
+      }
+    ],
+    "cliente": {
+      "anonymizedAt": "null",
+      "archivedAt": "null",
+      "autoApplyLoadProgressions": "boolean",
+      "birthDate": "string",
+      "createdAt": "string",
+      "createdBy": "string",
+      "email": "string",
+      "firstName": "string",
+      "id": "string",
+      "joinedAt": "string",
+      "lastName": "string",
+      "modality": "string",
+      "phone": "null",
+      "photoFileId": "null",
+      "preferences": "null",
+      "progressTestIds": [],
+      "sex": "string",
+      "status": "string",
+      "updatedAt": "string",
+      "updatedBy": "string",
+      "version": "number"
+    },
+    "consentimientos": [
+      {
+        "grantedAt": "string",
+        "id": "string",
+        "method": "string",
+        "purpose": "string",
+        "recordedBy": "string",
+        "revokedAt": "null",
+        "textVersion": "string"
+      }
+    ],
+    "cribados": [
+      {
+        "answers": "null",
+        "completedOn": "string",
+        "createdAt": "string",
+        "createdBy": "string",
+        "id": "string",
+        "questionnaire": "string",
+        "questionnaireVersion": "string",
+        "result": "string",
+        "updatedAt": "string",
+        "updatedBy": "null"
+      }
+    ],
+    "declaraciones_de_salud": [
+      {
+        "bodyRegion": "string",
+        "clearanceNote": "null",
+        "clearedAt": "null",
+        "clearedBy": "null",
+        "createdAt": "string",
+        "createdBy": "string",
+        "declaredOn": "string",
+        "declaredStatus": "string",
+        "description": "string",
+        "id": "string",
+        "requiresProfessionalAssessment": "boolean",
+        "type": "string",
+        "updatedAt": "string",
+        "updatedBy": "null"
+      }
+    ],
+    "disponibilidad": [
+      {
+        "createdAt": "string",
+        "endTime": "null",
+        "id": "string",
+        "maxDurationMin": "null",
+        "startTime": "null",
+        "weekday": "number"
+      }
+    ],
+    "ejercicios_prescritos": [
+      {
+        "alternativeExerciseIds": [
+          "string"
+        ],
+        "bandTension": "null",
+        "blockId": "string",
+        "chainLoadKg": "null",
+        "coachNotes": "null",
+        "contacts": "null",
+        "createdAt": "string",
+        "createdBy": "string",
+        "derived": "boolean",
+        "distanceM": "null",
+        "durationS": "number",
+        "effortCharacter": "null",
+        "exerciseId": "string",
+        "extra": "null",
+        "id": "string",
+        "intensityNote": "null",
+        "intraClusterRestS": "null",
+        "loadBasisMetric": "null",
+        "loadKg": "null",
+        "loadPct1rm": "null",
+        "methodIds": [],
+        "notesForClient": "null",
+        "pairingLabel": "null",
+        "position": "number",
+        "progressionRuleId": "null",
+        "recommendationId": "null",
+        "repsMax": "number",
+        "repsMin": "number",
+        "repsPerCluster": "null",
+        "restS": "null",
+        "rirMax": "null",
+        "rirMin": "null",
+        "rom": "null",
+        "rpeTarget": "null",
+        "sets": "number",
+        "side": "string",
+        "source": "string",
+        "tempo": "null",
+        "updatedAt": "string",
+        "updatedBy": "null",
+        "velocityLossPct": "null",
+        "velocityTargetMps": "null",
+        "version": "number"
+      }
+    ],
+    "evaluaciones": [
+      {
+        "assessedOn": "string",
+        "assessorUserId": "string",
+        "batteryId": "string",
+        "conditions": "null",
+        "context": "string",
+        "createdAt": "string",
+        "createdBy": "string",
+        "id": "string",
+        "notes": "null",
+        "planId": "null",
+        "plannedTestIds": [
+          "string"
+        ],
+        "startTime": "null",
+        "status": "string",
+        "updatedAt": "string",
+        "updatedBy": "string",
+        "version": "number"
+      }
+    ],
+    "formato": "string",
+    "generado": "string",
+    "historial": [
+      {
+        "createdAt": "string",
+        "createdBy": "string",
+        "description": "string",
+        "id": "string",
+        "kind": "string",
+        "periodEnd": "null",
+        "periodStart": "null",
+        "updatedAt": "string",
+        "updatedBy": "null"
+      }
+    ],
+    "informes": [
+      {
+        "createdAt": "string",
+        "error": "null",
+        "fileId": "null",
+        "format": "string",
+        "generatedBy": "string",
+        "hash": "string",
+        "id": "string",
+        "parameters": "object",
+        "status": "string",
+        "type": "string",
+        "updatedAt": "string"
+      }
+    ],
+    "material": [
+      {
+        "equipmentId": "string",
+        "location": "string"
+      }
+    ],
+    "mediciones_de_dispositivos": [
+      {
+        "connectionId": "null",
+        "createdAt": "string",
+        "device": "string",
+        "externalId": "string",
+        "id": "string",
+        "measuredAt": "string",
+        "raw": "null",
+        "source": "string",
+        "type": "string",
+        "unit": "string",
+        "value": "string"
+      }
+    ],
+    "metricas_derivadas": [
+      {
+        "assessmentId": "string",
+        "createdAt": "string",
+        "errorEstimate": "null",
+        "formula": "string",
+        "formulaVersion": "string",
+        "id": "string",
+        "inputs": "object",
+        "isEstimate": "boolean",
+        "metric": "string",
+        "resultId": "null",
+        "unit": "string",
+        "updatedAt": "string",
+        "value": "string"
+      }
+    ],
+    "molestias": [],
+    "nota": "string",
+    "objetivos": [
+      {
+        "competitiveLevel": "null",
+        "createdAt": "string",
+        "createdBy": "string",
+        "goalId": "string",
+        "id": "string",
+        "isPrimary": "boolean",
+        "notes": "null",
+        "priorityWeight": "string",
+        "sportId": "null",
+        "status": "string",
+        "targetDate": "null",
+        "updatedAt": "string",
+        "updatedBy": "null"
+      }
+    ],
+    "perfil_de_entrenamiento": [
+      {
+        "createdAt": "string",
+        "createdBy": "string",
+        "experienceLevel": "string",
+        "location": "string",
+        "notes": "null",
+        "sessionDurationMin": "number",
+        "sessionsPerWeek": "number",
+        "updatedAt": "string",
+        "updatedBy": "null",
+        "version": "number",
+        "yearsTraining": "null"
+      }
+    ],
+    "planes": [
+      {
+        "basedOnTemplateId": "string",
+        "createdAt": "string",
+        "createdBy": "string",
+        "currentRevision": "number",
+        "description": "string",
+        "durationMonths": "number",
+        "endDate": "string",
+        "generationNotes": [],
+        "id": "string",
+        "kind": "string",
+        "name": "string",
+        "periodizationModel": "string",
+        "primaryGoalId": "null",
+        "proposalOfPlanId": "null",
+        "publishedToClientAt": "null",
+        "recommendationId": "null",
+        "secondaryGoalIds": [],
+        "sessionsPerWeek": "number",
+        "startDate": "string",
+        "status": "string",
+        "updatedAt": "string",
+        "updatedBy": "string",
+        "version": "number"
+      }
+    ],
+    "propuestas_del_motor": [
+      {
+        "applied": "null",
+        "confidence": "string",
+        "createdAt": "string",
+        "decidedAt": "null",
+        "decidedBy": "null",
+        "decisionReason": "null",
+        "explanation": {
+          "applicability": [],
+          "confidence": "string",
+          "data": [
+            "string"
+          ],
+          "evidence": [],
+          "interpretation": [
+            "string"
+          ],
+          "limitations": [
+            "string"
+          ],
+          "proposal": "string",
+          "rules": [
+            {
+              "key": "string",
+              "version": "number"
+            }
+          ]
+        },
+        "id": "string",
+        "inputsSnapshot": {
+          "inputHash": "string",
+          "key": "string",
+          "runId": "string",
+          "today": "string"
+        },
+        "key": "string",
+        "payload": "object",
+        "planId": "string",
+        "ruleKeys": [
+          "string"
+        ],
+        "ruleSetVersion": "number",
+        "status": "string",
+        "type": "string",
+        "updatedAt": "string"
+      }
+    ],
+    "registro_de_actividad": [
+      {
+        "action": "string",
+        "entity": "string",
+        "roles": [
+          "string"
+        ],
+        "when": "string"
+      }
+    ],
+    "resultados_de_evaluacion": [
+      {
+        "assessmentId": "string",
+        "attempts": [
+          "number"
+        ],
+        "createdAt": "string",
+        "createdBy": "string",
+        "cvIntraPercent": "string",
+        "device": "null",
+        "id": "string",
+        "measurementMethod": "null",
+        "notes": "null",
+        "protocolVersion": "string",
+        "side": "string",
+        "source": "string",
+        "testId": "string",
+        "unit": "string",
+        "updatedAt": "string",
+        "updatedBy": "null",
+        "valid": "boolean",
+        "value": "string",
+        "valueBest": "string",
+        "valueMean": "string"
+      }
+    ],
+    "series_registradas": [
+      {
+        "bandTension": "null",
+        "clientMutationId": "string",
+        "completed": "boolean",
+        "distanceM": "null",
+        "durationS": "null",
+        "exerciseIdPerformed": "string",
+        "id": "string",
+        "loadKg": "null",
+        "loggedAt": "string",
+        "loggedBy": "string",
+        "loggedByRole": "string",
+        "meanVelocityMps": "null",
+        "needsReview": "boolean",
+        "peakVelocityMps": "null",
+        "reps": "number",
+        "reviewReason": "null",
+        "rir": "number",
+        "rirAssumed": "boolean",
+        "rpe": "null",
+        "sessionExerciseId": "string",
+        "sessionId": "string",
+        "setIndex": "number",
+        "side": "null",
+        "source": "string"
+      }
+    ],
+    "sesiones": [
+      {
+        "createdAt": "string",
+        "createdBy": "string",
+        "dayLabel": "string",
+        "estimatedDurationMin": "number",
+        "id": "string",
+        "location": "null",
+        "microcycleId": "string",
+        "notesForClient": "null",
+        "notesForTrainer": "null",
+        "objective": "string",
+        "position": "number",
+        "published": "boolean",
+        "publishedAt": "string",
+        "scheduledDate": "string",
+        "scheduledTime": "null",
+        "targetSessionRpe": "null",
+        "title": "string",
+        "updatedAt": "string",
+        "updatedBy": "string",
+        "version": "number"
+      }
+    ],
+    "solicitudes_de_privacidad": [
+      {
+        "createdAt": "string",
+        "details": "string",
+        "dueOn": "string",
+        "id": "string",
+        "requestedBy": "string",
+        "resolvedAt": "null",
+        "resolvedBy": "null",
+        "response": "null",
+        "status": "string",
+        "type": "string",
+        "updatedAt": "string"
+      }
+    ],
+    "sustituciones": [
+      {
+        "chosenExerciseId": "null",
+        "clientMutationId": "string",
+        "comment": "string",
+        "createdAt": "string",
+        "decidedAt": "null",
+        "decidedBy": "null",
+        "id": "string",
+        "originalExerciseId": "string",
+        "reason": "string",
+        "sessionExerciseId": "string",
+        "sessionId": "string",
+        "suggestions": {
+          "alternatives": [],
+          "requested": "null"
+        },
+        "updatedAt": "string"
+      }
+    ],
+    "tolerancias": [
+      {
+        "createdAt": "string",
+        "exerciseId": "null",
+        "id": "string",
+        "kind": "string",
+        "movementPatternId": "string",
+        "reason": "string",
+        "updatedAt": "string"
+      }
+    ],
+    "valoraciones_de_ejercicio": [],
+    "valoraciones_de_sesion": [
+      {
+        "comment": "string",
+        "createdAt": "string",
+        "fatigue": "number",
+        "feeling": "null",
+        "id": "string",
+        "motivation": "number",
+        "pain": "null",
+        "sessionId": "string",
+        "sessionRpe": "string",
+        "trainerNote": "null",
+        "updatedAt": "string"
+      }
+    ]
+  },
+  "GET clients/[clientId]/summary": {
+    "adherence28": {
+      "completed": "number",
+      "done": "number",
+      "missed": "number",
+      "partial": "number",
+      "percent": "number",
+      "planned": "number",
+      "unrecorded": "number"
+    },
+    "alerts": {
+      "green": "number",
+      "red": "number",
+      "top": [
+        {
+          "id": "string",
+          "message": "string",
+          "severity": "string"
+        }
+      ],
+      "yellow": "number"
+    },
+    "keyMetrics": [
+      {
+        "label": "string",
+        "last": {
+          "assessmentId": "string",
+          "method": "null",
+          "on": "string",
+          "protocolVersion": "string",
+          "value": "number"
+        },
+        "name": "string",
+        "points": "number",
+        "testId": "string",
+        "trend": "string",
+        "unit": "string",
+        "verdict": "string"
+      }
+    ],
+    "lastSession": {
+      "comment": "null",
+      "date": "string",
+      "durationMin": "number",
+      "fatigue": "number",
+      "id": "string",
+      "load": "number",
+      "sessionRpe": "number",
+      "status": "string",
+      "targetRpe": "null",
+      "title": "string"
+    },
+    "next": {
+      "attendance": "null",
+      "date": "string",
+      "dayLabel": "string",
+      "estimatedDurationMin": "number",
+      "id": "string",
+      "isToday": "boolean",
+      "objective": "string",
+      "planId": "string",
+      "planName": "string",
+      "published": "boolean",
+      "time": "null",
+      "title": "string",
+      "weekIndex": "number",
+      "weekType": "string"
+    },
+    "plan": {
+      "current": {
+        "phase": "string",
+        "totalWeeks": "number",
+        "weekIndex": "number",
+        "weekType": "string"
+      },
+      "id": "string",
+      "name": "string",
+      "startDate": "string"
+    }
+  },
+  "GET clients/[clientId]/tolerances": [
+    {
+      "exerciseId": "null",
+      "exerciseName": "null",
+      "id": "string",
+      "kind": "string",
+      "movementPatternId": "string",
+      "patternName": "string",
+      "reason": "string"
+    }
+  ],
+  "GET dashboard/trainer": {
+    "activeClients": "number",
+    "pendingAssessments": [
+      {
+        "clientId": "string",
+        "date": "string",
+        "firstName": "string",
+        "id": "string",
+        "lastName": "string",
+        "overdue": "boolean",
+        "status": "string"
+      }
+    ],
+    "recentFeedback": [
+      {
+        "clientId": "string",
+        "comment": "null",
+        "date": "string",
+        "firstName": "string",
+        "lastName": "string",
+        "sessionId": "string",
+        "sessionRpe": "number",
+        "status": "string",
+        "title": "string"
+      }
+    ],
+    "today": "string"
+  },
+  "GET decision/rules": {
+    "publishedAt": "string",
+    "rules": [
+      {
+        "condition": {
+          "<": [
+            {
+              "param": "string",
+              "var": "string"
+            }
+          ],
+          "==": [
+            "[object Object]|boolean|[object Object]|string"
+          ],
+          "and": [
+            {
+              "<": [
+                "object"
+              ],
+              "in": [
+                "object|string"
+              ]
+            }
+          ]
+        },
+        "description": "string",
+        "domain": "string",
+        "enabled": "boolean",
+        "evidenceClaimKeys": [
+          "string"
+        ],
+        "evidenceLevel": "string",
+        "key": "string",
+        "limitations": "string",
+        "parameters": [
+          {
+            "evidenceLevel": "string",
+            "key": "string",
+            "label": "string",
+            "source": "string",
+            "unit": "string",
+            "value": "number"
+          }
+        ],
+        "pending": "boolean",
+        "stats": "null"
+      }
+    ],
+    "version": "number"
+  },
+  "GET exercises": {
+    "items": [
+      {
+        "categories": [
+          "string"
+        ],
+        "hasSilhouette": "boolean",
+        "id": "string",
+        "isGlobal": "boolean",
+        "level": "null",
+        "name": "string",
+        "needsReview": "boolean",
+        "pattern": "string",
+        "primaryMuscles": [],
+        "status": "string",
+        "video": "string"
+      }
+    ],
+    "limit": "number",
+    "offset": "number",
+    "total": "number"
+  },
+  "GET exercises/[exerciseId]": {
+    "altNames": [],
+    "axialLoad": "null",
+    "bodyRegion": "null",
+    "categories": [
+      {
+        "id": "string",
+        "isPrimary": "boolean",
+        "name": "string"
+      }
+    ],
+    "clientDescription": "null",
+    "contactsPerRep": "null",
+    "contractionEmphasis": [],
+    "createdAt": "string",
+    "createdBy": "string",
+    "derivedFromId": "null",
+    "equipment": [
+      {
+        "equipmentId": "string",
+        "name": "string",
+        "optional": "boolean"
+      }
+    ],
+    "id": "string",
+    "impactLevel": "null",
+    "instructions": [],
+    "intendedVelocity": "null",
+    "isGlobal": "boolean",
+    "laterality": "null",
+    "level": "null",
+    "media": [
+      {
+        "channel": "string",
+        "createdAt": "string",
+        "embedUrl": "string",
+        "exerciseId": "string",
+        "fileUrl": "null",
+        "id": "string",
+        "isPrimary": "boolean",
+        "language": "null",
+        "notice": "string",
+        "provider": "string",
+        "status": "string",
+        "title": "null",
+        "type": "string",
+        "updatedAt": "string",
+        "urlOrKey": "string",
+        "verifiedAt": "null",
+        "verifiedBy": "null"
+      }
+    ],
+    "methodIds": [],
+    "movementPatternId": "null",
+    "muscles": [],
+    "name": "string",
+    "needsReview": "boolean",
+    "organizationId": "string",
+    "pattern": "null",
+    "planes": [],
+    "prescriptionProfileId": "string",
+    "profile": {
+      "keys": [
+        "string"
+      ],
+      "name": "string"
+    },
+    "publishProblems": [
+      "string"
+    ],
+    "related": [],
+    "reviewNotes": "string",
+    "slug": "string",
+    "source": "string",
+    "sourceRef": "string",
+    "spaceRequired": "null",
+    "status": "string",
+    "supportsVbt": "boolean",
+    "tags": [],
+    "technicalComplexity": "null",
+    "trainerDescription": "string",
+    "updatedAt": "string",
+    "updatedBy": "string",
+    "version": "number"
+  },
+  "GET exports": "file:text/csv",
+  "GET imports": [
+    {
+      "createdAt": "string",
+      "entity": "string",
+      "fileName": "string",
+      "id": "string",
+      "status": "string",
+      "total": "number",
+      "valid": "number"
+    }
+  ],
+  "GET imports/[id]": {
+    "columns": [
+      {
+        "aliases": [
+          "string"
+        ],
+        "example": "string",
+        "header": "string",
+        "help": "string",
+        "key": "string",
+        "required": "boolean"
+      }
+    ],
+    "createdAt": "string",
+    "entity": "string",
+    "fileName": "string",
+    "id": "string",
+    "rows": [
+      {
+        "createdEntityId": "null",
+        "data": "object",
+        "errors": {
+          "fecha_nacimiento": [
+            "string"
+          ]
+        },
+        "rowNumber": "number",
+        "status": "string"
+      }
+    ],
+    "status": "string",
+    "total": "number",
+    "valid": "number"
+  },
+  "GET imports/templates/[entity]": "file:text/csv",
+  "GET library/taxonomies": {
+    "categories": [
+      {
+        "id": "string",
+        "name": "string",
+        "parentId": "null",
+        "slug": "string"
+      }
+    ],
+    "equipment": [
+      {
+        "category": "string",
+        "id": "string",
+        "name": "string",
+        "slug": "string"
+      }
+    ],
+    "muscles": [
+      {
+        "groupSlug": "string",
+        "id": "string",
+        "name": "string",
+        "region": "string",
+        "slug": "string"
+      }
+    ],
+    "patterns": [
+      {
+        "family": "string",
+        "id": "string",
+        "name": "string",
+        "slug": "string"
+      }
+    ],
+    "profiles": [
+      {
+        "id": "string",
+        "name": "string",
+        "slug": "string",
+        "variableKeys": [
+          "string"
+        ]
+      }
+    ],
+    "tags": []
+  },
+  "GET me": {
+    "actor": {
+      "clientId": "null",
+      "organizationId": "string",
+      "roles": [
+        "string"
+      ],
+      "trainerId": "string",
+      "userId": "string"
+    }
+  },
+  "GET monitoring/overview": {
+    "adherence28": {
+      "completed": "number",
+      "done": "number",
+      "missed": "number",
+      "partial": "number",
+      "percent": "number",
+      "planned": "number",
+      "unrecorded": "number"
+    },
+    "alerts": {
+      "green": "number",
+      "red": "number",
+      "yellow": "number"
+    }
+  },
+  "GET monitoring/rules": {
+    "publishedAt": "string",
+    "rules": [
+      {
+        "description": "string",
+        "enabled": "boolean",
+        "evidenceLevel": "string",
+        "key": "string",
+        "name": "string",
+        "parameters": [
+          {
+            "default": "number",
+            "key": "string",
+            "label": "string",
+            "max": "number",
+            "min": "number",
+            "value": "number"
+          }
+        ]
+      }
+    ],
+    "version": "number"
+  },
+  "GET plan-sessions/[sessionId]": {
+    "blocks": [
+      {
+        "clientId": "string",
+        "exercises": [
+          {
+            "alternativeExerciseIds": [
+              "string"
+            ],
+            "alternatives": [
+              {
+                "id": "string",
+                "name": "string"
+              }
+            ],
+            "bandTension": "null",
+            "blockId": "string",
+            "chainLoadKg": "null",
+            "clientId": "string",
+            "clientText": "string",
+            "coachNotes": "string",
+            "contacts": "null",
+            "createdAt": "string",
+            "createdBy": "string",
+            "derived": "boolean",
+            "distanceM": "null",
+            "durationS": "number",
+            "effortCharacter": "null",
+            "exercise": {
+              "clientDescription": "string",
+              "id": "string",
+              "name": "string",
+              "supportsVbt": "boolean"
+            },
+            "exerciseId": "string",
+            "extra": "null",
+            "id": "string",
+            "intensityNote": "null",
+            "intraClusterRestS": "null",
+            "issues": {},
+            "loadBasisMetric": "null",
+            "loadKg": "null",
+            "loadPct1rm": "null",
+            "methodIds": [
+              "string"
+            ],
+            "methods": [
+              {
+                "id": "string",
+                "name": "string"
+              }
+            ],
+            "notesForClient": "null",
+            "organizationId": "string",
+            "pairingLabel": "null",
+            "position": "number",
+            "prescription": {
+              "chainLoadKg": "null",
+              "contacts": "null",
+              "distanceM": "null",
+              "durationS": "number",
+              "effortCharacter": "null",
+              "intensityNote": "null",
+              "intraClusterRestS": "null",
+              "loadKg": "null",
+              "loadPct1rm": "null",
+              "repsMax": "number",
+              "repsMin": "number",
+              "repsPerCluster": "null",
+              "restS": "number",
+              "rirMax": "number",
+              "rirMin": "number",
+              "rom": "null",
+              "rpeTarget": "null",
+              "sets": "number",
+              "tempo": "null",
+              "velocityLossPct": "null",
+              "velocityTargetMps": "null"
+            },
+            "profile": "string",
+            "progressionRuleId": "null",
+            "recommendationId": "null",
+            "repsMax": "number",
+            "repsMin": "number",
+            "repsPerCluster": "null",
+            "restS": "number",
+            "rirMax": "number",
+            "rirMin": "number",
+            "rom": "null",
+            "rpeTarget": "null",
+            "sets": "number",
+            "short": "string",
+            "side": "string",
+            "source": "string",
+            "tempo": "null",
+            "updatedAt": "string",
+            "updatedBy": "null",
+            "velocityLossPct": "null",
+            "velocityTargetMps": "null",
+            "version": "number",
+            "visibleVariables": [
+              "string"
+            ]
+          }
+        ],
+        "id": "string",
+        "label": "string",
+        "notes": "null",
+        "organization": "string",
+        "organizationId": "string",
+        "position": "number",
+        "restBetweenRoundsS": "null",
+        "rounds": "null",
+        "sessionId": "string",
+        "type": "string"
+      }
+    ],
+    "clientId": "string",
+    "createdAt": "string",
+    "createdBy": "string",
+    "dayLabel": "string",
+    "estimatedDurationMin": "number",
+    "id": "string",
+    "location": "null",
+    "microcycleId": "string",
+    "notesForClient": "null",
+    "notesForTrainer": "null",
+    "objective": "string",
+    "organizationId": "string",
+    "plan": {
+      "clientId": "string",
+      "id": "string",
+      "name": "string",
+      "status": "string"
+    },
+    "position": "number",
+    "published": "boolean",
+    "publishedAt": "string",
+    "scheduledDate": "string",
+    "scheduledTime": "null",
+    "targetSessionRpe": "null",
+    "title": "string",
+    "updatedAt": "string",
+    "updatedBy": "string",
+    "version": "number",
+    "week": {
+      "id": "string",
+      "weekIndex": "number",
+      "weekType": "string"
+    },
+    "weeks": [
+      {
+        "id": "string",
+        "weekIndex": "number"
+      }
+    ]
+  },
+  "GET plan-templates": [
+    {
+      "description": "string",
+      "durationMonths": "number",
+      "goalSlug": "string",
+      "id": "string",
+      "isGlobal": "boolean",
+      "level": "string",
+      "methodSlugs": [
+        "string"
+      ],
+      "name": "string",
+      "sessionsPerWeek": "number",
+      "slug": "string"
+    }
+  ],
+  "GET plan-templates/[templateId]": {
+    "createdAt": "string",
+    "createdBy": "null",
+    "definition": {
+      "durationMonths": "number",
+      "phases": [
+        {
+          "mesocycles": [
+            {
+              "assessmentPlanned": "boolean",
+              "focus": "string",
+              "name": "string",
+              "weekTypes": [
+                "string"
+              ],
+              "weeks": "number"
+            }
+          ],
+          "name": "string",
+          "objective": "string"
+        }
+      ],
+      "sessions": [
+        {
+          "blocks": [
+            {
+              "exercises": [
+                "object"
+              ],
+              "label": "string",
+              "organization": "string",
+              "type": "string"
+            }
+          ],
+          "dayLabel": "string",
+          "durationMin": "number",
+          "objective": "string",
+          "title": "string"
+        }
+      ],
+      "sessionsPerWeek": "number"
+    },
+    "derivedFromPlanId": "null",
+    "description": "string",
+    "durationMonths": "number",
+    "goalSlug": "string",
+    "id": "string",
+    "isGlobal": "boolean",
+    "level": "string",
+    "methodSlugs": [
+      "string"
+    ],
+    "methods": [
+      {
+        "id": "string",
+        "name": "string",
+        "slug": "string"
+      }
+    ],
+    "name": "string",
+    "organizationId": "null",
+    "phases": [
+      {
+        "endWeek": "number",
+        "mesocycles": [
+          {
+            "focus": "string",
+            "name": "string",
+            "weekTypes": [
+              "string"
+            ],
+            "weeks": "number"
+          }
+        ],
+        "name": "string",
+        "objective": "string",
+        "startWeek": "number"
+      }
+    ],
+    "sessions": [
+      {
+        "blocks": [
+          {
+            "exercises": [
+              {
+                "name": "string",
+                "progression": "string",
+                "short": "string"
+              }
+            ],
+            "label": "string",
+            "type": "string"
+          }
+        ],
+        "dayLabel": "string",
+        "objective": "string",
+        "title": "string"
+      }
+    ],
+    "sessionsPerWeek": "number",
+    "slug": "string",
+    "status": "string",
+    "totalWeeks": "number",
+    "updatedAt": "string",
+    "updatedBy": "null",
+    "version": "number"
+  },
+  "GET plans/[planId]": {
+    "basedOnTemplateId": "string",
+    "clientId": "string",
+    "createdAt": "string",
+    "createdBy": "string",
+    "currentRevision": "number",
+    "description": "string",
+    "durationMonths": "number",
+    "endDate": "string",
+    "generationNotes": [],
+    "id": "string",
+    "kind": "string",
+    "name": "string",
+    "organizationId": "string",
+    "periodizationModel": "string",
+    "phases": [
+      {
+        "clientId": "string",
+        "createdAt": "string",
+        "emphasis": "null",
+        "endWeek": "number",
+        "id": "string",
+        "mesocycles": [
+          {
+            "assessmentPlanned": "boolean",
+            "clientId": "string",
+            "createdAt": "string",
+            "focus": "string",
+            "id": "string",
+            "name": "string",
+            "notes": "null",
+            "organizationId": "string",
+            "phaseId": "string",
+            "position": "number",
+            "updatedAt": "string",
+            "weeks": [
+              {
+                "clientId": "string",
+                "createdAt": "string",
+                "id": "string",
+                "indicators": "object",
+                "mesocycleId": "string",
+                "notes": "null",
+                "organizationId": "string",
+                "relativeIntensity": "null",
+                "relativeVolume": "null",
+                "sessions": [
+                  "object"
+                ],
+                "startDate": "string",
+                "updatedAt": "string",
+                "weekIndex": "number",
+                "weekType": "string"
+              }
+            ]
+          }
+        ],
+        "name": "string",
+        "objective": "string",
+        "organizationId": "string",
+        "planId": "string",
+        "position": "number",
+        "sessionsPerWeek": "null",
+        "startWeek": "number",
+        "updatedAt": "string"
+      }
+    ],
+    "primaryGoalId": "null",
+    "proposalOfPlanId": "null",
+    "publishedToClientAt": "null",
+    "recommendationId": "null",
+    "secondaryGoalIds": [],
+    "sessionsPerWeek": "number",
+    "startDate": "string",
+    "status": "string",
+    "updatedAt": "string",
+    "updatedBy": "string",
+    "version": "number"
+  },
+  "GET plans/[planId]/revisions": [
+    {
+      "createdAt": "string",
+      "diff": {
+        "added": "number",
+        "changed": "number",
+        "removed": "number"
+      },
+      "id": "string",
+      "reason": "string",
+      "revision": "number"
+    }
+  ],
+  "GET privacy-requests": [
+    {
+      "anonymized": "boolean",
+      "client": "string",
+      "clientId": "string",
+      "createdAt": "string",
+      "details": "string",
+      "dueOn": "string",
+      "id": "string",
+      "organizationId": "string",
+      "overdue": "boolean",
+      "requestedBy": "string",
+      "resolvedAt": "null",
+      "resolvedBy": "null",
+      "response": "null",
+      "status": "string",
+      "type": "string",
+      "updatedAt": "string"
+    }
+  ],
+  "GET privacy/settings": {
+    "archivedNotAnonymized": "number",
+    "requireAdmin2fa": "boolean",
+    "retentionMonths": "null"
+  },
+  "GET reports/[id]": {
+    "clientId": "string",
+    "createdAt": "string",
+    "hash": "string",
+    "id": "string",
+    "intact": "boolean",
+    "report": {
+      "footer": [
+        "string"
+      ],
+      "generatedAt": "string",
+      "sections": [
+        {
+          "blocks": [
+            {
+              "columns": [
+                "string"
+              ],
+              "items": [
+                "string"
+              ],
+              "kind": "string",
+              "points": [
+                "object"
+              ],
+              "rows": [
+                [
+                  "string"
+                ]
+              ],
+              "text": "string",
+              "title": "string",
+              "unit": "string"
+            }
+          ],
+          "key": "string",
+          "number": "number",
+          "title": "string"
+        }
+      ],
+      "subtitle": "string",
+      "title": "string"
+    }
+  },
+  "GET reports/[id]/download": "file:application/pdf",
+  "GET review-inbox": {
+    "flaggedLogs": [],
+    "sessionsToday": [],
+    "substitutions": [
+      {
+        "clientId": "string",
+        "createdAt": "string",
+        "exercise": "string",
+        "firstName": "string",
+        "id": "string",
+        "lastName": "string",
+        "reason": "string",
+        "sessionId": "string"
+      }
+    ],
+    "today": "string"
+  },
+  "GET science/claims": {
+    "items": [
+      {
+        "applicability": {
+          "appliesTo": [
+            "string"
+          ],
+          "notFor": [
+            "string"
+          ]
+        },
+        "confidence": "string",
+        "createdAt": "string",
+        "createdBy": "null",
+        "epistemicType": "string",
+        "evidenceLevel": "string",
+        "id": "string",
+        "isGlobal": "boolean",
+        "key": "string",
+        "levelLabel": "string",
+        "limitations": "string",
+        "organizationId": "null",
+        "reviewedAt": "string",
+        "reviewedBy": "null",
+        "scope": "string",
+        "statement": "string",
+        "status": "string",
+        "updatedAt": "string",
+        "updatedBy": "null",
+        "version": "number"
+      }
+    ],
+    "limit": "number",
+    "offset": "number",
+    "total": "number"
+  },
+  "GET science/claims/[claimId]": {
+    "applicability": {
+      "appliesTo": [
+        "string"
+      ],
+      "notFor": []
+    },
+    "confidence": "string",
+    "createdAt": "string",
+    "createdBy": "null",
+    "epistemicType": "string",
+    "evidence": [
+      {
+        "access": "string",
+        "ciHigh": "null",
+        "ciLow": "null",
+        "comparator": "string",
+        "design": "string",
+        "doi": "string",
+        "effectMetric": "null",
+        "effectValue": "null",
+        "findingId": "string",
+        "findingKey": "string",
+        "intervention": "string",
+        "journal": "string",
+        "level": "string",
+        "outcome": "string",
+        "pmid": "string",
+        "population": "string",
+        "populationSlug": "string",
+        "quote": "string",
+        "role": "string",
+        "sourceAuthors": [
+          "string"
+        ],
+        "sourceId": "string",
+        "sourceTitle": "string",
+        "sourceYear": "number",
+        "verificationMethod": "string",
+        "verificationStatus": "string",
+        "verifiedAt": "string"
+      }
+    ],
+    "evidenceLevel": "string",
+    "id": "string",
+    "isGlobal": "boolean",
+    "key": "string",
+    "levelLabel": "string",
+    "limitations": "string",
+    "organizationId": "null",
+    "qa": [
+      {
+        "code": "string",
+        "message": "string",
+        "severity": "string",
+        "target": {
+          "key": "string",
+          "type": "string"
+        }
+      }
+    ],
+    "reviewedAt": "string",
+    "reviewedBy": "null",
+    "reviews": [],
+    "scope": "string",
+    "statement": "string",
+    "status": "string",
+    "updatedAt": "string",
+    "updatedBy": "null",
+    "usedBy": [],
+    "version": "number"
+  },
+  "GET science/findings": [
+    {
+      "findingKey": "string",
+      "id": "string",
+      "level": "string",
+      "outcome": "string",
+      "population": "string",
+      "quote": "string",
+      "sourceId": "string",
+      "sourceTitle": "string",
+      "year": "number"
+    }
+  ],
+  "GET science/methods": [
+    {
+      "claims": "number",
+      "exercises": "number",
+      "id": "string",
+      "isGlobal": "boolean",
+      "kind": "string",
+      "name": "string",
+      "slug": "string",
+      "status": "string",
+      "summaryForTrainer": "string"
+    }
+  ],
+  "GET science/methods/[methodId]": {
+    "createdAt": "string",
+    "createdBy": "null",
+    "definition": "string",
+    "evidence": [],
+    "exercises": [],
+    "id": "string",
+    "isGlobal": "boolean",
+    "kind": "string",
+    "name": "string",
+    "notes": [
+      {
+        "claim": {
+          "confidence": "string",
+          "epistemicType": "string",
+          "evidence": [
+            {
+              "access": "string",
+              "ciHigh": "string",
+              "ciLow": "string",
+              "comparator": "string",
+              "design": "string",
+              "doi": "string",
+              "effectMetric": "string",
+              "effectValue": "string",
+              "findingId": "string",
+              "findingKey": "string",
+              "intervention": "string",
+              "journal": "string",
+              "level": "string",
+              "outcome": "string",
+              "pmid": "string",
+              "population": "string",
+              "populationSlug": "string",
+              "quote": "string",
+              "role": "string",
+              "sourceAuthors": [
+                "string"
+              ],
+              "sourceId": "string",
+              "sourceTitle": "string",
+              "sourceYear": "number",
+              "verificationMethod": "string",
+              "verificationStatus": "string",
+              "verifiedAt": "string"
+            }
+          ],
+          "id": "string",
+          "key": "string",
+          "level": "string",
+          "levelLabel": "string",
+          "limitations": "string",
+          "statement": "string",
+          "status": "string"
+        },
+        "claimId": "string",
+        "id": "string",
+        "kind": "string",
+        "methodId": "string",
+        "position": "number",
+        "text": "string"
+      }
+    ],
+    "organizationId": "null",
+    "parentMethodId": "null",
+    "slug": "string",
+    "status": "string",
+    "summaryForClient": "string",
+    "summaryForTrainer": "string",
+    "updatedAt": "string",
+    "updatedBy": "null",
+    "variables": [
+      {
+        "claim": {
+          "confidence": "string",
+          "epistemicType": "string",
+          "evidence": [
+            {
+              "access": "string",
+              "ciHigh": "null",
+              "ciLow": "null",
+              "comparator": "string",
+              "design": "string",
+              "doi": "string",
+              "effectMetric": "null",
+              "effectValue": "null",
+              "findingId": "string",
+              "findingKey": "string",
+              "intervention": "string",
+              "journal": "string",
+              "level": "string",
+              "outcome": "string",
+              "pmid": "string",
+              "population": "string",
+              "populationSlug": "string",
+              "quote": "string",
+              "role": "string",
+              "sourceAuthors": [
+                "string"
+              ],
+              "sourceId": "string",
+              "sourceTitle": "string",
+              "sourceYear": "number",
+              "verificationMethod": "string",
+              "verificationStatus": "string",
+              "verifiedAt": "string"
+            }
+          ],
+          "id": "string",
+          "key": "string",
+          "level": "string",
+          "levelLabel": "string",
+          "limitations": "string",
+          "statement": "string",
+          "status": "string"
+        },
+        "claimId": "string",
+        "createdAt": "string",
+        "goalId": "null",
+        "id": "string",
+        "isDefaultSuggestion": "boolean",
+        "maxValue": "string",
+        "methodId": "string",
+        "minValue": "string",
+        "notes": "string",
+        "organizationId": "null",
+        "population": "null",
+        "populationId": "null",
+        "typicalValue": "null",
+        "unit": "string",
+        "updatedAt": "string",
+        "variableKey": "string"
+      }
+    ],
+    "version": "number"
+  },
+  "GET science/qa": {
+    "claimLevels": {
+      "A": "number",
+      "B": "number",
+      "C": "number",
+      "D": "number",
+      "E": "number",
+      "F": "number",
+      "G": "number",
+      "H": "number"
+    },
+    "errors": [
+      {
+        "code": "string",
+        "href": "string",
+        "label": "string",
+        "message": "string",
+        "severity": "string",
+        "target": {
+          "key": "string",
+          "type": "string"
+        }
+      }
+    ],
+    "totals": {
+      "claims": "number",
+      "findings": "number",
+      "publishedClaims": "number",
+      "sources": "number",
+      "verifiedSources": "number"
+    },
+    "warnings": [
+      {
+        "code": "string",
+        "href": "string",
+        "label": "string",
+        "message": "string",
+        "severity": "string",
+        "target": {
+          "key": "string",
+          "type": "string"
+        }
+      }
+    ]
+  },
+  "GET science/sources": {
+    "items": [
+      {
+        "authors": [
+          "string"
+        ],
+        "doi": "string",
+        "findings": "number",
+        "id": "string",
+        "isGlobal": "boolean",
+        "journal": "string",
+        "pmid": "string",
+        "studyDesign": "string",
+        "title": "string",
+        "verificationStatus": "string",
+        "year": "number"
+      }
+    ],
+    "limit": "number",
+    "offset": "number",
+    "total": "number"
+  },
+  "GET science/sources/[sourceId]": {
+    "access": "string",
+    "ageRange": "string",
+    "authors": [
+      "string"
+    ],
+    "comparison": "string",
+    "corrections": "null",
+    "createdAt": "string",
+    "createdBy": "null",
+    "doi": "string",
+    "findings": [
+      {
+        "certaintyGrade": "null",
+        "ciHigh": "null",
+        "ciLow": "null",
+        "comparator": "string",
+        "createdAt": "string",
+        "createdBy": "null",
+        "effectMetric": "null",
+        "effectValue": "null",
+        "epistemicType": "string",
+        "evidenceLevel": "string",
+        "findingKey": "string",
+        "gradingExplanation": "string",
+        "gradingRationale": {
+          "design": "string",
+          "imprecision": "string",
+          "inconsistency": "string",
+          "indirectness": "string",
+          "publicationBias": "string",
+          "riskOfBias": "string"
+        },
+        "heterogeneityI2": "null",
+        "id": "string",
+        "intervention": "string",
+        "levelLabel": "string",
+        "nParticipants": "null",
+        "nStudies": "null",
+        "organizationId": "null",
+        "outcome": "string",
+        "outcomeId": "string",
+        "population": "string",
+        "populationId": "string",
+        "quote": "string",
+        "sourceId": "string",
+        "updatedAt": "string",
+        "updatedBy": "null"
+      }
+    ],
+    "id": "string",
+    "intervention": "string",
+    "isGlobal": "boolean",
+    "issue": "string",
+    "journal": "string",
+    "limitations": "string",
+    "organizationId": "null",
+    "outcomesMeasured": "string",
+    "pages": "string",
+    "pmcid": "null",
+    "pmid": "string",
+    "populationSummary": "string",
+    "practicalApplication": "string",
+    "qa": [],
+    "resultsSummary": "string",
+    "reviews": [],
+    "sex": "string",
+    "sourceKey": "string",
+    "sport": "null",
+    "studyDesign": "string",
+    "title": "string",
+    "trainingStatus": "string",
+    "updatedAt": "string",
+    "updatedBy": "null",
+    "url": "null",
+    "verificationMethod": "string",
+    "verificationStatus": "string",
+    "verifiedAt": "string",
+    "verifiedBy": "null",
+    "version": "number",
+    "volume": "string",
+    "year": "number"
+  },
+  "GET science/taxonomies": {
+    "outcomes": [
+      {
+        "createdAt": "string",
+        "domain": "string",
+        "id": "string",
+        "name": "string",
+        "organizationId": "null",
+        "slug": "string",
+        "updatedAt": "string"
+      }
+    ],
+    "populations": [
+      {
+        "ageMax": "number",
+        "ageMin": "number",
+        "clinical": "null",
+        "createdAt": "string",
+        "id": "string",
+        "name": "string",
+        "notes": "null",
+        "organizationId": "null",
+        "region": "null",
+        "sex": "string",
+        "slug": "string",
+        "sportSlug": "null",
+        "trainingStatus": "string",
+        "updatedAt": "string"
+      }
+    ]
+  },
+  "GET sessions/[sessionId]": {
+    "attendance": {
+      "durationMin": "number",
+      "performedDate": "string",
+      "reasonCode": "null",
+      "reasonText": "null",
+      "status": "string"
+    },
+    "blocks": [
+      {
+        "exercises": [
+          {
+            "alternatives": [
+              {
+                "id": "string",
+                "last": "object",
+                "name": "string"
+              }
+            ],
+            "clientText": "string",
+            "coachNotes": "string",
+            "cues": [
+              {
+                "kind": "string",
+                "text": "string"
+              }
+            ],
+            "description": "string",
+            "exerciseId": "string",
+            "id": "string",
+            "last": {
+              "date": "string",
+              "sets": [
+                "object"
+              ]
+            },
+            "logs": [
+              {
+                "clientMutationId": "string",
+                "completed": "boolean",
+                "distanceM": "null",
+                "durationS": "number",
+                "exerciseId": "string",
+                "id": "string",
+                "loadKg": "null",
+                "loggedByRole": "string",
+                "needsReview": "boolean",
+                "reps": "number",
+                "reviewReason": "null",
+                "rir": "number",
+                "rpe": "null",
+                "setIndex": "number",
+                "side": "null"
+              }
+            ],
+            "name": "string",
+            "notesForClient": "null",
+            "pairingLabel": "null",
+            "performedExerciseId": "string",
+            "performedName": "string",
+            "preload": {
+              "distanceM": "null",
+              "durationS": "number",
+              "loadKg": "null",
+              "reps": "number",
+              "rir": "number"
+            },
+            "prescription": {
+              "chainLoadKg": "null",
+              "contacts": "null",
+              "distanceM": "null",
+              "durationS": "number",
+              "effortCharacter": "null",
+              "intensityNote": "null",
+              "intraClusterRestS": "null",
+              "loadKg": "null",
+              "loadPct1rm": "null",
+              "repsMax": "number",
+              "repsMin": "number",
+              "repsPerCluster": "null",
+              "restS": "number",
+              "rirMax": "number",
+              "rirMin": "number",
+              "rom": "null",
+              "rpeTarget": "null",
+              "sets": "number",
+              "tempo": "null",
+              "velocityLossPct": "null",
+              "velocityTargetMps": "null"
+            },
+            "restS": "number",
+            "sets": "number",
+            "short": "string",
+            "side": "string",
+            "substitutions": [],
+            "video": "null"
+          }
+        ],
+        "id": "string",
+        "label": "string",
+        "notes": "null",
+        "organization": "string",
+        "restBetweenRoundsS": "null",
+        "rounds": "null",
+        "type": "string"
+      }
+    ],
+    "clientId": "string",
+    "completion": {
+      "completedSets": "number",
+      "percent": "number",
+      "prescribedSets": "number",
+      "status": "string"
+    },
+    "dayLabel": "string",
+    "downloadedAt": "string",
+    "estimatedDurationMin": "number",
+    "feedback": {
+      "comment": "null",
+      "fatigue": "number",
+      "feeling": "null",
+      "motivation": "number",
+      "pain": "null",
+      "sessionRpe": "number"
+    },
+    "id": "string",
+    "notesForClient": "null",
+    "notesForTrainer": "null",
+    "objective": "string",
+    "orphanLogs": [],
+    "plan": {
+      "id": "string",
+      "name": "string",
+      "status": "string"
+    },
+    "published": "boolean",
+    "scheduledDate": "string",
+    "title": "string"
+  },
+  "GET trainers": [
+    {
+      "firstName": "string",
+      "id": "string",
+      "lastName": "string"
+    }
+  ],
+  "GET trainers/workload": [
+    {
+      "active": "boolean",
+      "activePlans": "number",
+      "clients": "number",
+      "name": "string",
+      "primary": "number",
+      "redAlerts": "number",
+      "trainerId": "string",
+      "yellowAlerts": "number"
+    }
+  ],
+  "GET users": {
+    "pendingInvitations": [],
+    "users": [
+      {
+        "displayName": "string",
+        "email": "string",
+        "id": "string",
+        "lastLoginAt": "string",
+        "roles": [
+          "string"
+        ],
+        "status": "string",
+        "totpEnabled": "boolean"
+      }
+    ]
+  }
+}
