@@ -1,7 +1,7 @@
 import {
   burnPasswordCheck,
   createSession,
-  decrypt,
+  openSecret,
   encrypt,
   generateTotpSecret,
   hashPassword,
@@ -168,7 +168,7 @@ export async function verifySecondFactor(
   if (await isRateLimited(ctx.db, emailHash, ctx.ipHash ?? null, ctx.now())) {
     throw new DomainError('rate_limited', 'Demasiados intentos. Inténtalo de nuevo más tarde.');
   }
-  if (!verifyTotp(decrypt(ctx.keys.encryptionKey, u.totpSecretEnc), code)) {
+  if (!verifyTotp(openSecret(ctx.keys, u.totpSecretEnc), code)) {
     await recordAttempt(ctx.db, emailHash, ctx.ipHash ?? null, false, ctx.now());
     throw new DomainError('unauthenticated', 'Código incorrecto.');
   }
@@ -199,7 +199,7 @@ async function confirmTotpEnrollment_(ctx: RequestContext, code: string): Promis
   if (!u?.totpSecretEnc || u.totpEnabledAt) {
     throw new DomainError('conflict', 'No hay una activación pendiente.');
   }
-  if (!verifyTotp(decrypt(ctx.keys.encryptionKey, u.totpSecretEnc), code)) {
+  if (!verifyTotp(openSecret(ctx.keys, u.totpSecretEnc), code)) {
     throw new DomainError('validation', 'Código incorrecto.', { code: ['invalid'] });
   }
   await ctx.db.transaction(async (tx) => {

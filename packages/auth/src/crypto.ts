@@ -37,19 +37,63 @@ export function decrypt(key: Buffer, payload: string): string {
 }
 
 export interface KeyRing {
-  /** AES-256-GCM key for column encryption. */
+  /** AES-256-GCM key for column encryption (current master key). */
   encryptionKey: Buffer;
   /** HMAC key for pseudonymisation (derived from the master key). */
   hashKey: Buffer;
+  /**
+   * Encryption keys of previous master keys (APP_ENCRYPTION_KEYS_PREVIOUS), only to read values
+   * written before a rotation until `pnpm keys:rotate` re-encrypts them (Phase 13).
+   */
+  previousEncryptionKeys?: Buffer[];
 }
 
-/** Derives the key ring from a base64 master key (APP_ENCRYPTION_KEY). */
-export function keyRingFromBase64(masterB64: string | undefined): KeyRing {
+function masterFrom(b64: string, name: string): Buffer {
+  const master = Buffer.from(b64.trim(), 'base64');
+  if (master.length < 32) throw new Error(`${name} must decode to at least 32 bytes`);
+  return master;
+}
+
+/** Derives the key ring from a base64 master key (APP_ENCRYPTION_KEY) and optional old ones. */
+export function keyRingFromBase64(masterB64: string | undefined, previousB64?: string): KeyRing {
   if (!masterB64) throw new Error('APP_ENCRYPTION_KEY is not set');
-  const master = Buffer.from(masterB64, 'base64');
-  if (master.length < 32) throw new Error('APP_ENCRYPTION_KEY must decode to at least 32 bytes');
+  const master = masterFrom(masterB64, 'APP_ENCRYPTION_KEY');
   return {
     encryptionKey: createHmac('sha256', master).update('enc:v1').digest(),
     hashKey: createHmac('sha256', master).update('hash:v1').digest(),
+    previousEncryptionKeys: (previousB64 ?? '')
+      .split(',')
+      .filter((x) => x.trim())
+      .map((k) =>
+        createHmac('sha256', masterFrom(k, 'APP_ENCRYPTION_KEYS_PREVIOUS'))
+          .update('enc:v1')
+          .digest(),
+      ),
   };
+}
+
+/**
+ * Decrypts with the current key or, after a rotation, with a previous one (AES-GCM authenticates,
+ * so a wrong key fails instead of returning garbage). Returns which key opened it.
+ */
+export function openSecret(ring: KeyRing, payload: string): string {
+  return openSecretWithKey(ring, payload).plaintext;
+}
+
+export function openSecretWithKey(
+  ring: KeyRing,
+  payload: string,
+): { plaintext: string; current: boolean } {
+  try {
+    return { plaintext: decrypt(ring.encryptionKey, payload), current: true };
+  } catch (first) {
+    for (const k of ring.previousEncryptionKeys ?? []) {
+      try {
+        return { plaintext: decrypt(k, payload), current: false };
+      } catch {
+        /* next key */
+      }
+    }
+    throw first;
+  }
 }

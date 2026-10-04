@@ -54,6 +54,9 @@ export const PERMISSIONS = [
   'reports:generate',
   'data:export',
   'data:import',
+  'privacy:request',
+  'privacy:manage',
+  'privacy:erase_subject',
 ] as const;
 export type Permission = (typeof PERMISSIONS)[number];
 
@@ -107,6 +110,10 @@ export const ROLE_PERMISSIONS: Matrix = {
     'reports:generate': 'org',
     'data:export': 'org',
     'data:import': 'org',
+    // RGPD rights (Phase 13): ADMIN handles requests and erases (with double confirmation).
+    'privacy:request': 'org',
+    'privacy:manage': 'org',
+    'privacy:erase_subject': 'org',
   },
   TRAINER: {
     'clients:read': 'assigned',
@@ -170,6 +177,8 @@ export const ROLE_PERMISSIONS: Matrix = {
     // Own adherence and load in plain language; never the trainer's alerts.
     'monitoring:read': 'own',
     'privacy:export_subject': 'own',
+    // The client downloads their data and files rights requests (erasure is requested, not done).
+    'privacy:request': 'own',
   },
 };
 

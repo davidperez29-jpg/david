@@ -1,4 +1,4 @@
-import { decrypt, encrypt } from '@tp/auth';
+import { encrypt, openSecret } from '@tp/auth';
 import {
   assignTrainerSchema,
   createClientSchema,
@@ -241,7 +241,7 @@ async function getClient_(ctx: RequestContext, clientId: string) {
     age: c.birthDate ? ageAt(c.birthDate, ctx.now()) : null,
     sex: c.sex,
     email: c.email,
-    phone: c.phoneEnc ? decrypt(ctx.keys.encryptionKey, c.phoneEnc) : null,
+    phone: c.phoneEnc ? openSecret(ctx.keys, c.phoneEnc) : null,
     joinedAt: c.joinedAt,
     status: c.status,
     modality: c.modality,
@@ -494,7 +494,7 @@ async function updateClient_(
     await tx.update(clients).set(set).where(eq(clients.id, clientId));
     const beforePlain = {
       ...before,
-      phone: before.phoneEnc ? decrypt(ctx.keys.encryptionKey, before.phoneEnc) : null,
+      phone: before.phoneEnc ? openSecret(ctx.keys, before.phoneEnc) : null,
     };
     const afterPlain = {
       ...beforePlain,

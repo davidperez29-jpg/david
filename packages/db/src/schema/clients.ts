@@ -109,6 +109,8 @@ export const clients = pgTable(
     /** §12.2: apply routine load progressions without confirmation (off by default; audited, reversible). */
     autoApplyLoadProgressions: boolean('auto_apply_load_progressions').notNull().default(false),
     archivedAt: timestamp('archived_at', { withTimezone: true }),
+    /** Erasure (art. 17) or end of retention: personal data replaced, aggregates kept. */
+    anonymizedAt: timestamp('anonymized_at', { withTimezone: true }),
     ...timestamps(),
     ...authorship(),
     version: version(),

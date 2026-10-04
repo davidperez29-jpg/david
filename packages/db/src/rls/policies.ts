@@ -35,7 +35,8 @@ export const RLS_POLICIES: Record<string, PolicyKind> = {
   password_reset_tokens: { kind: 'system_only' },
   organizations: {
     kind: 'custom',
-    sql: `CREATE POLICY organizations_select ON organizations FOR SELECT USING (id = app_org_id());`,
+    sql: `CREATE POLICY organizations_select ON organizations FOR SELECT USING (id = app_org_id());
+CREATE POLICY organizations_update ON organizations FOR UPDATE USING (id = app_org_id() AND app_has_role('ADMIN')) WITH CHECK (id = app_org_id());`,
   },
   users: {
     kind: 'custom',
@@ -178,6 +179,12 @@ CREATE POLICY notifications_insert ON notifications FOR INSERT WITH CHECK (organ
   },
   files: { kind: 'client_optional', clientWrite: true, clientRead: true },
   reports: { kind: 'client_optional', clientWrite: false, clientRead: false },
+  // Phase 13: the client files and reads their own rights requests; staff handle them.
+  privacy_requests: { kind: 'client_owned', clientWrite: true, clientRead: true },
+  user_recovery_codes: {
+    kind: 'custom',
+    sql: `CREATE POLICY user_recovery_codes_own ON user_recovery_codes FOR ALL USING (user_id = app_user_id()) WITH CHECK (user_id = app_user_id());`,
+  },
   import_jobs: {
     kind: 'custom',
     sql: `CREATE POLICY import_jobs_all ON import_jobs FOR ALL USING (organization_id = app_org_id() AND app_is_staff()) WITH CHECK (organization_id = app_org_id() AND app_is_staff());`,

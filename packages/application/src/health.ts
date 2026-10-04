@@ -1,4 +1,4 @@
-import { decrypt, encrypt } from '@tp/auth';
+import { encrypt, openSecret } from '@tp/auth';
 import {
   clearHealthDeclarationSchema,
   healthDeclarationSchema,
@@ -98,7 +98,7 @@ async function listHealthDeclarations_(ctx: RequestContext, clientId: string) {
       requiresProfessionalAssessment: r.requiresProfessionalAssessment,
       clearedAt: r.clearedAt,
       clearanceNote: r.clearanceNote,
-      description: r.descriptionEnc ? decrypt(ctx.keys.encryptionKey, r.descriptionEnc) : null,
+      description: r.descriptionEnc ? openSecret(ctx.keys, r.descriptionEnc) : null,
     })),
     screenings: screenings.map((s) => ({
       id: s.id,

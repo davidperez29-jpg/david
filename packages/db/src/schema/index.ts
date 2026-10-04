@@ -9,3 +9,4 @@ export * from './planning';
 export * from './tracking';
 export * from './decision';
 export * from './platform';
+export * from './privacy';

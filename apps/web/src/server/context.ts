@@ -24,7 +24,10 @@ function singletons() {
     if (!url) throw new Error('DATABASE_URL is not set');
     g.__tp = {
       db: createDb(url),
-      keys: keyRingFromBase64(process.env.APP_ENCRYPTION_KEY),
+      keys: keyRingFromBase64(
+        process.env.APP_ENCRYPTION_KEY,
+        process.env.APP_ENCRYPTION_KEYS_PREVIOUS,
+      ),
       // No email provider configured yet (Phase 1): messages are kept in memory and logged in dev.
       mailer: new DevMailer(),
       // Local disk until an S3-compatible bucket in the EU is configured.

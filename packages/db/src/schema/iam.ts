@@ -21,6 +21,13 @@ export const organizations = pgTable('organizations', {
   id: id(),
   name: text('name').notNull(),
   slug: text('slug').notNull().unique(),
+  /**
+   * Months an archived client's personal data are kept before automatic anonymization (Phase 13).
+   * NULL = not set: the controller must decide it [REQUIERE VALIDACIÓN LEGAL].
+   */
+  retentionMonths: integer('retention_months'),
+  /** §14.1: 2FA mandatory for ADMIN accounts (can be relaxed only for demos). */
+  requireAdmin2fa: boolean('require_admin_2fa').notNull().default(true),
   ...timestamps(),
 });
 

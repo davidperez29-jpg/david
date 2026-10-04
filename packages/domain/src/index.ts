@@ -17,3 +17,4 @@ export * from './dashboard';
 export * from './decision';
 export * from './programming';
 export * from './reports';
+export * from './privacy';
