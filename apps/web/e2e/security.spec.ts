@@ -114,3 +114,29 @@ test('per-user API budget: heavy operations beyond the limit get 429 with Retry-
   expect(Number(retryAfter)).toBeGreaterThan(0);
   expect(Number(retryAfter)).toBeLessThanOrEqual(60);
 });
+
+test('body size: 256 KB for normal requests, larger only where files are uploaded', async ({
+  page,
+}) => {
+  await login(page, 'lucia.moreno@example.com');
+  const origin = new URL(page.url()).origin;
+  const big = 'x'.repeat(400 * 1024);
+  // A normal mutation with a 400 KB body is refused before reaching the use case.
+  const normal = await page.request.post('/api/v1/clients', {
+    headers: { origin },
+    data: { basics: { firstName: big } },
+  });
+  expect(normal.status()).toBe(422);
+  expect((await normal.json()).error.message).toBe('Petición demasiado grande.');
+  // An import of a ≈ 400 KB file gets through to validation (Phase 12 promised up to 2 MB).
+  const csv = `Nombre;Apellidos;Fecha nacimiento;Sexo;Email;Notas\nAna;Grande;01/01/1990;mujer;;${'y'.repeat(400 * 1024)}\n`;
+  const upload = await page.request.post('/api/v1/imports', {
+    headers: { origin },
+    data: {
+      entity: 'clients',
+      fileName: 'grande.csv',
+      contentBase64: Buffer.from(csv).toString('base64'),
+    },
+  });
+  expect((await upload.json()).error?.message ?? '').not.toBe('Petición demasiado grande.');
+});
