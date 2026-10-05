@@ -1,5 +1,7 @@
 # Roadmap
 
+> **Primera versión (fases 0–15): completada.** El trabajo nuevo, la reestructuración para que la aplicación sea sencilla y esté online, sigue `IMPLEMENTATION_ROADMAP.md`. Su diseño está en `PRODUCT_ARCHITECTURE.md` y documentos hermanos.
+
 Plan completo y criterios de aceptación: `MASTER_SPECIFICATION.md` §16.
 
 | Fase | Estado | Entregado / siguiente |

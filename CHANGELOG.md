@@ -2,6 +2,19 @@
 
 Formato: fecha · cambio · motivo · archivos · impacto.
 
+## 2026-10-05 — Reestructuración: auditoría y diseño
+
+- **Cambio:** auditoría del proyecto y diseño de la reestructuración.
+  - **Incluye:** `PRODUCT_ARCHITECTURE.md`, `DATABASE_SCHEMA.md`, `UX_FLOW.md`, `INJURY_MODULE.md`, `EVALUATION_SYSTEM.md`, `REPORT_SYSTEM.md`, `SCIENCE_SYSTEM.md` e `IMPLEMENTATION_ROADMAP.md`.
+  - **Motivo:** la prueba real mostró que el problema no eran las funciones, sino la complejidad (13 menús, 13 pestañas, formularios en lugar de tablas) y la instalación con Docker.
+  - **Decisiones:**
+    - conservar backend, seguridad y dominio; rehacer la interfaz por zonas;
+    - desplegar online primero (Render, Frankfurt);
+    - perfiles como catálogo;
+    - fases de readaptación por protocolo;
+    - el software nunca declara «apto».
+  - **Referencias:** las del módulo de lesiones se verificaron en PubMed (14 artículos con DOI y PMID). Los documentos del usuario se usan como fuente de estructura, anonimizados.
+
 ## 2026-10-04 — Pendientes técnicos tras la Fase 15
 
 - **Cambio:** imagen Docker mínima (`web`, servidor autónomo de Next, ≈ 480 MB) e imagen `jobs` para migraciones y trabajos.
