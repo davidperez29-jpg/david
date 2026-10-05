@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { getExercise, listLibraryTaxonomies, listMethods } from '@tp/application';
 import { DomainError } from '@tp/domain';
 import { notFound } from 'next/navigation';
+import { BodyMap } from '@/components/library/body-map';
 import { Badge, Card } from '@/components/ui/card';
 import { label } from '@/lib/labels';
 import { requireStaff } from '@/server/session';
@@ -57,6 +58,7 @@ export default async function ExercisePage({
           <strong>Notas de importación:</strong> {ex.reviewNotes}
         </p>
       ) : null}
+      <ExerciseSummary ex={ex} methods={await listMethods(ctx)} />
       <ExerciseActions
         exercise={{
           id: ex.id,
@@ -95,5 +97,128 @@ export default async function ExercisePage({
         </Card>
       ) : null}
     </div>
+  );
+}
+
+type Ex = Awaited<ReturnType<typeof getExercise>>;
+type Method = Awaited<ReturnType<typeof listMethods>>[number];
+
+/**
+ * What the trainer looks at first (restructure §11): silhouette, categories, muscles, video,
+ * progressions and regressions, and the references (methods with their evidence).
+ */
+function ExerciseSummary({ ex, methods }: { ex: Ex; methods: Method[] }) {
+  const silhouette = ex.media.find((m) => m.type === 'silhouette' && m.status !== 'replaced');
+  const videos = ex.media.filter((m) => m.type === 'video' && m.status !== 'replaced');
+  const verified = videos.find((v) => v.status === 'verified');
+  const cats = [...ex.categories].sort((a, b) => Number(b.isPrimary) - Number(a.isPrimary));
+  const primary = ex.muscles.filter((m) => m.role === 'primary');
+  const secondary = ex.muscles.filter((m) => m.role !== 'primary');
+  const up = ex.related.filter((r) => r.relation === 'progression');
+  const down = ex.related.filter((r) => r.relation === 'regression');
+  const refs = methods.filter((m) => ex.methodIds.includes(m.id));
+  return (
+    <Card>
+      <div className="grid gap-4 md:grid-cols-[auto_1fr]">
+        <div className="flex justify-center">
+          {silhouette?.fileUrl ? (
+            <img
+              src={silhouette.fileUrl}
+              alt={`Silueta de ${ex.name}`}
+              className="h-56 w-auto rounded-md border border-border bg-bg object-contain"
+            />
+          ) : (
+            <BodyMap muscles={ex.muscles} />
+          )}
+        </div>
+        <dl className="grid content-start gap-x-4 gap-y-2 text-sm sm:grid-cols-[auto_1fr]">
+          <dt className="text-muted">Categorías</dt>
+          <dd className="flex flex-wrap gap-1">
+            {cats.length ? (
+              cats.map((c) => (
+                <Badge key={c.id} tone={c.isPrimary ? 'accent' : 'neutral'}>
+                  {c.name}
+                </Badge>
+              ))
+            ) : (
+              <span className="text-muted">Sin categoría</span>
+            )}
+          </dd>
+          <dt className="text-muted">Músculos</dt>
+          <dd>
+            {primary.length ? <strong>{primary.map((m) => m.name).join(', ')}</strong> : '—'}
+            {secondary.length ? (
+              <span className="text-muted">
+                {' '}
+                · secundarios: {secondary.map((m) => m.name).join(', ')}
+              </span>
+            ) : null}
+          </dd>
+          <dt className="text-muted">Vídeo</dt>
+          <dd>
+            {verified ? (
+              <Link href="?tab=medios" className="text-accent underline">
+                Ver vídeo verificado
+              </Link>
+            ) : videos.length ? (
+              <span className="text-warn">
+                Pendiente de verificación (no se muestra al cliente)
+              </span>
+            ) : (
+              <span className="text-muted">Sin vídeo</span>
+            )}
+          </dd>
+          <dt className="text-muted">Progresiones</dt>
+          <dd>
+            {up.length
+              ? up.map((r, i) => (
+                  <span key={r.id}>
+                    {i ? ', ' : ''}
+                    <Link href={`/app/library/${r.otherId}`} className="hover:underline">
+                      {r.name}
+                    </Link>
+                  </span>
+                ))
+              : '—'}
+          </dd>
+          <dt className="text-muted">Regresiones</dt>
+          <dd>
+            {down.length
+              ? down.map((r, i) => (
+                  <span key={r.id}>
+                    {i ? ', ' : ''}
+                    <Link href={`/app/library/${r.otherId}`} className="hover:underline">
+                      {r.name}
+                    </Link>
+                  </span>
+                ))
+              : '—'}
+          </dd>
+          <dt className="text-muted">Referencias</dt>
+          <dd>
+            {refs.length ? (
+              refs.map((m, i) => (
+                <span key={m.id}>
+                  {i ? ', ' : ''}
+                  <Link href={`/app/science/methods/${m.id}`} className="text-accent underline">
+                    {m.name}
+                  </Link>
+                </span>
+              ))
+            ) : (
+              <span className="text-muted">
+                Sin métodos enlazados: la dosis se apoya en el criterio del entrenador.
+              </span>
+            )}
+          </dd>
+          {ex.clientDescription ? (
+            <>
+              <dt className="text-muted">Para el cliente</dt>
+              <dd>{ex.clientDescription}</dd>
+            </>
+          ) : null}
+        </dl>
+      </div>
+    </Card>
   );
 }

@@ -152,6 +152,10 @@ Detalle en `PLANNING.md`. Lo que queda fuera de ámbito devuelve 404. Las edicio
 | `POST /plan-sessions/{id}/blocks` · `POST /plan-sessions/{id}/duplicate` | `plans:write` | `blockSchema` · `{targetMicrocycleId}` | |
 | `PATCH/DELETE /session-blocks/{id}` · `POST …/move` · `POST …/exercises` | `plans:write` | `updateBlockSchema` · `{direction}` · `sessionExerciseSchema` | |
 | `PATCH/DELETE /session-exercises/{id}` · `POST …/move` | `plans:write` | `updateSessionExerciseSchema` (`expectedVersion`, `overrideReason?`) | Un override de plantilla o progresión se audita con su motivo. |
+| `POST /plan-sessions/{id}/exercises` | `plans:write` | `addSessionExercisesSchema` (`blockId?`, `rows[]` de 1 a 200: `exerciseId`, `prescription`, `notesForClient?`) | Filas de la tabla de sesión (pegadas de Excel o escritas) en una transacción: si una fila no es válida no se añade ninguna y el error indica fila y campo (`rows.3.sets`). Sin `blockId`, al último bloque (crea uno principal si no hay). Reestructuración, fase 2. |
+| `POST /session-exercises/duplicate` · `POST /session-exercises/delete` | `plans:write` | `{ids}` (1–100) | Duplica cada fila justo debajo (copia completa) · quita varias filas a la vez (todas o ninguna). |
+| `POST /exercises/resolve` | `library:read` | `{names}` (1–200) | Reconoce nombres de ejercicio escritos o pegados: coincidencia exacta (sin mayúsculas, tildes ni signos) o el claramente más parecido; si hay duda, candidatos. Solo ejercicios globales y de la organización. |
+| `GET /clients/{id}/program?plan&week&session` | `plans:read` | `programViewSchema` | Pestaña Programa: plan (por defecto el activo), meses, semanas con su estado, sesiones de la semana y sesión elegida (por defecto, la próxima por hacer). |
 
 ## Sesiones (Fase 7)
 

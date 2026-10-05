@@ -2,6 +2,26 @@
 
 Formato: fecha · cambio · motivo · archivos · impacto.
 
+## 2026-10-05 — Reestructuración, fase 2: tabla de sesión tipo Excel y Programa por meses
+
+- **Cambio:** la sesión se edita en una **tabla tipo hoja de cálculo** (EJERCICIO · CAT. · SERIES · REPS · CARGA · RIR · RPE · DESC. · NOTAS).
+  - Se escribe encima de la celda; Intro guarda y baja, Tab guarda y pasa a la derecha; flechas, Esc, Supr, Ctrl+Z.
+  - CARGA entiende kg, % de 1RM, RPE, «banda roja» y «PC»; REPS, repeticiones, rangos, tiempo, distancia o contactos; DESC., «90», «2:30» o «2 min».
+  - Cada celda se guarda sola con **bloqueo optimista**: si otra persona cambió la fila, no se pisa; se avisa y se recarga.
+  - **Pegar desde Excel o Google Sheets**, con o sin títulos: vista previa con los ejercicios reconocidos por nombre (sin tildes ni mayúsculas, alias o el claramente más parecido; si hay duda, se elige). Todas las filas en una transacción.
+  - Filas: seleccionar, copiar (se pegan en Excel), duplicar debajo, mover, quitar; deshacer.
+  - Lo avanzado (tempo, VBT, métodos, alternativas) en «⋯» de cada fila.
+  - **Motivo:** §10 del encargo; «formularios en lugar de tablas» era uno de los fallos de la versión anterior.
+- **Cambio:** pestaña **Programa = MES → SEMANA → SESIÓN** con la tabla de la sesión debajo. Abre en la semana actual y la próxima sesión; duplicar semana y sesión. Otros planes y la propuesta del motor, plegados.
+- **Cambio:** el registro de sesiones hechas y pendientes pasa a **Seguimiento**, debajo de las alertas y la carga (lo que pide atención, primero).
+- **Cambio:** ficha de ejercicio con resumen: **silueta de músculos** (principales y secundarios, delante y detrás) o la imagen subida, categorías, vídeo, progresiones, regresiones y referencias.
+- **Cambio:** categorías de ejercicio alineadas con el §11 (nuevas: Velocidad y Reducción de factores de riesgo; «Reacondicionamiento» pasa a «Readaptación»).
+- **API:** `POST /plan-sessions/{id}/exercises`, `POST /session-exercises/duplicate`, `POST /session-exercises/delete`, `POST /exercises/resolve`, `GET /clients/{id}/program`. Contratos actualizados (solo añadidos).
+- **Accesibilidad:**
+  - el botón principal al pasar el ratón ya no baja de 4,5:1 de contraste (antes, 4,48:1 por la opacidad): ahora usa un tono del acento más oscuro en claro y más claro en oscuro (`--accent-hover`); el botón de peligro al pasar el ratón usa el fondo de la página como texto (en oscuro, el blanco no llegaba);
+  - «⋯ Más opciones» de cada fila se alcanza con Tab desde la última celda y se abre con Intro.
+- **Pruebas:** unitarias de celdas, pegado y reconocimiento de nombres (con propiedades) y de meses y semanas; integración de pegado atómico, duplicar, quitar, reconocer nombres y permisos; E2E de cambiar una carga desde el inicio (4 interacciones), pegar 5 filas, dos editores a la vez, deshacer y abrir las opciones de una fila con el teclado.
+
 ## 2026-10-05 — Reestructuración, fase 1: clientes, perfiles y navegación
 
 - **Cambio:** navegación de **4 entradas** (Clientes · Plantillas · Ejercicios · Tests) y un menú de usuario con el resto (Calendario, Alertas, Informes, Ciencia, Ajustes, Usuarios, Privacidad, Cerrar sesión). Las alertas urgentes se cuentan junto al menú.

@@ -177,7 +177,7 @@ export function ExportForm({
         {ready ? (
           <a
             href={`/api/v1/exports?${qs}`}
-            className="inline-flex h-10 items-center rounded-md bg-accent px-4 text-sm font-medium text-accent-contrast hover:opacity-90"
+            className="inline-flex h-10 items-center rounded-md bg-accent px-4 text-sm font-medium text-accent-contrast hover:bg-accent-hover"
           >
             Descargar
           </a>

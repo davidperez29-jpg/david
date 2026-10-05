@@ -69,6 +69,7 @@
     "clients/[clientId]/privacy-requests GET authenticated",
     "clients/[clientId]/privacy-requests POST authenticated",
     "clients/[clientId]/profile PUT authenticated",
+    "clients/[clientId]/program GET authenticated",
     "clients/[clientId]/progress-metrics PUT authenticated",
     "clients/[clientId]/readiness GET authenticated",
     "clients/[clientId]/readiness PUT authenticated",
@@ -107,6 +108,7 @@
     "exercises/[exerciseId]/status POST authenticated",
     "exercises/[exerciseId]/substitutes GET authenticated",
     "exercises/[exerciseId]/videos POST authenticated",
+    "exercises/resolve POST authenticated",
     "exercises GET authenticated",
     "exercises POST authenticated",
     "exports GET authenticated",
@@ -128,6 +130,7 @@
     "monitoring/rules PUT authenticated",
     "plan-sessions/[sessionId]/blocks POST authenticated",
     "plan-sessions/[sessionId]/duplicate POST authenticated",
+    "plan-sessions/[sessionId]/exercises POST authenticated",
     "plan-sessions/[sessionId] GET authenticated",
     "plan-sessions/[sessionId] PATCH authenticated",
     "plan-templates/[templateId] GET authenticated",
@@ -183,6 +186,8 @@
     "session-exercises/[exerciseId]/move POST authenticated",
     "session-exercises/[exerciseId] PATCH authenticated",
     "session-exercises/[exerciseId] DELETE authenticated",
+    "session-exercises/delete POST authenticated",
+    "session-exercises/duplicate POST authenticated",
     "sessions/[sessionId]/complete POST authenticated",
     "sessions/[sessionId] GET authenticated",
     "sessions/publish POST authenticated",
@@ -250,6 +255,306 @@
           ]
         }
       }
+    },
+    "addSessionExercisesSchema": {
+      "type": "object",
+      "properties": {
+        "blockId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "rows": {
+          "minItems": 1,
+          "maxItems": 200,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "exerciseId": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "prescription": {
+                "type": "object",
+                "properties": {
+                  "sets": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 20
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "repsMin": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 100
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "repsMax": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 100
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "repsPerCluster": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 20
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "intraClusterRestS": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 120
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "durationS": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 7200
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "distanceM": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 50000
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "contacts": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 500
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "loadKg": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1000
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "loadPct1rm": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 110
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "rirMin": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 10
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "rirMax": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 10
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "rpeTarget": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "minimum": 1,
+                        "maximum": 10
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "effortCharacter": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "maxLength": 60
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "velocityTargetMps": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 5
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "velocityLossPct": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 60
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "tempo": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "maxLength": 15
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "restS": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 900
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "rom": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "full",
+                          "partial_lengthened",
+                          "partial_shortened",
+                          "specified"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "intensityNote": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "maxLength": 200
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "chainLoadKg": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 500
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                }
+              },
+              "notesForClient": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "maxLength": 500
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "exerciseId"
+            ]
+          }
+        }
+      },
+      "required": [
+        "rows"
+      ]
     },
     "addVideoSchema": {
       "type": "object",
@@ -4569,6 +4874,26 @@
         "requireAdmin2fa"
       ]
     },
+    "programViewSchema": {
+      "type": "object",
+      "properties": {
+        "plan": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "week": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "session": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        }
+      }
+    },
     "progressionSchema": {
       "type": "object",
       "properties": {
@@ -4869,6 +5194,24 @@
         "code"
       ]
     },
+    "resolveExerciseNamesSchema": {
+      "type": "object",
+      "properties": {
+        "names": {
+          "minItems": 1,
+          "maxItems": 200,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        }
+      },
+      "required": [
+        "names"
+      ]
+    },
     "resolveLogSchema": {
       "type": "object",
       "properties": {
@@ -5023,6 +5366,24 @@
       },
       "required": [
         "code"
+      ]
+    },
+    "sessionExerciseIdsSchema": {
+      "type": "object",
+      "properties": {
+        "ids": {
+          "minItems": 1,
+          "maxItems": 100,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          }
+        }
+      },
+      "required": [
+        "ids"
       ]
     },
     "sessionExerciseSchema": {

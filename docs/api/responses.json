@@ -1423,6 +1423,63 @@
       "updatedAt": "string"
     }
   ],
+  "GET clients/[clientId]/program": {
+    "months": [
+      {
+        "firstWeekId": "string",
+        "key": "string"
+      }
+    ],
+    "plan": {
+      "currentWeekIndex": "number",
+      "id": "string",
+      "name": "string",
+      "sessionsPerWeek": "number",
+      "startDate": "string",
+      "status": "string",
+      "weeks": "number"
+    },
+    "plans": [
+      {
+        "durationMonths": "number",
+        "endDate": "string",
+        "id": "string",
+        "name": "string",
+        "revision": "number",
+        "sessionsPerWeek": "number",
+        "startDate": "string",
+        "status": "string",
+        "template": "string",
+        "weeks": "number"
+      }
+    ],
+    "selectedSessionId": "string",
+    "selectedWeekId": "string",
+    "sessions": [
+      {
+        "dayLabel": "string",
+        "exercises": "number",
+        "id": "string",
+        "published": "boolean",
+        "scheduledDate": "string",
+        "status": "null",
+        "title": "string"
+      }
+    ],
+    "weeks": [
+      {
+        "done": "number",
+        "id": "string",
+        "isCurrent": "boolean",
+        "month": "string",
+        "phase": "string",
+        "start": "string",
+        "total": "number",
+        "weekIndex": "number",
+        "weekType": "string"
+      }
+    ]
+  },
   "GET clients/[clientId]/reports": [
     {
       "by": "string",
@@ -1603,7 +1660,7 @@
         "createdBy": "string",
         "derived": "boolean",
         "distanceM": "null",
-        "durationS": "null",
+        "durationS": "number",
         "effortCharacter": "null",
         "exerciseId": "string",
         "extra": "null",
@@ -2485,6 +2542,9 @@
             ],
             "bandTension": "null",
             "blockId": "string",
+            "categories": [
+              "string"
+            ],
             "chainLoadKg": "null",
             "clientId": "string",
             "clientText": "string",

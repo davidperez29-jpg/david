@@ -91,28 +91,35 @@ export const MUSCLE_GROUP_NAMES: Record<string, string> = {
 };
 
 /** Exercise categories (§15). An exercise may carry several. */
+/**
+ * Exercise categories. The first 13 follow the order of the restructure brief (§11): fuerza,
+ * hipertrofia, potencia, velocidad, pliometría, isométricos, excéntricos, core, movilidad,
+ * coordinación, equilibrio, reducción de factores de riesgo y readaptación.
+ */
 export const EXERCISE_CATEGORIES: [string, string][] = [
   ['strength', 'Fuerza'],
   ['hypertrophy', 'Hipertrofia'],
   ['power', 'Potencia'],
+  ['speed', 'Velocidad'],
   ['plyometrics', 'Pliometría'],
   ['isometric', 'Isométricos'],
   ['eccentric', 'Excéntricos'],
+  ['core', 'Core'],
+  ['mobility', 'Movilidad'],
+  ['coordination', 'Coordinación'],
+  ['balance', 'Equilibrio'],
+  ['risk_reduction', 'Reducción de factores de riesgo'],
+  ['reconditioning', 'Readaptación'],
   ['eccentric_overload', 'Sobrecarga excéntrica'],
   ['ballistic', 'Balísticos'],
-  ['mobility', 'Movilidad'],
   ['motor_control', 'Control motor'],
-  ['core', 'Core'],
   ['stability', 'Estabilidad'],
-  ['balance', 'Equilibrio'],
-  ['coordination', 'Coordinación'],
   ['sprint', 'Sprint'],
   ['acceleration', 'Aceleración'],
   ['cod', 'Cambio de dirección'],
   ['agility', 'Agilidad'],
   ['endurance', 'Resistencia'],
   ['aerobic_capacity', 'Capacidad aeróbica'],
-  ['reconditioning', 'Reacondicionamiento'],
   ['sport_specific', 'Específico deportivo'],
   ['accommodating_resistance', 'Resistencias acomodadas'],
   ['olympic_lifts', 'Olímpicos y derivados'],
@@ -473,12 +480,20 @@ export async function seedStructure(db: Database): Promise<void> {
       'slug',
       MUSCLES.map(([slug, name, groupSlug, region]) => ({ slug, name, groupSlug, region })),
     );
-    await insertGlobal(
-      d,
-      exerciseCategories,
-      'slug',
-      EXERCISE_CATEGORIES.map(([slug, name], i) => ({ slug, name, sortOrder: (i + 1) * 10 })),
-    );
+    // Categories are kept in line with the list (name and order), not only inserted.
+    for (const [i, [slug, name]] of EXERCISE_CATEGORIES.entries()) {
+      const sortOrder = (i + 1) * 10;
+      const [row] = await d
+        .select({ id: exerciseCategories.id })
+        .from(exerciseCategories)
+        .where(and(isNull(exerciseCategories.organizationId), eq(exerciseCategories.slug, slug)));
+      if (row)
+        await d
+          .update(exerciseCategories)
+          .set({ name, sortOrder })
+          .where(eq(exerciseCategories.id, row.id));
+      else await d.insert(exerciseCategories).values({ slug, name, sortOrder });
+    }
     await insertGlobal(
       d,
       prescriptionVariables,

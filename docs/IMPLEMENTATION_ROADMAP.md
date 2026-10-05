@@ -18,8 +18,8 @@
 |---|---|---|---|
 | **0** | **Despliegue online** (Render, UE): URL + login, sin comandos | Docker, migraciones, observabilidad | ✅ Preparado (falta el primer despliegue del usuario) |
 | 1 | Arquitectura + BD + autenticación + clientes (perfil principal, nivel, deporte, material, frecuencia); navegación nueva | Auth, RLS, clientes | ✅ Hecha |
-| 2 | Ejercicios + sesiones (tabla tipo Excel) + planificación MES → SEMANA → SESIÓN | Biblioteca, prescripción, planes | ⏳ Siguiente |
-| 3 | Plantillas + objetivos + niveles (filtros, usar plantilla = copia, desde cero, mis plantillas con versiones) | `plan_templates` | Pendiente |
+| 2 | Ejercicios + sesiones (tabla tipo Excel) + planificación MES → SEMANA → SESIÓN | Biblioteca, prescripción, planes | ✅ Hecha |
+| 3 | Plantillas + objetivos + niveles (filtros, usar plantilla = copia, desde cero, mis plantillas con versiones) | `plan_templates` | ⏳ Siguiente |
 | 4 | Evaluaciones + referencias (hoja de intentos, baterías por perfil, fórmulas, grupos/equipos) | Evaluación actual | Pendiente |
 | 5 | Radares + evolución (normalización, dimensiones, comparativas) | Cambio real, gráficos | Pendiente |
 | 6 | Informes (8 tipos, comparativo, grupal, radar en PDF) | Motor de informes | Pendiente |
@@ -70,19 +70,22 @@ Se comprueba en CI con la imagen de despliegue sobre una base vacía, arrancada 
 - ✅ los E2E de alta y de navegación pasan;
 - ✅ axe sin infracciones en las páginas nuevas (claro y oscuro).
 
-## Fase 2 · Ejercicios, sesiones y planificación
+## Fase 2 · Ejercicios, sesiones y planificación ✅
 
-- Componente `DataGrid` con:
+- Tabla de sesión tipo hoja de cálculo (`SessionGrid`, detalle en `PLANNING.md` §6 bis):
   - edición en celda, teclado y autoguardado con bloqueo optimista;
-  - pegado desde Excel, copiar/pegar filas, mover, duplicar y deshacer.
-- Tabla de sesión del §10 (EJERCICIO · CAT. · SERIES · REPS · CARGA · RIR · RPE · DESC. · NOTAS). La celda CARGA interpreta kg, %, RPE, banda y peso corporal.
-- Programa: MES → SEMANA → SESIÓN en una vista; duplicar sesión y semana.
-- Ejercicios: ficha con silueta, vídeo, progresiones/regresiones, observaciones y referencias; categorías del §11.
+  - pegado desde Excel con reconocimiento de ejercicios por nombre, copiar/pegar filas, mover, duplicar, quitar y deshacer.
+- Tabla del §10 (EJERCICIO · CAT. · SERIES · REPS · CARGA · RIR · RPE · DESC. · NOTAS). La celda CARGA interpreta kg, %, RPE, banda y peso corporal.
+- Programa: MES → SEMANA → SESIÓN en una vista, con la tabla de la sesión debajo; duplicar sesión y semana.
+- Ejercicios: resumen con silueta de músculos (o la imagen subida), categorías del §11, vídeo, progresiones/regresiones y referencias.
+- El registro de sesiones (hechas y pendientes) pasa a Seguimiento.
 
 **Criterios**:
-- cambiar una carga en 3 clics;
-- pegar 5 filas desde Excel crea 5 ejercicios;
-- sin pérdidas con dos editores a la vez.
+- ✅ cambiar una carga desde el inicio con 2 clics y escribir (E2E «UX 4», 4 interacciones);
+- ✅ pegar 5 filas desde Excel crea 5 ejercicios (E2E e integración; una fila errónea no añade ninguna);
+- ✅ sin pérdidas con dos editores a la vez: el segundo recibe aviso, ve el cambio del primero y vuelve a escribir el suyo (E2E).
+
+Pendiente para fases siguientes: tarjetas por ejercicio en el móvil y sugerencias del motor dentro de la celda.
 
 ## Fase 3 · Plantillas, objetivos y niveles
 
@@ -166,6 +169,7 @@ Se comprueba en CI con la imagen de despliegue sobre una base vacía, arrancada 
 
 - Revisión ASVS L2 y PENTEST con la interfaz nueva; copias y restauración probadas en Render.
 - Rendimiento con 1 000 clientes; dominio propio; revisión RGPD (DPIA actualizada con el módulo de lesiones).
+- Bloquear también en el servidor la edición de planes completados o archivados. Hoy solo lo impide la interfaz; las operaciones del editor (también las de la tabla de la fase 2) ya exigen permiso y ámbito del entrenador y quedan auditadas.
 
 **Criterios**:
 - simulacro de restauración documentado;

@@ -20,16 +20,18 @@ test('UX 1 · trainer handles the red pain alert from the home', async ({ page }
   // The reason is in the client's row of the home: one click to their follow-up.
   await t.step(() => row.getByRole('link', { name: /Dolor 7\/10/ }).click());
   await expect(page.getByRole('heading', { name: /Carga interna semanal/ })).toBeVisible();
-  const alert = page
+  // The alert, not the session of the log below that also shows the pain it reported.
+  const alerts = page
     .locator('li')
     .filter({ hasText: /Dolor 7\/10/ })
-    .first();
+    .filter({ has: page.getByRole('button', { name: /^Resolver/ }) });
+  const alert = alerts.first();
   await t.step(() => alert.getByRole('button', { name: 'Resolver…' }).click());
   await t.step(() =>
     alert.getByLabel('Nota de resolución').fill('Derivado a fisioterapia; ejercicio sustituido'),
   );
   await t.step(() => alert.getByRole('button', { name: 'Resolver', exact: true }).click());
-  await expect(page.locator('li').filter({ hasText: /Dolor 7\/10/ })).toHaveCount(0);
+  await expect(alerts).toHaveCount(0);
   const r = t.done();
   expect(r.interactions).toBeLessThanOrEqual(MAX.alert.interactions);
   expect(r.ms).toBeLessThan(MAX.alert.ms);

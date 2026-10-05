@@ -25,7 +25,7 @@ export default async function SessionReviewPage({
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center gap-3">
         <Link
-          href={`/app/clients/${clientId}?tab=programa#sesiones`}
+          href={`/app/clients/${clientId}?tab=seguimiento#sesiones`}
           className="text-sm text-muted hover:underline"
         >
           ← {client.firstName} {client.lastName}

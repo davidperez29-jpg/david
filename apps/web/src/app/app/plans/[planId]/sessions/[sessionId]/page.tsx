@@ -2,11 +2,12 @@ import Link from 'next/link';
 import { getSession } from '@tp/application';
 import { DomainError } from '@tp/domain';
 import { notFound } from 'next/navigation';
-import { Badge, Card, EmptyState } from '@/components/ui/card';
+import { Badge, Card } from '@/components/ui/card';
 import { formatDate, label } from '@/lib/labels';
 import { PublishButton } from '@/components/sessions/publish-button';
 import { requireStaff } from '@/server/session';
-import { AddBlock, AddExercise, BlockActions, ExerciseRow, SessionMetaForm } from '../../../forms';
+import { AddBlock, BlockActions, SessionMetaForm } from '../../../forms';
+import { SessionTable } from '../../../session-table';
 
 export default async function SessionEditorPage({
   params,
@@ -59,31 +60,43 @@ export default async function SessionEditorPage({
           cuando termines.
         </p>
       ) : null}
+      <SessionTable s={s} editable={editable} />
       {editable ? (
-        <Card title="Sesión">
-          <SessionMetaForm s={s} />
-        </Card>
+        <details className="rounded-lg border border-border bg-bg p-4">
+          <summary className="cursor-pointer text-sm font-semibold">
+            Datos de la sesión y duplicar
+          </summary>
+          <div className="mt-3">
+            <SessionMetaForm s={s} />
+          </div>
+        </details>
       ) : null}
-      {s.blocks.length === 0 ? <EmptyState>Sesión vacía: añade un bloque.</EmptyState> : null}
-      {s.blocks.map((b) => (
-        <Card
-          key={b.id}
-          title={`${b.label ?? label('blockType', b.type)} · ${label('blockOrganization', b.organization)}${b.rounds ? ` · ${b.rounds} vueltas` : ''}`}
-          actions={editable ? <BlockActions blockId={b.id} /> : undefined}
-        >
-          {b.exercises.length === 0 ? <p className="text-sm text-muted">Sin ejercicios.</p> : null}
-          <ul>
-            {b.exercises.map((e) => (
-              <ExerciseRow key={`${e.id}-${e.version}`} e={e} editable={editable} />
-            ))}
-          </ul>
-          {editable ? <AddExercise blockId={b.id} /> : null}
-        </Card>
-      ))}
       {editable ? (
-        <Card title="Nuevo bloque">
-          <AddBlock sessionId={s.id} />
-        </Card>
+        <details className="rounded-lg border border-border bg-bg p-4">
+          <summary className="cursor-pointer text-sm font-semibold">
+            Bloques ({s.blocks.length}): calentamiento, principal, circuitos…
+          </summary>
+          <div className="mt-3 flex flex-col gap-3">
+            <ul className="flex flex-col divide-y divide-border">
+              {s.blocks.map((b) => (
+                <li
+                  key={b.id}
+                  className="flex flex-wrap items-center justify-between gap-2 py-2 text-sm"
+                >
+                  <span>
+                    {b.label ?? label('blockType', b.type)} ·{' '}
+                    {label('blockOrganization', b.organization)}
+                    {b.rounds ? ` · ${b.rounds} vueltas` : ''} ({b.exercises.length} ejercicios)
+                  </span>
+                  <BlockActions blockId={b.id} />
+                </li>
+              ))}
+            </ul>
+            <Card title="Nuevo bloque">
+              <AddBlock sessionId={s.id} />
+            </Card>
+          </div>
+        </details>
       ) : null}
     </div>
   );

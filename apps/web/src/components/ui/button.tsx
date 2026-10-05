@@ -2,10 +2,10 @@ import type { ButtonHTMLAttributes } from 'react';
 
 type Variant = 'primary' | 'secondary' | 'ghost' | 'danger';
 const styles: Record<Variant, string> = {
-  primary: 'bg-accent text-accent-contrast hover:opacity-90',
+  primary: 'bg-accent text-accent-contrast hover:bg-accent-hover',
   secondary: 'border border-border bg-bg text-text hover:bg-surface',
   ghost: 'text-text hover:bg-surface',
-  danger: 'border border-danger text-danger hover:bg-danger hover:text-white',
+  danger: 'border border-danger text-danger hover:bg-danger hover:text-bg',
 };
 
 export function Button({

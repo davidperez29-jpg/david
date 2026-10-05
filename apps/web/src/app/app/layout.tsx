@@ -25,10 +25,17 @@ export default async function StaffLayout({ children }: { children: ReactNode })
             Entrenamiento
           </Link>
           <nav className="flex flex-1 flex-wrap gap-1" aria-label="Principal">
-            <NavLink href="/app" exact also={['/app/clients']}>
+            <NavLink
+              href="/app"
+              exact
+              also={['/app/clients']}
+              alsoPattern="^/app/plans/(?!templates)"
+            >
               Clientes
             </NavLink>
-            <NavLink href="/app/plans">Plantillas</NavLink>
+            <NavLink href="/app/plans" exact also={['/app/plans/templates']}>
+              Plantillas
+            </NavLink>
             <NavLink href="/app/library">Ejercicios</NavLink>
             <NavLink href="/app/assessments">Tests</NavLink>
           </nav>

@@ -145,6 +145,31 @@ El aviso «más de 20 series semanales en un grupo» es un umbral **configurable
 
 Criterio de aceptación (§16.2): crear un plan de 12 semanas y 3 días desde plantilla en menos de 20 minutos. El test E2E crea el plan, edita una sesión y lo activa en unos segundos.
 
+## 6 bis. Tabla de sesión y vista MES → SEMANA → SESIÓN (reestructuración, fase 2)
+
+> Diseño en `UX_FLOW.md` §2.2–§2.3. Sustituye a los formularios por ejercicio, que quedan en «⋯ Más opciones» de cada fila (tempo, VBT, métodos, alternativas, notas internas).
+
+**Pestaña Programa del cliente**: el plan activo (o el elegido) → meses → semanas (● actual, ✓ hecha, descarga) → sesiones de la semana → tabla de la sesión elegida. Abre en la semana actual y en la próxima sesión por hacer (`programView`, `currentWeekId`). Una semana pertenece al mes de su jueves.
+
+**Tabla** (`SessionGrid`): columnas EJERCICIO · CAT. · SERIES · REPS · CARGA · RIR · RPE · DESC. · NOTAS.
+
+| Celda | Acepta | Se guarda en |
+|---|---|---|
+| SERIES | `4` | `sets` |
+| REPS | `8`, `6-8`, `6 a 8`, `30 s`, `1:30`, `20 m`, `10 contactos` | `repsMin/Max`, `durationS`, `distanceM` o `contacts` (uno sustituye a los otros) |
+| CARGA | `80`, `82,5 kg`, `75 %`, `RPE 8`, `@8`, `banda roja`, `PC` | `loadKg`, `loadPct1rm`, `rpeTarget` o `intensityNote` (banda/peso corporal) |
+| RIR | `2`, `1-2` | `rirMin/Max` (quita el RPE: uno u otro) |
+| RPE | `8`, `8,5` | `rpeTarget` (quita el RIR) |
+| DESC. | `90`, `90 s`, `2:30`, `2 min`, `2'30` | `restS` |
+| NOTAS | texto | `notesForClient` (las ve el cliente) |
+
+- Intérpretes puros en el dominio (`planning/grid.ts`: `parseCell`, `formatCell`), con pruebas de ida y vuelta (propiedades). Los rangos los valida `validatePrescription`, también en el servidor.
+- **Teclado**: flechas, Intro/F2 o escribir para editar, Intro guarda y baja, Tab guarda y pasa a la derecha, Esc cancela, Supr borra, Alt+↑/↓ mueve la fila, Mayús+Espacio selecciona, Ctrl+A todas, Ctrl+C copia filas (texto con tabuladores, se pega en Excel), Ctrl+V pega, Ctrl+Z deshace. Tab desde la última celda de la fila lleva a «⋯ Más opciones» de esa fila; la tabla no captura las teclas de los botones, enlaces y campos del panel de opciones.
+- **Autoguardado por celda con bloqueo optimista** (`expectedVersion` de la fila). Los cambios de una fila se envían en orden. Si otra persona cambió la fila, el cambio no se aplica: se avisa, se recarga la fila y se puede volver a escribir. No se pierde nada sin avisar.
+- **Pegar desde Excel o Google Sheets** (`parseSessionTsv`): con o sin fila de títulos (EJERCICIO, SERIES, REPS, CARGA, RIR, RPE, DESC., NOTAS; también «Carga (kg)», «Descanso», «Observaciones»). Vista previa con los ejercicios reconocidos por nombre (`exerciseNameMatcher`: exacto sin tildes ni mayúsculas, alias, o el claramente más parecido; si hay duda, el entrenador elige). Se añaden todas las filas en una transacción (`addSessionExercises`).
+- **Deshacer**: cambios de celda, filas añadidas, pegadas o duplicadas y movimientos. Quitar filas pide confirmación.
+- Pendiente: tarjetas por ejercicio en el móvil (hoy la tabla se desplaza en horizontal) y sugerencias del motor dentro de la celda.
+
 ## 7. Permisos
 
 | Permiso | ADMIN | TRAINER | CLIENT |

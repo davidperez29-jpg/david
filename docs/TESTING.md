@@ -396,3 +396,24 @@ pnpm --filter @tp/web test:e2e -- e2e/perf.spec.ts e2e/perf.mobile.spec.ts
   - Menú principal de 4 entradas y menú de usuario; recorridos de UX desde el inicio sin más interacciones que antes.
   - Accesibilidad de las pestañas nuevas (claro y oscuro): 0 infracciones graves.
 - **Rendimiento** (1 000 clientes): inicio `/app` 145–162 ms p95; `GET /api/v1/dashboard/home` 80 ms p95.
+
+## Resultado de la reestructuración, fase 2 (tabla de sesión y Programa por meses)
+
+- **Unidad: 434 tests ✔**; cobertura del dominio, 95,26 % de líneas (`planning/grid.ts`, 97,9 %). Nuevos:
+  - `grid.unit.test.ts` (17): lo que acepta cada celda (series, reps, carga, RIR, RPE, descanso) y el error que explica la notación; RIR y RPE excluyentes; pegado con y sin títulos y por prefijos («Carga (kg)», «Descanso»); reconocimiento de nombres sin tildes, con alias o con erratas, sin adivinar entre parecidos; ida y vuelta celda → texto → celda (propiedad, fast-check) y lo que la tabla copia, la tabla lo vuelve a pegar;
+  - `program-view.unit.test.ts` (3): semanas → meses (por su jueves) y semana actual (la de hoy, si no la siguiente, si no la última).
+- **Integración: 174 tests ✔** (2 más de almacenamiento S3 solo corren en CI). Nuevo `session-grid.int.test.ts` (6):
+  - reconocer nombres entre los ejercicios visibles de la organización;
+  - pegar 5 filas en una transacción, con auditoría por fila;
+  - una fila no válida no añade ninguna y el error dice la fila y el campo;
+  - ejercicio de otra organización, bloque de otra sesión y entrenadores sin acceso al cliente, rechazados;
+  - duplicar debajo del original y quitar varias filas a la vez;
+  - quitar filas de la sesión de otro cliente no quita nada.
+- **Seguridad: 578 comprobaciones RLS ✔** (sin tablas nuevas en esta fase).
+- **E2E: 48 tests ✔** (1 omitido sin datos de carga): batería completa (47) y, tras el último arreglo de teclado, otra vez las pruebas de la tabla, la planificación, la UX y la accesibilidad. Nuevas (`session-grid.spec.ts`):
+  - «UX 4»: cambiar una carga desde el inicio en 4 interacciones;
+  - errores de notación que se quedan en la celda, RIR/RPE excluyentes y Ctrl+Z;
+  - «⋯ Más opciones» con el teclado (Tab desde la última celda e Intro);
+  - pegar 5 filas desde Excel reconocidas por nombre, y deshacer;
+  - dos entrenadores en la misma fila: no se pisa nada y el segundo recibe aviso.
+- **Accesibilidad**: la pestaña Programa con la tabla y la ficha de ejercicio con la silueta, en claro y oscuro. Corregido: el botón principal al pasar el ratón bajaba a 4,48:1 de contraste (la prueba lo detectó porque el ratón quedaba encima de «Copiar a mi organización»).

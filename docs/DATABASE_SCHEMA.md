@@ -79,10 +79,12 @@ El resto de campos del §2 ya existían y se escriben desde el alta rápida:
 
 **`scheduled_job_runs`** (fase 0, `0033`/`0034`): una fila por trabajo y día para que los trabajos diarios se ejecuten una sola vez. RLS `system_only`.
 
-### Fase 2 · Ejercicios, sesiones y planificación
+### Fase 2 · Ejercicios, sesiones y planificación ✅
 
-- **`exercise_categories`**: se siembran las categorías del §11 (fuerza, hipertrofia, potencia, velocidad, pliometría, isométricos, excéntricos, core, movilidad, coordinación, equilibrio, reducción de factores de riesgo, readaptación).
-- **`session_exercises.position`** ya existe: se usa para ordenar, mover, copiar y pegar.
+- **`exercise_categories`**: las categorías del §11 en su orden (fuerza, hipertrofia, potencia, velocidad, pliometría, isométricos, excéntricos, core, movilidad, coordinación, equilibrio, reducción de factores de riesgo, readaptación) seguidas de las específicas. El arranque las mantiene alineadas (nombre y orden); se añadieron `speed` y `risk_reduction`, y `reconditioning` se llama «Readaptación». Sin migración: solo datos.
+- **`session_exercises.position`** se usa para ordenar, mover, duplicar debajo y pegar (reordenación en dos pasos por la restricción única por bloque).
+- **`session_exercises.version`** es el bloqueo optimista de cada fila de la tabla: cada celda se guarda con `expectedVersion`.
+- Sin tablas nuevas en esta fase.
 - **`set_logs.corrects_id`** (uuid, nullable): una corrección de una serie registrada referencia la original en lugar de sobrescribirla.
 
 ### Fase 3 · Plantillas, objetivos y niveles

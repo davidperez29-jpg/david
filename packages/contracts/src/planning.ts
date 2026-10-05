@@ -171,6 +171,37 @@ export const updateSessionExerciseSchema = z
     overrideReason: optionalText(300),
   });
 
+/** Rows pasted into the session table (restructure phase 2): added in one transaction. */
+export const addSessionExercisesSchema = z.object({
+  /** Block to add to; by default the session's last block (a main block is created if none). */
+  blockId: z.uuid().optional(),
+  rows: z
+    .array(
+      z.object({
+        exerciseId: z.uuid(),
+        prescription: prescriptionSchema.default({}),
+        notesForClient: optionalText(500),
+      }),
+    )
+    .min(1)
+    .max(200),
+});
+
+/** Programa tab: which plan, week and session to show (defaults: active plan, current week). */
+export const programViewSchema = z.object({
+  plan: z.uuid().optional(),
+  week: z.uuid().optional(),
+  session: z.uuid().optional(),
+});
+
+/** Several rows of the session table (duplicate or delete at once). */
+export const sessionExerciseIdsSchema = z.object({ ids: z.array(z.uuid()).min(1).max(100) });
+
+/** Names typed or pasted in the table, to recognize them in the exercise library. */
+export const resolveExerciseNamesSchema = z.object({
+  names: z.array(z.string().trim().min(1).max(200)).min(1).max(200),
+});
+
 export const moveSchema = z.object({ direction: z.enum(['up', 'down']) });
 export const duplicateSessionSchema = z.object({ targetMicrocycleId: z.uuid() });
 export const duplicateWeekSchema = z.object({ targetMicrocycleId: z.uuid() });

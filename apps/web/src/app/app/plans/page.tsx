@@ -13,7 +13,7 @@ export default async function PlansHome() {
       <h1 className="text-2xl font-semibold">Plantillas de planificación</h1>
       <p className="text-sm text-muted">
         Puntos de partida, no recetas. Cada plan se crea desde la ficha del cliente (pestaña
-        «Planificación»): elige plantilla, fecha de inicio y días, y adáptalo. Las dosis siguen las
+        «Programa»): elige plantilla, fecha de inicio y días, y adáptalo. Las dosis siguen las
         variables de los métodos enlazados; la ola de RIR y la descarga son recomendaciones
         prácticas (F).
       </p>

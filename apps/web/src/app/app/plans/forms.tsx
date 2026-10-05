@@ -361,12 +361,12 @@ export function CopyWeekButton({
   return (
     <span className="inline-flex items-center gap-1">
       <select
-        aria-label="Copiar semana a"
+        aria-label="Duplicar esta semana en"
         value={target}
         onChange={(e) => setTarget(e.target.value)}
         className="h-8 rounded-md border border-border bg-bg px-2 text-xs"
       >
-        <option value="">Copiar a…</option>
+        <option value="">Duplicar esta semana en…</option>
         {weeks
           .filter((w) => w.id !== microcycleId)
           .map((w) => (
@@ -386,7 +386,7 @@ export function CopyWeekButton({
             });
         }}
       >
-        Copiar
+        Duplicar semana
       </Button>
     </span>
   );

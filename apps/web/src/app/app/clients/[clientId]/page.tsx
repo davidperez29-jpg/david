@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import {
   clientMonitoring,
-  clientSummary,
   getMonitoringRules,
   clientSessionReview,
   clientAssessmentProgress,
@@ -9,6 +8,8 @@ import {
   defaultReportPeriod,
   listClientReports,
   getDecision,
+  getSession,
+  programView,
   listAdjustments,
   listPlanProposals,
   listAssessmentTests,
@@ -41,7 +42,9 @@ import {
 import { WeeklyLoadChart } from '@/components/monitoring/charts';
 import { SeverityBadge } from '@/components/monitoring/severity';
 import { NewAssessmentForm } from '../../assessments/forms';
-import { NewPlanForm } from '../../plans/forms';
+import { CopyWeekButton, NewPlanForm } from '../../plans/forms';
+import { SessionTable } from '../../plans/session-table';
+import { PublishButton } from '@/components/sessions/publish-button';
 import { ExportForm, GenerateReportForm } from '@/components/reports/actions';
 import { AdjustmentsCard } from '@/components/programming/adjustments-card';
 import { GenerateProposalForm } from '@/components/programming/actions';
@@ -110,7 +113,7 @@ const TABS = [
 const ALIASES: Record<string, string> = {
   resumen: 'programa',
   planificacion: 'programa',
-  sesiones: 'programa',
+  sesiones: 'seguimiento',
   evaluaciones: 'evaluacion',
   perfil: 'ficha',
   objetivos: 'ficha',
@@ -125,7 +128,13 @@ export default async function ClientPage({
   searchParams,
 }: {
   params: Promise<{ clientId: string }>;
-  searchParams: Promise<{ tab?: string; nuevo?: string }>;
+  searchParams: Promise<{
+    tab?: string;
+    nuevo?: string;
+    plan?: string;
+    semana?: string;
+    sesion?: string;
+  }>;
 }) {
   const ctx = await requireStaff();
   const { clientId } = await params;
@@ -207,7 +216,7 @@ export default async function ClientPage({
         ))}
       </nav>
 
-      {tab === 'programa' ? await programTab(ctx, client.id) : null}
+      {tab === 'programa' ? await programTab(ctx, client.id, sp) : null}
 
       {tab === 'evaluacion' ? await assessmentsTab(ctx, client.id, client.progressTestIds) : null}
 
@@ -215,7 +224,15 @@ export default async function ClientPage({
         <DecisionTab ctx={ctx} clientId={client.id} isAdmin={isAdmin} />
       ) : null}
 
-      {tab === 'seguimiento' ? await monitoringTab(ctx, client.id) : null}
+      {tab === 'seguimiento' ? (
+        <div className="flex flex-col gap-4">
+          {/* Alerts and load first (what needs attention), then the log of every session. */}
+          {await monitoringTab(ctx, client.id)}
+          <div id="sesiones" className="scroll-mt-4">
+            {await sessionsTab(ctx, client.id)}
+          </div>
+        </div>
+      ) : null}
 
       {tab === 'informes' ? await reportsTab(ctx, client.id) : null}
 
@@ -454,25 +471,212 @@ async function assessmentsTab(
   );
 }
 
-/** Programa: active plan and next session, plans and proposals, and the sessions to review. */
-async function programTab(ctx: Ctx, clientId: string) {
-  const [summary, plans, sessions] = await Promise.all([
-    clientSummary(ctx, clientId),
-    plansTab(ctx, clientId),
-    sessionsTab(ctx, clientId),
+type ProgramParams = { plan?: string; semana?: string; sesion?: string };
+
+const WEEKDAY = new Intl.DateTimeFormat('es-ES', {
+  weekday: 'short',
+  day: '2-digit',
+  month: '2-digit',
+  timeZone: 'UTC',
+});
+const MONTH = new Intl.DateTimeFormat('es-ES', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+const monthName = (key: string) => {
+  if (!key) return 'Sin fechas';
+  const t = MONTH.format(new Date(`${key}-15T00:00:00Z`));
+  return t.charAt(0).toUpperCase() + t.slice(1);
+};
+const chip = (on: boolean) =>
+  `inline-flex min-h-9 items-center gap-1 rounded-md border px-3 py-1 text-sm ${on ? 'border-accent bg-accent text-accent-contrast' : 'border-border bg-bg hover:bg-surface'}`;
+
+/**
+ * Programa (docs/UX_FLOW.md §2.2): the plan as MES → SEMANA → SESIÓN and, below, the table of the
+ * chosen session. Opens on the active plan, the current week and the next session to do.
+ */
+async function programTab(ctx: Ctx, clientId: string, sp: ProgramParams) {
+  const view = await programView(ctx, clientId, {
+    plan: sp.plan,
+    week: sp.semana,
+    session: sp.sesion,
+  });
+  const [session, extras] = await Promise.all([
+    view.selectedSessionId ? getSession(ctx, view.selectedSessionId) : Promise.resolve(null),
+    plansTab(
+      ctx,
+      clientId,
+      view.plans.some((p) => p.status === 'active'),
+    ),
   ]);
+  if (!view.plan)
+    return (
+      <div className="flex flex-col gap-4">
+        <p className="rounded-md border border-dashed border-border p-4 text-sm text-muted">
+          Este cliente aún no tiene plan. Crea uno desde una plantilla o en blanco; el análisis de{' '}
+          <Link href="?tab=necesidades" className="text-accent underline">
+            necesidades
+          </Link>{' '}
+          puede proponer uno.
+        </p>
+        {extras}
+      </div>
+    );
+  const href = (q: Record<string, string | null | undefined>) =>
+    `?${new URLSearchParams(
+      Object.entries({ tab: 'programa', plan: sp.plan, ...q }).filter(
+        (e): e is [string, string] => !!e[1],
+      ),
+    )}`;
+  const week = view.weeks.find((w) => w.id === view.selectedWeekId) ?? null;
+  const monthWeeks = view.weeks.filter((w) => w.month === (week?.month ?? ''));
+  const editable = view.plan.status !== 'archived' && view.plan.status !== 'completed';
   return (
     <div className="flex flex-col gap-4">
-      <ProgramSummary clientId={clientId} s={summary} />
-      {plans}
-      <div id="sesiones" className="scroll-mt-4">
-        {sessions}
-      </div>
+      <Card>
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 className="text-lg font-semibold">{view.plan.name}</h2>
+            <Badge tone={view.plan.status === 'active' ? 'ok' : 'neutral'}>
+              {label('planStatus', view.plan.status)}
+            </Badge>
+            <span className="text-sm text-muted">
+              {view.plan.weeks} semanas · {view.plan.sessionsPerWeek} días/semana
+              {view.plan.currentWeekIndex
+                ? ` · ahora en la semana ${view.plan.currentWeekIndex}`
+                : ''}
+            </span>
+            <span className="ml-auto flex flex-wrap gap-3 text-sm">
+              <Link href="?tab=necesidades" className="text-accent underline">
+                Necesidades
+              </Link>
+              <Link href={`/app/plans/${view.plan.id}`} className="text-accent underline">
+                Plan completo
+              </Link>
+              <a
+                href={`/api/v1/plans/${view.plan.id}/pdf?version=client`}
+                className="text-accent underline"
+              >
+                PDF
+              </a>
+            </span>
+          </div>
+          <nav aria-label="Meses del plan" className="flex flex-wrap gap-2">
+            {view.months.map((m) => (
+              <Link
+                key={m.key}
+                href={href({ semana: m.firstWeekId })}
+                aria-current={m.key === week?.month ? 'true' : undefined}
+                className={chip(m.key === week?.month)}
+              >
+                {monthName(m.key)}
+              </Link>
+            ))}
+          </nav>
+          <nav aria-label="Semanas del mes" className="flex flex-wrap gap-2">
+            {monthWeeks.map((w) => (
+              <Link
+                key={w.id}
+                href={href({ semana: w.id })}
+                aria-current={w.id === week?.id ? 'true' : undefined}
+                className={chip(w.id === week?.id)}
+              >
+                Sem {w.weekIndex}
+                {w.isCurrent ? (
+                  <span title="Semana actual">
+                    <span aria-hidden="true">●</span>
+                    <span className="sr-only">(semana actual)</span>
+                  </span>
+                ) : null}
+                {w.total > 0 && w.done === w.total ? (
+                  <span title="Todas las sesiones registradas">
+                    <span aria-hidden="true">✓</span>
+                    <span className="sr-only">(hecha)</span>
+                  </span>
+                ) : null}
+                {w.weekType === 'deload' ? <span className="text-xs">descarga</span> : null}
+              </Link>
+            ))}
+          </nav>
+          {week ? (
+            <div className="flex flex-wrap items-center gap-2 text-sm">
+              <span className="text-muted">
+                Semana {week.weekIndex} · {week.phase} · {label('weekType', week.weekType)}
+                {week.start ? ` · desde ${formatDate(week.start)}` : ''}
+              </span>
+              {editable ? (
+                <span className="ml-auto">
+                  <CopyWeekButton
+                    microcycleId={week.id}
+                    weeks={view.weeks.map((w) => ({ id: w.id, weekIndex: w.weekIndex }))}
+                  />
+                </span>
+              ) : null}
+            </div>
+          ) : null}
+          <nav aria-label="Sesiones de la semana" className="flex flex-wrap gap-2">
+            {view.sessions.length === 0 ? (
+              <span className="text-sm text-muted">Semana sin sesiones.</span>
+            ) : null}
+            {view.sessions.map((x) => (
+              <Link
+                key={x.id}
+                href={href({ semana: week?.id, sesion: x.id })}
+                aria-current={x.id === view.selectedSessionId ? 'true' : undefined}
+                className={chip(x.id === view.selectedSessionId)}
+              >
+                {x.scheduledDate
+                  ? `${WEEKDAY.format(new Date(`${x.scheduledDate}T00:00:00Z`))} · `
+                  : ''}
+                {x.dayLabel} · {x.title ?? 'Sesión'}
+                {x.status ? (
+                  <span className="text-xs">({label('attendance', x.status)})</span>
+                ) : x.published ? null : (
+                  <span className="text-xs">(sin publicar)</span>
+                )}
+              </Link>
+            ))}
+          </nav>
+        </div>
+      </Card>
+      {session ? (
+        <section aria-labelledby="sesion-actual" className="flex flex-col gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 id="sesion-actual" className="text-lg font-semibold">
+              {session.dayLabel} · {session.title}
+            </h2>
+            {session.scheduledDate ? (
+              <span className="text-sm text-muted">{formatDate(session.scheduledDate)}</span>
+            ) : null}
+            {session.published ? <Badge tone="ok">Publicada</Badge> : <Badge>No publicada</Badge>}
+            <PublishButton
+              scope="session"
+              id={session.id}
+              published={session.published}
+              disabled={!session.published && session.plan.status !== 'active'}
+            />
+            <span className="ml-auto flex flex-wrap gap-3 text-sm">
+              <Link
+                href={`/app/plans/${session.plan.id}/sessions/${session.id}`}
+                className="text-accent underline"
+              >
+                Abrir sesión
+              </Link>
+              <Link
+                href={`/app/clients/${clientId}/sessions/${session.id}`}
+                className="text-accent underline"
+              >
+                Registro y modo sala
+              </Link>
+            </span>
+          </div>
+          <SessionTable s={session} editable={editable} />
+        </section>
+      ) : null}
+      {extras}
     </div>
   );
 }
 
-async function plansTab(ctx: Awaited<ReturnType<typeof requireStaff>>, clientId: string) {
+/** Adjustments of the active plan, the engine's proposal, the client's plans and a new plan. */
+async function plansTab(ctx: Ctx, clientId: string, hasActive: boolean) {
   const [plans, templates, proposals, adjustments, decision] = await Promise.all([
     listClientPlans(ctx, clientId),
     listPlanTemplates(ctx),
@@ -488,15 +692,13 @@ async function plansTab(ctx: Awaited<ReturnType<typeof requireStaff>>, clientId:
     return d.toISOString().slice(0, 10);
   })();
   const open = proposals.filter((p) => p.status === 'proposed');
-  return (
-    <div className="flex flex-col gap-4">
-      {plans.some((p) => p.status === 'active') ? (
-        <AdjustmentsCard
-          clientId={clientId}
-          items={adjustments.items}
-          autoApply={adjustments.autoApplyLoadProgressions}
-        />
-      ) : null}
+  const newPlan = (
+    <Card title="Nuevo plan">
+      <NewPlanForm clientId={clientId} templates={templates} />
+    </Card>
+  );
+  const rest = (
+    <>
       <Card
         title="Propuesta de plan del motor"
         actions={
@@ -555,7 +757,7 @@ async function plansTab(ctx: Awaited<ReturnType<typeof requireStaff>>, clientId:
           <ul className="divide-y divide-border">
             {plans.map((p) => (
               <li key={p.id} className="flex flex-wrap items-center gap-2 py-2 text-sm">
-                <Link href={`/app/plans/${p.id}`} className="font-medium hover:underline">
+                <Link href={`?tab=programa&plan=${p.id}`} className="font-medium hover:underline">
                   {p.name}
                 </Link>
                 <Badge tone={p.status === 'active' ? 'ok' : 'neutral'}>
@@ -566,14 +768,44 @@ async function plansTab(ctx: Awaited<ReturnType<typeof requireStaff>>, clientId:
                   {p.startDate ? ` · desde ${formatDate(p.startDate)}` : ''}
                   {p.template ? ` · plantilla «${p.template}»` : ''}
                 </span>
+                <Link href={`/app/plans/${p.id}`} className="ml-auto text-xs text-accent underline">
+                  Gestionar
+                </Link>
               </li>
             ))}
           </ul>
         )}
       </Card>
-      <Card title="Nuevo plan">
-        <NewPlanForm clientId={clientId} templates={templates} />
-      </Card>
+    </>
+  );
+  if (!hasActive)
+    return (
+      <div className="flex flex-col gap-4">
+        {newPlan}
+        {rest}
+      </div>
+    );
+  const adjustmentsCard = (
+    <AdjustmentsCard
+      clientId={clientId}
+      items={adjustments.items}
+      autoApply={adjustments.autoApplyLoadProgressions}
+    />
+  );
+  // Pending or recent adjustments are shown; with none, the card (and its setting) waits below.
+  return (
+    <div className="flex flex-col gap-4">
+      {adjustments.items.length ? adjustmentsCard : null}
+      <details open={open.length > 0} className="rounded-lg border border-border bg-bg p-4">
+        <summary className="cursor-pointer text-sm font-semibold">
+          Otros planes, propuesta del motor y nuevo plan
+        </summary>
+        <div className="mt-3 flex flex-col gap-4">
+          {adjustments.items.length ? null : adjustmentsCard}
+          {rest}
+          {newPlan}
+        </div>
+      </details>
     </div>
   );
 }
@@ -910,55 +1142,6 @@ async function monitoringTab(ctx: Awaited<ReturnType<typeof requireStaff>>, clie
         <div className="mt-3">
           <ExternalImportForm clientId={clientId} />
         </div>
-      </Card>
-    </div>
-  );
-}
-
-function ProgramSummary({
-  clientId,
-  s,
-}: {
-  clientId: string;
-  s: Awaited<ReturnType<typeof clientSummary>>;
-}) {
-  return (
-    <div className="grid gap-3 sm:grid-cols-2">
-      <Card title="Plan activo">
-        {s.plan ? (
-          <>
-            <Link href={`/app/plans/${s.plan.id}`} className="font-medium hover:underline">
-              {s.plan.name}
-            </Link>
-            <p className="text-sm text-muted">
-              {s.plan.current
-                ? `${s.plan.current.phase} · semana ${s.plan.current.weekIndex} de ${s.plan.current.totalWeeks} (${label('weekType', s.plan.current.weekType)})`
-                : 'Fuera de las fechas del plan'}
-            </p>
-          </>
-        ) : (
-          <p className="text-sm text-muted">
-            Sin plan activo: créalo desde una plantilla aquí abajo.
-          </p>
-        )}
-      </Card>
-      <Card title="Próxima sesión">
-        {s.next ? (
-          <>
-            <Link
-              href={`/app/clients/${clientId}/sessions/${s.next.id}`}
-              className="font-medium hover:underline"
-            >
-              {s.next.title ?? `Sesión ${s.next.dayLabel}`}
-            </Link>
-            <p className="text-sm text-muted">
-              {s.next.isToday ? 'Hoy' : formatDate(s.next.date)}
-              {s.next.published ? '' : ' · no publicada'}
-            </p>
-          </>
-        ) : (
-          <p className="text-sm text-muted">Nada programado.</p>
-        )}
       </Card>
     </div>
   );

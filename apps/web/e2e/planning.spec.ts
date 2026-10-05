@@ -8,7 +8,9 @@ test('trainer creates a 12-week, 3-day plan from a template and edits a session'
   await login(page, 'pablo.ibarra@example.com');
   await page.getByRole('link', { name: 'Clientes', exact: true }).click();
   await page.getByRole('link', { name: 'Rey, Claudia' }).click();
-  // Programa (default tab) holds the plans.
+  // Programa (default tab) holds the plans; with an active plan, «Nuevo plan» is folded below.
+  const more = page.locator('details', { has: page.getByRole('heading', { name: 'Nuevo plan' }) });
+  if (await more.count()) await more.evaluate((d) => ((d as HTMLDetailsElement).open = true));
 
   // The tab also offers the engine's plan proposal (Phase 11): use the "Nuevo plan" card.
   const form = page.locator('section').filter({
@@ -29,17 +31,25 @@ test('trainer creates a 12-week, 3-day plan from a template and edits a session'
   await expect(page.getByText('12 semanas · 3 sesiones/semana', { exact: false })).toBeVisible();
   await expect(page.locator('span', { hasText: /^Semana 12$/ })).toBeVisible();
 
-  // Session editor: client text is generated from the prescription; edits are saved.
+  // Session table: a cell is saved on Enter; the client text comes from the prescription.
   await page
     .getByRole('link', { name: /A · Full body A/ })
     .first()
     .click();
+  const grid = page.getByRole('grid', { name: 'Ejercicios de la sesión' });
+  const mainRow = () => grid.getByRole('row').filter({ hasText: '8-12' }).first();
+  await mainRow().locator('td').nth(3).click();
+  await page.keyboard.type('4');
+  await page.keyboard.press('Enter');
+  await expect(mainRow().locator('td').nth(3)).toHaveText('4');
+  await page.reload();
+  await expect(mainRow().locator('td').nth(3)).toHaveText('4');
+  await mainRow()
+    .getByRole('button', { name: /^Más opciones de/ })
+    .click();
   await expect(page.getByText(/Para el cliente:/).first()).toBeVisible();
+  await expect(page.getByText(/4 series de 8–12 repeticiones/).first()).toBeVisible();
   await expect(page.getByText(/repeticiones en reserva/).first()).toBeVisible();
-  const sets = page.getByLabel('Series').first();
-  await sets.fill('4');
-  await page.getByRole('button', { name: 'Guardar', exact: true }).first().click();
-  await expect(page.getByText(/^4×/).first()).toBeVisible();
 
   await page.getByRole('link', { name: /← Plan E2E/ }).click();
   await page

@@ -64,9 +64,11 @@ Plan: Hipertrofia N2 · 3 días · 3 meses (desde plantilla v4)   [⋯]
   Semana 2:  [ Lun · Sesión A ]  [ Mié · Sesión B ]  [ Vie · Sesión C ]
 ```
 
-- **MES → SEMANA → SESIÓN** en una sola vista.
-- Pulsar una sesión abre su tabla debajo, sin cambiar de página.
-- Sin plan, la pestaña ofrece dos botones: **[Usar plantilla]** y **[Crear plan desde cero]**.
+- **MES → SEMANA → SESIÓN** en una sola vista. Abre en la semana actual (●) y en la próxima sesión por hacer; las semanas hechas llevan ✓.
+- Pulsar una sesión abre su tabla debajo (la página se recarga con la sesión elegida).
+- Sin plan, la pestaña ofrece el formulario de plan nuevo (desde plantilla o en blanco) y la propuesta del motor.
+- Lo demás (otros planes, propuesta del motor, ajustes sin pendientes) queda plegado debajo. El registro de sesiones hechas está en Seguimiento.
+- *Implementado en la fase 2.*
 
 ### 2.3 Tabla de sesión (§10): la pantalla central
 
@@ -96,7 +98,9 @@ Sesión B · Semana 2 · Mié 8 oct            [Duplicar sesión] [Duplicar sema
 
 - **Autoguardado** por celda, con bloqueo optimista: si otro entrenador cambió la fila, se avisa y no se pisa.
 - **Validación en la propia celda**, en rojo y sin ventanas: RIR fuera de 0–10, carga negativa…
-- Las sugerencias del motor aparecen como **icono discreto** en la celda («Sugerencia: 82,5 kg, por el RIR registrado»). Se aceptan con un clic.
+- Las sugerencias del motor aparecerán como **icono discreto** en la celda («Sugerencia: 82,5 kg, por el RIR registrado»), aceptables con un clic. *Pendiente: hoy están en la tarjeta «Ajustes propuestos» de Programa.*
+- Lo avanzado de cada fila (tempo, VBT, métodos, alternativas, notas internas) se abre con **«⋯»**, debajo de la fila.
+- *Implementado en la fase 2* salvo las sugerencias en celda y las tarjetas del móvil (en móvil la tabla se desplaza en horizontal).
 - La celda **CARGA** admite `80 kg`, `75 %` (de 1RM), `RPE 8`, `banda roja` o `peso corporal`. Se guarda en la variable correcta de la prescripción.
 
 ### 2.4 Evaluación (§12–§17)

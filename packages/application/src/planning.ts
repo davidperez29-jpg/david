@@ -1,4 +1,5 @@
 import {
+  addSessionExercisesSchema,
   blockSchema,
   createPlanSchema,
   duplicatePlanSchema,
@@ -7,7 +8,9 @@ import {
   moveSchema,
   planFromTemplateSchema,
   planStatusSchema,
+  resolveExerciseNamesSchema,
   revisionSchema,
+  sessionExerciseIdsSchema,
   saveTemplateSchema,
   sessionExerciseSchema,
   updateBlockSchema,
@@ -22,6 +25,7 @@ import {
   defaultWeekTypes,
   diffFields,
   DomainError,
+  exerciseNameMatcher,
   expandTemplate,
   hasActiveConsent,
   loadFromPct,
@@ -40,7 +44,7 @@ import {
   type TemplateSession,
   type WeekType,
 } from '@tp/domain';
-import { and, asc, desc, eq, inArray, isNull, or, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, isNull, ne, or, sql } from 'drizzle-orm';
 import type { AnyPgColumn } from 'drizzle-orm/pg-core';
 import { writeAudit } from './audit';
 import { authorizeClient, requirePermission } from './authz';
@@ -49,6 +53,8 @@ import { secured } from './rls';
 import { parse } from './validation';
 
 const {
+  exerciseCategories,
+  exerciseCategoryLinks,
   trainingPlans,
   planRevisions,
   phases,
@@ -1148,6 +1154,19 @@ async function getSession_(ctx: RequestContext, id: string) {
         .from(exercises)
         .where(inArray(exercises.id, altIds))
     : [];
+  const exerciseIds = [...new Set(rows.map((r) => r.ex.id))];
+  const cats = exerciseIds.length
+    ? await ctx.db
+        .select({
+          exerciseId: exerciseCategoryLinks.exerciseId,
+          name: exerciseCategories.name,
+          isPrimary: exerciseCategoryLinks.isPrimary,
+        })
+        .from(exerciseCategoryLinks)
+        .innerJoin(exerciseCategories, eq(exerciseCategories.id, exerciseCategoryLinks.categoryId))
+        .where(inArray(exerciseCategoryLinks.exerciseId, exerciseIds))
+        .orderBy(desc(exerciseCategoryLinks.isPrimary), asc(exerciseCategories.sortOrder))
+    : [];
   const experience = await clientExperience(ctx.db, plan.clientId!);
   const siblings = await ctx.db
     .select({ id: microcycles.id, weekIndex: microcycles.weekIndex })
@@ -1181,6 +1200,8 @@ async function getSession_(ctx: RequestContext, id: string) {
             }),
             methods: ms.filter((m) => r.se.methodIds.includes(m.id)),
             alternatives: alts.filter((a) => r.se.alternativeExerciseIds.includes(a.id)),
+            /** Categories of the exercise (§11), the primary one first. */
+            categories: cats.filter((c) => c.exerciseId === r.ex.id).map((c) => c.name),
           };
         }),
     })),
@@ -1555,6 +1576,242 @@ async function updateMicrocycle_(ctx: RequestContext, id: string, input: unknown
       changes: [{ field: 'weekType', before: micro.weekType, after: d.weekType }],
     });
   });
+}
+
+// ── Session table: pasted rows, duplicated rows, names (restructure phase 2) ──
+
+/** Positions are unique per block: writes the given order in two steps. */
+async function reorderBlock(tx: Executor, blockId: string, orderedIds: string[]) {
+  for (const [i, id] of orderedIds.entries())
+    await tx
+      .update(sessionExercises)
+      .set({ position: 10_000 + i })
+      .where(and(eq(sessionExercises.id, id), eq(sessionExercises.blockId, blockId)));
+  for (const [i, id] of orderedIds.entries())
+    await tx
+      .update(sessionExercises)
+      .set({ position: i + 1 })
+      .where(and(eq(sessionExercises.id, id), eq(sessionExercises.blockId, blockId)));
+}
+
+/**
+ * Rows pasted from a spreadsheet (or typed in the table) are added in one transaction: if any
+ * row is not valid, none is added and the errors say which row and field (`rows.3.sets`).
+ */
+async function addSessionExercises_(
+  ctx: RequestContext,
+  sessionId: string,
+  input: unknown,
+): Promise<{ blockId: string; ids: string[] }> {
+  const d = parse(addSessionExercisesSchema, input);
+  const { session, plan } = await planOfSession(ctx, sessionId, 'plans:write');
+  const wanted = [...new Set(d.rows.map((r) => r.exerciseId))];
+  const found = await ctx.db
+    .select({ id: exercises.id, supportsVbt: exercises.supportsVbt })
+    .from(exercises)
+    .where(
+      and(
+        inArray(exercises.id, wanted),
+        visible(ctx, exercises.organizationId),
+        ne(exercises.status, 'archived'),
+      ),
+    );
+  const byId = new Map(found.map((e) => [e.id, e]));
+  const experience = await clientExperience(ctx.db, plan.clientId!);
+  const issues: Record<string, string[]> = {};
+  d.rows.forEach((r, i) => {
+    const ex = byId.get(r.exerciseId);
+    if (!ex) {
+      issues[`rows.${i}.exerciseId`] = ['unknown'];
+      return;
+    }
+    const v = validatePrescription(r.prescription, {
+      supportsVbt: ex.supportsVbt,
+      clientExperience: experience,
+    });
+    for (const [k, m] of Object.entries(v)) issues[`rows.${i}.${k}`] = m;
+  });
+  if (Object.keys(issues).length)
+    throw new DomainError(
+      'validation',
+      'Hay filas con datos no válidos: no se ha añadido ninguna.',
+      issues,
+    );
+  return ctx.db.transaction(async (tx) => {
+    let blockId = d.blockId;
+    if (blockId) {
+      const [b] = await tx
+        .select({ sessionId: sessionBlocks.sessionId })
+        .from(sessionBlocks)
+        .where(eq(sessionBlocks.id, blockId));
+      if (!b || b.sessionId !== sessionId)
+        throw new DomainError('validation', 'El bloque no es de esta sesión.', {
+          blockId: ['other_session'],
+        });
+    } else {
+      const [last] = await tx
+        .select({ id: sessionBlocks.id })
+        .from(sessionBlocks)
+        .where(eq(sessionBlocks.sessionId, sessionId))
+        .orderBy(desc(sessionBlocks.position))
+        .limit(1);
+      blockId =
+        last?.id ??
+        (
+          await tx
+            .insert(sessionBlocks)
+            .values({
+              organizationId: session.organizationId,
+              clientId: session.clientId,
+              sessionId,
+              position: 1,
+              type: 'main_strength',
+              organization: 'straight_sets',
+            })
+            .returning({ id: sessionBlocks.id })
+        )[0]!.id;
+    }
+    const [{ max } = { max: 0 }] = await tx
+      .select({ max: sql<number>`coalesce(max(${sessionExercises.position}), 0)::int` })
+      .from(sessionExercises)
+      .where(eq(sessionExercises.blockId, blockId));
+    const inserted = await tx
+      .insert(sessionExercises)
+      .values(
+        d.rows.map((r, i) => ({
+          organizationId: session.organizationId,
+          clientId: session.clientId,
+          blockId: blockId!,
+          exerciseId: r.exerciseId,
+          position: max + i + 1,
+          methodIds: [],
+          alternativeExerciseIds: [],
+          ...toColumns(r.prescription),
+          side: 'both' as const,
+          notesForClient: r.notesForClient ?? null,
+          source: 'manual' as const,
+          createdBy: ctx.actor.userId,
+        })),
+      )
+      .returning({ id: sessionExercises.id, exerciseId: sessionExercises.exerciseId });
+    for (const [i, row] of inserted.entries())
+      await writeAudit(tx, ctx, {
+        action: 'create',
+        entityType: 'session_exercise',
+        entityId: row.id,
+        clientId: plan.clientId,
+        changes: {
+          exerciseId: row.exerciseId,
+          prescription: prescriptionShort(d.rows[i]!.prescription),
+          pasted: true,
+        },
+      });
+    return { blockId: blockId!, ids: inserted.map((r) => r.id) };
+  });
+}
+
+/** Copies rows of the table (everything: prescription, notes, methods, alternatives) right below each one. */
+async function duplicateSessionExercises_(
+  ctx: RequestContext,
+  input: unknown,
+): Promise<{ ids: string[] }> {
+  const { ids } = parse(sessionExerciseIdsSchema, input);
+  const rows: Awaited<ReturnType<typeof blockOfExercise>>[] = [];
+  for (const id of new Set(ids)) rows.push(await blockOfExercise(ctx, id, 'plans:write'));
+  return ctx.db.transaction(async (tx) => {
+    const created: string[] = [];
+    for (const { exercise: src, plan } of rows) {
+      const { id: srcId, createdAt: _c, updatedAt: _u, version: _v, position: _p, ...rest } = src;
+      void _c;
+      void _u;
+      void _v;
+      void _p;
+      const [{ max } = { max: 0 }] = await tx
+        .select({ max: sql<number>`coalesce(max(${sessionExercises.position}), 0)::int` })
+        .from(sessionExercises)
+        .where(eq(sessionExercises.blockId, src.blockId));
+      const [copy] = await tx
+        .insert(sessionExercises)
+        .values({
+          ...rest,
+          position: max + 1,
+          source: 'manual',
+          derived: false,
+          createdBy: ctx.actor.userId,
+          updatedBy: null,
+        })
+        .returning({ id: sessionExercises.id });
+      const order = (
+        await tx
+          .select({ id: sessionExercises.id })
+          .from(sessionExercises)
+          .where(eq(sessionExercises.blockId, src.blockId))
+          .orderBy(asc(sessionExercises.position))
+      )
+        .map((r) => r.id)
+        .filter((x) => x !== copy!.id);
+      order.splice(order.indexOf(srcId) + 1, 0, copy!.id);
+      await reorderBlock(tx, src.blockId, order);
+      await writeAudit(tx, ctx, {
+        action: 'create',
+        entityType: 'session_exercise',
+        entityId: copy!.id,
+        clientId: plan.clientId,
+        changes: { duplicatedFrom: srcId },
+      });
+      created.push(copy!.id);
+    }
+    return { ids: created };
+  });
+}
+
+/** Deletes several rows of the table at once (all or none). */
+async function deleteSessionExercises_(ctx: RequestContext, input: unknown): Promise<void> {
+  const { ids } = parse(sessionExerciseIdsSchema, input);
+  const rows: Awaited<ReturnType<typeof blockOfExercise>>[] = [];
+  for (const id of new Set(ids)) rows.push(await blockOfExercise(ctx, id, 'plans:write'));
+  await ctx.db.transaction(async (tx) => {
+    for (const { exercise: row, plan } of rows) {
+      await tx.delete(sessionExercises).where(eq(sessionExercises.id, row.id));
+      await writeAudit(tx, ctx, {
+        action: 'delete',
+        entityType: 'session_exercise',
+        entityId: row.id,
+        clientId: plan.clientId,
+        changes: { exerciseId: row.exerciseId },
+      });
+    }
+    for (const blockId of new Set(rows.map((r) => r.exercise.blockId)))
+      await renumber(tx, sessionExercises, sessionExercises.blockId, blockId);
+  });
+}
+
+/**
+ * Recognizes names typed or pasted in the table among the exercises the organization can use
+ * (global and its own, not archived). Exact names or aliases are matched; otherwise only a clearly
+ * closest name. When unsure, it returns candidates for the trainer to choose.
+ */
+async function resolveExerciseNames_(ctx: RequestContext, input: unknown) {
+  const { names } = parse(resolveExerciseNamesSchema, input);
+  requirePermission(ctx, 'library:read');
+  const rows = await ctx.db
+    .select({
+      id: exercises.id,
+      name: exercises.name,
+      altNames: exercises.altNames,
+      status: exercises.status,
+    })
+    .from(exercises)
+    .where(and(visible(ctx, exercises.organizationId), ne(exercises.status, 'archived')));
+  const match = exerciseNameMatcher(
+    rows.map((r) => ({
+      id: r.id,
+      name: r.name,
+      altNames: r.altNames,
+      published: r.status === 'published',
+    })),
+  );
+  return names.map((name) => ({ name, ...match(name) }));
 }
 
 // ── Duplication (deep copies, §12.2) ──────────────────────────────────────────
@@ -1968,6 +2225,10 @@ export const updateSessionExercise = secured(updateSessionExercise_);
 export const deleteSessionExercise = secured(deleteSessionExercise_);
 export const moveSessionExercise = secured(moveSessionExercise_);
 export const updateMicrocycle = secured(updateMicrocycle_);
+export const addSessionExercises = secured(addSessionExercises_);
+export const duplicateSessionExercises = secured(duplicateSessionExercises_);
+export const deleteSessionExercises = secured(deleteSessionExercises_);
+export const resolveExerciseNames = secured(resolveExerciseNames_);
 export const duplicateSession = secured(duplicateSession_);
 export const duplicateWeek = secured(duplicateWeek_);
 export const duplicatePlan = secured(duplicatePlan_);

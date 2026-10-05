@@ -47,6 +47,10 @@ Las faltas se muestran en la ficha (`publishProblems`, en `packages/domain/src/l
   - un adaptador S3 compatible en la UE, más adelante.
 - Los archivos se sirven por `GET /api/v1/files/{id}` con autorización y RLS, `nosniff` y caché privada.
 
+**Silueta de músculos** (reestructuración, fase 2): si el ejercicio no tiene silueta subida, la ficha muestra un esquema del cuerpo (delante y detrás) con los grupos musculares principales en color y los secundarios en color claro (`BodyMap`, a partir de `exercise_muscles`). Es una guía, no un dibujo anatómico. La ficha empieza con un resumen: silueta, categorías, músculos, vídeo (verificado o pendiente), progresiones, regresiones y referencias (métodos con su evidencia).
+
+**Categorías del §11**: fuerza, hipertrofia, potencia, velocidad, pliometría, isométricos, excéntricos, core, movilidad, coordinación, equilibrio, reducción de factores de riesgo y readaptación (más las específicas que ya existían). El catálogo global se mantiene alineado con la lista en cada arranque (nombre y orden).
+
 ### 2.4 Progresiones (§30)
 Una regresión A→B equivale a una progresión B→A. El sistema normaliza todas las aristas a la dirección «más exigente» y **rechaza** cualquier relación que cree un ciclo (A más difícil que B, B más difícil que C y C más difícil que A). Las variantes no tienen dirección. Implementación: `findProgressionCycle` en `packages/domain/src/library/progressions.ts`.
 

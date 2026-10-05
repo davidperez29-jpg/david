@@ -3,8 +3,12 @@ import { login } from './helpers';
 
 test('trainer reviews executed sessions and logs one in room mode', async ({ page }) => {
   await login(page, 'lucia.moreno@example.com');
-  // The client's Programa tab lists the executed sessions.
+  // The client's Seguimiento tab lists the executed sessions.
   await page.getByRole('link', { name: 'Villalba, Marcos' }).click();
+  await page
+    .getByRole('navigation', { name: 'Secciones del cliente' })
+    .getByRole('link', { name: 'Seguimiento' })
+    .click();
   await expect(
     page
       .locator('#sesiones')
