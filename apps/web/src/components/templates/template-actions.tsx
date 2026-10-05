@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Field, Input, Select, Textarea } from '@/components/ui/field';
 import { FormError, useApiAction } from '@/components/use-form';
-import { LABELS } from '@/lib/labels';
+import { KIND_LABELS, LABELS, POPULATION_LABELS } from '@/lib/labels';
 
 export interface ProfileOption {
   slug: string;
@@ -29,18 +29,6 @@ const LEVELS = [
   { value: '2', label: 'Nivel 2 · Intermedio' },
   { value: '3', label: 'Nivel 3 · Avanzado' },
 ];
-export const POPULATION_LABELS: Record<string, string> = {
-  adultos: 'Adultos',
-  adulto_mayor: 'Adulto mayor',
-  deportistas: 'Deportistas',
-  jovenes: 'Jóvenes',
-  pc_leve: 'Parálisis cerebral leve',
-};
-export const KIND_LABELS: Record<string, string> = {
-  training: 'Entrenamiento',
-  risk_reduction: 'Reducción de factores de riesgo',
-  readaptation: 'Readaptación',
-};
 
 function Weekdays({ value, onChange }: { value: number[]; onChange: (v: number[]) => void }) {
   return (

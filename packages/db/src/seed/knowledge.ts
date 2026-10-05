@@ -3,6 +3,7 @@ import type { Database } from '../client';
 import { loadAssessmentFiles, seedAssessment, type AssessmentSeedReport } from './assessment';
 import { loadEvidenceFiles, seedEvidence, type EvidenceSeedReport } from './evidence';
 import { loadExerciseFile, seedGlobalExercises } from './exercises';
+import { generateProfileTemplates } from './profile-templates';
 import { loadTemplateFiles, seedTemplates } from './templates';
 
 /**
@@ -35,6 +36,11 @@ export async function seedKnowledgeBase(
     db,
     loadExerciseFile(join(seedDir, 'exercises', 'global.json')),
   );
-  const templates = await seedTemplates(db, loadTemplateFiles(join(seedDir, 'templates')));
+  // Hand-written templates first; the generated ones fill the remaining profile × level × days.
+  const handWritten = loadTemplateFiles(join(seedDir, 'templates'));
+  const templates = await seedTemplates(db, [
+    ...handWritten,
+    ...generateProfileTemplates(handWritten),
+  ]);
   return { evidence, assessment, exercises, templates };
 }

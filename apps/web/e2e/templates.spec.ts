@@ -12,14 +12,15 @@ test('UX 5 · from a client without a plan, a plan from a template in 3 clicks',
   await expect(page.getByRole('heading', { name: 'Nuevo plan' })).toBeVisible();
   const t = new TimedTask(page, 'Crear un plan desde una plantilla');
   await t.step(() => page.getByRole('link', { name: 'Usar plantilla' }).click());
-  const item = page.getByRole('listitem').filter({
-    has: page.getByRole('link', { name: 'Salud y función · 2 días (full body)', exact: true }),
-  });
-  await t.step(() => item.getByText('Usar con Noelia Cuesta').click());
-  const form = item.getByRole('form', { name: /^Usar «Salud y función · 2 días/ });
+  // Noelia has no profile yet: her goals (hypertrophy), experience and 4 days order the library.
+  await expect(page.getByText('Noelia no tiene perfil de programación')).toBeVisible();
+  const first = page.locator('main li:has(> div > a)').first();
+  await expect(first.locator('a').first()).toHaveText('Hipertrofia · 4 días (torso/pierna)');
+  await t.step(() => first.getByText('Usar con Noelia Cuesta').click());
+  const form = first.getByRole('form', { name: /^Usar «Hipertrofia · 4 días/ });
   await t.step(() => form.getByLabel('Inicio').fill('2026-11-03'));
   await t.step(() => form.getByRole('button', { name: 'Crear plan' }).click());
-  await expect(page.getByText('12 semanas · 2 sesiones/semana', { exact: false })).toBeVisible();
+  await expect(page.getByText('12 semanas · 4 sesiones/semana', { exact: false })).toBeVisible();
   const r = t.done();
   // Three clicks and typing the start date (docs/UX_FLOW.md §3).
   expect(r.interactions).toBeLessThanOrEqual(4);
@@ -37,9 +38,10 @@ test('my templates: duplicate one of the platform, use it, edit it (new version)
   await filters.getByLabel('Nivel').selectOption('1');
   await filters.getByRole('button', { name: 'Filtrar' }).click();
   await expect(page).toHaveURL(/days=2/);
-  const names = await page.locator('main li > div > a').allInnerTexts();
-  expect(names.length).toBeGreaterThan(0);
-  expect(names.every((n) => /2 días/.test(n))).toBe(true);
+  // Every template shown has 2 days (badge; routines do not say it in their name).
+  const items = await page.locator('main li:has(> div > a)').allInnerTexts();
+  expect(items.length).toBeGreaterThan(0);
+  expect(items.every((n) => /\b2 días\b/.test(n))).toBe(true);
 
   await page
     .getByRole('link', { name: 'Iniciación · 2 días (técnica de patrones)', exact: true })
@@ -108,4 +110,45 @@ test('platform templates are read-only and clients cannot reach the library API'
   expect(((await res.json()) as { error: { message: string } }).error.message).toMatch(
     /duplícala en tus plantillas/,
   );
+});
+
+test('initial templates: risk-reduction routines by level and generated templates with their evidence', async ({
+  page,
+}) => {
+  await login(page, 'lucia.moreno@example.com');
+  await page.getByRole('link', { name: 'Plantillas', exact: true }).click();
+  const filters = page.getByRole('search', { name: 'Filtrar plantillas' });
+  await filters.getByLabel('Tipo').selectOption('risk_reduction');
+  await filters.getByRole('button', { name: 'Filtrar' }).click();
+  await expect(page.getByRole('status')).toHaveText('9 plantillas');
+  await expect(
+    page.getByRole('heading', { name: 'Reducción de factores de riesgo' }),
+  ).toBeVisible();
+  // Grouped by routine: the three levels of each one together.
+  const names = await page.locator('main li > div > a').allInnerTexts();
+  expect(names.slice(0, 3)).toEqual([1, 2, 3].map((n) => `Rutina de aductores · Nivel ${n}`));
+
+  await page.getByRole('link', { name: 'Rutina de isquiosurales · Nivel 2', exact: true }).click();
+  await expect(page.getByRole('link', { name: 'Nordic hamstring' })).toBeVisible();
+  await expect(page.getByText(/«puede reducir»/)).toBeVisible();
+  // The table shows each exercise's category, as in a client's session.
+  await expect(page.getByRole('row').filter({ hasText: 'Curl nórdico' })).toContainText(
+    'Excéntricos',
+  );
+
+  // A generated template for older adults: balance in every session, with its evidence.
+  await page.goto('/app/plans?profile=adulto-mayor&level=1&days=3');
+  await page.getByRole('link', { name: 'Adulto mayor · Nivel 1 · 3 días', exact: true }).click();
+  await expect(
+    page.getByRole('link', { name: 'Equilibrio y tareas funcionales en mayores' }),
+  ).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Fuerza en personas mayores' })).toBeVisible();
+  for (const session of [
+    'A · Fuerza y equilibrio A',
+    'B · Equilibrio y caminar',
+    'C · Fuerza y equilibrio C',
+  ]) {
+    await page.getByRole('button', { name: session }).click();
+    await expect(page.getByRole('row').filter({ hasText: 'Equilibrio monopodal' })).toHaveCount(1);
+  }
 });

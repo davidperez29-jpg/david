@@ -19,8 +19,8 @@
 | **0** | **Despliegue online** (Render, UE): URL + login, sin comandos | Docker, migraciones, observabilidad | ✅ Preparado (falta el primer despliegue del usuario) |
 | 1 | Arquitectura + BD + autenticación + clientes (perfil principal, nivel, deporte, material, frecuencia); navegación nueva | Auth, RLS, clientes | ✅ Hecha |
 | 2 | Ejercicios + sesiones (tabla tipo Excel) + planificación MES → SEMANA → SESIÓN | Biblioteca, prescripción, planes | ✅ Hecha |
-| 3 | Plantillas + objetivos + niveles (filtros, usar plantilla = copia, desde cero, mis plantillas con versiones) | `plan_templates`, `plan_template_versions` | ⏳ En curso (biblioteca y versiones hechas; faltan las plantillas iniciales) |
-| 4 | Evaluaciones + referencias (hoja de intentos, baterías por perfil, fórmulas, grupos/equipos) | Evaluación actual | Pendiente |
+| 3 | Plantillas + objetivos + niveles (filtros, usar plantilla = copia, desde cero, mis plantillas con versiones, 102 plantillas iniciales) | `plan_templates`, `plan_template_versions` | ✅ Hecha |
+| 4 | Evaluaciones + referencias (hoja de intentos, baterías por perfil, fórmulas, grupos/equipos) | Evaluación actual | Siguiente |
 | 5 | Radares + evolución (normalización, dimensiones, comparativas) | Cambio real, gráficos | Pendiente |
 | 6 | Informes (8 tipos, comparativo, grupal, radar en PDF) | Motor de informes | Pendiente |
 | 7 | Lesiones / readaptación / RTP | Seguimiento de dolor, planes | Pendiente |
@@ -87,18 +87,25 @@ Se comprueba en CI con la imagen de despliegue sobre una base vacía, arrancada 
 
 Pendiente para fases siguientes: tarjetas por ejercicio en el móvil y sugerencias del motor dentro de la celda.
 
-## Fase 3 · Plantillas, objetivos y niveles ⏳ En curso
+## Fase 3 · Plantillas, objetivos y niveles ✅
 
 - ✅ Biblioteca con filtros (perfil, nivel, días, población, tipo, origen, material del cliente y texto). La duración se elige al usar la plantilla (decisión A17), no es un filtro.
 - ✅ **Usar plantilla** crea una copia independiente, con la duración elegida (3, 6, 9 o 12 meses).
 - ✅ **Crear desde cero**.
 - ✅ **Mis plantillas**: guardar desde un plan, duplicar (también las de la plataforma), editar en la misma tabla que las sesiones, archivar, versionar (con restaurar) y reutilizar. Detalle en `PLANNING.md` §6 ter.
-- ⏳ Plantillas iniciales por perfil × nivel × días (2–5), con sus fases para 3–12 meses, construidas con búsqueda específica por perfil (`SCIENCE_SYSTEM.md` §4). Incluyen las rutinas de reducción de factores de riesgo de los documentos del usuario. **Siguiente.**
+- ✅ **Plantillas iniciales**: 102 de la plataforma, detalle en `PLANNING.md` §6 ter.
+  - 17 escritas a mano y 76 generadas, que cubren los 13 perfiles con plantillas genéricas × 3 niveles × 2–5 días.
+  - Cada una es un bloque de 13 semanas que se repite en ciclos para 6–12 meses.
+  - Se añaden 9 rutinas de reducción de factores de riesgo: aductores, isquiosurales y cuádriceps, en 3 niveles.
+  - Las dosis se apoyan en evidencia verificada en PubMed, con búsquedas específicas por perfil (`SCIENCE_SYSTEM.md` §4). Hay métodos nuevos: `equilibrio-mayores`, `fuerza-paralisis-cerebral` y `actividad-fisica-oms`.
 
 **Criterios**:
 - ✅ usar una plantilla no modifica el original (integración);
 - ✅ cada edición de plantilla crea versión (integración y E2E; las seguidas de la misma persona se agrupan hasta que un plan la usa);
-- ⏳ los filtros devuelven resultados en < 300 ms (se medirá con las plantillas iniciales cargadas).
+- ✅ los filtros devuelven resultados en < 300 ms. Medido con las 103 plantillas cargadas (102 de la plataforma y 1 del centro), en el build de producción y con 20 repeticiones:
+  - `GET /plan-templates`, con y sin filtros: p95 ≤ 33 ms;
+  - página Plantillas: p95 ≤ 60 ms;
+  - página Plantillas para un cliente, ordenada por encaje: p95 ≤ 81 ms.
 
 ## Fase 4 · Evaluaciones y referencias
 

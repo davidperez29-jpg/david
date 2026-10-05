@@ -2793,6 +2793,7 @@
     ],
     "exercises": [
       {
+        "category": "string",
         "id": "string",
         "name": "string",
         "ref": "string"

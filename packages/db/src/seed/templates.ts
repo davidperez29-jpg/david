@@ -2,7 +2,12 @@
  * Global plan templates (§12.3) from seed-data/templates/*.json. Starting points, not recipes:
  * each template lists the methods whose evidence supports its doses. Idempotent by slug.
  */
-import { templateExerciseRefs, validateDefinition, type TemplateDefinition } from '@tp/domain';
+import {
+  sameJson,
+  templateExerciseRefs,
+  validateDefinition,
+  type TemplateDefinition,
+} from '@tp/domain';
 import { and, desc, eq, isNull } from 'drizzle-orm';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -49,6 +54,22 @@ const POPULATION_OF_PROFILE: Record<string, string[]> = {
   'adulto-mayor': ['adulto_mayor'],
   'paralisis-cerebral-leve': ['pc_leve'],
 };
+
+/** Library facets of a seed template: explicit values or the defaults from its goal and level. */
+export function templateFacets(t: SeedTemplate): {
+  profile: string | null;
+  levelN: 1 | 2 | 3 | null;
+  population: string[];
+  kind: NonNullable<SeedTemplate['kind']>;
+} {
+  const profile = t.profile ?? PROFILE_OF_GOAL[t.goal] ?? null;
+  return {
+    profile,
+    levelN: t.levelN ?? LEVEL_N[t.level] ?? null,
+    population: t.population ?? (profile ? (POPULATION_OF_PROFILE[profile] ?? ['adultos']) : []),
+    kind: t.kind ?? 'training',
+  };
+}
 
 export function loadTemplateFiles(dir: string): SeedTemplate[] {
   if (!existsSync(dir)) return [];
@@ -114,7 +135,7 @@ export async function seedTemplates(
           }
       for (const m of t.methods)
         if (!ms.has(m)) throw new Error(`Template ${t.slug}: unknown method «${m}»`);
-      const profile = t.profile ?? PROFILE_OF_GOAL[t.goal] ?? null;
+      const facets = templateFacets(t);
       const values = {
         name: t.name,
         description: t.description,
@@ -125,12 +146,11 @@ export async function seedTemplates(
         definition: t.definition,
         methodSlugs: t.methods,
         status: 'published' as const,
-        profileSlug: profile,
-        levelN: t.levelN ?? LEVEL_N[t.level] ?? null,
-        population:
-          t.population ?? (profile ? (POPULATION_OF_PROFILE[profile] ?? ['adultos']) : []),
+        profileSlug: facets.profile,
+        levelN: facets.levelN,
+        population: facets.population,
         equipmentSlugs: needs(t.definition),
-        kind: t.kind ?? ('training' as const),
+        kind: facets.kind,
       };
       const [existing] = await tx
         .select({
@@ -142,7 +162,8 @@ export async function seedTemplates(
         .where(and(isNull(planTemplates.organizationId), eq(planTemplates.slug, t.slug)));
       if (existing) {
         // A change of content made by the platform is a new version: plans keep theirs.
-        const changed = JSON.stringify(existing.definition) !== JSON.stringify(t.definition);
+        // jsonb reorders keys: compare content, or every start would make a new version.
+        const changed = !sameJson(existing.definition, t.definition);
         const templateVersion = existing.templateVersion + (changed ? 1 : 0);
         await tx
           .update(planTemplates)

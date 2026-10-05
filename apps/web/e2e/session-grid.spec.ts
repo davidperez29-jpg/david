@@ -26,12 +26,19 @@ test('UX 4 · from the home, a load is changed with two clicks and typing', asyn
   await t.step(() => page.getByRole('link', { name: 'Villalba, Marcos' }).click());
   const row = () => rows(page).filter({ hasText: '8-12' }).first();
   await t.step(() => row().locator('td').nth(5).click());
+  // Saved in the background: wait for it before reloading, or the reload can cancel it.
+  const saved = page.waitForResponse(
+    (res) =>
+      /\/api\/v1\/session-exercises\/[0-9a-f-]{36}$/.test(res.url()) &&
+      res.request().method() === 'PATCH',
+  );
   await t.step(() => page.keyboard.type('62,5'));
   await t.step(() => page.keyboard.press('Enter'));
   await expect(row().locator('td').nth(5)).toHaveText('62,5 kg');
   const r = t.done();
   expect(r.interactions).toBeLessThanOrEqual(4);
   expect(r.ms).toBeLessThan(20_000);
+  expect((await saved).ok()).toBe(true);
   await page.reload();
   await expect(row().locator('td').nth(5)).toHaveText('62,5 kg');
 });

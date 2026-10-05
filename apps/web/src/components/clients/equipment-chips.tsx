@@ -31,6 +31,7 @@ const PRESETS: { label: string; slugs: string[] }[] = [
       'leg_press',
       'machines_other',
       'pull_up_bar',
+      'suspension_trainer',
       'resistance_bands',
       'medicine_ball',
       'plyo_box',

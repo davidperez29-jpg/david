@@ -2,6 +2,46 @@
 
 Formato: fecha · cambio · motivo · archivos · impacto.
 
+## 2026-10-05 — Reestructuración, fase 3 (segunda parte): plantillas iniciales por perfil, nivel y días
+
+- **Cambio:** la plataforma trae **102 plantillas** (antes 17). Se generan las combinaciones perfil × nivel × días que faltaban:
+  - **76 plantillas** de los 13 perfiles con plantillas genéricas, en 3 niveles y con 2–5 días según el nivel (`packages/db/src/seed/profile-templates.ts`);
+  - **9 rutinas de reducción de factores de riesgo**: aductores, isquiosurales y cuádriceps, en 3 niveles, dos veces por semana y unos 15 min;
+  - cada plantilla es un bloque de 13 semanas (4 + 4 + 5, descargas y reevaluación) que se repite en ciclos para 6–12 meses.
+  - **Motivo:** §6 del encargo y hoja de ruta (fase 3). Readaptación y retorno al deporte se programan por protocolo de lesión (fase 7); el perfil personalizado, el entrenador.
+- **Cambio:** **evidencia verificada en PubMed** para las poblaciones nuevas (`seed-data/evidence/templates_profiles.json`):
+  - equilibrio en mayores: Lesinski 2015 ([10.1007/s40279-015-0375-y](https://doi.org/10.1007/s40279-015-0375-y));
+  - caídas: Sherrington 2019, Cochrane ([10.1002/14651858.CD012424.pub2](https://doi.org/10.1002/14651858.CD012424.pub2));
+  - parálisis cerebral: Verschuren 2016 ([10.1111/dmcn.13053](https://doi.org/10.1111/dmcn.13053)), Merino-Andrés 2021 ([10.1177/02692155211040199](https://doi.org/10.1177/02692155211040199)) y Ryan 2017, Cochrane ([10.1002/14651858.CD011660.pub2](https://doi.org/10.1002/14651858.CD011660.pub2)). Su evidencia es contradictoria y así se dice.
+  - **Métodos nuevos:** `equilibrio-mayores`, `fuerza-paralisis-cerebral` y `actividad-fisica-oms` (guías OMS 2020, ya verificadas).
+  - **Catálogo:** población `cerebral_palsy` (solo contexto clínico) y resultado `falls`.
+- **Cambio:** cada plantilla cita solo la evidencia que encaja con su población y su dosis:
+  - `fuerza-maxima` (> 80 % 1RM) solo desde el nivel 2;
+  - la evidencia de mayores no se usa para otros adultos;
+  - las rutinas nunca presentan la prevención como un hecho; la de cuádriceps dice que no hay evidencia verificada sobre lesiones.
+- **Cambio:** en la biblioteca, las plantillas sin perfil se agrupan por tipo («Reducción de factores de riesgo») y se ordenan por nombre.
+  - La tabla de una plantilla muestra la categoría de cada ejercicio, como la de una sesión.
+  - La tarjeta de evidencia recuerda qué es criterio práctico (F).
+  - El material «Gimnasio completo» incluye el entrenador en suspensión.
+- **Tests:**
+  - unitarias de las plantillas generadas: combinaciones, validez, nivel de los ejercicios, impacto en mayores y parálisis cerebral, evidencia por población;
+  - contrato de edición de todas las plantillas de la plataforma;
+  - latencia de los filtros con la biblioteca completa: p95 ≤ 81 ms (criterio < 300 ms).
+- **Cambio:** para un cliente **sin perfil o sin nivel**, la biblioteca ordena con el perfil que sugieren sus objetivos y el nivel que sugiere su experiencia (decisión A21). Avisa y enlaza a «Asignar perfil»; no se guarda nada.
+  - **Motivo:** con 102 plantillas, a un cliente sin perfil se le ofrecían primero las de rendimiento (las primeras del catálogo). Lo detectó el E2E «UX 5»: la cliente de la demo, sin perfil y con objetivo de hipertrofia, ya no veía una plantilla adecuada entre las primeras.
+- **Corrección:** cargar el catálogo otra vez (lo hace cada arranque, también en Render) **subía de versión todas las plantillas de la plataforma** y añadía una versión «Actualizada por la plataforma» sin cambios reales.
+  - La causa: se comparaba el texto JSON y `jsonb` no conserva el orden de las claves.
+  - Ahora se compara el contenido (`sameJson`, claves ordenadas a todos los niveles).
+  - Esto también evita versiones vacías al guardar una plantilla sin cambios, y cambios inexistentes en la auditoría de campos JSON.
+  - Lo detectó una comprobación manual de la carga repetida; ahora hay un test de integración.
+- **Corrección:** en producción, los filtros **«Tipo» y «Población» de la biblioteca no tenían opciones**, y la lista y la ficha mostraban «risk_reduction» o «adulto_mayor» en lugar de su nombre.
+  - La causa: las páginas del servidor importaban los textos desde un módulo de cliente (`'use client'`), y en el servidor eso no es el objeto sino una referencia.
+  - Los textos pasan a `lib/labels.ts`; el script del tema, a `lib/theme.ts`.
+  - Un test nuevo (`client-boundary.unit.test.ts`) recorre lo que importa el servidor y falla si toma algo que no sea un componente de un módulo de cliente.
+  - Lo detectó el E2E nuevo de las plantillas iniciales, al filtrar por tipo.
+- **Tests:** dos E2E recargaban la página justo después de editar una celda y podían cancelar el guardado, que va en segundo plano. Ahora esperan a la respuesta del guardado.
+- **Impacto:** al desplegar, la carga del catálogo añade las plantillas nuevas y sus versiones; los planes existentes no cambian.
+
 ## 2026-10-05 — Reestructuración, fase 3 (primera parte): biblioteca de plantillas con versiones
 
 - **Cambio:** **Plantillas** es una biblioteca con **filtros** (perfil, nivel, días, población, tipo, origen y texto).
@@ -20,7 +60,7 @@ Formato: fecha · cambio · motivo · archivos · impacto.
 - **Esquema:** migraciones `0037` (columnas de filtro y versión en `plan_templates`, tabla `plan_template_versions` con `used_at`, `training_plans.based_on_template_version`, versión 1 de las existentes) y `0038` (RLS de catálogo y disparador `inherit_org`).
 - **API:** `GET /plan-templates` con filtros, `POST /plan-templates`, `PATCH /plan-templates/{id}`, `POST /plan-templates/{id}/duplicate`, `/archive`, `/restore`; `durationMonths` en `POST /clients/{id}/plans/from-template`. Contratos actualizados (solo añadidos).
 - **Decisiones:** A17–A20 en `PRODUCT_ARCHITECTURE.md`.
-- **Pendiente de esta fase:** las plantillas iniciales por perfil × nivel × días.
+- **Pendiente de esta fase:** las plantillas iniciales por perfil × nivel × días (hecho en la segunda parte).
 
 ## 2026-10-05 — Reestructuración, fase 2: tabla de sesión tipo Excel y Programa por meses
 

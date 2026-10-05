@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { headers } from 'next/headers';
 import type { ReactNode } from 'react';
 import './globals.css';
-import { THEME_BOOT } from '@/components/theme-switch';
+import { THEME_BOOT } from '@/lib/theme';
 
 export const metadata: Metadata = {
   title: { default: 'Plataforma de entrenamiento', template: '%s · Plataforma de entrenamiento' },

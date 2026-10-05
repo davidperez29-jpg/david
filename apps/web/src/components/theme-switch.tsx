@@ -1,16 +1,16 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { THEME_KEY } from '@/lib/theme';
 
 type Theme = 'system' | 'light' | 'dark';
-const KEY = 'tp-theme';
 
 /** Light / dark / system (§9.7: dark mode is useful in the gym). Stored on this device only. */
 export function ThemeSwitch() {
   const [theme, setTheme] = useState<Theme>('system');
   useEffect(() => {
     try {
-      const t = localStorage.getItem(KEY);
+      const t = localStorage.getItem(THEME_KEY);
       if (t === 'light' || t === 'dark') setTheme(t);
     } catch {
       /* storage unavailable: keep the system setting */
@@ -19,8 +19,8 @@ export function ThemeSwitch() {
   const choose = (t: Theme) => {
     setTheme(t);
     try {
-      if (t === 'system') localStorage.removeItem(KEY);
-      else localStorage.setItem(KEY, t);
+      if (t === 'system') localStorage.removeItem(THEME_KEY);
+      else localStorage.setItem(THEME_KEY, t);
     } catch {
       /* ignore */
     }
@@ -53,6 +53,3 @@ export function ThemeSwitch() {
     </fieldset>
   );
 }
-
-/** Inline script that applies the saved theme before the first paint (no flash). */
-export const THEME_BOOT = `try{var t=localStorage.getItem('${KEY}');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t}catch(e){}`;

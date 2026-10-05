@@ -1,0 +1,476 @@
+{
+  "topic": "templates_profiles",
+  "sources": [
+    {
+      "key": "lesinski2015_balance_older",
+      "pmid": "26325622",
+      "doi": "10.1007/s40279-015-0375-y",
+      "title": "Effects of Balance Training on Balance Performance in Healthy Older Adults: A Systematic Review and Meta-analysis.",
+      "journal": "Sports medicine (Auckland, N.Z.)",
+      "volume": "45",
+      "issue": "12",
+      "pages": "1721-38",
+      "authors": ["Lesinski M", "Hortobágyi T", "Muehlbauer T", "Gollhofer A", "Granacher U"],
+      "year": 2015,
+      "studyDesign": "meta_analysis",
+      "populationSummary": "Adultos mayores sanos (≥ 65 años) que viven en la comunidad; 23 ensayos aleatorizados.",
+      "ageRange": "≥ 65 años",
+      "sex": "mixed",
+      "trainingStatus": "mixed",
+      "sport": null,
+      "intervention": "Entrenamiento del equilibrio.",
+      "comparison": "Controles pasivos.",
+      "outcomesMeasured": "Equilibrio estático y dinámico, proactivo y reactivo, y baterías de equilibrio (p. ej., escala de Berg).",
+      "resultsSummary": "El entrenamiento del equilibrio mejoró el equilibrio estático (SMD 0,51), dinámico (0,44), proactivo (1,73) y reactivo (1,01) y las baterías (1,52). Se asociaron a las mayores mejoras los programas de 11–12 semanas, 3 sesiones por semana, 36–40 sesiones, 31–45 min por sesión y 91–120 min por semana.",
+      "limitations": "Comparaciones indirectas entre estudios, cada modalidad por separado; calidad metodológica limitada (PEDro medio 5) y heterogeneidad considerable (I² 76–92 %); sin datos suficientes del volumen por ejercicio.",
+      "practicalApplication": "Programar el equilibrio unas 3 veces por semana, en sesiones de 30–45 min, durante al menos 11–12 semanas, progresando la dificultad.",
+      "access": "abstract_only"
+    },
+    {
+      "key": "sherrington2019_falls_cochrane",
+      "pmid": "30703272",
+      "doi": "10.1002/14651858.CD012424.pub2",
+      "title": "Exercise for preventing falls in older people living in the community.",
+      "journal": "The Cochrane database of systematic reviews",
+      "volume": "1",
+      "issue": "1",
+      "pages": "CD012424",
+      "authors": [
+        "Sherrington C",
+        "Fairhall NJ",
+        "Wallbank GK",
+        "Tiedemann A",
+        "Michaleff ZA",
+        "Howard K",
+        "Clemson L",
+        "Hopewell S",
+        "Lamb SE"
+      ],
+      "year": 2019,
+      "studyDesign": "meta_analysis",
+      "populationSummary": "Personas de 60 años o más que viven en la comunidad; 108 ensayos aleatorizados con 23.407 participantes (edad media 76 años, 77 % mujeres).",
+      "ageRange": "≥ 60 años",
+      "sex": "mixed",
+      "trainingStatus": "mixed",
+      "sport": null,
+      "intervention": "Ejercicio como intervención única: de todos los tipos y por tipo (equilibrio y funcional, varios tipos, taichí, fuerza, baile, caminar).",
+      "comparison": "Intervención de control que no se espera que reduzca caídas.",
+      "outcomesMeasured": "Tasa de caídas, personas que caen, fracturas por caída, caídas con atención médica, calidad de vida y efectos adversos.",
+      "resultsSummary": "El ejercicio redujo la tasa de caídas un 23 % (RaR 0,77; certeza alta) y las personas que caen un 15 %. Los ejercicios de equilibrio y funcionales redujeron la tasa de caídas un 24 % (certeza alta); los programas de varios tipos (sobre todo equilibrio y funcional más fuerza), probablemente un 34 % (certeza moderada). El efecto de los programas sobre todo de fuerza, de baile o de caminar es incierto.",
+      "limitations": "La mayoría de los ensayos tienen riesgo de sesgo incierto o alto en algún apartado; los efectos sobre fracturas y otros resultados tienen certeza baja; los efectos adversos se vigilaron de cerca en un solo ensayo.",
+      "practicalApplication": "En mayores, incluir equilibrio y ejercicios funcionales, idealmente combinados con fuerza, para reducir caídas.",
+      "access": "abstract_only"
+    },
+    {
+      "key": "verschuren2016_cp_recommendations",
+      "pmid": "26853808",
+      "doi": "10.1111/dmcn.13053",
+      "title": "Exercise and physical activity recommendations for people with cerebral palsy.",
+      "journal": "Developmental medicine and child neurology",
+      "volume": "58",
+      "issue": "8",
+      "pages": "798-808",
+      "authors": ["Verschuren O", "Peterson MD", "Balemans AC", "Hurvitz EA"],
+      "year": 2016,
+      "studyDesign": "consensus",
+      "populationSummary": "Niños, adolescentes y adultos con parálisis cerebral.",
+      "ageRange": "Todas las edades",
+      "sex": "mixed",
+      "trainingStatus": "mixed",
+      "sport": null,
+      "intervention": "Actividad física y ejercicio (recomendaciones).",
+      "comparison": "Sin comparación (recomendaciones).",
+      "outcomesMeasured": "Recomendaciones de actividad física, ejercicio y conducta sedentaria.",
+      "resultsSummary": "Presenta las primeras recomendaciones específicas de actividad física y ejercicio para personas con parálisis cerebral, basadas en una revisión de la literatura, la opinión de expertos y la experiencia clínica.",
+      "limitations": "Recomendaciones de expertos apoyadas en estudios pequeños; el resumen no detalla las dosis.",
+      "practicalApplication": "Usar como marco para prescribir ejercicio a personas con parálisis cerebral, junto con el equipo sanitario.",
+      "access": "abstract_only"
+    },
+    {
+      "key": "merinoandres2021_cp_strength",
+      "pmid": "34407619",
+      "doi": "10.1177/02692155211040199",
+      "title": "Effect of muscle strength training in children and adolescents with spastic cerebral palsy: A systematic review and meta-analysis.",
+      "journal": "Clinical rehabilitation",
+      "volume": "36",
+      "issue": "1",
+      "pages": "4-14",
+      "authors": ["Merino-Andrés J", "García de Mateos-López A", "Damiano DL", "Sánchez-Sierra A"],
+      "year": 2021,
+      "studyDesign": "meta_analysis",
+      "populationSummary": "Niños y adolescentes (0–22 años) con parálisis cerebral espástica; 27 ensayos aleatorizados con 847 participantes.",
+      "ageRange": "0–22 años",
+      "sex": "mixed",
+      "trainingStatus": "untrained",
+      "sport": null,
+      "intervention": "Programas de entrenamiento de fuerza con información de dosis.",
+      "comparison": "Otras técnicas de fisioterapia o control sin tratamiento.",
+      "outcomesMeasured": "Fuerza (flexores y extensores de rodilla, flexores plantares), resistencia máxima, equilibrio, velocidad de marcha, función motora gruesa (GMFM) y espasticidad.",
+      "resultsSummary": "El entrenamiento de fuerza mejoró la fuerza, la resistencia máxima, el equilibrio, la velocidad de marcha y la GMFM frente a otras técnicas o a no tratar, sin aumentar la espasticidad, en niveles GMFCS I, II y III con una dosis adecuada.",
+      "limitations": "Solo niños y adolescentes; dosis heterogéneas; el resumen no aporta la certeza de la evidencia.",
+      "practicalApplication": "Incluir fuerza progresiva con dosis adecuadas en niveles GMFCS I–III, vigilando la respuesta.",
+      "access": "abstract_only"
+    },
+    {
+      "key": "ryan2017_cp_exercise_cochrane",
+      "pmid": "28602046",
+      "doi": "10.1002/14651858.CD011660.pub2",
+      "title": "Exercise interventions for cerebral palsy.",
+      "journal": "The Cochrane database of systematic reviews",
+      "volume": "6",
+      "issue": "6",
+      "pages": "CD011660",
+      "authors": ["Ryan JM", "Cassidy EE", "Noorduyn SG", "O'Connell NE"],
+      "year": 2017,
+      "studyDesign": "meta_analysis",
+      "populationSummary": "Niños, adolescentes y adultos con parálisis cerebral; 29 ensayos con 926 participantes, casi todos hasta 19 años.",
+      "ageRange": "Sobre todo hasta 19 años",
+      "sex": "mixed",
+      "trainingStatus": "untrained",
+      "sport": null,
+      "intervention": "Ejercicio aeróbico, entrenamiento de fuerza y entrenamiento mixto.",
+      "comparison": "Sin tratamiento, tratamiento habitual u otro tipo de ejercicio.",
+      "outcomesMeasured": "Actividad (función motora gruesa, velocidad de marcha), participación, calidad de vida y efectos adversos.",
+      "resultsSummary": "Con evidencia de baja calidad, el ejercicio aeróbico puede mejorar algo la función motora gruesa a corto plazo; el entrenamiento de fuerza no mejoró la velocidad de marcha, la función motora gruesa, la participación ni la calidad de vida. El ejercicio parece seguro.",
+      "limitations": "Todos los ensayos con alto riesgo de sesgo; muestras pequeñas; calidad de la evidencia baja o muy baja.",
+      "practicalApplication": "No esperar mejoras funcionales solo por la fuerza; combinar con práctica funcional y valorar la respuesta individual.",
+      "access": "abstract_only"
+    }
+  ],
+  "findings": [
+    {
+      "key": "f_balance_older_effect",
+      "source": "lesinski2015_balance_older",
+      "outcome": "balance",
+      "population": "older_adults",
+      "intervention": "Entrenamiento del equilibrio",
+      "comparator": "Control pasivo",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": 23,
+      "nParticipants": null,
+      "heterogeneityI2": null,
+      "quote": "BT is an effective means to improve static steady-state (mean SMDbs = 0.51), dynamic steady-state (mean SMDbs = 0.44), proactive (mean SMDbs = 1.73), and reactive balance (mean SMDbs = 1.01)",
+      "grading": {
+        "design": "meta_analysis",
+        "riskOfBias": "serious",
+        "inconsistency": "serious",
+        "indirectness": "no",
+        "imprecision": "no",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_balance_older_dose",
+      "source": "lesinski2015_balance_older",
+      "outcome": "balance",
+      "population": "older_adults",
+      "intervention": "Entrenamiento del equilibrio: duración del programa, frecuencia y duración de la sesión",
+      "comparator": "Control pasivo",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": null,
+      "heterogeneityI2": null,
+      "quote": "a training period of 11-12 weeks (mean SMDbs= 1.26), a frequency of three training sessions per week (mean SMDbs= 1.20), a total number of 36-40 training sessions (mean SMDbs = 1.39), a duration of a single training session of 31-45 min",
+      "grading": {
+        "design": "meta_analysis",
+        "riskOfBias": "serious",
+        "inconsistency": "serious",
+        "indirectness": "serious",
+        "imprecision": "no",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_falls_exercise_all",
+      "source": "sherrington2019_falls_cochrane",
+      "outcome": "falls",
+      "population": "older_adults",
+      "intervention": "Ejercicio (todos los tipos)",
+      "comparator": "Control",
+      "effectMetric": "rate_ratio",
+      "effectValue": 0.77,
+      "ciLow": 0.71,
+      "ciHigh": 0.83,
+      "nStudies": 59,
+      "nParticipants": 12981,
+      "heterogeneityI2": null,
+      "quote": "Exercise reduces the rate of falls by 23% (rate ratio (RaR) 0.77, 95% confidence interval (CI) 0.71 to 0.83; 12,981 participants, 59 studies; high-certainty evidence).",
+      "grading": {
+        "design": "meta_analysis",
+        "riskOfBias": "no",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "no",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_falls_balance_functional",
+      "source": "sherrington2019_falls_cochrane",
+      "outcome": "falls",
+      "population": "older_adults",
+      "intervention": "Ejercicios de equilibrio y funcionales",
+      "comparator": "Control",
+      "effectMetric": "rate_ratio",
+      "effectValue": 0.76,
+      "ciLow": 0.7,
+      "ciHigh": 0.81,
+      "nStudies": 39,
+      "nParticipants": 7920,
+      "heterogeneityI2": null,
+      "quote": "balance and functional exercises reduce the rate of falls by 24% (RaR 0.76, 95% CI 0.70 to 0.81; 7920 participants, 39 studies; high-certainty evidence)",
+      "grading": {
+        "design": "meta_analysis",
+        "riskOfBias": "no",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "no",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_falls_multiple_types",
+      "source": "sherrington2019_falls_cochrane",
+      "outcome": "falls",
+      "population": "older_adults",
+      "intervention": "Varios tipos de ejercicio (sobre todo equilibrio y funcional más fuerza)",
+      "comparator": "Control",
+      "effectMetric": "rate_ratio",
+      "effectValue": 0.66,
+      "ciLow": 0.5,
+      "ciHigh": 0.88,
+      "nStudies": 11,
+      "nParticipants": 1374,
+      "heterogeneityI2": null,
+      "quote": "Multiple types of exercise (most commonly balance and functional exercises plus resistance exercises) probably reduce the rate of falls by 34% (RaR 0.66, 95% CI 0.50 to 0.88; 1374 participants, 11 studies; moderate-certainty evidence).",
+      "grading": {
+        "design": "meta_analysis",
+        "riskOfBias": "no",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_falls_resistance_uncertain",
+      "source": "sherrington2019_falls_cochrane",
+      "outcome": "falls",
+      "population": "older_adults",
+      "intervention": "Programas sobre todo de fuerza, de baile o de caminar",
+      "comparator": "Control",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": null,
+      "heterogeneityI2": null,
+      "quote": "We are uncertain of the effects of programmes that are primarily resistance training, or dance or walking programmes on the rate of falls and the number of people who experience falls.",
+      "grading": {
+        "design": "meta_analysis",
+        "riskOfBias": "serious",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_cp_recommendations",
+      "source": "verschuren2016_cp_recommendations",
+      "outcome": "physical_function",
+      "population": "cerebral_palsy",
+      "intervention": "Actividad física y ejercicio",
+      "comparator": "—",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": null,
+      "heterogeneityI2": null,
+      "quote": "This paper presents the first CP-specific physical activity and exercise recommendations.",
+      "grading": {
+        "design": "consensus",
+        "riskOfBias": "serious",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_cp_strength_ma",
+      "source": "merinoandres2021_cp_strength",
+      "outcome": "physical_function",
+      "population": "cerebral_palsy",
+      "intervention": "Entrenamiento de fuerza",
+      "comparator": "Otras técnicas de fisioterapia o sin tratamiento",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": 27,
+      "nParticipants": 847,
+      "heterogeneityI2": null,
+      "quote": "A strength training program has positive functional and activity effects on muscle strength, balance, gait speed, or gross motor function without increasing spasticity for children and adolescents with cerebral palsy in Gross Motor Function Classification System levels I, II, and III",
+      "grading": {
+        "design": "meta_analysis",
+        "riskOfBias": "serious",
+        "inconsistency": "contradictory",
+        "indirectness": "serious",
+        "imprecision": "no",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_cp_rt_cochrane",
+      "source": "ryan2017_cp_exercise_cochrane",
+      "outcome": "physical_function",
+      "population": "cerebral_palsy",
+      "intervention": "Entrenamiento de fuerza",
+      "comparator": "Tratamiento habitual o sin tratamiento",
+      "effectMetric": "SMD",
+      "effectValue": 0.12,
+      "ciLow": -0.19,
+      "ciHigh": 0.43,
+      "nStudies": 7,
+      "nParticipants": 164,
+      "heterogeneityI2": null,
+      "quote": "We found low-quality evidence that resistance training does not improve gross motor function (SMD 0.12, 95% CI -0.19 to 0.43, N = 164, 7 studies)",
+      "grading": {
+        "design": "meta_analysis",
+        "riskOfBias": "serious",
+        "inconsistency": "contradictory",
+        "indirectness": "serious",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    }
+  ],
+  "claims": [
+    {
+      "key": "c_balance_training_older_dose",
+      "statement": "En personas mayores sanas, el entrenamiento del equilibrio mejora el equilibrio; las mayores mejoras se asociaron a programas de 11–12 semanas, con 3 sesiones por semana de 31–45 min (comparaciones indirectas entre estudios).",
+      "scope": "equilibrio en mayores / dosis",
+      "epistemicType": "fact",
+      "findings": [
+        {
+          "finding": "f_balance_older_effect",
+          "role": "supports"
+        },
+        {
+          "finding": "f_balance_older_dose",
+          "role": "supports"
+        }
+      ],
+      "confidence": "low",
+      "limitations": "Comparaciones indirectas, cada modalidad por separado; calidad metodológica limitada y heterogeneidad considerable. Orientativo, no una dosis exacta.",
+      "applicability": {
+        "appliesTo": ["older_adults"],
+        "notFor": []
+      }
+    },
+    {
+      "key": "c_falls_exercise_older",
+      "statement": "En mayores que viven en la comunidad, el ejercicio reduce la tasa de caídas (un 23 %, certeza alta), sobre todo el de equilibrio y funcional (24 %); combinado con fuerza, probablemente más (34 %, certeza moderada). El efecto de los programas solo de fuerza sobre las caídas es incierto.",
+      "scope": "caídas / tipo de ejercicio",
+      "epistemicType": "fact",
+      "findings": [
+        {
+          "finding": "f_falls_exercise_all",
+          "role": "supports"
+        },
+        {
+          "finding": "f_falls_balance_functional",
+          "role": "supports"
+        },
+        {
+          "finding": "f_falls_multiple_types",
+          "role": "supports"
+        },
+        {
+          "finding": "f_falls_resistance_uncertain",
+          "role": "context"
+        }
+      ],
+      "confidence": "high",
+      "limitations": "Se refiere a caídas, no a lesiones en general; muchos ensayos con riesgo de sesgo en algún apartado; el efecto sobre fracturas tiene certeza baja.",
+      "applicability": {
+        "appliesTo": ["older_adults"],
+        "notFor": []
+      }
+    },
+    {
+      "key": "c_cp_strength_contradictory",
+      "statement": "En niños y adolescentes con parálisis cerebral espástica (GMFCS I–III), un metaanálisis de 2021 encontró que la fuerza mejora la fuerza, el equilibrio, la marcha y la función motora gruesa sin aumentar la espasticidad; una revisión Cochrane de 2017 no encontró mejoras de la función motora gruesa con la fuerza. Evidencia contradictoria y de baja calidad.",
+      "scope": "fuerza en parálisis cerebral",
+      "epistemicType": "inference",
+      "findings": [
+        {
+          "finding": "f_cp_strength_ma",
+          "role": "supports"
+        },
+        {
+          "finding": "f_cp_rt_cochrane",
+          "role": "contradicts"
+        }
+      ],
+      "confidence": "low",
+      "limitations": "Casi toda la evidencia es de niños y adolescentes; aplicarla a adultos con parálisis cerebral leve es una inferencia. Dosis heterogéneas. Coordinar con el equipo sanitario.",
+      "applicability": {
+        "appliesTo": ["cerebral_palsy"],
+        "notFor": []
+      }
+    },
+    {
+      "key": "c_cp_guidelines",
+      "statement": "Existen recomendaciones específicas de actividad física y ejercicio para niños, adolescentes y adultos con parálisis cerebral (2016), basadas en una revisión de la literatura, la opinión de expertos y la experiencia clínica.",
+      "scope": "parálisis cerebral / recomendaciones",
+      "epistemicType": "fact",
+      "findings": [
+        {
+          "finding": "f_cp_recommendations",
+          "role": "supports"
+        }
+      ],
+      "confidence": "low",
+      "limitations": "Recomendaciones de expertos con base en estudios pequeños.",
+      "applicability": {
+        "appliesTo": ["cerebral_palsy"],
+        "notFor": []
+      }
+    }
+  ],
+  "newOutcomes": [
+    {
+      "slug": "falls",
+      "name": "Caídas",
+      "domain": "clinical"
+    }
+  ],
+  "newPopulations": [
+    {
+      "slug": "cerebral_palsy",
+      "name": "Personas con parálisis cerebral",
+      "trainingStatus": "mixed"
+    }
+  ],
+  "notFound": []
+}

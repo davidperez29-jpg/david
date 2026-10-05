@@ -139,7 +139,7 @@ Detalle en `PLANNING.md`. Lo que queda fuera de ámbito devuelve 404. Las edicio
 | Método y ruta | Permiso | Entrada | Descripción |
 |---|---|---|---|
 | `GET /plan-templates` | `plans:templates` | `templateQuerySchema` en la consulta: `q`, `profile`, `level` 1–3, `days`, `population`, `kind`, `scope` (`all`/`global`/`mine`), `archived`, `client`, `fitsEquipment` | Biblioteca filtrada (solo metadatos). Con `client`, ordenada por encaje (`fit`) y con el material que le falta (`missingEquipment`). Reestructuración, fase 3. |
-| `GET /plan-templates/{id}` | `plans:templates` | — | Estructura, sesiones de la semana (y de cada fase), métodos, material, `definition` con ids de edición y `versions`. |
+| `GET /plan-templates/{id}` | `plans:templates` | — | Estructura, sesiones de la semana (y de cada fase), métodos, material, `definition` con ids de edición, `exercises` (`ref`, `id`, `name`, `category`: la categoría principal, para la columna «Cat.») y `versions`. |
 | `POST /plan-templates` | `plans:templates` | `createTemplateSchema` (`name`, `sessionsPerWeek`, `durationMonths?`, `profileSlug?`, `levelN?`, `population?`, `kind?`) | «Crear desde cero»: sesiones vacías de una semana. Versión 1. |
 | `PATCH /plan-templates/{id}` | `plans:templates` (solo las del centro) | `updateTemplateSchema` (`expectedVersion` y cualquiera de: datos, `definition` completa, `note`) | Cada cambio de nombre o contenido es una versión (agrupadas mientras ningún plan la use). 409 si otra persona la guardó; 403 en las de la plataforma. Cuerpo hasta 1 MB. |
 | `POST /plan-templates/{id}/duplicate` | `plans:templates` | `{name?}` | Copia independiente en «Mis plantillas» (también de una de la plataforma). |

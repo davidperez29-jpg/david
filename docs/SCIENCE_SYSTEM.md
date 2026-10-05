@@ -71,6 +71,17 @@ Cada módulo se construye con búsquedas por **objetivo, población, lesión, fa
 
 Las búsquedas se hacen con la herramienta de PubMed. **Solo entra lo que tiene metadatos verificados** (título, autores, revista, año, DOI y/o PMID).
 
+**Búsquedas de la fase 3** (plantillas iniciales, verificadas en PubMed el 05/10/2026; `seed-data/evidence/templates_profiles.json`):
+
+| Tema | Fuentes | Método que respaldan |
+|---|---|---|
+| Equilibrio en mayores y caídas | Lesinski 2015 ([10.1007/s40279-015-0375-y](https://doi.org/10.1007/s40279-015-0375-y)); Sherrington 2019, Cochrane ([10.1002/14651858.CD012424.pub2](https://doi.org/10.1002/14651858.CD012424.pub2)) | `equilibrio-mayores` |
+| Fuerza en parálisis cerebral | Verschuren 2016 ([10.1111/dmcn.13053](https://doi.org/10.1111/dmcn.13053)); Merino-Andrés 2021 ([10.1177/02692155211040199](https://doi.org/10.1177/02692155211040199)); Ryan 2017, Cochrane ([10.1002/14651858.CD011660.pub2](https://doi.org/10.1002/14651858.CD011660.pub2)) | `fuerza-paralisis-cerebral` (evidencia contradictoria: se dice así) |
+
+`actividad-fisica-oms` cita las guías de la OMS 2020, que ya estaban verificadas. Se añadieron al catálogo:
+- la población `cerebral_palsy`, solo como contexto clínico;
+- el resultado `falls`.
+
 ## 5. Estado de verificación
 
 | Estado | Significado |

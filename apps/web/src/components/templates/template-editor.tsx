@@ -14,11 +14,11 @@ import { api } from '@/lib/api-client';
 import { label } from '@/lib/labels';
 
 type Where = { phase: number | null; session: number };
-type Names = Record<string, { id: string; name: string }>;
+type Names = Record<string, { id: string; name: string; category?: string | null }>;
 
 const clone = <T,>(v: T): T => structuredClone(v);
 const namesOf = (list: PlanTemplateDetail['exercises']): Names =>
-  Object.fromEntries(list.map((e) => [e.ref, { id: e.id, name: e.name }]));
+  Object.fromEntries(list.map((e) => [e.ref, { id: e.id, name: e.name, category: e.category }]));
 const newId = () => crypto.randomUUID();
 
 /** Sessions shown for the chosen pattern: the template's or a phase's own. */
@@ -184,7 +184,7 @@ export function TemplateEditor({ t }: { t: PlanTemplateDetail }) {
           blockId: b.id!,
           version: 1,
           exercise: names[e.exercise] ?? { id: e.exercise, name: e.exercise },
-          category: null,
+          category: names[e.exercise]?.category ?? null,
           prescription: e.prescription,
           notes: e.notesForClient ?? null,
           derived: false,

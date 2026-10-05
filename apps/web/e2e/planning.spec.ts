@@ -41,9 +41,17 @@ test('trainer creates a 12-week, 3-day plan from a template and edits a session'
   const grid = page.getByRole('grid', { name: 'Ejercicios de la sesión' });
   const mainRow = () => grid.getByRole('row').filter({ hasText: '8-12' }).first();
   await mainRow().locator('td').nth(3).click();
+  // The cell shows the value at once and saves in the background: wait for the save before
+  // reloading, or the reload can cancel it.
+  const saved = page.waitForResponse(
+    (r) =>
+      /\/api\/v1\/session-exercises\/[0-9a-f-]{36}$/.test(r.url()) &&
+      r.request().method() === 'PATCH',
+  );
   await page.keyboard.type('4');
   await page.keyboard.press('Enter');
   await expect(mainRow().locator('td').nth(3)).toHaveText('4');
+  expect((await saved).ok()).toBe(true);
   await page.reload();
   await expect(mainRow().locator('td').nth(3)).toHaveText('4');
   await mainRow()

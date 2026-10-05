@@ -77,6 +77,33 @@ export interface ClientFit {
   equipment?: string[] | null;
 }
 
+/** One of the client's active goals, as the library uses it. */
+export interface GoalWeight {
+  slug: string;
+  primary: boolean;
+  weight: number;
+}
+
+/**
+ * Programming profile the client's goals suggest when none is assigned (decision A21): the most
+ * important goal (primary first, then by weight) that some profile proposes; among those, the
+ * first profile of the catalogue (`profiles` in catalogue order). It only orders the library: it
+ * is never saved, and the trainer assigns the real profile in the client's file.
+ */
+export function profileFromGoals(
+  goals: readonly GoalWeight[],
+  profiles: readonly { slug: string; defaultGoalSlug: string | null }[],
+): string | null {
+  const ordered = [...goals].sort(
+    (a, b) => Number(b.primary) - Number(a.primary) || b.weight - a.weight,
+  );
+  for (const g of ordered) {
+    const p = profiles.find((x) => x.defaultGoalSlug === g.slug);
+    if (p) return p.slug;
+  }
+  return null;
+}
+
 /**
  * How well a template suits a client (higher first): same profile, same level (an adjacent one
  * counts less), same days, and equipment the client has. Own templates win ties: the centre made

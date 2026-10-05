@@ -398,6 +398,7 @@ export const POPULATIONS: {
     ageMin: 18,
     status: 'mixed',
   },
+  { slug: 'cerebral_palsy', name: 'Personas con parálisis cerebral', status: 'mixed' },
 ];
 
 export const OUTCOMES: [string, string, string][] = [
@@ -421,6 +422,7 @@ export const OUTCOMES: [string, string, string][] = [
   ['tendon_properties', 'Propiedades del tendón', 'tissue'],
   ['pain', 'Dolor', 'clinical'],
   ['injury_incidence', 'Incidencia de lesiones', 'clinical'],
+  ['falls', 'Caídas', 'clinical'],
   ['adherence', 'Adherencia', 'behaviour'],
   ['eccentric_strength', 'Fuerza excéntrica', 'strength'],
   ['load_velocity_relationship', 'Relación carga-velocidad y velocidad en el 1RM', 'strength'],

@@ -8,6 +8,7 @@ export * from './clients/health';
 export * from './clients/levels';
 export * from './audit/diff';
 export * from './shared/errors';
+export * from './shared/json';
 export * from './library';
 export * from './science';
 export * from './assessment';

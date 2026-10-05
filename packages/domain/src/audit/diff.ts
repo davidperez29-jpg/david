@@ -1,3 +1,5 @@
+import { sameJson } from '../shared/json';
+
 export interface FieldChange {
   field: string;
   before: unknown;
@@ -23,7 +25,8 @@ export function diffFields<T extends Record<string, unknown>>(
   for (const field of fields) {
     const b = normalize(before?.[field]);
     const a = normalize(after?.[field]);
-    if (JSON.stringify(b) !== JSON.stringify(a)) changes.push({ field, before: b, after: a });
+    // Key order is not content: jsonb columns come back with their keys reordered.
+    if (!sameJson(b, a)) changes.push({ field, before: b, after: a });
   }
   return changes;
 }

@@ -5,15 +5,13 @@ import { notFound } from 'next/navigation';
 import {
   ArchiveTemplateButton,
   DuplicateTemplateButton,
-  KIND_LABELS,
-  POPULATION_LABELS,
   RestoreVersionButton,
   TemplateDetailsForm,
   UseTemplateForm,
 } from '@/components/templates/template-actions';
 import { TemplateEditor } from '@/components/templates/template-editor';
 import { Badge, Card } from '@/components/ui/card';
-import { formatDateTime, label } from '@/lib/labels';
+import { formatDateTime, KIND_LABELS, label, POPULATION_LABELS } from '@/lib/labels';
 import { requireStaff } from '@/server/session';
 
 export default async function TemplatePage({
@@ -120,6 +118,10 @@ export default async function TemplatePage({
               </li>
             ))}
           </ul>
+          <p className="mt-2 text-xs text-muted">
+            Las dosis siguen estos métodos; la elección de ejercicios, la ola de RIR y las descargas
+            son recomendaciones prácticas (F). Es un punto de partida: adapta el plan al cliente.
+          </p>
         </Card>
       ) : null}
 

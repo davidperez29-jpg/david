@@ -1,11 +1,7 @@
 import Link from 'next/link';
 import { getClient, listPlanTemplates, listProgrammingProfiles } from '@tp/application';
-import {
-  KIND_LABELS,
-  NewTemplateForm,
-  POPULATION_LABELS,
-  UseTemplateForm,
-} from '@/components/templates/template-actions';
+import { NewTemplateForm, UseTemplateForm } from '@/components/templates/template-actions';
+import { KIND_LABELS, POPULATION_LABELS } from '@/lib/labels';
 import { Badge, Card, EmptyState } from '@/components/ui/card';
 import { requireStaff } from '@/server/session';
 
@@ -26,6 +22,10 @@ const FILTERS = [
 const select =
   'h-10 rounded-md border border-border bg-bg px-2 text-sm text-text aria-[invalid=true]:border-danger';
 
+/** Library groups: the programming profile; without one, the kind (risk-reduction routines…). */
+const groupOf = (t: { profileSlug: string | null; kind: string }) =>
+  t.profileSlug ?? `kind:${t.kind}`;
+
 /**
  * Plantillas (restructure phase 3): the library with its filters. Coming from a client
  * (?client=…), the templates that suit their profile, level and days come first and each one can
@@ -44,11 +44,16 @@ export default async function PlansHome({ searchParams }: { searchParams: Promis
   const shown = templates.slice(0, 60);
   const groups = client
     ? [{ key: 'fit', title: `Para ${clientName}`, items: shown }]
-    : [...new Set(shown.map((t) => t.profileSlug ?? ''))].map((key) => ({
-        key,
-        title: key ? (shown.find((t) => t.profileSlug === key)?.profileName ?? key) : 'Sin perfil',
-        items: shown.filter((t) => (t.profileSlug ?? '') === key),
-      }));
+    : [...new Set(shown.map(groupOf))].map((key) => {
+        const first = shown.find((t) => groupOf(t) === key)!;
+        return {
+          key,
+          title:
+            first.profileName ??
+            (first.kind === 'training' ? 'Sin perfil' : (KIND_LABELS[first.kind] ?? first.kind)),
+          items: shown.filter((t) => groupOf(t) === key),
+        };
+      });
   const active = FILTERS.some((k) => k !== 'client' && sp[k]);
   return (
     <div className="flex flex-col gap-4">
@@ -70,7 +75,20 @@ export default async function PlansHome({ searchParams }: { searchParams: Promis
       </p>
       {client ? (
         <p className="rounded-md border border-accent p-3 text-sm">
-          Primero las que encajan con su perfil, nivel, días por semana y material.
+          {client.programmingProfileId ? (
+            'Primero las que encajan con su perfil, nivel, días por semana y material.'
+          ) : (
+            <>
+              {client.firstName} no tiene perfil de programación: primero las que encajan con sus
+              objetivos, su experiencia, sus días por semana y su material.{' '}
+              <Link
+                href={`/app/clients/${client.id}?tab=ficha`}
+                className="font-medium text-accent underline"
+              >
+                Asignar perfil
+              </Link>
+            </>
+          )}
         </p>
       ) : null}
 

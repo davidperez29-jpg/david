@@ -16,6 +16,7 @@ import {
   type TemplateDefinition,
   type TemplateFacts,
   type TemplateSession,
+  profileFromGoals,
 } from '../src';
 
 const session = (label: string, exercise: string): TemplateSession => ({
@@ -283,5 +284,44 @@ describe('fitting a template to the duration chosen', () => {
     const six = fitToDuration(twelveWeeks, 6);
     expect(six.phases.map((p) => p.name)).toEqual(['Bloque', 'Bloque (ciclo 2)']);
     expect(weeksOf(six)).toBe(24);
+  });
+});
+
+describe('profileFromGoals (client without a profile, decision A21)', () => {
+  const profiles = [
+    { slug: 'rendimiento-deportivo', defaultGoalSlug: 'general_physical_preparation' },
+    { slug: 'hipertrofia', defaultGoalSlug: 'hypertrophy' },
+    { slug: 'fuerza', defaultGoalSlug: 'max_strength' },
+    { slug: 'mejora-funcionalidad', defaultGoalSlug: 'functional_strength' },
+    { slug: 'adulto-mayor', defaultGoalSlug: 'functional_strength' },
+    { slug: 'personalizado', defaultGoalSlug: null },
+  ];
+  it('takes the primary goal first, then by weight, skipping goals no profile proposes', () => {
+    expect(
+      profileFromGoals(
+        [
+          { slug: 'max_strength', primary: false, weight: 0.9 },
+          { slug: 'body_composition', primary: true, weight: 1 },
+          { slug: 'hypertrophy', primary: false, weight: 0.7 },
+        ],
+        profiles,
+      ),
+    ).toBe('fuerza');
+    expect(
+      profileFromGoals(
+        [
+          { slug: 'hypertrophy', primary: true, weight: 0.5 },
+          { slug: 'max_strength', primary: false, weight: 1 },
+        ],
+        profiles,
+      ),
+    ).toBe('hipertrofia');
+  });
+  it('picks the first profile of the catalogue for a shared goal, and none without goals', () => {
+    expect(
+      profileFromGoals([{ slug: 'functional_strength', primary: true, weight: 1 }], profiles),
+    ).toBe('mejora-funcionalidad');
+    expect(profileFromGoals([], profiles)).toBeNull();
+    expect(profileFromGoals([{ slug: 'mobility', primary: true, weight: 1 }], profiles)).toBeNull();
   });
 });

@@ -109,6 +109,13 @@ describe('diffFields', () => {
     );
     expect(d).toEqual([{ field: 'b', before: 'x', after: 'y' }]);
   });
+  it('ignores key order: jsonb columns come back with their keys reordered', () => {
+    const stored = { definition: { b: [{ y: 1, x: 2 }], a: { d: 1, c: 2 } } };
+    const sent = { definition: { a: { c: 2, d: 1 }, b: [{ x: 2, y: 1 }] } };
+    expect(diffFields(stored, sent, ['definition'])).toEqual([]);
+    // Array order is content.
+    expect(diffFields({ l: [1, 2] }, { l: [2, 1] }, ['l'])).toHaveLength(1);
+  });
   it('redacts secrets', () => {
     expect(redact([{ field: 'passwordHash', before: 'h1', after: 'h2' }])[0]).toEqual({
       field: 'passwordHash',

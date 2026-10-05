@@ -1,6 +1,8 @@
-import { schema } from '@tp/db';
+import { generateProfileTemplates, loadTemplateFiles, schema, seedTemplates } from '@tp/db';
+import { SEED_DIR } from '@tp/db/testing';
 import { addDays, isoWeekday, localDate, type TemplateDefinition } from '@tp/domain';
-import { eq } from 'drizzle-orm';
+import { eq, isNull } from 'drizzle-orm';
+import { join } from 'node:path';
 import { beforeAll, describe, expect, it } from 'vitest';
 import {
   archiveTemplate,
@@ -14,6 +16,7 @@ import {
   listProgrammingProfiles,
   restoreTemplateVersion,
   setClientEquipment,
+  setClientGoals,
   updateTemplate,
   type PlanDetail,
 } from '../src';
@@ -50,6 +53,27 @@ describe('template library', () => {
     await expect(listPlanTemplates(o.admin, { level: '7' })).rejects.toMatchObject({
       code: 'validation',
     });
+  });
+
+  it('a client without a profile: their goals and experience order the library (A21)', async () => {
+    const cat = await listCatalog(o.admin);
+    await setClientGoals(o.trainer2, o.clientB, {
+      goals: [
+        {
+          goalId: cat.goals.find((g) => g.slug === 'hypertrophy')!.id,
+          isPrimary: true,
+          priorityWeight: 1,
+        },
+      ],
+    });
+    const ranked = await listPlanTemplates(o.trainer2, { client: o.clientB });
+    expect(ranked[0]!.profileSlug).toBe('hipertrofia');
+    // Nothing is saved: the client still has no profile.
+    const [row] = await testDb()
+      .db.select({ p: schema.clients.programmingProfileId })
+      .from(schema.clients)
+      .where(eq(schema.clients.id, o.clientB));
+    expect(row!.p).toBeNull();
   });
 
   it('for a client, the templates that suit them come first and equipment can filter', async () => {
@@ -226,5 +250,25 @@ describe('my templates', () => {
 
   it('clients cannot use the library', async () => {
     await expect(listPlanTemplates(o.clientUser)).rejects.toMatchObject({ code: 'forbidden' });
+  });
+});
+
+describe('platform templates seed', () => {
+  it('seeding again (every start of the app) keeps every version: jsonb reorders keys', async () => {
+    const { db } = testDb();
+    const versions = async () =>
+      (
+        await db
+          .select({ slug: schema.planTemplates.slug, v: schema.planTemplates.templateVersion })
+          .from(schema.planTemplates)
+          .where(isNull(schema.planTemplates.organizationId))
+      )
+        .map((r) => `${r.slug}@${r.v}`)
+        .sort();
+    const before = await versions();
+    expect(before.length).toBeGreaterThanOrEqual(102);
+    const handWritten = loadTemplateFiles(join(SEED_DIR, 'templates'));
+    await seedTemplates(db, [...handWritten, ...generateProfileTemplates(handWritten)]);
+    expect(await versions()).toEqual(before);
   });
 });

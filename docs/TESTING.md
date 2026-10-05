@@ -442,3 +442,37 @@ pnpm --filter @tp/web test:e2e -- e2e/perf.spec.ts e2e/perf.mobile.spec.ts
   - las de la plataforma son de solo lectura también por la API (403, no por CSRF).
   - `planning.spec.ts` sigue el flujo nuevo («Usar plantilla» desde Programa); `security.spec.ts` comprueba el 404 de ids mal formados; la matriz de rutas cubre las rutas nuevas con la plantilla propia del centro de la demo.
 - **Corregido durante las pruebas**: la celda activa por defecto entraba en edición al primer clic y lo tecleado se añadía al valor («1» + «4» = «14»): ahora el primer clic selecciona y escribir sustituye.
+
+## Resultado de la reestructuración, fase 3 (segunda parte: plantillas iniciales)
+
+- **Unidad: 468 tests ✔**; cobertura del dominio, 95,6 % de líneas. Nuevo `apps/web/test/client-boundary.unit.test.ts`: desde las páginas del servidor, nada importa valores (solo componentes y tipos) de un módulo `'use client'`. Comprobado con una mutación: importar `DEFAULT_DAYS` en la página de plantillas lo hace fallar.
+- Nuevo `packages/db/test/profile-templates.unit.test.ts` (6), sobre las 85 plantillas generadas junto a las 17 escritas a mano:
+  - cada combinación perfil × nivel × días ofrecida existe exactamente una vez, y los slugs (`perfil-`, `riesgo-`) no entran en la elección del motor de decisiones;
+  - solo hay plantillas genéricas para los perfiles que las admiten (no readaptación ni personalizado);
+  - definiciones válidas, ejercicios y métodos existentes, prescripciones válidas, y cada ejercicio dice cuánto (repeticiones, tiempo, distancia o contactos);
+  - sin ejercicios avanzados en el nivel 1, ni de impacto alto para mayores o parálisis cerebral en los niveles 1–2;
+  - evidencia por población: la de mayores no se usa en otros adultos, y `fuerza-maxima` no aparece con dosis de nivel 1;
+  - las rutinas de reducción de factores de riesgo tienen 3 niveles, sin perfil, y su texto nunca presenta la prevención como un hecho.
+- Nuevo `packages/application/test/seed-templates-contract.unit.test.ts`: toda plantilla de la plataforma, duplicada, se puede guardar desde la tabla (contrato `templateDefinitionSchema`).
+- `evidence.unit.test.ts` cubre el fichero nuevo `templates_profiles.json`: 5 fuentes de PubMed, 9 hallazgos con cita literal y 4 afirmaciones.
+- Nuevo `json.unit.test.ts`:
+  - `canonicalJson` ordena las claves a todos los niveles y conserva el orden de las listas;
+  - propiedad (fast-check): mismo contenido con otro orden de claves es igual.
+- `diffFields` ya no ve cambios donde solo cambia el orden de las claves.
+- `profileFromGoals` (A21): primero el objetivo principal y luego el de más peso; el primer perfil del catálogo; ninguno sin objetivos.
+- **Integración: 187 tests ✔**. La siembra carga 102 plantillas, y 26/26 métodos y 86/87 afirmaciones publicadas (la que falta es la de ecuaciones sin verificar, como antes). Nuevos:
+  - **cargar el catálogo otra vez no cambia ninguna versión** de las 102 plantillas. Antes subían todas, porque `jsonb` no conserva el orden de las claves;
+  - un cliente sin perfil, con objetivo de hipertrofia, ve primero las de hipertrofia, y no se le guarda perfil.
+- **Seguridad: 584 comprobaciones RLS ✔**.
+- **E2E: 52 tests ✔** (1 omitido sin datos de carga).
+  - Nuevo en `templates.spec.ts`:
+    - el filtro «Tipo» muestra las 9 rutinas agrupadas, cada rutina con sus 3 niveles seguidos;
+    - la rutina de isquiosurales de nivel 2 enlaza su evidencia, dice «puede reducir» y muestra la categoría de cada ejercicio;
+    - la plantilla generada para mayores cita la evidencia de equilibrio y tiene equilibrio en sus 3 sesiones.
+  - «UX 5» se hace con la biblioteca completa: la clienta sin perfil ve primero una plantilla de hipertrofia, por su objetivo, y aparece el aviso «no tiene perfil de programación».
+  - `planning.spec.ts` y «UX 4» esperan a que la celda se guarde antes de recargar. Recargar justo después de Intro podía cancelar el guardado en segundo plano; falló una vez en esta fase.
+- **Latencia de los filtros con la biblioteca completa** (103 plantillas; build de producción; 20 repeticiones):
+  - `GET /plan-templates`, con y sin filtros: p95 ≤ 33 ms;
+  - página Plantillas: p95 ≤ 60 ms;
+  - para un cliente, ordenada por encaje: p95 ≤ 81 ms.
+  - Criterio de la fase: < 300 ms.

@@ -19,7 +19,10 @@ import {
   matchesTemplate,
   missingEquipment,
   prescriptionShort,
+  profileFromGoals,
+  sameJson,
   slugify,
+  suggestLevel,
   templateExerciseRefs,
   templateFitScore,
   templateSessions,
@@ -32,7 +35,7 @@ import {
   type TemplateFacts,
   type TemplateKind,
 } from '@tp/domain';
-import { and, desc, eq, inArray, isNull, or, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, isNull, or, sql } from 'drizzle-orm';
 import type { AnyPgColumn } from 'drizzle-orm/pg-core';
 import { writeAudit } from './audit';
 import { authorizeClient, requirePermission } from './authz';
@@ -47,9 +50,13 @@ const {
   planTemplateVersions,
   programmingProfiles,
   clients,
+  clientGoals,
   clientTrainingProfiles,
   clientEquipment,
+  goals,
   equipment,
+  exerciseCategories,
+  exerciseCategoryLinks,
   methods,
   users,
 } = schema;
@@ -57,7 +64,10 @@ const {
 const visible = (ctx: RequestContext, col: AnyPgColumn) =>
   or(isNull(col), eq(col, ctx.actor.organizationId));
 
-/** What the trainer's client brings to the library: profile, level, days and equipment. */
+/**
+ * What the trainer's client brings to the library: profile, level, days and equipment. Without a
+ * profile or level, the ones their goals and experience suggest (decision A21), only for ordering.
+ */
 async function clientFit(ctx: RequestContext, clientId: string): Promise<ClientFit> {
   await authorizeClient(ctx, 'plans:read', clientId);
   const [c] = await ctx.db
@@ -65,6 +75,7 @@ async function clientFit(ctx: RequestContext, clientId: string): Promise<ClientF
       profileSlug: programmingProfiles.slug,
       levelN: clients.programmingLevel,
       sessionsPerWeek: clientTrainingProfiles.sessionsPerWeek,
+      experience: clientTrainingProfiles.experienceLevel,
     })
     .from(clients)
     .leftJoin(programmingProfiles, eq(programmingProfiles.id, clients.programmingProfileId))
@@ -75,9 +86,35 @@ async function clientFit(ctx: RequestContext, clientId: string): Promise<ClientF
     .from(clientEquipment)
     .innerJoin(equipment, eq(equipment.id, clientEquipment.equipmentId))
     .where(eq(clientEquipment.clientId, clientId));
+  let profileSlug = c?.profileSlug ?? null;
+  if (!profileSlug) {
+    const [goalRows, profileRows] = await Promise.all([
+      ctx.db
+        .select({
+          slug: goals.slug,
+          primary: clientGoals.isPrimary,
+          weight: clientGoals.priorityWeight,
+        })
+        .from(clientGoals)
+        .innerJoin(goals, eq(goals.id, clientGoals.goalId))
+        .where(and(eq(clientGoals.clientId, clientId), eq(clientGoals.status, 'active'))),
+      ctx.db
+        .select({
+          slug: programmingProfiles.slug,
+          defaultGoalSlug: programmingProfiles.defaultGoalSlug,
+        })
+        .from(programmingProfiles)
+        .where(visible(ctx, programmingProfiles.organizationId))
+        .orderBy(asc(programmingProfiles.sortOrder)),
+    ]);
+    profileSlug = profileFromGoals(
+      goalRows.map((g) => ({ ...g, weight: Number(g.weight) })),
+      profileRows,
+    );
+  }
   return {
-    profileSlug: c?.profileSlug ?? null,
-    levelN: c?.levelN ?? null,
+    profileSlug,
+    levelN: c?.levelN ?? (c?.experience ? suggestLevel(c.experience) : null),
     sessionsPerWeek: c?.sessionsPerWeek ?? null,
     equipment: eqRows.map((r) => r.slug),
   };
@@ -168,6 +205,8 @@ async function listPlanTemplates_(ctx: RequestContext, query: unknown = {}) {
     (a, b) =>
       (fit ? (b.fit ?? 0) - (a.fit ?? 0) : 0) ||
       order(a) - order(b) ||
+      // Without a profile (centre templates, risk-reduction routines) the name comes first.
+      (a.profileSlug ? 0 : a.name.localeCompare(b.name, 'es')) ||
       (a.levelN ?? 0) - (b.levelN ?? 0) ||
       a.sessionsPerWeek - b.sessionsPerWeek ||
       a.name.localeCompare(b.name, 'es'),
@@ -204,7 +243,8 @@ async function getPlanTemplate_(ctx: RequestContext, id: string) {
   const def = withEditorIds(t.definition as TemplateDefinition, () => `r${++n}`);
   const refs = templateExerciseRefs(def);
   const ex = await resolveExercises(ctx, refs);
-  const [ms, versions, eqNames] = await Promise.all([
+  const exerciseIds = [...new Set([...ex.values()].map((e) => e.id))];
+  const [ms, versions, eqNames, cats] = await Promise.all([
     t.methodSlugs.length
       ? ctx.db
           .select({ id: methods.id, slug: methods.slug, name: methods.name })
@@ -232,6 +272,18 @@ async function getPlanTemplate_(ctx: RequestContext, id: string) {
           .where(
             and(visible(ctx, equipment.organizationId), inArray(equipment.slug, t.equipmentSlugs)),
           )
+      : Promise.resolve([]),
+    // §11 categories of each exercise, the primary one first (the table's «Cat.» column).
+    exerciseIds.length
+      ? ctx.db
+          .select({ exerciseId: exerciseCategoryLinks.exerciseId, name: exerciseCategories.name })
+          .from(exerciseCategoryLinks)
+          .innerJoin(
+            exerciseCategories,
+            eq(exerciseCategories.id, exerciseCategoryLinks.categoryId),
+          )
+          .where(inArray(exerciseCategoryLinks.exerciseId, exerciseIds))
+          .orderBy(desc(exerciseCategoryLinks.isPrimary), asc(exerciseCategories.sortOrder))
       : Promise.resolve([]),
   ]);
   const expanded = expandTemplate(def);
@@ -262,10 +314,11 @@ async function getPlanTemplate_(ctx: RequestContext, id: string) {
     totalWeeks: expanded.totalWeeks,
     methods: ms,
     equipment: t.equipmentSlugs.map((s) => eqNames.find((e) => e.slug === s)?.name ?? s),
-    /** Exercises the template uses: its reference (slug or id), id and name, for the table. */
+    /** Exercises the template uses: reference (slug or id), id, name and category, for the table. */
     exercises: refs.flatMap((ref) => {
       const e = ex.get(ref);
-      return e ? [{ ref, id: e.id, name: e.name }] : [];
+      const category = cats.find((c) => c.exerciseId === e?.id)?.name ?? null;
+      return e ? [{ ref, id: e.id, name: e.name, category }] : [];
     }),
     versions,
     phases: expanded.phases.map((p, i) => ({
@@ -470,8 +523,7 @@ async function updateTemplate_(
     : (t.definition as TemplateDefinition);
   if (d.definition) await checkDefinition(ctx, def);
   const name = d.name ?? t.name;
-  const contentChanged =
-    name !== t.name || (!!d.definition && JSON.stringify(def) !== JSON.stringify(t.definition));
+  const contentChanged = name !== t.name || (!!d.definition && !sameJson(def, t.definition));
   return ctx.db.transaction(async (tx) => {
     const templateVersion = contentChanged
       ? await recordTemplateVersion(tx, ctx, t, { name, definition: def }, { note: d.note })

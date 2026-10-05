@@ -462,3 +462,17 @@ export function formatValue(v: number | null | undefined): string {
     maximumFractionDigits: Math.abs(v) >= 100 ? 0 : 2,
   }).format(v);
 }
+
+/** Template library filters (restructure phase 3). Here, not in a client module: server pages use them. */
+export const POPULATION_LABELS: Record<string, string> = {
+  adultos: 'Adultos',
+  adulto_mayor: 'Adulto mayor',
+  deportistas: 'Deportistas',
+  jovenes: 'Jóvenes',
+  pc_leve: 'Parálisis cerebral leve',
+};
+export const KIND_LABELS: Record<string, string> = {
+  training: 'Entrenamiento',
+  risk_reduction: 'Reducción de factores de riesgo',
+  readaptation: 'Readaptación',
+};

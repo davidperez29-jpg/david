@@ -58,7 +58,7 @@ Detalles del modelo:
 - Copiar cientos de filas en cada organización no escala.
 - La plantilla se **expande** al crear el plan (`expandTemplate`).
 
-### 3.2 Matriz inicial (17 plantillas de 12 semanas)
+### 3.2 Matriz inicial (17 plantillas de 12 semanas; las 85 generadas por perfil, nivel y días, en §6 ter)
 
 | Objetivo | Frecuencias | Métodos enlazados (dosis) |
 |---|---|---|
@@ -179,6 +179,10 @@ Criterio de aceptación (§16.2): crear un plan de 12 semanas y 3 días desde pl
 
 - **Filtros** (`listPlanTemplates`, `GET /plan-templates`): texto (sin tildes ni mayúsculas), perfil, nivel 1–3, días por semana, población, tipo (entrenamiento · reducción de factores de riesgo · readaptación), origen y archivadas. Solo se leen los metadatos, nunca el contenido.
 - **Para un cliente** (`?client=`): primero las que encajan con su perfil (8 puntos), su nivel (4; uno adyacente, 1), sus días (3) y su material (2); a igualdad, las del centro. «Solo con su material» deja fuera las que necesitan algo que no tiene; si no, se avisa de lo que falta («se puede adaptar»).
+  - **Sin perfil o sin nivel** (decisión A21), se ordena con lo que sugieren sus datos:
+    - el perfil, por su objetivo más importante que algún perfil proponga (`profileFromGoals`);
+    - el nivel, por su experiencia (`suggestLevel`).
+  - La página avisa y enlaza a «Asignar perfil». No se guarda nada.
 - **Material**: se calcula solo, a partir del material no opcional de sus ejercicios (`equipment_slugs`); nadie lo escribe a mano.
 
 **Usar una plantilla** (Programa → «Usar plantilla» → elegir → Crear: 3 clics y la fecha):
@@ -195,6 +199,69 @@ Criterio de aceptación (§16.2): crear un plan de 12 semanas y 3 días desde pl
 - **Archivar** la oculta de la biblioteca sin borrarla (los planes siguen apuntando a ella); se puede recuperar. Una plantilla archivada no se edita ni se usa.
 
 **Seguridad**: permiso `plans:templates`; las de otra organización no existen para ti (404). RLS de catálogo en `plan_template_versions`, cuya organización copia un disparador desde la plantilla (`inherit_org`), así que una versión nunca puede quedar en otra organización. Todo cambio queda auditado.
+
+### Plantillas iniciales (perfil × nivel × días)
+
+La plataforma trae **102 plantillas**:
+- **17 escritas a mano** (`seed-data/templates`);
+- **76 generadas** para los 13 perfiles con plantillas genéricas, en sus 3 niveles y con los días que tienen sentido en cada nivel (`packages/db/src/seed/profile-templates.ts`). Las combinaciones que ya cubre una plantilla escrita a mano no se generan;
+- **9 rutinas de reducción de factores de riesgo**.
+
+Se cargan con el catálogo y, como las demás de la plataforma, un cambio de contenido es una versión nueva. Volver a cargarlas (en cada arranque) no crea versiones: el contenido se compara sin tener en cuenta el orden de las claves, que `jsonb` no conserva.
+
+| Perfil | Nivel 1 | Nivel 2 | Nivel 3 |
+|---|---|---|---|
+| Rendimiento deportivo | 2, 3 | 2, 3, 4 | 3, 4, 5 |
+| Deportes de equipo | 2, 3 | 2, 3, 4 | 2, 3, 4 |
+| Deportes individuales | 2, 3 | 2, 3, 4 | 3, 4, 5 |
+| Deportes de resistencia | 2 | 2, 3 | 2, 3 |
+| Hipertrofia | 2, 3, 4 | 3, 4, 5 | 3, 4, 5 |
+| Fuerza | 2, 3 | 2, 3, 4 | 3, 4 |
+| Iniciación a la fuerza | 2, 3 | 2, 3 | 2, 3 |
+| Salud | 2, 3, 4 | 2, 3, 4 | 2, 3, 4 |
+| Mejora de la funcionalidad · Función muscular · Adulto mayor | 2, 3 | 2, 3 | 2, 3, 4 |
+| Función coordinativa · Parálisis cerebral leve | 2, 3 | 2, 3 | 2, 3 |
+
+Recuperación/readaptación y retorno al deporte no tienen plantillas genéricas: se programan por el protocolo de la lesión (fase 7). El perfil personalizado tampoco: lo define el entrenador.
+
+**Estructura común.** Un bloque de 13 semanas, que es la duración de 3 meses:
+- tres mesociclos de 4, 4 y 5 semanas;
+- descargas en las semanas 4 y 8 y reevaluación en la semana 13;
+- en rendimiento y fuerza, una semana de pico antes de la evaluación.
+
+Para 6–12 meses el bloque se repite como nuevos ciclos (A17).
+
+**Ejercicios y niveles:**
+- el nivel 1 usa variantes estables y sencillas, y el 3 pesos libres y variantes más exigentes;
+- los ejercicios unilaterales se marcan «cada lado».
+
+**Identificadores.** Los slugs son `perfil-<perfil>-n<nivel>-<días>d` y `riesgo-<rutina>-n<nivel>`. El motor de decisiones sigue eligiendo plantilla por la familia del objetivo (`hipertrofia-`, `fuerza-`…), así que estas plantillas no cambian sus propuestas.
+
+**Evidencia de las dosis** (métodos enlazados en cada plantilla). La elección de ejercicios, la ola de RIR y las descargas son recomendaciones prácticas (F).
+
+| Familia | Métodos | Qué respaldan |
+|---|---|---|
+| Hipertrofia | `hipertrofia`, `rir-rpe` | Descansos ≥ 60–90 s, volumen, proximidad al fallo |
+| Fuerza · rendimiento · resistencia | `fuerza-maxima` solo desde el nivel 2; `rir-rpe`; `concurrente` en resistencia | `fuerza-maxima` es > 80 % 1RM; el nivel 1 (6–8 a RIR 3) queda por debajo |
+| Iniciación | `dosis-minima`, `rir-rpe` | Poco volumen, mucha técnica |
+| Salud · funcionalidad · función muscular | `actividad-fisica-oms`, `rir-rpe` | OMS 2020: 150–300 min/semana de aeróbico moderado y fuerza regular |
+| Adulto mayor | `fuerza-mayores`, `equilibrio-mayores`, `potencia` (desde el nivel 2) | 2–3 × 7–9; equilibrio en todas las sesiones: en mayores sanos, las mayores mejoras se asociaron a 3 sesiones/semana durante 11–12 semanas. El ejercicio de equilibrio y funcional reduce la tasa de caídas, y combinado con fuerza probablemente más |
+| Parálisis cerebral leve | `fuerza-paralisis-cerebral` | Evidencia contradictoria y de baja calidad, casi toda en niños y adolescentes; recomendaciones específicas de 2016; coordinar con el equipo sanitario |
+| Rendimiento y deportes | `pliometria`, `potencia`, `halterofilia-derivados` (nivel 3), `sprint-aceleracion`, `cod-agilidad`, `nordic-hamstring` y `calentamiento-preventivo` | — |
+| Función coordinativa | `core`, `pliometria`, `potencia`, `cod-agilidad` | En adultos no hay evidencia verificada de equilibrio: criterio práctico, sin reutilizar la de mayores |
+
+**Rutinas de reducción de factores de riesgo** (tipo «Reducción de factores de riesgo», población deportistas). Dos veces por semana, unos 15 minutos, una plantilla por nivel. Sus textos nunca presentan la prevención como un hecho.
+- **Aductores**, con el Copenhagen de palanca corta → palanca larga → con movimiento: en futbolistas se asoció a menos problemas inguinales.
+- **Isquiosurales**, con puente y peso muerto a una pierna, y nórdico desde el nivel 2: «puede reducir», con una magnitud incierta.
+- **Cuádriceps**, con isométricos → bajada lenta → frenadas y aterrizajes: sin evidencia verificada sobre lesiones (F).
+
+**Comprobado por tests.**
+- `packages/db/test/profile-templates.unit.test.ts`:
+  - cada combinación ofrecida existe exactamente una vez;
+  - definiciones, ejercicios, métodos y prescripciones son válidos y cada ejercicio dice cuánto;
+  - no hay ejercicios avanzados en el nivel 1, ni de impacto alto para mayores o parálisis cerebral en los niveles 1–2;
+  - la evidencia de mayores no se reutiliza en otros adultos, y el nivel 1 no cita `fuerza-maxima`.
+- `packages/application/test/seed-templates-contract.unit.test.ts`: toda plantilla de la plataforma, duplicada, se puede guardar desde la tabla.
 
 ## 7. Permisos
 

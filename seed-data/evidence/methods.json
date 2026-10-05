@@ -670,6 +670,94 @@
         }
       ],
       "variables": []
+    },
+    {
+      "slug": "equilibrio-mayores",
+      "name": "Equilibrio y tareas funcionales en mayores",
+      "kind": "training_method",
+      "definition": "Ejercicios de equilibrio (estático, dinámico y reactivo) y tareas funcionales (levantarse, subir escalones, caminar) con dificultad progresiva, para mejorar el equilibrio y reducir las caídas en personas mayores.",
+      "summaryForTrainer": "En mayores sanos, el entrenamiento del equilibrio mejora el equilibrio; las mayores mejoras se asociaron a programas de 11–12 semanas con 3 sesiones por semana de 31–45 min (comparaciones indirectas, orientativo). En mayores que viven en la comunidad, el ejercicio de equilibrio y funcional reduce la tasa de caídas (certeza alta) y combinado con fuerza probablemente más; el efecto de los programas solo de fuerza sobre las caídas es incierto.",
+      "summaryForClient": "Ejercicios para mantener el equilibrio y moverte con seguridad en el día a día.",
+      "notes": [
+        {
+          "kind": "indication",
+          "text": "Mejorar el equilibrio en personas mayores. Orientativo: unas 3 sesiones por semana de 31–45 min durante 11–12 semanas.",
+          "claim": "c_balance_training_older_dose"
+        },
+        {
+          "kind": "indication",
+          "text": "Reducir la tasa de caídas: equilibrio y tareas funcionales, mejor combinados con fuerza.",
+          "claim": "c_falls_exercise_older"
+        },
+        {
+          "kind": "progression",
+          "text": "De dos apoyos a uno, de superficie estable a menos estable y de ojos abiertos a giros de cabeza o doble tarea, manteniendo un apoyo cerca."
+        },
+        {
+          "kind": "precaution",
+          "text": "Siempre con un apoyo cerca y en un entorno seguro. Ante caídas recientes, mareos u otros síntomas: requiere valoración por profesional sanitario."
+        }
+      ],
+      "variables": []
+    },
+    {
+      "slug": "fuerza-paralisis-cerebral",
+      "name": "Fuerza en parálisis cerebral",
+      "kind": "training_method",
+      "definition": "Entrenamiento de fuerza progresivo adaptado a personas con parálisis cerebral: lejos del fallo, primero bilateral y con apoyo, con el lado más afectado marcando el ritmo, junto con equilibrio y tareas funcionales.",
+      "summaryForTrainer": "Evidencia contradictoria y de baja calidad, casi toda en niños y adolescentes con parálisis cerebral espástica (GMFCS I–III): un metaanálisis de 2021 encontró mejoras de fuerza, equilibrio, marcha y función motora gruesa sin aumentar la espasticidad; una revisión Cochrane de 2017 no encontró mejoras de la función motora gruesa con la fuerza. Hay recomendaciones específicas de ejercicio para parálisis cerebral (2016). Coordinar con el equipo sanitario.",
+      "summaryForClient": "Ejercicios de fuerza adaptados y a tu ritmo para moverte mejor en el día a día.",
+      "notes": [
+        {
+          "kind": "indication",
+          "text": "Mejorar la fuerza y la función, con evidencia contradictoria.",
+          "claim": "c_cp_strength_contradictory"
+        },
+        {
+          "kind": "indication",
+          "text": "Seguir las recomendaciones específicas de ejercicio para parálisis cerebral junto con el equipo sanitario.",
+          "claim": "c_cp_guidelines"
+        },
+        {
+          "kind": "progression",
+          "text": "Empezar bilateral y con apoyo, lejos del fallo; añadir trabajo unilateral del lado más afectado y, después, carga y potencia según la evaluación."
+        },
+        {
+          "kind": "limitation",
+          "text": "Casi toda la evidencia es de niños y adolescentes: aplicarla a adultos con parálisis cerebral leve es una inferencia.",
+          "claim": "c_cp_strength_contradictory"
+        },
+        {
+          "kind": "precaution",
+          "text": "El nivel depende de la capacidad y la evaluación, no del diagnóstico. Ante dolor, aumento del tono u otros síntomas: requiere valoración por profesional sanitario."
+        }
+      ],
+      "variables": []
+    },
+    {
+      "slug": "actividad-fisica-oms",
+      "name": "Actividad física para la salud (OMS)",
+      "kind": "training_method",
+      "definition": "Actividad aeróbica semanal y fortalecimiento muscular regular según las guías de la OMS de 2020, reduciendo además el tiempo sedentario.",
+      "summaryForTrainer": "Las guías de la OMS 2020 recomiendan a los adultos 150–300 min/semana de actividad aeróbica moderada (o 75–150 min vigorosa) y fortalecimiento muscular regular en todos los grupos de edad, además de reducir el tiempo sedentario. Son recomendaciones de salud poblacional, no de rendimiento.",
+      "summaryForClient": "Moverte a diario, sumar actividad aeróbica cada semana y hacer ejercicios de fuerza con regularidad.",
+      "notes": [
+        {
+          "kind": "indication",
+          "text": "Base de un programa de salud: 150–300 min/semana de actividad aeróbica moderada (o 75–150 min vigorosa) y fortalecimiento muscular regular.",
+          "claim": "c_who_baseline"
+        },
+        {
+          "kind": "limitation",
+          "text": "Recomendaciones de salud poblacional, sobre todo de estudios observacionales; no optimizan el rendimiento.",
+          "claim": "c_who_baseline"
+        },
+        {
+          "kind": "precaution",
+          "text": "Ante enfermedad, síntomas o dudas sobre la intensidad: requiere valoración por profesional sanitario."
+        }
+      ],
+      "variables": []
     }
   ]
 }
