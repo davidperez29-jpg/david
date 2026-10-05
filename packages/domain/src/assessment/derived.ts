@@ -1,89 +1,164 @@
 /**
- * Derived metrics registry (§11.1.8: a new test is data; a derived formula is registered here).
- * Each formula declares the test slugs it needs; values are computed from one assessment's results.
- * Estimates are labelled as estimates. Formulas are arithmetic definitions, not empirical equations.
+ * Default derived formulas (restructure phase 4): data for the formula engine (`formulas.ts`),
+ * seeded as the platform's catalogue. A centre edits the constants of its own copy (the club
+ * workbook's «constantes editables»); the definition shown always carries the constants used.
+ * Equations taken from the user's documents keep «[REQUIERE VERIFICACIÓN]» until checked.
  */
-export interface DerivedFormula {
-  id: string;
-  name: string;
-  unit: string;
-  /** Test slugs whose results are needed (same assessment). */
-  inputs: string[];
-  /** Human-readable definition shown next to the value (§7: no black box). */
-  definition: string;
-  better: 'higher' | 'lower' | 'target_range';
-  isEstimate: boolean;
-  compute(v: Record<string, number>): number | null;
-  /** How the error of the inputs combines (difference/ratio); 'none' → no change verdict. */
-  errorModel: 'difference' | 'none';
-}
+import { compileFormulas, evaluateFormulas, type FormulaDef } from './formulas';
 
-const ok = (x: number) => (Number.isFinite(x) ? Math.round(x * 1000) / 1000 : null);
+const SKINFOLDS_6 = [
+  'skinfold_triceps',
+  'skinfold_subscapular',
+  'skinfold_iliac_crest',
+  'skinfold_abdominal',
+  'skinfold_front_thigh',
+  'skinfold_medial_calf',
+];
 
-export const DERIVED_FORMULAS: DerivedFormula[] = [
+export const DEFAULT_FORMULAS: FormulaDef[] = [
   {
-    id: 'bmi',
+    slug: 'bmi',
     name: 'Índice de masa corporal',
     unit: 'kg/m²',
-    inputs: ['body_mass', 'height'],
-    definition: 'Masa (kg) / talla (m)². Solo contexto: no distingue masa grasa de masa muscular.',
+    expression: 'body_mass / (height / 100) ^ 2',
+    constants: {},
     better: 'target_range',
     isEstimate: false,
-    compute: (v) => (v.height! > 0 ? ok(v.body_mass! / (v.height! / 100) ** 2) : null),
     errorModel: 'none',
+    definition: 'Masa (kg) / talla (m)². Solo contexto: no distingue masa grasa de masa muscular.',
   },
   {
-    id: 'cod_deficit',
+    slug: 'cod_deficit',
     name: 'Déficit de cambio de dirección',
     unit: 's',
-    inputs: ['test_505', 'sprint_10m'],
-    definition:
-      'Tiempo del 505 − tiempo de 10 m en sprint lineal (aísla la capacidad de cambiar de dirección de la velocidad lineal).',
+    expression: 'test_505 - sprint_10m',
+    constants: {},
     better: 'lower',
     isEstimate: false,
-    compute: (v) => ok(v.test_505! - v.sprint_10m!),
     errorModel: 'difference',
+    definition:
+      'Tiempo del 505 − tiempo de 10 m en sprint lineal (aísla la capacidad de cambiar de dirección de la velocidad lineal).',
   },
   {
-    id: 'relative_strength_1rm',
+    slug: 'relative_strength_1rm',
     name: 'Fuerza relativa en sentadilla (1RM / masa corporal)',
     unit: 'kg/kg',
-    inputs: ['one_rm_back_squat', 'body_mass'],
-    definition: '1RM en sentadilla trasera (kg) / masa corporal (kg).',
+    expression: 'one_rm_back_squat / body_mass',
+    constants: {},
     better: 'higher',
     isEstimate: false,
-    compute: (v) => (v.body_mass! > 0 ? ok(v.one_rm_back_squat! / v.body_mass!) : null),
     errorModel: 'none',
+    definition: '1RM en sentadilla trasera (kg) / masa corporal (kg).',
   },
   {
-    id: 'eccentric_utilization',
+    slug: 'eccentric_utilization',
     name: 'Relación CMJ / SJ',
     unit: 'ratio',
-    inputs: ['cmj_height', 'sj_height'],
-    definition:
-      'Altura del CMJ / altura del SJ (uso del ciclo de estiramiento-acortamiento). Descriptivo.',
+    expression: 'cmj_height / sj_height',
+    constants: {},
     better: 'target_range',
     isEstimate: false,
-    compute: (v) => (v.sj_height! > 0 ? ok(v.cmj_height! / v.sj_height!) : null),
     errorModel: 'none',
+    definition:
+      'Altura del CMJ / altura del SJ (uso del ciclo de estiramiento-acortamiento). Descriptivo.',
+  },
+  {
+    slug: 'imtp_relative',
+    name: 'IMTP relativo (fuerza pico / masa corporal)',
+    unit: 'N/kg',
+    expression: 'imtp_peak_force / body_mass',
+    constants: {},
+    better: 'higher',
+    isEstimate: false,
+    errorModel: 'none',
+    definition: 'Fuerza pico en el tirón isométrico a medio muslo (N) / masa corporal (kg).',
+  },
+  {
+    slug: 'sum_6_skinfolds',
+    name: 'Σ6 pliegues',
+    unit: 'mm',
+    expression: `sum(${SKINFOLDS_6.join(', ')})`,
+    constants: {},
+    better: 'lower',
+    isEstimate: false,
+    errorModel: 'none',
+    definition:
+      'Tríceps + subescapular + cresta ilíaca + abdominal + muslo anterior + gemelo medial (cada pliegue, mediana de sus mediciones).',
+  },
+  {
+    slug: 'sum_4_skinfolds',
+    name: 'Σ4 pliegues',
+    unit: 'mm',
+    expression: `sum(${SKINFOLDS_6.slice(0, 4).join(', ')})`,
+    constants: {},
+    better: 'lower',
+    isEstimate: false,
+    errorModel: 'none',
+    definition:
+      'Tríceps + subescapular + cresta ilíaca + abdominal (entrada de la ecuación de Faulkner).',
+  },
+  {
+    slug: 'body_fat_faulkner',
+    name: '% graso (Faulkner)',
+    unit: '%',
+    expression: 'sum_4_skinfolds * a + b',
+    constants: { a: 0.153, b: 5.783 },
+    better: 'lower',
+    isEstimate: true,
+    errorModel: 'none',
+    definition:
+      'Σ4 pliegues × a + b. Ecuación del documento del club (Faulkner, 1968) [REQUIERE VERIFICACIÓN]. Es una estimación.',
+  },
+  {
+    slug: 'body_fat_yuhasz',
+    name: '% graso (Yuhasz, hombres)',
+    unit: '%',
+    expression: 'sum_6_skinfolds * a + b',
+    constants: { a: 0.1051, b: 2.585 },
+    better: 'lower',
+    isEstimate: true,
+    errorModel: 'none',
+    sex: 'male',
+    definition:
+      'Σ6 pliegues × a + b, solo para hombres. Ecuación del documento del club (Yuhasz, 1974) [REQUIERE VERIFICACIÓN]. Es una estimación.',
+  },
+  {
+    slug: 'fat_mass',
+    name: 'Masa grasa',
+    unit: 'kg',
+    expression: 'body_mass * body_fat_faulkner / 100',
+    constants: {},
+    better: 'lower',
+    isEstimate: true,
+    errorModel: 'none',
+    definition: 'Masa corporal × % graso (Faulkner) / 100. Estimación.',
+  },
+  {
+    slug: 'fat_free_mass',
+    name: 'Masa libre de grasa',
+    unit: 'kg',
+    expression: 'body_mass - fat_mass',
+    constants: {},
+    better: 'higher',
+    isEstimate: true,
+    errorModel: 'none',
+    definition: 'Masa corporal − masa grasa. Estimación: no es masa muscular.',
   },
 ];
 
+/** The default catalogue, compiled (inputs known, in dependency order). */
+export const DERIVED_FORMULAS = compileFormulas(DEFAULT_FORMULAS);
+
+/** Derived values of one assessment with the given formulas (defaults if none are given). */
 export function computeDerived(
   values: Record<string, number>,
-): { formula: DerivedFormula; value: number; inputs: Record<string, number> }[] {
-  const out = [];
-  for (const f of DERIVED_FORMULAS) {
-    if (!f.inputs.every((i) => values[i] != null && Number.isFinite(values[i]))) continue;
-    const value = f.compute(values);
-    if (value == null) continue;
-    out.push({
-      formula: f,
-      value,
-      inputs: Object.fromEntries(f.inputs.map((i) => [i, values[i]!])),
-    });
-  }
-  return out;
+  formulas = DERIVED_FORMULAS,
+  opts: { sex?: string | null } = {},
+) {
+  return evaluateFormulas(formulas, values, opts).map((x) => ({
+    ...x,
+    value: Math.round(x.value * 1000) / 1000,
+  }));
 }
 
 /**

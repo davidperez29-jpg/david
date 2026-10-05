@@ -132,6 +132,7 @@ CREATE POLICY tca_delete ON trainer_client_assignments FOR DELETE USING (organiz
   method_notes: { kind: 'catalog_child', parent: 'methods', fk: 'method_id' },
   evidence_reviews: { kind: 'catalog' },
   assessment_tests: { kind: 'catalog' },
+  derived_formulas: { kind: 'catalog' },
   test_reliability_data: { kind: 'catalog' },
   reference_values: { kind: 'catalog' },
   assessment_batteries: { kind: 'catalog' },
@@ -143,6 +144,18 @@ CREATE POLICY tca_delete ON trainer_client_assignments FOR DELETE USING (organiz
   assessments: { kind: 'client_owned', clientWrite: false, clientRead: true },
   assessment_results: { kind: 'client_owned', clientWrite: false, clientRead: true },
   derived_metrics: { kind: 'client_owned', clientWrite: false, clientRead: true },
+  // Phase 4: groups/teams are staff-only; a trainer sees the members they can access and only
+  // adds members to a group of their organization.
+  client_groups: {
+    kind: 'custom',
+    sql: `CREATE POLICY client_groups_all ON client_groups FOR ALL USING (organization_id = app_org_id() AND app_is_staff()) WITH CHECK (organization_id = app_org_id() AND app_is_staff());`,
+  },
+  client_group_members: {
+    kind: 'custom',
+    sql: `CREATE POLICY client_group_members_all ON client_group_members FOR ALL
+  USING (organization_id = app_org_id() AND (app_has_role('ADMIN') OR (app_has_role('TRAINER') AND app_trainer_assigned(client_id))))
+  WITH CHECK (organization_id = app_org_id() AND (app_has_role('ADMIN') OR (app_has_role('TRAINER') AND app_trainer_assigned(client_id))) AND EXISTS (SELECT 1 FROM client_groups g WHERE g.id = client_group_members.group_id));`,
+  },
 
   // ── Planning ────────────────────────────────────────────────────────────────
   plan_templates: { kind: 'catalog' },
@@ -252,6 +265,7 @@ export const CHECK_CLIENT_ORG = [
   'training_plans',
   'assessments',
   'derived_metrics',
+  'client_group_members',
   'readiness',
   'pain_logs',
   'exercise_substitutions',

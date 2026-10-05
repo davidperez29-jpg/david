@@ -47,6 +47,10 @@ import {
   createInvitation,
   grantConsent,
   importExerciseBank,
+  createGroup,
+  createGroupAssessment,
+  groupReport,
+  setGroupMembers,
   type ImportedBankEntry,
   listCatalog,
   listProgrammingProfiles,
@@ -949,6 +953,58 @@ console.log('Imports: 1 validated client list pending confirmation.');
   });
 }
 console.log('Privacy: 1 pending rights request (Elena).');
+
+// Groups (phase 4): a mixed demo group assessed together, with its group report. Fictitious data.
+{
+  const members = created.slice(0, 8);
+  const { id: gid } = await createGroup(lucia, {
+    name: 'Grupo de rendimiento (demo)',
+    description: 'Evaluación conjunta de ejemplo: hoja de intentos e informe grupal.',
+  });
+  await setGroupMembers(lucia, gid, { add: members.map((c) => c.id) });
+  const all = await listAssessmentTests(lucia);
+  const tid = (slug: string) => all.find((t) => t.slug === slug)!.id;
+  const SKIN = [
+    'skinfold_triceps',
+    'skinfold_subscapular',
+    'skinfold_iliac_crest',
+    'skinfold_abdominal',
+    'skinfold_front_thigh',
+    'skinfold_medial_calf',
+  ];
+  const date = addDays(localDate(new Date()), -7);
+  await createGroupAssessment(lucia, gid, {
+    assessedOn: date,
+    testIds: [
+      'height',
+      'body_mass',
+      ...SKIN,
+      'sprint_5m',
+      'cmj_height',
+      'single_leg_cmj_height',
+    ].map(tid),
+    context: 'Evaluación de grupo',
+  });
+  const report = await groupReport(lucia, gid, { date });
+  for (const [i, m] of report.members.entries()) {
+    const c = members.find((x) => x.id === m.clientId)!;
+    const f = c.sex === 'female' ? 0.88 : 1;
+    const rec = (slug: string, attempts: number[], side: 'both' | 'left' | 'right' = 'both') =>
+      recordAssessmentResult(lucia, m.assessmentId, { testId: tid(slug), attempts, side });
+    const r = (x: number, d = 1) => Number((x * (1 + rnd() * 0.04)).toFixed(d));
+    await rec('height', [r(176 * f + i)]);
+    await rec('body_mass', [r(72 * f + i * 1.5)]);
+    for (const [k, slug] of SKIN.entries()) {
+      const base = (6 + k * 1.5) / f;
+      await rec(slug, [r(base), r(base), r(base)]);
+    }
+    await rec('sprint_5m', [r(1.05 / f, 2), r(1.05 / f, 2)]);
+    await rec('cmj_height', [r(36 * f), r(36 * f), r(36 * f)]);
+    await rec('single_leg_cmj_height', [r(19 * f, 2), r(19 * f, 2)], 'right');
+    await rec('single_leg_cmj_height', [r(17.5 * f, 2), r(17.5 * f, 2)], 'left');
+  }
+  console.log(`Groups: 1 demo group with ${report.members.length} members assessed on ${date}.`);
+}
 
 // Exercise library: the user's methodology bank as reviewable drafts (skip with DEMO_SKIP_BANK=1).
 if (!process.env.DEMO_SKIP_BANK) {

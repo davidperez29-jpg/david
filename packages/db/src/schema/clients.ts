@@ -12,6 +12,7 @@ import {
   text,
   time,
   timestamp,
+  unique,
   uniqueIndex,
   uuid,
 } from 'drizzle-orm/pg-core';
@@ -311,4 +312,48 @@ export const consents = pgTable(
     recordedBy: uuid('recorded_by').notNull(),
   },
   (t) => [index('consents_client_idx').on(t.clientId, t.purpose)],
+);
+
+/**
+ * Groups and teams (restructure phase 4): a team, a class or any set of clients assessed and
+ * compared together («Informe grupal»). Staff only; a client never sees the group or the others.
+ */
+export const clientGroups = pgTable(
+  'client_groups',
+  {
+    id: id(),
+    organizationId: uuid('organization_id')
+      .notNull()
+      .references(() => organizations.id),
+    name: text('name').notNull(),
+    description: text('description'),
+    archivedAt: timestamp('archived_at', { withTimezone: true }),
+    ...timestamps(),
+    ...authorship(),
+    version: version(),
+  },
+  (t) => [unique('client_groups_org_name_uq').on(t.organizationId, t.name)],
+);
+
+export const clientGroupMembers = pgTable(
+  'client_group_members',
+  {
+    id: id(),
+    organizationId: uuid('organization_id')
+      .notNull()
+      .references(() => organizations.id),
+    groupId: uuid('group_id')
+      .notNull()
+      .references(() => clientGroups.id, { onDelete: 'cascade' }),
+    clientId: uuid('client_id')
+      .notNull()
+      .references(() => clients.id, { onDelete: 'cascade' }),
+    /** Optional role in the team (e.g. «Portero»); never health data. */
+    role: text('role'),
+    ...timestamps(),
+  },
+  (t) => [
+    unique('client_group_members_uq').on(t.groupId, t.clientId),
+    index('client_group_members_client_idx').on(t.clientId),
+  ],
 );

@@ -158,7 +158,7 @@ describe('derived metrics', () => {
       sprint_10m: 1.85,
       one_rm_back_squat: 120,
     });
-    const by = Object.fromEntries(d.map((x) => [x.formula.id, x.value]));
+    const by = Object.fromEntries(d.map((x) => [x.formula.slug, x.value]));
     expect(by.bmi).toBeCloseTo(24.691, 3);
     expect(by.cod_deficit).toBeCloseTo(0.6, 3);
     expect(by.relative_strength_1rm).toBe(1.5);

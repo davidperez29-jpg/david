@@ -18,6 +18,8 @@ export * from './library';
 export * from './library-import';
 export * from './science';
 export * from './assessments';
+export * from './formulas';
+export * from './groups';
 export * from './planning';
 export * from './templates';
 export * from './plan-pdf';

@@ -1,8 +1,19 @@
 /**
  * Attempt aggregation (§11.2). The same rule must be applied to every assessment of a series,
- * otherwise comparisons are not valid.
+ * otherwise comparisons are not valid. `median` follows ISAK for skinfolds (median of 3; with 2
+ * valid measurements it is their mean); `min`/`max` are the raw extremes, whatever the direction
+ * (the club workbook takes sprint times with MIN, which is the best for «lower is better»).
  */
-export type Aggregation = 'best' | 'mean' | 'mean_of_best_n' | 'last';
+export type Aggregation = 'best' | 'mean' | 'mean_of_best_n' | 'last' | 'median' | 'min' | 'max';
+export const AGGREGATION_RULES: readonly Aggregation[] = [
+  'best',
+  'mean',
+  'mean_of_best_n',
+  'last',
+  'median',
+  'min',
+  'max',
+];
 export type BetterDirection = 'higher' | 'lower' | 'target_range';
 
 export interface Aggregated {
@@ -18,6 +29,13 @@ const round = (x: number, d = 4) => Math.round(x * 10 ** d) / 10 ** d;
 
 export function mean(xs: number[]): number {
   return xs.reduce((a, b) => a + b, 0) / xs.length;
+}
+
+/** Median (mean of the two central values for an even count), like a spreadsheet's MEDIAN. */
+export function median(xs: number[]): number {
+  const s = [...xs].sort((a, b) => a - b);
+  const m = Math.floor(s.length / 2);
+  return s.length % 2 ? s[m]! : (s[m - 1]! + s[m]!) / 2;
 }
 
 /** Sample standard deviation (n − 1). */
@@ -50,6 +68,15 @@ export function aggregateAttempts(
     case 'last':
       value = xs[xs.length - 1]!;
       break;
+    case 'median':
+      value = median(xs);
+      break;
+    case 'min':
+      value = Math.min(...xs);
+      break;
+    case 'max':
+      value = Math.max(...xs);
+      break;
   }
   const cv = xs.length >= 2 && m !== 0 ? (sd(xs) / Math.abs(m)) * 100 : null;
   return {
@@ -66,5 +93,8 @@ export function aggregationLabel(a: Aggregation, n?: number | null): string {
     mean: 'media de los intentos',
     mean_of_best_n: `media de los ${n ?? 2} mejores`,
     last: 'último intento',
+    median: 'mediana de los intentos',
+    min: 'valor mínimo',
+    max: 'valor máximo',
   }[a];
 }

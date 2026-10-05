@@ -7,11 +7,13 @@
 import { and, eq, inArray, isNull, or } from 'drizzle-orm';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { DEFAULT_FORMULAS } from '@tp/domain';
 import type { Database } from '../client';
 import {
   assessmentBatteries,
   assessmentTests,
   batteryTests,
+  derivedFormulas,
   evidenceSources,
   populations,
   referenceValues,
@@ -44,11 +46,14 @@ export interface SeedTest {
   valueType: 'number' | 'time' | 'distance' | 'angle' | 'count' | 'scale';
   betterDirection: 'higher' | 'lower' | 'target_range';
   defaultAttempts?: number;
-  aggregation?: 'best' | 'mean' | 'mean_of_best_n' | 'last';
+  aggregation?: 'best' | 'mean' | 'mean_of_best_n' | 'last' | 'median' | 'min' | 'max';
   aggregationN?: number | null;
   sided?: boolean;
   isEstimate?: boolean;
   limitations?: string | null;
+  /** Plausible limits: outside, the value is flagged «confirmar medición» (never dropped). */
+  plausibleMin?: number | null;
+  plausibleMax?: number | null;
   sources?: string[];
 }
 export interface SeedReliability {
@@ -83,6 +88,9 @@ export interface SeedReference {
   source: string;
   quote?: string;
   applicabilityNotes?: string | null;
+  /** Measurement conditions (surface, timing system, moment of the season…). */
+  condition?: string | null;
+  limitations?: string | null;
 }
 export interface SeedBattery {
   slug: string;
@@ -120,6 +128,7 @@ export interface AssessmentSeedReport {
   reliability: number;
   references: number;
   batteries: number;
+  formulas: number;
 }
 
 export async function seedAssessment(
@@ -181,6 +190,8 @@ export async function seedAssessment(
         sided: t.sided ?? false,
         isEstimate: t.isEstimate ?? false,
         limitations: t.limitations ?? null,
+        plausibleMin: n(t.plausibleMin),
+        plausibleMax: n(t.plausibleMax),
         sourceIds: (t.sources ?? []).map(src),
         status: 'published' as const,
       };
@@ -268,8 +279,34 @@ export async function seedAssessment(
             [r.applicabilityNotes, r.quote ? `Cita: «${r.quote}»` : null]
               .filter(Boolean)
               .join(' ') || null,
+          condition: r.condition ?? null,
+          limitations: r.limitations ?? null,
         })),
       );
+    }
+
+    // Derived formulas: the domain defaults are the platform's catalogue (one source of truth).
+    // Global rows only; a centre's own copies are never touched.
+    for (const f of DEFAULT_FORMULAS) {
+      const values = {
+        name: f.name,
+        unit: f.unit,
+        expression: f.expression,
+        constants: f.constants,
+        betterDirection: f.better,
+        isEstimate: f.isEstimate,
+        errorModel: f.errorModel,
+        sex: f.sex ?? null,
+        definition: f.definition,
+        status: 'published' as const,
+      };
+      await tx
+        .insert(derivedFormulas)
+        .values({ ...values, organizationId: null, slug: f.slug })
+        .onConflictDoUpdate({
+          target: [derivedFormulas.organizationId, derivedFormulas.slug],
+          set: values,
+        });
     }
 
     for (const b of data.batteries) {
@@ -312,6 +349,7 @@ export async function seedAssessment(
       reliability: data.reliability.length,
       references: data.references.length,
       batteries: data.batteries.length,
+      formulas: DEFAULT_FORMULAS.length,
     };
   });
 }

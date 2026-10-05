@@ -131,6 +131,65 @@
         {
           "test": "wellness_hooper",
           "core": false
+        },
+        {
+          "test": "height",
+          "core": false,
+          "notes": "Descriptivo"
+        },
+        {
+          "test": "body_mass",
+          "core": false,
+          "notes": "Descriptivo"
+        },
+        {
+          "test": "skinfold_triceps",
+          "core": false,
+          "notes": "Σ6 pliegues"
+        },
+        {
+          "test": "skinfold_subscapular",
+          "core": false,
+          "notes": "Σ6 pliegues"
+        },
+        {
+          "test": "skinfold_iliac_crest",
+          "core": false,
+          "notes": "Σ6 pliegues"
+        },
+        {
+          "test": "skinfold_abdominal",
+          "core": false,
+          "notes": "Σ6 pliegues"
+        },
+        {
+          "test": "skinfold_front_thigh",
+          "core": false,
+          "notes": "Σ6 pliegues"
+        },
+        {
+          "test": "skinfold_medial_calf",
+          "core": false,
+          "notes": "Σ6 pliegues"
+        },
+        {
+          "test": "sprint_5m",
+          "core": true
+        },
+        {
+          "test": "single_leg_cmj_height",
+          "core": false,
+          "notes": "Asimetría entre piernas (descriptiva)"
+        },
+        {
+          "test": "dribbling",
+          "core": false,
+          "notes": "Fútbol"
+        },
+        {
+          "test": "dsi",
+          "core": false,
+          "notes": "Requiere plataforma de fuerzas"
         }
       ]
     },
@@ -263,6 +322,43 @@
         },
         {
           "test": "bia_body_fat",
+          "core": false
+        }
+      ]
+    },
+    {
+      "slug": "pc_function",
+      "name": "Función y fuerza (parálisis cerebral y discapacidad motora)",
+      "goalFamily": "health",
+      "description": "Tests de campo sencillos para seguir fuerza y función. Adaptar el protocolo a cada persona (apoyos, ayudas técnicas) y anotarlo: solo se compara a la persona consigo misma. Requiere valoración por profesional sanitario cuando haya dudas de seguridad.",
+      "tests": [
+        {
+          "test": "handgrip_strength",
+          "core": true
+        },
+        {
+          "test": "five_times_sit_to_stand",
+          "core": true,
+          "notes": "Con apoyo de brazos si lo necesita: anotarlo"
+        },
+        {
+          "test": "timed_up_and_go",
+          "core": true
+        },
+        {
+          "test": "gait_speed",
+          "core": true
+        },
+        {
+          "test": "six_minute_walk_test",
+          "core": false
+        },
+        {
+          "test": "unipedal_stance_eyes_open",
+          "core": false
+        },
+        {
+          "test": "weight_bearing_lunge_distance",
           "core": false
         }
       ]

@@ -17,7 +17,7 @@ import {
 } from 'drizzle-orm/pg-core';
 import { authorship, id, timestamps, version } from './_common';
 import { orgOwned, orgScoped } from './_org';
-import { clients } from './clients';
+import { clientGroups, clients } from './clients';
 import { users } from './iam';
 import { pubStatus } from './library';
 import { evidenceSources, populations } from './science';
@@ -45,7 +45,15 @@ export const testValueType = pgEnum('test_value_type', [
   'scale',
 ]);
 export const betterDirection = pgEnum('better_direction', ['higher', 'lower', 'target_range']);
-export const aggregation = pgEnum('aggregation', ['best', 'mean', 'mean_of_best_n', 'last']);
+export const aggregation = pgEnum('aggregation', [
+  'best',
+  'mean',
+  'mean_of_best_n',
+  'last',
+  'median',
+  'min',
+  'max',
+]);
 export const statisticType = pgEnum('statistic_type', [
   'mean_sd',
   'median_iqr',
@@ -93,6 +101,9 @@ export const assessmentTests = pgTable(
     limitations: text('limitations'),
     /** The value is an estimate (e.g. 1RM from load-velocity, %fat by BIA): shown with its error. */
     isEstimate: boolean('is_estimate').notNull().default(false),
+    /** Plausible limits: a value outside is kept but flagged «confirmar medición» (phase 4). */
+    plausibleMin: numeric('plausible_min'),
+    plausibleMax: numeric('plausible_max'),
     sourceIds: uuid('source_ids')
       .array()
       .notNull()
@@ -105,6 +116,44 @@ export const assessmentTests = pgTable(
   (t) => [
     unique('assessment_tests_org_slug_uq').on(t.organizationId, t.slug).nullsNotDistinct(),
     check('assessment_tests_attempts_ck', sql`${t.defaultAttempts} BETWEEN 1 AND 20`),
+  ],
+);
+
+export const formulaErrorModel = pgEnum('formula_error_model', ['difference', 'none']);
+
+/**
+ * Derived formulas as data (restructure phase 4): the expression language of
+ * @tp/domain `formulas.ts` with editable constants. A centre's row with the slug of a global one
+ * replaces it for that centre (its own constants); the definition shown carries the constants.
+ */
+export const derivedFormulas = pgTable(
+  'derived_formulas',
+  {
+    id: id(),
+    organizationId: orgScoped(),
+    slug: text('slug').notNull(),
+    name: text('name').notNull(),
+    unit: text('unit').notNull(),
+    expression: text('expression').notNull(),
+    constants: jsonb('constants')
+      .$type<Record<string, number>>()
+      .notNull()
+      .default(sql`'{}'::jsonb`),
+    betterDirection: betterDirection('better_direction').notNull(),
+    isEstimate: boolean('is_estimate').notNull().default(false),
+    errorModel: formulaErrorModel('error_model').notNull().default('none'),
+    /** Only for this sex (an equation validated in men, for instance). */
+    sex: text('sex'),
+    definition: text('definition').notNull(),
+    status: pubStatus('status').notNull().default('published'),
+    ...timestamps(),
+    ...authorship(),
+    version: version(),
+  },
+  (t) => [
+    unique('derived_formulas_org_slug_uq').on(t.organizationId, t.slug).nullsNotDistinct(),
+    check('derived_formulas_sex_ck', sql`${t.sex} IS NULL OR ${t.sex} IN ('male', 'female')`),
+    check('derived_formulas_expression_ck', sql`length(${t.expression}) <= 500`),
   ],
 );
 
@@ -165,6 +214,10 @@ export const referenceValues = pgTable(
       .notNull()
       .references(() => evidenceSources.id),
     applicabilityNotes: text('applicability_notes'),
+    /** Measurement conditions of the reference (surface, timing system, season moment…). */
+    condition: text('condition'),
+    /** Why it may not apply (sample, level, protocol differences). */
+    limitations: text('limitations'),
     ...timestamps(),
     ...authorship(),
   },
@@ -224,6 +277,8 @@ export const assessments = pgTable(
     conditions: jsonb('conditions'),
     /** Optional link to a training plan's planned (re)assessment. */
     planId: uuid('plan_id'),
+    /** Assessed as part of a group session (phase 4): same group and date → «Informe grupal». */
+    groupId: uuid('group_id').references(() => clientGroups.id, { onDelete: 'set null' }),
     /** Tests planned for this assessment (from a battery or chosen by the trainer). */
     plannedTestIds: uuid('planned_test_ids')
       .array()
@@ -236,6 +291,7 @@ export const assessments = pgTable(
   },
   (t) => [
     index('assessments_client_idx').on(t.clientId, t.assessedOn),
+    index('assessments_group_idx').on(t.groupId, t.assessedOn),
     unique('assessments_id_client_uq').on(t.id, t.clientId),
   ],
 );

@@ -1727,7 +1727,9 @@
       "isEstimate": false,
       "limitations": "Dependiente de la posición y del equipo; la fiabilidad verificada corresponde a la fuerza pico (no a la RFD); coste del equipamiento.",
       "sources": ["grgic2021_imtp_reliability"],
-      "annexId": "TST-004"
+      "annexId": "TST-004",
+      "plausibleMin": 300,
+      "plausibleMax": 8000
     },
     {
       "slug": "handgrip_strength",
@@ -1752,7 +1754,9 @@
         "cruzjentoft2019_ewgsop2",
         "fernandes2022_grip_cutoffs"
       ],
-      "annexId": "TST-005"
+      "annexId": "TST-005",
+      "plausibleMin": 3,
+      "plausibleMax": 100
     },
     {
       "slug": "hhd_isometric_strength",
@@ -1797,7 +1801,9 @@
         "gallardofuentes2016_myjump",
         "cruvinelcabral2018_myjump_elderly"
       ],
-      "annexId": "TST-007"
+      "annexId": "TST-007",
+      "plausibleMin": 5,
+      "plausibleMax": 80
     },
     {
       "slug": "sj_height",
@@ -1817,7 +1823,9 @@
       "isEstimate": false,
       "limitations": "Difícil eliminar el contramovimiento sin plataforma de fuerza; no mezclar métodos de medida.",
       "sources": ["markovic2004_cmj_sj", "gallardofuentes2016_myjump"],
-      "annexId": "TST-008"
+      "annexId": "TST-008",
+      "plausibleMin": 5,
+      "plausibleMax": 80
     },
     {
       "slug": "single_leg_cmj_height",
@@ -1837,7 +1845,9 @@
       "isEstimate": false,
       "limitations": "Error de medida desconocido (sin fiabilidad verificada). La asimetría es específica de la tarea y la métrica; mostrarla solo como dato descriptivo, nunca como predictor de lesión (la evidencia sobre asimetría y rendimiento es solo asociativa).",
       "sources": ["bishop2017_asymmetry"],
-      "annexId": "TST-009"
+      "annexId": "TST-009",
+      "plausibleMin": 2,
+      "plausibleMax": 50
     },
     {
       "slug": "drop_jump_rsi",
@@ -1857,7 +1867,9 @@
       "isEstimate": false,
       "limitations": "Muy sensible a la altura de caída y a las instrucciones; en el estudio de fiabilidad verificado (drop jump desde 30 cm) el RSI fue muy fiable (ICC > 0,9), pero el resumen no da un valor exacto, por lo que el error de medida se considera desconocido.",
       "sources": ["flanagan2008_rsi_reliability", "ebben2010_rsimod"],
-      "annexId": "TST-010"
+      "annexId": "TST-010",
+      "plausibleMin": 0.2,
+      "plausibleMax": 4.5
     },
     {
       "slug": "rsi_modified",
@@ -1897,7 +1909,9 @@
       "isEstimate": false,
       "limitations": "Diferencias de salida y de dispositivo pueden producir diferencias de tiempo mayores que años de entrenamiento; evitar cronometraje manual y células de haz simple en 10–20 m; viento y condiciones ambientales influyen (Haugen y Buchheit 2016). Error de medida específico de esta distancia desconocido.",
       "sources": ["haugen2016_sprint_monitoring"],
-      "annexId": "TST-013"
+      "annexId": "TST-013",
+      "plausibleMin": 0.7,
+      "plausibleMax": 3
     },
     {
       "slug": "sprint_10m",
@@ -1917,7 +1931,9 @@
       "isEstimate": false,
       "limitations": "Diferencias de salida y de dispositivo pueden producir diferencias de tiempo mayores que años de entrenamiento; evitar cronometraje manual y células de haz simple en 10–20 m; viento y condiciones ambientales influyen (Haugen y Buchheit 2016). Error de medida específico de esta distancia desconocido.",
       "sources": ["haugen2016_sprint_monitoring"],
-      "annexId": "TST-013"
+      "annexId": "TST-013",
+      "plausibleMin": 1.3,
+      "plausibleMax": 4
     },
     {
       "slug": "sprint_20m",
@@ -1937,7 +1953,9 @@
       "isEstimate": false,
       "limitations": "Diferencias de salida y de dispositivo pueden producir diferencias de tiempo mayores que años de entrenamiento; evitar cronometraje manual y células de haz simple en 10–20 m; viento y condiciones ambientales influyen (Haugen y Buchheit 2016). Fiabilidad verificada solo con células de haz simple en exterior (CV 2,55–4,22 %).",
       "sources": ["haugen2016_sprint_monitoring", "hopker2009_sprint_reliability"],
-      "annexId": "TST-013"
+      "annexId": "TST-013",
+      "plausibleMin": 2.3,
+      "plausibleMax": 6
     },
     {
       "slug": "sprint_30m",
@@ -1957,7 +1975,9 @@
       "isEstimate": false,
       "limitations": "Diferencias de salida y de dispositivo pueden producir diferencias de tiempo mayores que años de entrenamiento; evitar cronometraje manual y células de haz simple en 10–20 m; viento y condiciones ambientales influyen (Haugen y Buchheit 2016). Error de medida específico de esta distancia desconocido.",
       "sources": ["haugen2016_sprint_monitoring"],
-      "annexId": "TST-013"
+      "annexId": "TST-013",
+      "plausibleMin": 3.2,
+      "plausibleMax": 8
     },
     {
       "slug": "max_sprint_speed",
@@ -1997,7 +2017,9 @@
       "isEstimate": false,
       "limitations": "Existe efecto aprendizaje entre sesiones (familiarizar 1–2 días); el tiempo total incluye mucho sprint lineal; para aislar el cambio de dirección derivar el déficit de COD con el sprint de 10 m (medida derivada con mayor error).",
       "sources": ["barber2015_505_reliability", "nimphius2016_cod_deficit"],
-      "annexId": "TST-015"
+      "annexId": "TST-015",
+      "plausibleMin": 1.8,
+      "plausibleMax": 5
     },
     {
       "slug": "t_test",
@@ -2097,7 +2119,9 @@
       "isEstimate": false,
       "limitations": "Test máximo; la VIFT es específica del protocolo y no intercambiable con velocidades de tests continuos.",
       "sources": ["buchheit2008_3015ift", "grgic2020_3015ift_reliability"],
-      "annexId": "TST-021"
+      "annexId": "TST-021",
+      "plausibleMin": 8,
+      "plausibleMax": 25
     },
     {
       "slug": "cooper_test",
@@ -2397,7 +2421,9 @@
       "isEstimate": false,
       "limitations": "Error de medida desconocido; varía con hidratación e ingesta. Pérdida de peso no intencionada → 'Requiere valoración por profesional sanitario'.",
       "sources": [],
-      "annexId": null
+      "annexId": null,
+      "plausibleMin": 25,
+      "plausibleMax": 250
     },
     {
       "slug": "height",
@@ -2417,7 +2443,9 @@
       "isEstimate": false,
       "limitations": "Error de medida desconocido; en menores interpretar con la maduración.",
       "sources": [],
-      "annexId": null
+      "annexId": null,
+      "plausibleMin": 100,
+      "plausibleMax": 230
     },
     {
       "slug": "waist_circumference",
@@ -2437,7 +2465,9 @@
       "isEstimate": false,
       "limitations": "Error de medida desconocido; puntos de corte OMS/IDF no verificados en esta versión; el sitio anatómico cambia el valor.",
       "sources": [],
-      "annexId": "TST-036"
+      "annexId": "TST-036",
+      "plausibleMin": 40,
+      "plausibleMax": 200
     },
     {
       "slug": "bia_body_fat",
@@ -2498,6 +2528,142 @@
       "limitations": "Escalas e ítems de la versión original no verificados; psicometría no verificada → interpretar solo frente a la línea base individual, no frente a normas. Puntuaciones persistentemente muy bajas de bienestar → sugerir apoyo profesional; el sistema no evalúa salud mental.",
       "sources": ["hooper1995_overtraining", "mclean2010_rugby_fatigue"],
       "annexId": "TST-040"
+    },
+    {
+      "slug": "skinfold_triceps",
+      "name": "Pliegue tríceps",
+      "category": "body_composition",
+      "purpose": "Adiposidad subcutánea local; entra en Σ6/Σ4 pliegues y en las ecuaciones de % graso.",
+      "protocol": "Plicómetro calibrado, lado derecho, sujeto de pie y relajado. Sitio: punto medio acromio-radial, cara posterior del brazo. Tres mediciones no consecutivas; resultado: mediana (protocolo tipo ISAK). Mismo evaluador en la reevaluación.",
+      "equipment": ["plicómetro"],
+      "unit": "mm",
+      "valueType": "number",
+      "betterDirection": "lower",
+      "defaultAttempts": 3,
+      "aggregation": "median",
+      "sided": false,
+      "plausibleMin": 2,
+      "plausibleMax": 60,
+      "limitations": "Depende mucho del evaluador y de localizar bien el sitio. Úsese para seguir a la misma persona; el % graso que se calcule es una estimación."
+    },
+    {
+      "slug": "skinfold_subscapular",
+      "name": "Pliegue subescapular",
+      "category": "body_composition",
+      "purpose": "Adiposidad subcutánea local; entra en Σ6/Σ4 pliegues y en las ecuaciones de % graso.",
+      "protocol": "Plicómetro calibrado, lado derecho, sujeto de pie y relajado. Sitio: 2 cm por debajo del ángulo inferior de la escápula, oblicuo. Tres mediciones no consecutivas; resultado: mediana (protocolo tipo ISAK). Mismo evaluador en la reevaluación.",
+      "equipment": ["plicómetro"],
+      "unit": "mm",
+      "valueType": "number",
+      "betterDirection": "lower",
+      "defaultAttempts": 3,
+      "aggregation": "median",
+      "sided": false,
+      "plausibleMin": 2,
+      "plausibleMax": 60,
+      "limitations": "Depende mucho del evaluador y de localizar bien el sitio. Úsese para seguir a la misma persona; el % graso que se calcule es una estimación."
+    },
+    {
+      "slug": "skinfold_iliac_crest",
+      "name": "Pliegue cresta ilíaca",
+      "category": "body_composition",
+      "purpose": "Adiposidad subcutánea local; entra en Σ6/Σ4 pliegues y en las ecuaciones de % graso.",
+      "protocol": "Plicómetro calibrado, lado derecho, sujeto de pie y relajado. Sitio: inmediatamente por encima de la cresta ilíaca, línea ilio-axilar. Tres mediciones no consecutivas; resultado: mediana (protocolo tipo ISAK). Mismo evaluador en la reevaluación.",
+      "equipment": ["plicómetro"],
+      "unit": "mm",
+      "valueType": "number",
+      "betterDirection": "lower",
+      "defaultAttempts": 3,
+      "aggregation": "median",
+      "sided": false,
+      "plausibleMin": 2,
+      "plausibleMax": 60,
+      "limitations": "Depende mucho del evaluador y de localizar bien el sitio. Úsese para seguir a la misma persona; el % graso que se calcule es una estimación."
+    },
+    {
+      "slug": "skinfold_abdominal",
+      "name": "Pliegue abdominal",
+      "category": "body_composition",
+      "purpose": "Adiposidad subcutánea local; entra en Σ6/Σ4 pliegues y en las ecuaciones de % graso.",
+      "protocol": "Plicómetro calibrado, lado derecho, sujeto de pie y relajado. Sitio: 5 cm a la derecha del ombligo, vertical. Tres mediciones no consecutivas; resultado: mediana (protocolo tipo ISAK). Mismo evaluador en la reevaluación.",
+      "equipment": ["plicómetro"],
+      "unit": "mm",
+      "valueType": "number",
+      "betterDirection": "lower",
+      "defaultAttempts": 3,
+      "aggregation": "median",
+      "sided": false,
+      "plausibleMin": 2,
+      "plausibleMax": 60,
+      "limitations": "Depende mucho del evaluador y de localizar bien el sitio. Úsese para seguir a la misma persona; el % graso que se calcule es una estimación."
+    },
+    {
+      "slug": "skinfold_front_thigh",
+      "name": "Pliegue muslo anterior",
+      "category": "body_composition",
+      "purpose": "Adiposidad subcutánea local; entra en Σ6/Σ4 pliegues y en las ecuaciones de % graso.",
+      "protocol": "Plicómetro calibrado, lado derecho, sujeto de pie y relajado. Sitio: punto medio de la cara anterior del muslo, rodilla flexionada. Tres mediciones no consecutivas; resultado: mediana (protocolo tipo ISAK). Mismo evaluador en la reevaluación.",
+      "equipment": ["plicómetro"],
+      "unit": "mm",
+      "valueType": "number",
+      "betterDirection": "lower",
+      "defaultAttempts": 3,
+      "aggregation": "median",
+      "sided": false,
+      "plausibleMin": 2,
+      "plausibleMax": 60,
+      "limitations": "Depende mucho del evaluador y de localizar bien el sitio. Úsese para seguir a la misma persona; el % graso que se calcule es una estimación."
+    },
+    {
+      "slug": "skinfold_medial_calf",
+      "name": "Pliegue gemelo medial",
+      "category": "body_composition",
+      "purpose": "Adiposidad subcutánea local; entra en Σ6/Σ4 pliegues y en las ecuaciones de % graso.",
+      "protocol": "Plicómetro calibrado, lado derecho, sujeto de pie y relajado. Sitio: cara medial de la pierna, a la altura del perímetro máximo. Tres mediciones no consecutivas; resultado: mediana (protocolo tipo ISAK). Mismo evaluador en la reevaluación.",
+      "equipment": ["plicómetro"],
+      "unit": "mm",
+      "valueType": "number",
+      "betterDirection": "lower",
+      "defaultAttempts": 3,
+      "aggregation": "median",
+      "sided": false,
+      "plausibleMin": 2,
+      "plausibleMax": 60,
+      "limitations": "Depende mucho del evaluador y de localizar bien el sitio. Úsese para seguir a la misma persona; el % graso que se calcule es una estimación."
+    },
+    {
+      "slug": "dribbling",
+      "name": "Test de conducción de balón (dribbling)",
+      "category": "agility",
+      "purpose": "Velocidad con balón en un circuito con cambios de dirección (fútbol).",
+      "protocol": "Circuito definido por el centro (distancia y conos siempre iguales), fotocélulas. Dos intentos con recuperación completa; resultado: el mejor (menor tiempo). Anota superficie y calzado.",
+      "equipment": ["fotocélulas", "conos", "balón"],
+      "unit": "s",
+      "valueType": "time",
+      "betterDirection": "lower",
+      "defaultAttempts": 2,
+      "aggregation": "best",
+      "sided": false,
+      "plausibleMin": 3,
+      "plausibleMax": 30,
+      "limitations": "No hay un protocolo único: solo es comparable dentro del mismo circuito y centro. Sin referencias publicadas en este catálogo."
+    },
+    {
+      "slug": "dsi",
+      "name": "Índice de fuerza dinámica (DSI)",
+      "category": "strength",
+      "purpose": "Relación entre la fuerza pico en un salto (CMJ) y en un esfuerzo isométrico (IMTP): orienta si conviene priorizar fuerza máxima o fuerza rápida.",
+      "protocol": "Fuerza pico del CMJ / fuerza pico del IMTP, ambas en plataforma de fuerzas el mismo día. Se registra el cociente.",
+      "equipment": ["plataforma de fuerzas"],
+      "unit": "ratio",
+      "valueType": "number",
+      "betterDirection": "target_range",
+      "defaultAttempts": 1,
+      "aggregation": "last",
+      "sided": false,
+      "plausibleMin": 0.3,
+      "plausibleMax": 1.5,
+      "limitations": "No es «más es mejor»: es un cociente para orientar el entrenamiento. Los puntos de corte que circulan (p. ej. < 0,6 / > 0,8) [REQUIERE VERIFICACIÓN] y dependen del protocolo y la plataforma."
     }
   ],
   "reliability": [

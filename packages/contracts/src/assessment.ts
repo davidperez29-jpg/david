@@ -16,7 +16,15 @@ export const TEST_CATEGORIES = [
 ] as const;
 export const TEST_VALUE_TYPES = ['number', 'time', 'distance', 'angle', 'count', 'scale'] as const;
 export const BETTER_DIRECTIONS = ['higher', 'lower', 'target_range'] as const;
-export const AGGREGATIONS = ['best', 'mean', 'mean_of_best_n', 'last'] as const;
+export const AGGREGATIONS = [
+  'best',
+  'mean',
+  'mean_of_best_n',
+  'last',
+  'median',
+  'min',
+  'max',
+] as const;
 export const SIDES = ['both', 'left', 'right'] as const;
 
 const isoDate = z.iso.date();
@@ -39,6 +47,9 @@ const testFields = {
   sided: z.boolean(),
   isEstimate: z.boolean(),
   limitations: optionalText(2000),
+  /** Plausible limits: values outside are kept but flagged «confirmar medición». */
+  plausibleMin: num.nullable().optional(),
+  plausibleMax: num.nullable().optional(),
 };
 export const testSchema = z.object({
   ...testFields,
@@ -115,3 +126,46 @@ export const assessmentStatusSchema = z.object({
 });
 
 export const progressQuerySchema = z.object({ testId: z.uuid().optional() });
+
+/** The centre's version of a derived formula (phase 4): constants, or a whole own formula. */
+export const formulaSlugSchema = z
+  .string()
+  .regex(
+    /^[a-z_][a-z0-9_]{1,59}$/,
+    'Usa minúsculas, números y guiones bajos (p. ej. sum_3_pliegues).',
+  );
+export const formulaSchema = z.object({
+  name: z.string().trim().min(2).max(120).optional(),
+  unit: z.string().trim().max(20).optional(),
+  expression: z.string().trim().min(1).max(500).optional(),
+  constants: z
+    .record(z.string().regex(/^[a-z]$/, 'Las constantes son una sola letra (a, b, c…).'), num)
+    .optional(),
+  betterDirection: z.enum(BETTER_DIRECTIONS).optional(),
+  isEstimate: z.boolean().optional(),
+  sex: z.enum(['male', 'female']).nullable().optional(),
+  definition: z.string().trim().max(1000).optional(),
+  expectedVersion: z.coerce.number().int().min(1).optional(),
+});
+
+/** Groups and teams (phase 4). */
+export const groupSchema = z.object({
+  name: z.string().trim().min(2).max(80),
+  description: optionalText(500),
+});
+export const updateGroupSchema = groupSchema.partial().extend({
+  archived: z.boolean().optional(),
+  expectedVersion: z.coerce.number().int().min(1),
+});
+export const groupMembersSchema = z.object({
+  add: z.array(z.uuid()).max(100).default([]),
+  remove: z.array(z.uuid()).max(100).default([]),
+});
+/** One assessment per member, same date and tests: the group's «hoja de intentos». */
+export const groupAssessmentSchema = z.object({
+  assessedOn: isoDate,
+  batteryId: z.uuid().nullable().optional(),
+  testIds: z.array(z.uuid()).max(60).default([]),
+  context: optionalText(500),
+});
+export const groupReportQuerySchema = z.object({ date: isoDate });

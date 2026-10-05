@@ -16,7 +16,6 @@ import {
   combineErrors,
   compareToReference,
   computeDerived,
-  DERIVED_FORMULAS,
   diffFields,
   DomainError,
   hasActiveConsent,
@@ -39,6 +38,7 @@ import {
 import { and, asc, desc, eq, inArray, isNull, or, sql } from 'drizzle-orm';
 import type { AnyPgColumn } from 'drizzle-orm/pg-core';
 import { writeAudit } from './audit';
+import { formulaDescription, formulasInForce } from './formulas';
 import { authorizeClient, requirePermission } from './authz';
 import type { RequestContext } from './context';
 import { clientActivity } from './client-events';
@@ -72,7 +72,9 @@ const catalogWrite = (ctx: RequestContext) =>
 const n = (v: string | number | null | undefined) => (v == null ? null : Number(v));
 const s = (v: number | null | undefined) => (v == null ? null : String(v));
 
-function citation(src: { authors: string[] | null; year: number | null; title: string } | null) {
+export function citation(
+  src: { authors: string[] | null; year: number | null; title: string } | null,
+) {
   if (!src) return 'Medición local del centro';
   const a = src.authors ?? [];
   const who = a.length === 0 ? '' : a.length > 2 ? `${a[0]} et al.` : a.join(' y ');
@@ -143,7 +145,7 @@ async function reliabilityRows(db: Executor, testIds: string[]) {
     .where(inArray(testReliabilityData.testId, testIds));
 }
 
-async function referenceRows(db: Executor, testIds: string[]) {
+export async function referenceRows(db: Executor, testIds: string[]) {
   if (!testIds.length) return [];
   return db
     .select({
@@ -207,11 +209,13 @@ async function getAssessmentTest_(ctx: RequestContext, id: string) {
       source: { ...source, label: citation(source) },
     })),
     sources: srcs.map((x) => ({ ...x, label: citation(x) })),
-    formulas: DERIVED_FORMULAS.filter((f) => f.inputs.includes(t.slug)).map((f) => ({
-      id: f.id,
-      name: f.name,
-      definition: f.definition,
-    })),
+    formulas: (await formulasInForce(ctx.db, ctx.actor.organizationId))
+      .filter((f) => f.inputs.some((i) => i.replace(/\.(left|right)$/, '') === t.slug))
+      .map((f) => ({
+        id: f.slug,
+        name: f.name,
+        definition: f.definition,
+      })),
   };
 }
 export type AssessmentTestDetail = Awaited<ReturnType<typeof getAssessmentTest_>>;
@@ -234,6 +238,8 @@ async function createAssessmentTest_(ctx: RequestContext, input: unknown): Promi
       .values({
         ...d,
         aggregationN: d.aggregationN ?? null,
+        plausibleMin: s(d.plausibleMin),
+        plausibleMax: s(d.plausibleMax),
         organizationId: ctx.actor.organizationId,
         slug,
         status: 'published',
@@ -267,7 +273,8 @@ async function updateAssessmentTest_(
   if (t.version !== expectedVersion)
     throw new DomainError('conflict', 'El test ha cambiado. Recarga los datos.');
   const values: Record<string, unknown> = {};
-  for (const [k, v] of Object.entries(d)) if (v !== undefined) values[k] = v;
+  for (const [k, v] of Object.entries(d))
+    if (v !== undefined) values[k] = k.startsWith('plausible') ? s(v as number | null) : v;
   // A protocol change creates a new protocol version: results keep the version they were taken with.
   const protocolChanged = 'protocol' in values && values.protocol !== t.protocol;
   await ctx.db.transaction(async (tx) => {
@@ -596,6 +603,7 @@ async function createAssessment_(
   ctx: RequestContext,
   clientId: string,
   input: unknown,
+  groupId: string | null = null,
 ): Promise<{ id: string }> {
   const d = parse(createAssessmentSchema, input);
   await authorizeClient(ctx, 'assessments:write', clientId);
@@ -644,6 +652,7 @@ async function createAssessment_(
         conditions: d.conditions ?? null,
         plannedTestIds: testIds,
         notes: d.notes ?? null,
+        groupId,
         createdBy: ctx.actor.userId,
       })
       .returning({ id: assessments.id });
@@ -678,9 +687,16 @@ async function recomputeDerived(
     .from(assessmentResults)
     .innerJoin(assessmentTests, eq(assessmentTests.id, assessmentResults.testId))
     .where(eq(assessmentResults.assessmentId, assessmentId));
+  const [formulas, [client]] = await Promise.all([
+    formulasInForce(tx, ctx.actor.organizationId),
+    tx.select({ sex: clients.sex }).from(clients).where(eq(clients.id, clientId)),
+  ]);
+  const opts = { sex: client?.sex ?? null };
   const both: Record<string, number> = {};
   for (const r of rows)
-    if (r.valid && r.side === 'both' && r.value != null) both[r.slug] = Number(r.value);
+    if (r.valid && r.value != null)
+      // Sided values are also available as «slug.left» / «slug.right» to the formulas.
+      both[r.side === 'both' ? r.slug : `${r.slug}.${r.side}`] = Number(r.value);
   const metrics: {
     metric: string;
     formula: string;
@@ -689,9 +705,9 @@ async function recomputeDerived(
     isEstimate: boolean;
     inputs: unknown;
     resultId: string | null;
-  }[] = computeDerived(both).map((x) => ({
-    metric: x.formula.id,
-    formula: x.formula.definition,
+  }[] = computeDerived(both, formulas, opts).map((x) => ({
+    metric: x.formula.slug,
+    formula: formulaDescription(x.formula),
     value: x.value,
     unit: x.formula.unit,
     isEstimate: x.formula.isEstimate,
@@ -704,11 +720,11 @@ async function recomputeDerived(
     for (const r of rows)
       if (r.valid && r.side === side && r.value != null) sideValues[r.slug] = Number(r.value);
     if (!Object.keys(sideValues).length) continue;
-    for (const x of computeDerived({ ...both, ...sideValues })) {
+    for (const x of computeDerived({ ...both, ...sideValues }, formulas, opts)) {
       if (!x.formula.inputs.some((i) => i in sideValues)) continue;
       metrics.push({
-        metric: `${x.formula.id}:${side}`,
-        formula: `${x.formula.definition} Lado ${side === 'left' ? 'izquierdo' : 'derecho'}.`,
+        metric: `${x.formula.slug}:${side}`,
+        formula: `${formulaDescription(x.formula)} Lado ${side === 'left' ? 'izquierdo' : 'derecho'}.`,
         value: x.value,
         unit: x.formula.unit,
         isEstimate: x.formula.isEstimate,
@@ -950,10 +966,14 @@ function compareRefs(
   }));
 }
 
-function derivedName(metric: string, testName: (slug: string) => string): string {
+function derivedName(
+  metric: string,
+  testName: (slug: string) => string,
+  formulas: { slug: string; name: string }[],
+): string {
   if (metric.startsWith('asymmetry:')) return `Asimetría · ${testName(metric.slice(10))}`;
   const [id, side] = metric.split(':');
-  const f = DERIVED_FORMULAS.find((x) => x.id === id);
+  const f = formulas.find((x) => x.slug === id);
   const sideLabel = side === 'left' ? ' · izquierdo' : side === 'right' ? ' · derecho' : '';
   return `${f?.name ?? id}${sideLabel}`;
 }
@@ -975,7 +995,7 @@ async function getAssessment_(ctx: RequestContext, id: string) {
   const ordered = [...a.plannedTestIds, ...testIds.filter((x) => !a.plannedTestIds.includes(x))]
     .map((tid) => tests.find((t) => t.id === tid)!)
     .filter(Boolean);
-  const [rels, refs, derived, [battery], cc] = await Promise.all([
+  const [rels, refs, derived, [battery], cc, formulas] = await Promise.all([
     reliabilityRows(ctx.db, testIds),
     referenceRows(ctx.db, testIds),
     ctx.db
@@ -990,6 +1010,7 @@ async function getAssessment_(ctx: RequestContext, id: string) {
           .where(eq(assessmentBatteries.id, a.batteryId))
       : Promise.resolve([] as { name: string }[]),
     loadClientContext(ctx, a.clientId, false),
+    formulasInForce(ctx.db, ctx.actor.organizationId),
   ]);
   // Previous valid result of each test/side for the change column.
   const prev = await ctx.db
@@ -1095,7 +1116,11 @@ async function getAssessment_(ctx: RequestContext, id: string) {
     derived: derived.map((m) => ({
       ...m,
       value: Number(m.value),
-      name: derivedName(m.metric, (slug) => tests.find((t) => t.slug === slug)?.name ?? slug),
+      name: derivedName(
+        m.metric,
+        (slug) => tests.find((t) => t.slug === slug)?.name ?? slug,
+        formulas,
+      ),
     })),
     flags,
   };
@@ -1201,13 +1226,14 @@ async function clientAssessmentProgress_(ctx: RequestContext, clientId: string) 
     .innerJoin(assessments, eq(assessments.id, derivedMetrics.assessmentId))
     .where(and(eq(derivedMetrics.clientId, clientId), sql`${assessments.status} <> 'cancelled'`))
     .orderBy(asc(assessments.assessedOn));
+  const formulas = await formulasInForce(ctx.db, ctx.actor.organizationId);
   const byMetric = new Map<string, typeof dm>();
   for (const x of dm) byMetric.set(x.m.metric, [...(byMetric.get(x.m.metric) ?? []), x]);
   const derived = [...byMetric.entries()].map(([metric, g]) => {
     const [formulaId, side] = metric.split(':') as [string, string | undefined];
     const f = metric.startsWith('asymmetry:')
       ? undefined
-      : DERIVED_FORMULAS.find((x) => x.id === formulaId);
+      : formulas.find((x) => x.slug === formulaId);
     const inputError = (slug: string) =>
       errorCache.get(`${slug}:${side ?? 'both'}`) ?? errorCache.get(`${slug}:both`) ?? null;
     const points = g.map((x) => ({ on: x.on, value: Number(x.m.value) }));
@@ -1221,7 +1247,7 @@ async function clientAssessmentProgress_(ctx: RequestContext, clientId: string) 
         : null;
     return {
       metric,
-      name: derivedName(metric, (slug) => g[0]!.m.formula.match(/«(.+?)»/)?.[1] ?? slug),
+      name: derivedName(metric, (slug) => g[0]!.m.formula.match(/«(.+?)»/)?.[1] ?? slug, formulas),
       unit: g[0]!.m.unit,
       definition: g[0]!.m.formula,
       points,
@@ -1243,7 +1269,11 @@ export const listBatteries = secured(listBatteries_);
 export const createBattery = secured(createBattery_);
 export const proposeAssessmentBattery = secured(proposeAssessmentBattery_);
 export const listClientAssessments = secured(listClientAssessments_);
-export const createAssessment = secured(createAssessment_);
+export const createAssessment = secured((ctx: RequestContext, clientId: string, input: unknown) =>
+  createAssessment_(ctx, clientId, input),
+);
+/** For other use cases inside a secured transaction (group assessments). */
+export const createAssessmentInTx = createAssessment_;
 export const getAssessment = secured(getAssessment_);
 export const recordAssessmentResult = secured(recordAssessmentResult_);
 export const deleteAssessmentResult = secured(deleteAssessmentResult_);

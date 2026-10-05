@@ -36,7 +36,10 @@ describe('assessment seed files', () => {
     for (const b of data.batteries)
       for (const t of b.tests) expect(tests.has(t.test), `${b.slug} → ${t.test}`).toBe(true);
     for (const f of DERIVED_FORMULAS)
-      for (const i of f.inputs) expect(tests.has(i), `${f.id} → ${i}`).toBe(true);
+      for (const i of f.inputs)
+        expect(tests.has(i) || DERIVED_FORMULAS.some((g) => g.slug === i), `${f.slug} → ${i}`).toBe(
+          true,
+        );
     for (const m of MAXIMAL_TESTS) expect(tests.has(m), `maximal ${m}`).toBe(true);
   });
 });

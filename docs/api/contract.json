@@ -93,6 +93,9 @@
     "dashboard/trainer GET authenticated",
     "decision/rules GET authenticated",
     "decision/rules PUT authenticated",
+    "derived-formulas/[slug] PUT authenticated",
+    "derived-formulas/[slug] DELETE authenticated",
+    "derived-formulas GET authenticated",
     "exercise-feedback POST authenticated",
     "exercise-progressions/[progressionId] DELETE authenticated",
     "exercise-progressions POST authenticated",
@@ -113,6 +116,13 @@
     "exercises POST authenticated",
     "exports GET authenticated",
     "files/[fileId] GET authenticated",
+    "groups/[groupId]/assessments POST authenticated",
+    "groups/[groupId]/members POST authenticated",
+    "groups/[groupId]/report GET authenticated",
+    "groups/[groupId] GET authenticated",
+    "groups/[groupId] PATCH authenticated",
+    "groups GET authenticated",
+    "groups POST authenticated",
     "imports/[id]/cancel POST authenticated",
     "imports/[id]/confirm POST authenticated",
     "imports/[id] GET authenticated",
@@ -3715,6 +3725,73 @@
         "grading"
       ]
     },
+    "formulaSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "unit": {
+          "type": "string",
+          "maxLength": 20
+        },
+        "expression": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "constants": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string",
+            "pattern": "^[a-z]$"
+          },
+          "additionalProperties": {
+            "type": "number"
+          }
+        },
+        "betterDirection": {
+          "type": "string",
+          "enum": [
+            "higher",
+            "lower",
+            "target_range"
+          ]
+        },
+        "isEstimate": {
+          "type": "boolean"
+        },
+        "sex": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "male",
+                "female"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "definition": {
+          "type": "string",
+          "maxLength": 1000
+        },
+        "expectedVersion": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        }
+      }
+    },
+    "formulaSlugSchema": {
+      "type": "string",
+      "pattern": "^[a-z_][a-z0-9_]{1,59}$"
+    },
     "generateReportSchema": {
       "type": "object",
       "properties": {
@@ -3794,6 +3871,114 @@
         "indirectness",
         "imprecision",
         "publicationBias"
+      ]
+    },
+    "groupAssessmentSchema": {
+      "type": "object",
+      "properties": {
+        "assessedOn": {
+          "type": "string",
+          "format": "date",
+          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+        },
+        "batteryId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "testIds": {
+          "default": [],
+          "maxItems": 60,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          }
+        },
+        "context": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 500
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "assessedOn"
+      ]
+    },
+    "groupMembersSchema": {
+      "type": "object",
+      "properties": {
+        "add": {
+          "default": [],
+          "maxItems": 100,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          }
+        },
+        "remove": {
+          "default": [],
+          "maxItems": 100,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          }
+        }
+      }
+    },
+    "groupReportQuerySchema": {
+      "type": "object",
+      "properties": {
+        "date": {
+          "type": "string",
+          "format": "date",
+          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+        }
+      },
+      "required": [
+        "date"
+      ]
+    },
+    "groupSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 80
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 500
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "name"
       ]
     },
     "healthDeclarationSchema": {
@@ -8597,7 +8782,10 @@
             "best",
             "mean",
             "mean_of_best_n",
-            "last"
+            "last",
+            "median",
+            "min",
+            "max"
           ]
         },
         "aggregationN": {
@@ -8629,6 +8817,18 @@
             {
               "type": "null"
             }
+          ]
+        },
+        "plausibleMin": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "plausibleMax": {
+          "type": [
+            "number",
+            "null"
           ]
         }
       },
@@ -9501,6 +9701,38 @@
               "text"
             ]
           }
+        },
+        "expectedVersion": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "expectedVersion"
+      ]
+    },
+    "updateGroupSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 80
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 500
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "archived": {
+          "type": "boolean"
         },
         "expectedVersion": {
           "type": "integer",
@@ -12505,7 +12737,10 @@
             "best",
             "mean",
             "mean_of_best_n",
-            "last"
+            "last",
+            "median",
+            "min",
+            "max"
           ]
         },
         "aggregationN": {
@@ -12535,6 +12770,18 @@
             {
               "type": "null"
             }
+          ]
+        },
+        "plausibleMin": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "plausibleMax": {
+          "type": [
+            "number",
+            "null"
           ]
         },
         "expectedVersion": {

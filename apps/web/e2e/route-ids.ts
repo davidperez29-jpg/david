@@ -91,6 +91,8 @@ export async function loadVictim(): Promise<Victim> {
         testId: await ofOrg('assessment_tests'),
         reliabilityId: await ofOrg('test_reliability_data'),
         templateId: await ofOrg('plan_templates'),
+        groupId: await ofOrg('client_groups'),
+        slug: 'body_fat_faulkner',
         userId: await one(`SELECT id FROM users WHERE email = 'nerea.soto@example.com'`),
         purpose: 'health_data',
         entity: 'clients',

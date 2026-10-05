@@ -72,6 +72,9 @@ export function NewTestForm() {
             { value: 'mean', label: 'Media' },
             { value: 'mean_of_best_n', label: 'Media de los 2 mejores' },
             { value: 'last', label: 'Último intento' },
+            { value: 'median', label: 'Mediana (p. ej., pliegues: mediana de 3)' },
+            { value: 'min', label: 'Mínimo' },
+            { value: 'max', label: 'Máximo' },
           ]}
         />
       </Field>

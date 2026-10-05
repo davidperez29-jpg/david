@@ -274,6 +274,20 @@
       "when": 1791205424361,
       "tag": "0038_rls_v13",
       "breakpoints": true
+    },
+    {
+      "idx": 39,
+      "version": "7",
+      "when": 1791232795696,
+      "tag": "0039_evaluation_groups_formulas",
+      "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "7",
+      "when": 1791232801458,
+      "tag": "0040_rls_v14",
+      "breakpoints": true
     }
   ]
 }
