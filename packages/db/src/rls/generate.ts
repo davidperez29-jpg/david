@@ -1,4 +1,4 @@
-import { CHECK_CLIENT_ORG, INHERIT_SCOPE, RLS_POLICIES } from './policies';
+import { CHECK_CLIENT_ORG, INHERIT_ORG, INHERIT_SCOPE, RLS_POLICIES } from './policies';
 
 /**
  * Builds the full, idempotent RLS migration from the declarative map in policies.ts.
@@ -128,6 +128,24 @@ export function generateRlsSql(): string {
   for (const [table, [parent, fk]] of Object.entries(INHERIT_SCOPE)) {
     stmt(
       `DROP TRIGGER IF EXISTS ${table}_inherit_scope ON ${table}; CREATE TRIGGER ${table}_inherit_scope BEFORE INSERT OR UPDATE ON ${table} FOR EACH ROW EXECUTE FUNCTION inherit_scope('${parent}', '${fk}');`,
+    );
+  }
+  stmt(`CREATE OR REPLACE FUNCTION inherit_org() RETURNS trigger LANGUAGE plpgsql AS $$
+  DECLARE
+    parent_id uuid := (to_jsonb(NEW) ->> TG_ARGV[1])::uuid;
+    p_org uuid;
+    found_parent boolean;
+  BEGIN
+    EXECUTE format('SELECT true, organization_id FROM %I WHERE id = $1', TG_ARGV[0]) INTO found_parent, p_org USING parent_id;
+    IF found_parent IS NULL THEN
+      RAISE EXCEPTION 'inherit_org: parent %.% not found', TG_ARGV[0], parent_id USING ERRCODE = 'foreign_key_violation';
+    END IF;
+    NEW.organization_id := p_org;
+    RETURN NEW;
+  END $$;`);
+  for (const [table, [parent, fk]] of Object.entries(INHERIT_ORG)) {
+    stmt(
+      `DROP TRIGGER IF EXISTS ${table}_inherit_org ON ${table}; CREATE TRIGGER ${table}_inherit_org BEFORE INSERT OR UPDATE ON ${table} FOR EACH ROW EXECUTE FUNCTION inherit_org('${parent}', '${fk}');`,
     );
   }
   for (const table of CHECK_CLIENT_ORG) {

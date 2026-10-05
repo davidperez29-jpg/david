@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import {
   Fragment,
   useEffect,
@@ -20,7 +19,7 @@ import {
 } from '@tp/domain';
 import { ExerciseCombobox, type ExerciseHit } from '@/components/library/exercise-combobox';
 import { Button } from '@/components/ui/button';
-import { api } from '@/lib/api-client';
+import type { GridStore, RowChange } from './grid-store';
 import { PastePanel } from './paste-panel';
 
 export interface GridRow {
@@ -80,7 +79,7 @@ function cellText(row: GridRow, col: Col): string {
 }
 
 type Undo =
-  | { kind: 'edit'; rowId: string; body: Record<string, unknown>; label: string }
+  | { kind: 'edit'; rowId: string; body: RowChange; label: string }
   | { kind: 'remove'; ids: string[]; label: string }
   | { kind: 'move'; rowId: string; direction: 'up' | 'down'; label: string };
 
@@ -90,20 +89,23 @@ type Notice = { tone: 'ok' | 'warn' | 'danger'; text: string } | null;
  * The session table (docs/UX_FLOW.md §2.3): one row per exercise, spreadsheet-style editing.
  * Each cell is saved on its own with optimistic locking: if another trainer changed the row, the
  * change is not overwritten; the row is reloaded and the trainer is told what was not saved.
+ * Where it saves is the `store`: a client's session or a template (grid-store.ts).
  */
 export function SessionGrid({
-  sessionId,
+  gridId,
+  store,
   blocks: initialBlocks,
   editable,
   renderDetails,
 }: {
-  sessionId: string;
+  /** Unique id for the table's elements (help text, errors). */
+  gridId: string;
+  store: GridStore;
   blocks: GridBlock[];
   editable: boolean;
   /** Advanced options of a row (tempo, VBT, methods, alternatives…), shown on demand. */
   renderDetails?: (rowId: string) => ReactNode;
 }) {
-  const router = useRouter();
   const [blocks, setBlocks] = useState(initialBlocks);
   useEffect(() => setBlocks(initialBlocks), [initialBlocks]);
   const rows = useMemo(() => blocks.flatMap((b) => b.rows), [blocks]);
@@ -126,10 +128,10 @@ export function SessionGrid({
   const [pasting, setPasting] = useState<string | null>(null);
   const [focusRow, setFocusRow] = useState<string | null>(null);
   const undo = useRef<Undo[]>([]);
-  const versions = useRef(new Map<string, number>());
   const queues = useRef(new Map<string, Promise<unknown>>());
   const cells = useRef(new Map<string, HTMLTableCellElement>());
   const wantFocus = useRef(false);
+  const clickedFocused = useRef(false);
   const grid = useRef<HTMLTableElement>(null);
 
   const r = Math.min(active.r, Math.max(rows.length - 1, 0));
@@ -154,8 +156,6 @@ export function SessionGrid({
     cells.current.get(`${r}:${active.c}`)?.focus();
   }, [r, active.c, editing]);
 
-  const versionOf = (row: GridRow) => Math.max(versions.current.get(row.id) ?? 0, row.version);
-
   const patchLocal = (id: string, change: Partial<GridRow>) =>
     setBlocks((bs) =>
       bs.map((b) => ({
@@ -165,19 +165,14 @@ export function SessionGrid({
     );
 
   /** Saves one row change after the previous change of that row (never two at once). */
-  function save(row: GridRow, body: Record<string, unknown>, local: Partial<GridRow>, u?: Undo) {
+  function save(row: GridRow, body: RowChange, local: Partial<GridRow>, u?: Undo) {
     patchLocal(row.id, local);
     // The undo entry is available at once (Ctrl+Z right after Enter), and dropped if saving fails.
     if (u) undo.current.push(u);
     const run = async () => {
-      const version = versionOf(row);
-      const res = await api(`/session-exercises/${row.id}`, {
-        method: 'PATCH',
-        body: { expectedVersion: version, ...body },
-      });
+      const res = await store.saveRow(row, body);
       if (res.ok) {
-        versions.current.set(row.id, version + 1);
-        router.refresh();
+        store.refresh();
         return true;
       }
       if (u) undo.current = undo.current.filter((x) => x !== u);
@@ -186,15 +181,14 @@ export function SessionGrid({
         notes: row.notes,
         exercise: row.exercise,
       });
-      if (res.error.code === 'conflict') {
+      if (res.conflict) {
         setNotice({
           tone: 'danger',
           text: `Otra persona ha cambiado «${row.exercise.name}» mientras editabas: no se ha guardado tu cambio para no pisar el suyo. La fila se ha recargado; revísala y vuelve a escribirlo.`,
         });
-        versions.current.delete(row.id);
-        router.refresh();
+        store.refresh();
       } else {
-        const msg = Object.values(res.error.details ?? {}).flat()[0] ?? res.error.message;
+        const msg = Object.values(res.details ?? {}).flat()[0] ?? res.message;
         setNotice({ tone: 'danger', text: `${row.exercise.name}: ${msg}` });
       }
       return false;
@@ -290,27 +284,26 @@ export function SessionGrid({
     if (hit.id === row.exercise.id) return;
     void save(
       row,
-      { exerciseId: hit.id },
+      { exerciseId: hit.id, exerciseName: hit.name },
       { exercise: hit, category: null },
       {
         kind: 'edit',
         rowId: row.id,
-        body: { exerciseId: row.exercise.id },
+        body: { exerciseId: row.exercise.id, exerciseName: row.exercise.name },
         label: `ejercicio ${hit.name}`,
       },
     );
   }
 
   async function addExercise(hit: ExerciseHit) {
-    const res = await api<{ ids: string[] }>(`/plan-sessions/${sessionId}/exercises`, {
-      method: 'POST',
-      body: { rows: [{ exerciseId: hit.id, prescription: { sets: 3 } }] },
-    });
-    if (!res.ok) return setNotice({ tone: 'danger', text: res.error.message });
-    undo.current.push({ kind: 'remove', ids: res.data.ids, label: `añadir ${hit.name}` });
-    setFocusRow(res.data.ids[0]!);
+    const res = await store.addRows([
+      { exerciseId: hit.id, exerciseName: hit.name, prescription: { sets: 3 } },
+    ]);
+    if (!res.ok) return setNotice({ tone: 'danger', text: res.message });
+    undo.current.push({ kind: 'remove', ids: res.ids, label: `añadir ${hit.name}` });
+    setFocusRow(res.ids[0]!);
     setNotice({ tone: 'ok', text: `${hit.name} añadido: escribe las series, reps y carga.` });
-    router.refresh();
+    store.refresh();
   }
 
   async function rowsAction(kind: 'duplicate' | 'delete') {
@@ -325,13 +318,15 @@ export function SessionGrid({
       )
     )
       return;
-    const res = await api<{ ids?: string[] }>(`/session-exercises/${kind}`, {
-      method: 'POST',
-      body: { ids: list.map((x) => x.id) },
-    });
-    if (!res.ok) return setNotice({ tone: 'danger', text: res.error.message });
-    if (kind === 'duplicate' && res.data.ids)
-      undo.current.push({ kind: 'remove', ids: res.data.ids, label: 'duplicar' });
+    const ids = list.map((x) => x.id);
+    if (kind === 'duplicate') {
+      const res = await store.duplicateRows(ids);
+      if (!res.ok) return setNotice({ tone: 'danger', text: res.message });
+      undo.current.push({ kind: 'remove', ids: res.ids, label: 'duplicar' });
+    } else {
+      const res = await store.deleteRows(ids);
+      if (!res.ok) return setNotice({ tone: 'danger', text: res.message });
+    }
     setSelected(new Set());
     setNotice({
       tone: 'ok',
@@ -340,16 +335,13 @@ export function SessionGrid({
           ? `${list.length} fila(s) duplicada(s) debajo de su original.`
           : `${list.length} ejercicio(s) quitado(s).`,
     });
-    router.refresh();
+    store.refresh();
   }
 
   async function moveRow(direction: 'up' | 'down', row = current, track = true) {
     if (!row) return;
-    const res = await api(`/session-exercises/${row.id}/move`, {
-      method: 'POST',
-      body: { direction },
-    });
-    if (!res.ok) return setNotice({ tone: 'danger', text: res.error.message });
+    const res = await store.moveRow(row.id, direction);
+    if (!res.ok) return setNotice({ tone: 'danger', text: res.message });
     if (track)
       undo.current.push({
         kind: 'move',
@@ -358,7 +350,7 @@ export function SessionGrid({
         label: `mover ${row.exercise.name}`,
       });
     setFocusRow(row.id);
-    router.refresh();
+    store.refresh();
   }
 
   async function undoLast() {
@@ -370,13 +362,13 @@ export function SessionGrid({
       const ok = await save(row, u.body, {});
       if (ok) setNotice({ tone: 'ok', text: `Deshecho: ${u.label}.` });
     } else if (u.kind === 'remove') {
-      const res = await api('/session-exercises/delete', { method: 'POST', body: { ids: u.ids } });
+      const res = await store.deleteRows(u.ids);
       setNotice(
         res.ok
           ? { tone: 'ok', text: `Deshecho: ${u.label}.` }
-          : { tone: 'danger', text: res.error.message },
+          : { tone: 'danger', text: res.message },
       );
-      router.refresh();
+      store.refresh();
     } else {
       const row = rows.find((x) => x.id === u.rowId);
       if (row) await moveRow(u.direction, row, false);
@@ -584,15 +576,16 @@ export function SessionGrid({
 
       {pasting !== null ? (
         <PastePanel
-          sessionId={sessionId}
+          gridId={gridId}
           initial={pasting}
+          onAdd={(rows) => store.addRows(rows)}
           onDone={(ids) => {
             setPasting(null);
             if (ids.length) {
               undo.current.push({ kind: 'remove', ids, label: `pegar ${ids.length} filas` });
               setFocusRow(ids[0]!);
               setNotice({ tone: 'ok', text: `${ids.length} ejercicio(s) añadido(s).` });
-              router.refresh();
+              store.refresh();
             }
           }}
         />
@@ -603,7 +596,7 @@ export function SessionGrid({
           ref={grid}
           role="grid"
           aria-label="Ejercicios de la sesión"
-          aria-describedby={`${sessionId}-grid-help`}
+          aria-describedby={`${gridId}-grid-help`}
           className="w-full border-collapse text-sm"
           onKeyDown={onKeyDown}
           onCopy={onCopy}
@@ -676,9 +669,16 @@ export function SessionGrid({
                               tabIndex={isActive && !editing ? 0 : -1}
                               aria-readonly={c.key === 'category' || !editable || undefined}
                               aria-invalid={cellError?.key === errKey || undefined}
+                              onMouseDown={(e) => {
+                                // Was this cell already selected before this click?
+                                clickedFocused.current = document.activeElement === e.currentTarget;
+                              }}
                               onClick={() => {
                                 setActive({ r: ri, c: ci });
-                                if (isActive && !editing) startEdit(ri, ci);
+                                // Like a spreadsheet: the first click selects (typing then
+                                // replaces the value); a click on the selected cell edits it.
+                                if (isActive && !editing && clickedFocused.current)
+                                  startEdit(ri, ci);
                               }}
                               onDoubleClick={() => startEdit(ri, ci)}
                               className={`border-b border-border px-2 py-1.5 ${c.cls} ${c.key === 'exercise' || c.key === 'notes' || c.key === 'category' ? '' : 'text-center tabular-nums'} ${isActive ? 'outline-2 -outline-offset-2 outline-accent' : ''} ${cellError?.key === errKey ? 'bg-danger/10' : ''} ${c.key === 'category' ? 'text-xs text-muted' : ''}`}
@@ -701,7 +701,7 @@ export function SessionGrid({
                                   aria-label={`${c.label} de ${row.exercise.name}`}
                                   aria-invalid={!!editing.error || undefined}
                                   aria-describedby={
-                                    editing.error ? `${sessionId}-cell-error` : undefined
+                                    editing.error ? `${gridId}-cell-error` : undefined
                                   }
                                   value={editing.text}
                                   onChange={(e) =>
@@ -809,13 +809,13 @@ export function SessionGrid({
           </tbody>
         </table>
       </div>
-      <p id={`${sessionId}-grid-help`} className="sr-only">
+      <p id={`${gridId}-grid-help`} className="sr-only">
         Flechas para moverte, Intro o escribir para editar, Intro guarda y baja, Tabulador guarda y
         pasa a la derecha, Escape cancela. Control más Z deshace el último cambio.
       </p>
       <div aria-live="polite" className="min-h-5 text-sm">
         {cellError ? (
-          <p id={`${sessionId}-cell-error`} className="text-danger">
+          <p id={`${gridId}-cell-error`} className="text-danger">
             {cellError.text}
           </p>
         ) : notice ? (
@@ -836,8 +836,8 @@ export function SessionGrid({
         <summary className="cursor-pointer">Cómo se usa la tabla</summary>
         <ul className="mt-1 list-inside list-disc">
           <li>
-            Escribe encima de una celda o pulsa Intro; Intro guarda y baja, Tab guarda y pasa a la
-            derecha, Esc cancela.
+            Un clic selecciona la celda y lo que escribas sustituye su valor; otro clic, Intro o F2
+            la modifican. Intro guarda y baja, Tab guarda y pasa a la derecha, Esc cancela.
           </li>
           <li>
             Carga: «80», «82,5 kg», «75 %», «RPE 8», «banda roja» o «PC». Descanso: «90», «2:30» o

@@ -1,7 +1,9 @@
 'use client';
 
 import type { SessionDetail } from '@tp/application';
+import { useRouter } from 'next/navigation';
 import { useMemo } from 'react';
+import { planGridStore } from '@/components/sessions/grid-store';
 import { SessionGrid, type GridBlock } from '@/components/sessions/session-grid';
 import { label } from '@/lib/labels';
 import { ExerciseRow } from './forms';
@@ -11,6 +13,9 @@ import { ExerciseRow } from './forms';
  * (tempo, velocity, methods, alternatives, coach notes) open under the row with «⋯».
  */
 export function SessionTable({ s, editable }: { s: SessionDetail; editable: boolean }) {
+  const router = useRouter();
+  // One store per session: it remembers each row's version between saves.
+  const store = useMemo(() => planGridStore(s.id, () => router.refresh()), [s.id, router]);
   const blocks: GridBlock[] = useMemo(
     () =>
       s.blocks.map((b) => ({
@@ -36,7 +41,8 @@ export function SessionTable({ s, editable }: { s: SessionDetail; editable: bool
   );
   return (
     <SessionGrid
-      sessionId={s.id}
+      gridId={s.id}
+      store={store}
       blocks={blocks}
       editable={editable}
       renderDetails={(id) => {

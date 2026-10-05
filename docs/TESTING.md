@@ -417,3 +417,28 @@ pnpm --filter @tp/web test:e2e -- e2e/perf.spec.ts e2e/perf.mobile.spec.ts
   - pegar 5 filas desde Excel reconocidas por nombre, y deshacer;
   - dos entrenadores en la misma fila: no se pisa nada y el segundo recibe aviso.
 - **Accesibilidad**: la pestaña Programa con la tabla y la ficha de ejercicio con la silueta, en claro y oscuro. Corregido: el botón principal al pasar el ratón bajaba a 4,48:1 de contraste (la prueba lo detectó porque el ratón quedaba encima de «Copiar a mi organización»).
+
+## Resultado de la reestructuración, fase 3 (primera parte: biblioteca de plantillas)
+
+- **Unidad: 455 tests ✔**; cobertura del dominio, 95,5 % de líneas (`planning/templates.ts`, 100 %). Nuevo `templates.unit.test.ts` (16):
+  - filtros (perfil, nivel, días, población, tipo, origen, archivadas, material, texto sin tildes);
+  - orden de encaje con el cliente (perfil, nivel, días, material; a igualdad, las del centro);
+  - versiones: se agrupan las ediciones seguidas de la misma persona; nueva versión si edita otra persona, pasa el tiempo o un plan ya la usó;
+  - ids de edición estables y patrón semanal por fase;
+  - duración elegida al usarla: 3 meses toma la primera fase, 12 meses repite como «ciclo 2»; un mesociclo recortado conserva su descarga; las guardadas desde un plan real se acortan pero no se alargan; propiedad (fast-check): para cualquier duración el plan cubre la duración (como mucho 2 semanas menos), nunca recorta un mesociclo por debajo de 3 semanas y sigue siendo válido.
+- **Integración: 185 tests ✔** (2 más de almacenamiento S3 solo corren en CI). Nuevo `templates.int.test.ts` (10):
+  - filtros por días, nivel, origen y texto; parámetros fuera de rango rechazados;
+  - para un cliente, primero las de su perfil; «solo con su material» deja fuera las que no puede hacer; otra organización no puede usar a sus clientes para listar;
+  - usar una plantilla crea un plan independiente con la duración elegida (24 semanas a 6 meses), guarda plantilla y versión, y **no modifica la plantilla**;
+  - crear desde cero (versión 1), duplicar una de la plataforma (las de la plataforma no se editan: 403);
+  - **cada edición guardada es una versión**: las seguidas de la misma persona se agrupan; otra persona crea la siguiente; una versión desactualizada da conflicto y no se pisa nada;
+  - una versión usada por un plan no cambia; restaurar crea una versión nueva; contenido no válido, rechazado;
+  - archivar la saca de la biblioteca y no deja editarla ni usarla; otra organización no puede archivar, editar ni duplicar las del centro; el cliente no accede a la biblioteca.
+  - `security.int.test.ts`: un identificador mal formado es «no encontrado», nunca un error interno.
+- **Seguridad: 584 comprobaciones RLS ✔** (+6: `plan_template_versions`, catálogo).
+- **E2E: 51 tests ✔** (1 omitido sin datos de carga). Nuevas (`templates.spec.ts`):
+  - «UX 5»: plan desde plantilla para un cliente sin plan en 4 interacciones (3 clics y la fecha);
+  - duplicar una de la plataforma, usarla con un cliente, editar una celda (versión 2; la 1 queda «usada en planes») y restaurar (versión 3 con el contenido de la 1);
+  - las de la plataforma son de solo lectura también por la API (403, no por CSRF).
+  - `planning.spec.ts` sigue el flujo nuevo («Usar plantilla» desde Programa); `security.spec.ts` comprueba el 404 de ids mal formados; la matriz de rutas cubre las rutas nuevas con la plantilla propia del centro de la demo.
+- **Corregido durante las pruebas**: la celda activa por defecto entraba en edición al primer clic y lo tecleado se añadía al valor («1» + «4» = «14»): ahora el primer clic selecciona y escribir sustituye.

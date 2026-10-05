@@ -694,7 +694,25 @@ async function plansTab(ctx: Ctx, clientId: string, hasActive: boolean) {
   const open = proposals.filter((p) => p.status === 'proposed');
   const newPlan = (
     <Card title="Nuevo plan">
-      <NewPlanForm clientId={clientId} templates={templates} />
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <Link
+            href={`/app/plans?client=${clientId}`}
+            className="inline-flex h-10 items-center rounded-md bg-accent px-4 text-sm font-medium text-accent-contrast hover:bg-accent-hover"
+          >
+            Usar plantilla
+          </Link>
+          <span className="text-xs text-muted">
+            Primero las que encajan con su perfil, nivel y días por semana.
+          </span>
+        </div>
+        <details>
+          <summary className="cursor-pointer text-sm">O crear un plan en blanco</summary>
+          <div className="mt-3">
+            <NewPlanForm clientId={clientId} />
+          </div>
+        </details>
+      </div>
     </Card>
   );
   const rest = (

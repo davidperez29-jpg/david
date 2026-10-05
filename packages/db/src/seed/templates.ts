@@ -2,12 +2,19 @@
  * Global plan templates (§12.3) from seed-data/templates/*.json. Starting points, not recipes:
  * each template lists the methods whose evidence supports its doses. Idempotent by slug.
  */
-import { validateDefinition, type TemplateDefinition } from '@tp/domain';
-import { and, eq, isNull } from 'drizzle-orm';
+import { templateExerciseRefs, validateDefinition, type TemplateDefinition } from '@tp/domain';
+import { and, desc, eq, isNull } from 'drizzle-orm';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Database } from '../client';
-import { exercises, methods, planTemplates } from '../schema';
+import {
+  equipment,
+  exerciseEquipment,
+  exercises,
+  methods,
+  planTemplates,
+  planTemplateVersions,
+} from '../schema';
 
 export interface SeedTemplate {
   slug: string;
@@ -17,7 +24,31 @@ export interface SeedTemplate {
   level: string;
   methods: string[];
   definition: TemplateDefinition;
+  /** Library filters (restructure phase 3). Defaults come from the goal and level. */
+  profile?: string;
+  levelN?: 1 | 2 | 3;
+  population?: string[];
+  kind?: 'training' | 'risk_reduction' | 'readaptation';
 }
+
+/** Programming profile of the first templates, by their goal. */
+const PROFILE_OF_GOAL: Record<string, string> = {
+  hypertrophy: 'hipertrofia',
+  max_strength: 'fuerza',
+  general_health: 'salud',
+  team_sport_performance: 'deportes-equipo',
+  endurance_sport_performance: 'deportes-resistencia',
+  strength_initiation: 'iniciacion-fuerza',
+};
+const LEVEL_N: Record<string, 1 | 2 | 3> = { beginner: 1, intermediate: 2, advanced: 3 };
+const POPULATION_OF_PROFILE: Record<string, string[]> = {
+  'deportes-equipo': ['deportistas', 'jovenes'],
+  'deportes-resistencia': ['deportistas'],
+  'deportes-individuales': ['deportistas'],
+  'rendimiento-deportivo': ['deportistas'],
+  'adulto-mayor': ['adulto_mayor'],
+  'paralisis-cerebral-leve': ['pc_leve'],
+};
 
 export function loadTemplateFiles(dir: string): SeedTemplate[] {
   if (!existsSync(dir)) return [];
@@ -50,6 +81,19 @@ export async function seedTemplates(
         await tx.select({ slug: methods.slug }).from(methods).where(isNull(methods.organizationId))
       ).map((r) => r.slug),
     );
+    // Equipment each global exercise cannot be done without (for the «material» filter).
+    const eqRows = await tx
+      .select({ exercise: exercises.slug, equipment: equipment.slug })
+      .from(exerciseEquipment)
+      .innerJoin(exercises, eq(exercises.id, exerciseEquipment.exerciseId))
+      .innerJoin(equipment, eq(equipment.id, exerciseEquipment.equipmentId))
+      .where(and(isNull(exercises.organizationId), eq(exerciseEquipment.optional, false)));
+    const needs = (def: TemplateDefinition) => {
+      const refs = new Set(templateExerciseRefs(def));
+      return [
+        ...new Set(eqRows.filter((r) => refs.has(r.exercise)).map((r) => r.equipment)),
+      ].sort();
+    };
     for (const t of templates) {
       const issues = validateDefinition(t.definition);
       if (issues.length)
@@ -70,6 +114,7 @@ export async function seedTemplates(
           }
       for (const m of t.methods)
         if (!ms.has(m)) throw new Error(`Template ${t.slug}: unknown method «${m}»`);
+      const profile = t.profile ?? PROFILE_OF_GOAL[t.goal] ?? null;
       const values = {
         name: t.name,
         description: t.description,
@@ -80,15 +125,63 @@ export async function seedTemplates(
         definition: t.definition,
         methodSlugs: t.methods,
         status: 'published' as const,
+        profileSlug: profile,
+        levelN: t.levelN ?? LEVEL_N[t.level] ?? null,
+        population:
+          t.population ?? (profile ? (POPULATION_OF_PROFILE[profile] ?? ['adultos']) : []),
+        equipmentSlugs: needs(t.definition),
+        kind: t.kind ?? ('training' as const),
       };
       const [existing] = await tx
-        .select({ id: planTemplates.id })
+        .select({
+          id: planTemplates.id,
+          definition: planTemplates.definition,
+          templateVersion: planTemplates.templateVersion,
+        })
         .from(planTemplates)
         .where(and(isNull(planTemplates.organizationId), eq(planTemplates.slug, t.slug)));
-      if (existing)
-        await tx.update(planTemplates).set(values).where(eq(planTemplates.id, existing.id));
-      else await tx.insert(planTemplates).values({ ...values, organizationId: null, slug: t.slug });
+      if (existing) {
+        // A change of content made by the platform is a new version: plans keep theirs.
+        const changed = JSON.stringify(existing.definition) !== JSON.stringify(t.definition);
+        const templateVersion = existing.templateVersion + (changed ? 1 : 0);
+        await tx
+          .update(planTemplates)
+          .set({ ...values, templateVersion })
+          .where(eq(planTemplates.id, existing.id));
+        await ensureVersion(tx, existing.id, templateVersion, t, changed);
+      } else {
+        const [row] = await tx
+          .insert(planTemplates)
+          .values({ ...values, organizationId: null, slug: t.slug })
+          .returning({ id: planTemplates.id });
+        await ensureVersion(tx, row!.id, 1, t, false);
+      }
     }
     return { templates: templates.length };
+  });
+}
+
+/** Every global template has its current version recorded (history and plan provenance). */
+async function ensureVersion(
+  tx: Database,
+  templateId: string,
+  version: number,
+  t: SeedTemplate,
+  changed: boolean,
+) {
+  const [latest] = await tx
+    .select({ version: planTemplateVersions.version })
+    .from(planTemplateVersions)
+    .where(eq(planTemplateVersions.templateId, templateId))
+    .orderBy(desc(planTemplateVersions.version))
+    .limit(1);
+  if (latest && latest.version >= version) return;
+  await tx.insert(planTemplateVersions).values({
+    organizationId: null,
+    templateId,
+    version,
+    name: t.name,
+    definition: t.definition,
+    note: changed ? 'Actualizada por la plataforma' : 'Versión inicial',
   });
 }

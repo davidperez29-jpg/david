@@ -1826,6 +1826,7 @@
     "planes": [
       {
         "basedOnTemplateId": "string",
+        "basedOnTemplateVersion": "number",
         "createdAt": "string",
         "createdBy": "string",
         "currentRevision": "number",
@@ -2687,23 +2688,40 @@
   },
   "GET plan-templates": [
     {
+      "archived": "boolean",
       "description": "string",
       "durationMonths": "number",
+      "equipmentSlugs": [
+        "string"
+      ],
+      "fit": "null",
+      "fixedLength": "boolean",
       "goalSlug": "string",
       "id": "string",
       "isGlobal": "boolean",
+      "kind": "string",
       "level": "string",
+      "levelN": "number",
       "methodSlugs": [
         "string"
       ],
+      "missingEquipment": [],
       "name": "string",
+      "population": [
+        "string"
+      ],
+      "profileName": "string",
+      "profileSlug": "string",
       "sessionsPerWeek": "number",
-      "slug": "string"
+      "slug": "string",
+      "templateVersion": "number"
     }
   ],
   "GET plan-templates/[templateId]": {
+    "archived": "boolean",
+    "archivedAt": "null",
     "createdAt": "string",
-    "createdBy": "null",
+    "createdBy": "string",
     "definition": {
       "durationMonths": "number",
       "phases": [
@@ -2730,6 +2748,7 @@
               "exercises": [
                 "object"
               ],
+              "id": "string",
               "label": "string",
               "organization": "string",
               "type": "string"
@@ -2737,19 +2756,55 @@
           ],
           "dayLabel": "string",
           "durationMin": "number",
+          "id": "string",
           "objective": "string",
           "title": "string"
         }
       ],
-      "sessionsPerWeek": "number"
+      "sessionsPerWeek": "number",
+      "weeks": [
+        {
+          "sessions": [
+            {
+              "blocks": [
+                "object"
+              ],
+              "dayLabel": "string",
+              "durationMin": "number",
+              "id": "string",
+              "objective": "string",
+              "title": "string"
+            }
+          ],
+          "weekIndex": "number"
+        }
+      ]
     },
-    "derivedFromPlanId": "null",
+    "derivedFromPlanId": "string",
+    "derivedFromTemplateId": "null",
     "description": "string",
     "durationMonths": "number",
+    "editable": "boolean",
+    "equipment": [
+      "string"
+    ],
+    "equipmentSlugs": [
+      "string"
+    ],
+    "exercises": [
+      {
+        "id": "string",
+        "name": "string",
+        "ref": "string"
+      }
+    ],
+    "fixedLength": "boolean",
     "goalSlug": "string",
     "id": "string",
     "isGlobal": "boolean",
+    "kind": "string",
     "level": "string",
+    "levelN": "number",
     "methodSlugs": [
       "string"
     ],
@@ -2761,7 +2816,10 @@
       }
     ],
     "name": "string",
-    "organizationId": "null",
+    "organizationId": "string",
+    "phaseSessions": [
+      []
+    ],
     "phases": [
       {
         "endWeek": "number",
@@ -2777,25 +2835,31 @@
         ],
         "name": "string",
         "objective": "string",
+        "ownSessions": "boolean",
         "startWeek": "number"
       }
     ],
+    "population": [],
+    "profileSlug": "string",
     "sessions": [
       {
         "blocks": [
           {
             "exercises": [
               {
+                "id": "string",
                 "name": "string",
                 "progression": "string",
                 "short": "string"
               }
             ],
+            "id": "string",
             "label": "string",
             "type": "string"
           }
         ],
         "dayLabel": "string",
+        "id": "string",
         "objective": "string",
         "title": "string"
       }
@@ -2803,13 +2867,26 @@
     "sessionsPerWeek": "number",
     "slug": "string",
     "status": "string",
+    "templateVersion": "number",
     "totalWeeks": "number",
     "updatedAt": "string",
     "updatedBy": "null",
-    "version": "number"
+    "version": "number",
+    "versions": [
+      {
+        "author": "string",
+        "createdAt": "string",
+        "name": "string",
+        "note": "string",
+        "updatedAt": "string",
+        "usedAt": "null",
+        "version": "number"
+      }
+    ]
   },
   "GET plans/[planId]": {
     "basedOnTemplateId": "string",
+    "basedOnTemplateVersion": "number",
     "clientId": "string",
     "createdAt": "string",
     "createdBy": "string",

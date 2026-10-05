@@ -132,6 +132,8 @@ export const trainingPlans = pgTable(
     status: planStatus('status').notNull().default('draft'),
     currentRevision: integer('current_revision').notNull().default(1),
     basedOnTemplateId: uuid('based_on_template_id'),
+    /** Version of the template the plan was created from (restructure phase 3). */
+    basedOnTemplateVersion: integer('based_on_template_version'),
     proposalOfPlanId: uuid('proposal_of_plan_id'),
     recommendationId: uuid('recommendation_id'),
     /** For PROPOSAL plans: what the programming engine adapted and why. */
@@ -420,6 +422,12 @@ export const exerciseSets = pgTable(
  * (organization NULL) are platform data loaded from seed-data/templates; organizations save
  * their own ("Guardar como plantilla"), anonymized: no client, no absolute dates.
  */
+export const planTemplateKind = pgEnum('plan_template_kind', [
+  'training',
+  'risk_reduction',
+  'readaptation',
+]);
+
 export const planTemplates = pgTable(
   'plan_templates',
   {
@@ -440,6 +448,26 @@ export const planTemplates = pgTable(
       .default(sql`'{}'::text[]`),
     status: pubStatus('status').notNull().default('published'),
     derivedFromPlanId: uuid('derived_from_plan_id'),
+    // ── Library filters (restructure phase 3) ──
+    /** Programming profile (programming_profiles.slug) the template is designed for. */
+    profileSlug: text('profile_slug'),
+    /** Programming level 1–3 of that profile (NULL: any level). */
+    levelN: smallint('level_n'),
+    /** Populations it suits (adults, older_adults, athletes, youth, cp_mild…). */
+    population: text('population')
+      .array()
+      .notNull()
+      .default(sql`'{}'::text[]`),
+    /** Equipment its exercises need (equipment.slug), derived from the exercises on save. */
+    equipmentSlugs: text('equipment_slugs')
+      .array()
+      .notNull()
+      .default(sql`'{}'::text[]`),
+    kind: planTemplateKind('kind').notNull().default('training'),
+    archivedAt: timestamp('archived_at', { withTimezone: true }),
+    /** Content version shown to people (each saved edit; see plan_template_versions). */
+    templateVersion: integer('template_version').notNull().default(1),
+    derivedFromTemplateId: uuid('derived_from_template_id'),
     ...timestamps(),
     ...authorship(),
     version: version(),
@@ -448,5 +476,36 @@ export const planTemplates = pgTable(
     unique('plan_templates_org_slug_uq').on(t.organizationId, t.slug).nullsNotDistinct(),
     check('plan_templates_duration_ck', sql`${t.durationMonths} IN (3, 6, 9, 12)`),
     check('plan_templates_spw_ck', sql`${t.sessionsPerWeek} BETWEEN 1 AND 7`),
+    check('plan_templates_level_ck', sql`${t.levelN} IS NULL OR ${t.levelN} BETWEEN 1 AND 3`),
+    index('plan_templates_filter_idx').on(t.profileSlug, t.levelN, t.sessionsPerWeek),
+  ],
+);
+
+/**
+ * Versions of a template (restructure phase 3): every saved edit is a version; consecutive edits
+ * by the same person are grouped while no plan has used the version (`used_at`). Plans keep the
+ * version they were created from (`training_plans.based_on_template_version`), so a template can
+ * change without touching the plans made from it.
+ */
+export const planTemplateVersions = pgTable(
+  'plan_template_versions',
+  {
+    id: id(),
+    organizationId: orgScoped(),
+    templateId: uuid('template_id')
+      .notNull()
+      .references(() => planTemplates.id, { onDelete: 'cascade' }),
+    version: integer('version').notNull(),
+    name: text('name').notNull(),
+    definition: jsonb('definition').notNull(),
+    note: text('note'),
+    /** First time a plan was created from this version: from then on it never changes. */
+    usedAt: timestamp('used_at', { withTimezone: true }),
+    ...timestamps(),
+    ...authorship(),
+  },
+  (t) => [
+    unique('plan_template_versions_uq').on(t.templateId, t.version),
+    check('plan_template_versions_version_ck', sql`${t.version} >= 1`),
   ],
 );

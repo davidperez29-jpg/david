@@ -14,7 +14,7 @@ Base: `/api/v1`. JSON. Autenticación por cookie de sesión `tp_session` (httpOn
 |---|---|
 | `unauthenticated` | 401 |
 | `forbidden` | 403 |
-| `not_found` | 404 (también para recursos de otra organización o fuera de ámbito) |
+| `not_found` | 404 (también para recursos de otra organización o fuera de ámbito, y para un identificador mal formado en la ruta, que nunca llega a la base de datos) |
 | `conflict` | 409 (bloqueo optimista, duplicados, falta de consentimiento) |
 | `validation` | 422 |
 | `rate_limited` | 429 |
@@ -138,9 +138,15 @@ Detalle en `PLANNING.md`. Lo que queda fuera de ámbito devuelve 404. Las edicio
 
 | Método y ruta | Permiso | Entrada | Descripción |
 |---|---|---|---|
-| `GET /plan-templates` · `GET /plan-templates/{id}` | `plans:templates` | — | Catálogo y vista previa (estructura, sesiones, métodos). |
+| `GET /plan-templates` | `plans:templates` | `templateQuerySchema` en la consulta: `q`, `profile`, `level` 1–3, `days`, `population`, `kind`, `scope` (`all`/`global`/`mine`), `archived`, `client`, `fitsEquipment` | Biblioteca filtrada (solo metadatos). Con `client`, ordenada por encaje (`fit`) y con el material que le falta (`missingEquipment`). Reestructuración, fase 3. |
+| `GET /plan-templates/{id}` | `plans:templates` | — | Estructura, sesiones de la semana (y de cada fase), métodos, material, `definition` con ids de edición y `versions`. |
+| `POST /plan-templates` | `plans:templates` | `createTemplateSchema` (`name`, `sessionsPerWeek`, `durationMonths?`, `profileSlug?`, `levelN?`, `population?`, `kind?`) | «Crear desde cero»: sesiones vacías de una semana. Versión 1. |
+| `PATCH /plan-templates/{id}` | `plans:templates` (solo las del centro) | `updateTemplateSchema` (`expectedVersion` y cualquiera de: datos, `definition` completa, `note`) | Cada cambio de nombre o contenido es una versión (agrupadas mientras ningún plan la use). 409 si otra persona la guardó; 403 en las de la plataforma. Cuerpo hasta 1 MB. |
+| `POST /plan-templates/{id}/duplicate` | `plans:templates` | `{name?}` | Copia independiente en «Mis plantillas» (también de una de la plataforma). |
+| `POST /plan-templates/{id}/archive` | `plans:templates` (solo las del centro) | `{archived}` | Archivar o recuperar; los planes siguen apuntando a ella. |
+| `POST /plan-templates/{id}/restore` | `plans:templates` (solo las del centro) | `{version, expectedVersion}` | Trae el contenido de una versión anterior como versión nueva. |
 | `GET /clients/{id}/plans` · `POST` | `plans:read` / `plans:write` | `createPlanSchema` (`name`, `durationMonths` 3/6/9/12, `weeks?`, `mesocycleWeeks`, `startDate?`, `weekdays`) | Plan en blanco con su esqueleto y fechas. |
-| `POST /clients/{id}/plans/from-template` | `plans:write` + `plans:templates` | `planFromTemplateSchema` (`templateId`, `startDate`, `weekdays` = sesiones de la plantilla, `name?`) | Devuelve `{id, weeks, conflicts}`. |
+| `POST /clients/{id}/plans/from-template` | `plans:write` + `plans:templates` | `planFromTemplateSchema` (`templateId`, `startDate`, `weekdays` = sesiones de la plantilla, `name?`, `durationMonths?` 3/6/9/12) | Plan independiente con la duración elegida; guarda la plantilla y su versión. Devuelve `{id, weeks, conflicts}`. |
 | `GET /plans/{id}` · `PATCH` | `plans:read` / `plans:write` | `updatePlanSchema` | Árbol completo con indicadores semanales. |
 | `POST /plans/{id}/status` | `plans:write` | `{status, reason?}` | Activar exige fecha de inicio y que no haya otro plan activo; crea una revisión. |
 | `GET /plans/{id}/revisions` · `POST` | `plans:read` / `plans:write` | `{reason}` | Instantánea con su diferencia. |

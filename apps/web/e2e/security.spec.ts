@@ -69,6 +69,11 @@ test('session cookie flags, CSRF origin check, IDOR and download caching', async
   // IDOR: another client's data is reported as not found (no enumeration), even by id.
   const other = await page.request.get('/api/v1/clients/00000000-0000-4000-8000-000000000000');
   expect(other.status()).toBe(404);
+  // A malformed id is not found either (never a 500 from the database).
+  for (const path of ['/api/v1/clients/not-a-uuid', "/api/v1/plans/1'%20OR%20'1'='1"]) {
+    const r = await page.request.get(path);
+    expect(r.status(), path).toBe(404);
+  }
   const elena = await page.context().browser()!.newPage();
   await login(elena, 'elena.prieto@example.com');
   const s = (await (await elena.request.get('/api/v1/me')).json()) as {

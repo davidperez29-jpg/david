@@ -108,6 +108,11 @@ describe('cross-client and cross-tenant isolation', () => {
     expect(page.items.map((c) => c.id)).not.toContain(o.clientB);
   });
 
+  it('a malformed id is simply not found, never an internal error', async () => {
+    expect(await code(getClient(o.admin, 'not-a-uuid'))).toBe('not_found');
+    expect(await code(getClient(o.admin, "x' OR '1'='1"))).toBe('not_found');
+  });
+
   it('only ADMIN can invite staff', async () => {
     expect(
       await code(

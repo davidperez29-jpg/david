@@ -102,6 +102,15 @@ export const planFromTemplateSchema = z.object({
   primaryGoalId: z.uuid().nullable().optional(),
   startDate: isoDate,
   weekdays,
+  /** Duration chosen when using the template (restructure phase 3); default: the template's. */
+  durationMonths: z.coerce
+    .number()
+    .int()
+    .refine(
+      (v) => (PLAN_DURATIONS as readonly number[]).includes(v),
+      'La duración debe ser 3, 6, 9 o 12 meses.',
+    )
+    .optional(),
 });
 
 export const updatePlanSchema = z.object({
@@ -216,4 +225,183 @@ export const saveTemplateSchema = z.object({
 export const updateMicrocycleSchema = z.object({
   weekType: z.enum(WEEK_TYPES),
   notes: optionalText(500),
+});
+
+// ── Template library (restructure phase 3) ────────────────────────────────────
+
+export const TEMPLATE_KINDS = ['training', 'risk_reduction', 'readaptation'] as const;
+export const TEMPLATE_POPULATIONS = [
+  'adultos',
+  'adulto_mayor',
+  'deportistas',
+  'jovenes',
+  'pc_leve',
+] as const;
+
+const durationMonths = z.coerce
+  .number()
+  .int()
+  .refine(
+    (v) => (PLAN_DURATIONS as readonly number[]).includes(v),
+    'La duración debe ser 3, 6, 9 o 12 meses.',
+  );
+/** Text inside a template definition: absent rather than null. */
+const text = (max: number) => z.string().trim().min(1).max(max).optional();
+
+const progressionRuleSchema = z.discriminatedUnion('kind', [
+  z.object({ kind: z.literal('none') }),
+  z.object({
+    kind: z.literal('rir_wave'),
+    step: z.number().int().min(0).max(3),
+    floor: z.number().int().min(0).max(10),
+  }),
+  z.object({
+    kind: z.literal('linear_load'),
+    incrementKg: z.number().min(0).max(50).optional(),
+    incrementPct: z.number().min(0).max(20).optional(),
+    capKg: z.number().min(0).max(1000).optional(),
+    capPct: z.number().min(0).max(110).optional(),
+  }),
+  z.object({
+    kind: z.literal('add_set'),
+    everyWeeks: z.number().int().min(1).max(8),
+    maxSets: z.number().int().min(1).max(20),
+  }),
+  z.object({ kind: z.literal('double_progression'), incrementKg: z.number().min(0).max(50) }),
+]);
+
+const templateExerciseSchema = z.object({
+  id: z.string().max(64).optional(),
+  /** Global exercise slug or exercise id. */
+  exercise: z.string().trim().min(1).max(120),
+  pairingLabel: text(10),
+  prescription: prescriptionSchema.default({}),
+  loadBasisMetric: text(80),
+  methods: z.array(z.string().trim().min(1).max(80)).max(20).optional(),
+  progression: progressionRuleSchema.optional(),
+  notesForClient: text(500),
+  side: z.enum(['both', 'left', 'right', 'each']).optional(),
+});
+const templateBlockSchema = z.object({
+  id: z.string().max(64).optional(),
+  type: z.enum(BLOCK_TYPES),
+  organization: z.enum(BLOCK_ORGANIZATIONS).optional(),
+  label: text(80),
+  rounds: z.number().int().min(1).max(20).optional(),
+  restBetweenRoundsS: z.number().int().min(0).max(900).optional(),
+  notes: text(500),
+  exercises: z.array(templateExerciseSchema).max(30),
+});
+const templateSessionSchema = z.object({
+  id: z.string().max(64).optional(),
+  dayLabel: z.string().trim().min(1).max(20),
+  title: z.string().trim().min(1).max(120),
+  objective: text(300),
+  durationMin: z.number().int().min(5).max(300).optional(),
+  notesForClient: text(1000),
+  blocks: z.array(templateBlockSchema).max(12),
+});
+/** A template's content, as the template table edits it (checked again by the domain). */
+export const templateDefinitionSchema = z.object({
+  durationMonths,
+  sessionsPerWeek: z.number().int().min(1).max(7),
+  phases: z
+    .array(
+      z.object({
+        name: z.string().trim().min(1).max(80),
+        objective: text(300),
+        emphasis: z.record(z.string(), z.number()).optional(),
+        sessionsPerWeek: z.number().int().min(1).max(7).optional(),
+        mesocycles: z
+          .array(
+            z.object({
+              name: z.string().trim().min(1).max(80),
+              weeks: z.number().int().min(1).max(16),
+              focus: text(200),
+              weekTypes: z.array(z.enum(WEEK_TYPES)).max(16).optional(),
+              assessmentPlanned: z.boolean().optional(),
+            }),
+          )
+          .min(1)
+          .max(16),
+        sessions: z.array(templateSessionSchema).max(7).optional(),
+      }),
+    )
+    .min(1)
+    .max(16),
+  sessions: z.array(templateSessionSchema).max(7),
+  weeks: z
+    .array(
+      z.object({
+        weekIndex: z.number().int().min(1).max(52),
+        sessions: z.array(templateSessionSchema).max(7),
+      }),
+    )
+    .max(52)
+    .optional(),
+  deload: z
+    .object({
+      setsDelta: z.number().int().min(-5).max(0),
+      rirDelta: z.number().int().min(0).max(5),
+    })
+    .optional(),
+});
+
+/** Library filters (all optional). `client` orders by fit with that client. */
+export const templateQuerySchema = z.object({
+  q: z.string().trim().max(100).optional(),
+  profile: z.string().trim().max(80).optional(),
+  level: z.coerce.number().int().min(1).max(3).optional(),
+  days: z.coerce.number().int().min(1).max(7).optional(),
+  population: z.enum(TEMPLATE_POPULATIONS).optional(),
+  kind: z.enum(TEMPLATE_KINDS).optional(),
+  scope: z.enum(['all', 'global', 'mine']).optional(),
+  archived: z
+    .enum(['true', 'false'])
+    .transform((v) => v === 'true')
+    .or(z.boolean())
+    .optional(),
+  /** Only templates whose equipment the client has. */
+  fitsEquipment: z
+    .enum(['true', 'false'])
+    .transform((v) => v === 'true')
+    .or(z.boolean())
+    .optional(),
+  client: z.uuid().optional(),
+});
+
+const templateMeta = {
+  name: z.string().trim().min(2).max(120),
+  description: optionalText(1000),
+  profileSlug: z.string().trim().max(80).nullable().optional(),
+  levelN: z.coerce.number().int().min(1).max(3).nullable().optional(),
+  population: z.array(z.enum(TEMPLATE_POPULATIONS)).max(5).optional(),
+  kind: z.enum(TEMPLATE_KINDS).optional(),
+};
+
+/** «Crear desde cero»: an empty template with the sessions of a week, ready to fill. */
+export const createTemplateSchema = z.object({
+  ...templateMeta,
+  sessionsPerWeek: z.coerce.number().int().min(1).max(7),
+  durationMonths: durationMonths.default(3),
+});
+
+/** Edit a template: details and/or content; every saved edit is a version. */
+export const updateTemplateSchema = z
+  .object(templateMeta)
+  .partial()
+  .extend({
+    expectedVersion: z.coerce.number().int().min(1),
+    definition: templateDefinitionSchema.optional(),
+    /** What changed, shown in the version history. */
+    note: optionalText(300),
+  });
+
+export const duplicateTemplateSchema = z.object({
+  name: z.string().trim().min(2).max(120).optional(),
+});
+export const archiveTemplateSchema = z.object({ archived: z.boolean() });
+export const restoreTemplateVersionSchema = z.object({
+  version: z.coerce.number().int().min(1),
+  expectedVersion: z.coerce.number().int().min(1),
 });

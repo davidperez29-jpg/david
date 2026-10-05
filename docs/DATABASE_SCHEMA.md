@@ -87,23 +87,30 @@ El resto de campos del §2 ya existían y se escriben desde el alta rápida:
 - Sin tablas nuevas en esta fase.
 - **`set_logs.corrects_id`** (uuid, nullable): una corrección de una serie registrada referencia la original en lugar de sobrescribirla.
 
-### Fase 3 · Plantillas, objetivos y niveles
+### Fase 3 · Plantillas, objetivos y niveles ✅ (migraciones `0037`–`0038`)
 
 **`plan_templates`**: nuevas columnas.
 
 | Columna | Tipo | Nota |
 |---|---|---|
-| `profile_slug` | text | Objetivo/perfil |
-| `level_n` | smallint 1–3 | Nivel |
-| `population` | text[] | `adultos`, `adulto_mayor`, `deportistas`, `jovenes`, `pc_leve`… |
-| `equipment_slugs` | text[] | Material necesario (filtro) |
-| `kind` | text | `training` · `risk_reduction` · `readaptation` |
+| `profile_slug` | text | Perfil de programación (`programming_profiles.slug`) |
+| `level_n` | smallint 1–3 | Nivel (NULL: cualquiera). Las existentes se rellenan desde `level` |
+| `population` | text[] | `adultos`, `adulto_mayor`, `deportistas`, `jovenes`, `pc_leve` |
+| `equipment_slugs` | text[] | Material necesario (filtro), **calculado** desde el material no opcional de sus ejercicios |
+| `kind` | enum `plan_template_kind` | `training` · `risk_reduction` · `readaptation` |
 | `archived_at` | timestamptz | Archivar sin borrar |
+| `template_version` | integer | Versión de contenido actual (la que se ve); `version` sigue siendo el bloqueo optimista |
+| `derived_from_template_id` | uuid | De qué plantilla es copia |
 
-**`plan_template_versions`** (nueva):
-- `template_id`, `version`, `definition` (jsonb), `note`, `created_by`, `created_at`;
-- cada edición guarda la versión anterior;
-- los planes creados desde una plantilla guardan `template_id` y `template_version` (copia independiente, §6).
+Índice `plan_templates_filter_idx` (perfil, nivel, días) y comprobación `level_n` entre 1 y 3.
+
+**`plan_template_versions`** (nueva, RLS de catálogo):
+- `template_id`, `version` (único por plantilla), `name`, `definition` (jsonb), `note`, `used_at`, autoría y fechas;
+- `organization_id` lo copia el disparador `inherit_org` desde la plantilla (NULL en las globales): una versión no puede quedar en otra organización;
+- cada edición guardada es una versión; las seguidas de la misma persona se agrupan mientras ningún plan la haya usado (`used_at`, decisión A18);
+- la migración crea la versión 1 de las plantillas existentes.
+
+**`training_plans.based_on_template_version`**: la versión de la plantilla de la que salió el plan (junto a `based_on_template_id`).
 
 ### Fase 4 · Evaluaciones y referencias
 

@@ -25,6 +25,8 @@ const STATUS: Record<ErrorCode, number> = {
   rate_limited: 429,
 };
 
+const UUID_PARAM = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 /** Marker used by the route-coverage test: every API export must be built with these helpers. */
 export const ROUTE_MARKER = Symbol.for('tp.route');
 
@@ -128,6 +130,10 @@ function build<C>(
       const base = baseContext({ ip: clientIp(req.headers), requestId });
       const ctx = await resolve(req, base);
       const params = (await segment?.params) ?? {};
+      // Ids in the URL are UUIDs: a malformed one is simply not found (it never reaches the DB).
+      for (const [k, v] of Object.entries(params))
+        if ((k === 'id' || k.endsWith('Id')) && !UUID_PARAM.test(v))
+          throw new DomainError('not_found', 'No encontrado.');
       const out = await handler({
         req,
         ctx,

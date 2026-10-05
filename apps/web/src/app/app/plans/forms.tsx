@@ -1,6 +1,6 @@
 'use client';
 
-import type { PlanTemplateSummary, SessionDetail } from '@tp/application';
+import type { SessionDetail } from '@tp/application';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { ExercisePicker } from '@/components/library/exercise-picker';
@@ -43,130 +43,56 @@ function Weekdays({ value, onChange }: { value: number[]; onChange: (v: number[]
 
 // ── New plan ─────────────────────────────────────────────────────────────────
 
-export function NewPlanForm({
-  clientId,
-  templates,
-}: {
-  clientId: string;
-  templates: PlanTemplateSummary[];
-}) {
+const DEFAULT_DAYS: Record<number, number[]> = {
+  1: [1],
+  2: [2, 4],
+  3: [1, 3, 5],
+  4: [1, 2, 4, 5],
+  5: [1, 2, 3, 4, 5],
+  6: [1, 2, 3, 4, 5, 6],
+  7: [1, 2, 3, 4, 5, 6, 7],
+};
+
+/**
+ * A plan in blank (phases of 4-week mesocycles, empty sessions). Plans from a template are made
+ * from the template library («Usar plantilla», restructure phase 3).
+ */
+export function NewPlanForm({ clientId, days: usual }: { clientId: string; days?: number | null }) {
   const router = useRouter();
   const a = useApiAction();
-  const [mode, setMode] = useState<'template' | 'manual'>('template');
-  const [templateId, setTemplateId] = useState(templates[0]?.id ?? '');
   const [name, setName] = useState('');
   const [startDate, setStartDate] = useState('');
-  const DEFAULT_DAYS: Record<number, number[]> = {
-    1: [1],
-    2: [2, 4],
-    3: [1, 3, 5],
-    4: [1, 2, 4, 5],
-    5: [1, 2, 3, 4, 5],
-    6: [1, 2, 3, 4, 5, 6],
-    7: [1, 2, 3, 4, 5, 6, 7],
-  };
-  const [days, setDays] = useState<number[]>(
-    DEFAULT_DAYS[templates[0]?.sessionsPerWeek ?? 3] ?? [1, 3, 5],
-  );
+  const [days, setDays] = useState<number[]>(DEFAULT_DAYS[usual ?? 3] ?? [1, 3, 5]);
   const [months, setMonths] = useState('3');
   const [weeks, setWeeks] = useState('12');
-  const t = templates.find((x) => x.id === templateId);
-  const goals = [...new Set(templates.map((x) => x.goalSlug ?? ''))];
   return (
     <form
       className="flex flex-col gap-3"
+      aria-label="Plan en blanco"
       onSubmit={async (e) => {
         e.preventDefault();
-        const r =
-          mode === 'template'
-            ? await a.run<{ id: string; conflicts: unknown[] }>(
-                `/clients/${clientId}/plans/from-template`,
-                'POST',
-                { templateId, name: nul(name), startDate, weekdays: days },
-                { refresh: false },
-              )
-            : await a.run<{ id: string }>(
-                `/clients/${clientId}/plans`,
-                'POST',
-                {
-                  name: name || 'Plan',
-                  durationMonths: Number(months),
-                  weeks: Number(weeks),
-                  startDate: startDate || null,
-                  weekdays: days,
-                },
-                { refresh: false },
-              );
+        const r = await a.run<{ id: string }>(
+          `/clients/${clientId}/plans`,
+          'POST',
+          {
+            name: name || 'Plan',
+            durationMonths: Number(months),
+            weeks: Number(weeks),
+            startDate: startDate || null,
+            weekdays: days,
+          },
+          { refresh: false },
+        );
         if (r) router.push(`/app/plans/${r.id}`);
       }}
     >
-      <div className="flex gap-2" role="radiogroup" aria-label="Cómo crear el plan">
-        <Button
-          type="button"
-          variant={mode === 'template' ? 'primary' : 'secondary'}
-          size="sm"
-          onClick={() => setMode('template')}
-        >
-          Desde plantilla
-        </Button>
-        <Button
-          type="button"
-          variant={mode === 'manual' ? 'primary' : 'secondary'}
-          size="sm"
-          onClick={() => setMode('manual')}
-        >
-          En blanco
-        </Button>
-      </div>
-      {mode === 'template' ? (
-        <Field label="Plantilla" htmlFor="np-template">
-          <select
-            id="np-template"
-            value={templateId}
-            onChange={(e) => {
-              setTemplateId(e.target.value);
-              const nt = templates.find((x) => x.id === e.target.value);
-              if (nt && days.length !== nt.sessionsPerWeek)
-                setDays(DEFAULT_DAYS[nt.sessionsPerWeek] ?? days);
-            }}
-            className="h-10 rounded-md border border-border bg-bg px-3 text-sm"
-          >
-            {goals.map((g) => (
-              <optgroup key={g} label={label('goalSlug', g)}>
-                {templates
-                  .filter((x) => (x.goalSlug ?? '') === g)
-                  .map((x) => (
-                    <option key={x.id} value={x.id}>
-                      {x.name}
-                      {x.isGlobal ? '' : ' (propia)'}
-                    </option>
-                  ))}
-              </optgroup>
-            ))}
-          </select>
-        </Field>
-      ) : null}
-      {mode === 'template' && t ? (
-        <p className="text-xs text-muted">
-          {t.sessionsPerWeek} sesiones/semana · {t.durationMonths} meses · métodos:{' '}
-          {t.methodSlugs.join(', ') || '—'}.{' '}
-          <a
-            className="underline"
-            href={`/app/plans/templates/${t.id}`}
-            target="_blank"
-            rel="noreferrer"
-          >
-            Ver plantilla
-          </a>
-        </p>
-      ) : null}
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-4">
         <Field label="Nombre" htmlFor="np-name">
           <Input
             id="np-name"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder={t && mode === 'template' ? t.name : 'Plan'}
+            placeholder="Plan"
           />
         </Field>
         <Field label="Inicio" htmlFor="np-start">
@@ -175,43 +101,29 @@ export function NewPlanForm({
             type="date"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
-            required={mode === 'template'}
           />
         </Field>
-        {mode === 'manual' ? (
-          <div className="grid grid-cols-2 gap-2">
-            <Field label="Meses" htmlFor="np-months">
-              <Select
-                id="np-months"
-                value={months}
-                onChange={(e) => setMonths(e.target.value)}
-                options={['3', '6', '9', '12'].map((v) => ({ value: v, label: v }))}
-              />
-            </Field>
-            <Field label="Semanas" htmlFor="np-weeks">
-              <Input
-                id="np-weeks"
-                inputMode="numeric"
-                value={weeks}
-                onChange={(e) => setWeeks(e.target.value)}
-              />
-            </Field>
-          </div>
-        ) : null}
+        <Field label="Meses" htmlFor="np-months">
+          <Select
+            id="np-months"
+            value={months}
+            onChange={(e) => setMonths(e.target.value)}
+            options={['3', '6', '9', '12'].map((v) => ({ value: v, label: v }))}
+          />
+        </Field>
+        <Field label="Semanas" htmlFor="np-weeks">
+          <Input
+            id="np-weeks"
+            inputMode="numeric"
+            value={weeks}
+            onChange={(e) => setWeeks(e.target.value)}
+          />
+        </Field>
       </div>
       <Weekdays value={days} onChange={setDays} />
-      {mode === 'template' && t && days.length !== t.sessionsPerWeek ? (
-        <p className="text-xs text-warn">Elige {t.sessionsPerWeek} días para esta plantilla.</p>
-      ) : null}
       <FormError error={a.error} />
-      <Button
-        disabled={
-          a.pending ||
-          (mode === 'template' && (!t || days.length !== t.sessionsPerWeek || !startDate))
-        }
-        className="self-start"
-      >
-        Crear plan
+      <Button variant="secondary" disabled={a.pending || !days.length} className="self-start">
+        Crear plan en blanco
       </Button>
     </form>
   );

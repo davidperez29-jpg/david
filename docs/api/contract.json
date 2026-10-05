@@ -133,8 +133,13 @@
     "plan-sessions/[sessionId]/exercises POST authenticated",
     "plan-sessions/[sessionId] GET authenticated",
     "plan-sessions/[sessionId] PATCH authenticated",
+    "plan-templates/[templateId]/archive POST authenticated",
+    "plan-templates/[templateId]/duplicate POST authenticated",
+    "plan-templates/[templateId]/restore POST authenticated",
     "plan-templates/[templateId] GET authenticated",
+    "plan-templates/[templateId] PATCH authenticated",
     "plan-templates GET authenticated",
+    "plan-templates POST authenticated",
     "plans/[planId]/duplicate POST authenticated",
     "plans/[planId]/pdf GET authenticated",
     "plans/[planId]/proposal/accept POST authenticated",
@@ -699,6 +704,17 @@
       },
       "required": [
         "status"
+      ]
+    },
+    "archiveTemplateSchema": {
+      "type": "object",
+      "properties": {
+        "archived": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "archived"
       ]
     },
     "assessmentStatusSchema": {
@@ -2615,6 +2631,87 @@
         "weekdays"
       ]
     },
+    "createTemplateSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 1000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "profileSlug": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 80
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "levelN": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 3
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "population": {
+          "maxItems": 5,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "adultos",
+              "adulto_mayor",
+              "deportistas",
+              "jovenes",
+              "pc_leve"
+            ]
+          }
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "training",
+            "risk_reduction",
+            "readaptation"
+          ]
+        },
+        "sessionsPerWeek": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 7
+        },
+        "durationMonths": {
+          "default": 3,
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "name",
+        "sessionsPerWeek"
+      ]
+    },
     "decideAdjustmentSchema": {
       "type": "object",
       "properties": {
@@ -2843,6 +2940,16 @@
       "required": [
         "targetMicrocycleId"
       ]
+    },
+    "duplicateTemplateSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        }
+      }
     },
     "duplicateWeekSchema": {
       "type": "object",
@@ -4497,6 +4604,11 @@
             "minimum": 1,
             "maximum": 7
           }
+        },
+        "durationMonths": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
         }
       },
       "required": [
@@ -5247,6 +5359,25 @@
       "required": [
         "status",
         "response"
+      ]
+    },
+    "restoreTemplateVersionSchema": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "expectedVersion": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "version",
+        "expectedVersion"
       ]
     },
     "revertAdjustmentSchema": {
@@ -6520,6 +6651,1847 @@
       "required": [
         "mutations"
       ]
+    },
+    "templateDefinitionSchema": {
+      "type": "object",
+      "properties": {
+        "durationMonths": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "sessionsPerWeek": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 7
+        },
+        "phases": {
+          "minItems": 1,
+          "maxItems": 16,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              },
+              "objective": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 300
+              },
+              "emphasis": {
+                "type": "object",
+                "propertyNames": {
+                  "type": "string"
+                },
+                "additionalProperties": {
+                  "type": "number"
+                }
+              },
+              "sessionsPerWeek": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 7
+              },
+              "mesocycles": {
+                "minItems": 1,
+                "maxItems": 16,
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 80
+                    },
+                    "weeks": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 16
+                    },
+                    "focus": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 200
+                    },
+                    "weekTypes": {
+                      "maxItems": 16,
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "enum": [
+                          "introduction",
+                          "progression",
+                          "peak",
+                          "deload",
+                          "test",
+                          "taper",
+                          "transition",
+                          "competition"
+                        ]
+                      }
+                    },
+                    "assessmentPlanned": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "weeks"
+                  ]
+                }
+              },
+              "sessions": {
+                "maxItems": 7,
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "maxLength": 64
+                    },
+                    "dayLabel": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 20
+                    },
+                    "title": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 120
+                    },
+                    "objective": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 300
+                    },
+                    "durationMin": {
+                      "type": "integer",
+                      "minimum": 5,
+                      "maximum": 300
+                    },
+                    "notesForClient": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 1000
+                    },
+                    "blocks": {
+                      "maxItems": 12,
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "maxLength": 64
+                          },
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "warm_up",
+                              "activation",
+                              "power_potentiation",
+                              "main_strength",
+                              "hypertrophy",
+                              "plyometric",
+                              "sprint_cod",
+                              "conditioning",
+                              "core",
+                              "mobility",
+                              "cool_down",
+                              "custom"
+                            ]
+                          },
+                          "organization": {
+                            "type": "string",
+                            "enum": [
+                              "straight_sets",
+                              "superset",
+                              "triset",
+                              "circuit",
+                              "cluster",
+                              "contrast",
+                              "complex",
+                              "emom",
+                              "amrap",
+                              "intervals"
+                            ]
+                          },
+                          "label": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 80
+                          },
+                          "rounds": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 20
+                          },
+                          "restBetweenRoundsS": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 900
+                          },
+                          "notes": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 500
+                          },
+                          "exercises": {
+                            "maxItems": 30,
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string",
+                                  "maxLength": 64
+                                },
+                                "exercise": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 120
+                                },
+                                "pairingLabel": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 10
+                                },
+                                "prescription": {
+                                  "type": "object",
+                                  "properties": {
+                                    "sets": {
+                                      "anyOf": [
+                                        {
+                                          "type": "integer",
+                                          "minimum": 1,
+                                          "maximum": 20
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "repsMin": {
+                                      "anyOf": [
+                                        {
+                                          "type": "integer",
+                                          "minimum": 1,
+                                          "maximum": 100
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "repsMax": {
+                                      "anyOf": [
+                                        {
+                                          "type": "integer",
+                                          "minimum": 1,
+                                          "maximum": 100
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "repsPerCluster": {
+                                      "anyOf": [
+                                        {
+                                          "type": "integer",
+                                          "minimum": 1,
+                                          "maximum": 20
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "intraClusterRestS": {
+                                      "anyOf": [
+                                        {
+                                          "type": "integer",
+                                          "minimum": 0,
+                                          "maximum": 120
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "durationS": {
+                                      "anyOf": [
+                                        {
+                                          "type": "integer",
+                                          "minimum": 1,
+                                          "maximum": 7200
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "distanceM": {
+                                      "anyOf": [
+                                        {
+                                          "type": "number",
+                                          "minimum": 0,
+                                          "maximum": 50000
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "contacts": {
+                                      "anyOf": [
+                                        {
+                                          "type": "integer",
+                                          "minimum": 0,
+                                          "maximum": 500
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "loadKg": {
+                                      "anyOf": [
+                                        {
+                                          "type": "number",
+                                          "minimum": 0,
+                                          "maximum": 1000
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "loadPct1rm": {
+                                      "anyOf": [
+                                        {
+                                          "type": "number",
+                                          "minimum": 0,
+                                          "maximum": 110
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "rirMin": {
+                                      "anyOf": [
+                                        {
+                                          "type": "integer",
+                                          "minimum": 0,
+                                          "maximum": 10
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "rirMax": {
+                                      "anyOf": [
+                                        {
+                                          "type": "integer",
+                                          "minimum": 0,
+                                          "maximum": 10
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "rpeTarget": {
+                                      "anyOf": [
+                                        {
+                                          "type": "number",
+                                          "minimum": 1,
+                                          "maximum": 10
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "effortCharacter": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string",
+                                          "maxLength": 60
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "velocityTargetMps": {
+                                      "anyOf": [
+                                        {
+                                          "type": "number",
+                                          "minimum": 0,
+                                          "maximum": 5
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "velocityLossPct": {
+                                      "anyOf": [
+                                        {
+                                          "type": "integer",
+                                          "minimum": 0,
+                                          "maximum": 60
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "tempo": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string",
+                                          "maxLength": 15
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "restS": {
+                                      "anyOf": [
+                                        {
+                                          "type": "integer",
+                                          "minimum": 0,
+                                          "maximum": 900
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "rom": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string",
+                                          "enum": [
+                                            "full",
+                                            "partial_lengthened",
+                                            "partial_shortened",
+                                            "specified"
+                                          ]
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "intensityNote": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string",
+                                          "maxLength": 200
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "chainLoadKg": {
+                                      "anyOf": [
+                                        {
+                                          "type": "number",
+                                          "minimum": 0,
+                                          "maximum": 500
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    }
+                                  }
+                                },
+                                "loadBasisMetric": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 80
+                                },
+                                "methods": {
+                                  "maxItems": 20,
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 80
+                                  }
+                                },
+                                "progression": {
+                                  "oneOf": [
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "kind": {
+                                          "type": "string",
+                                          "const": "none"
+                                        }
+                                      },
+                                      "required": [
+                                        "kind"
+                                      ]
+                                    },
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "kind": {
+                                          "type": "string",
+                                          "const": "rir_wave"
+                                        },
+                                        "step": {
+                                          "type": "integer",
+                                          "minimum": 0,
+                                          "maximum": 3
+                                        },
+                                        "floor": {
+                                          "type": "integer",
+                                          "minimum": 0,
+                                          "maximum": 10
+                                        }
+                                      },
+                                      "required": [
+                                        "kind",
+                                        "step",
+                                        "floor"
+                                      ]
+                                    },
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "kind": {
+                                          "type": "string",
+                                          "const": "linear_load"
+                                        },
+                                        "incrementKg": {
+                                          "type": "number",
+                                          "minimum": 0,
+                                          "maximum": 50
+                                        },
+                                        "incrementPct": {
+                                          "type": "number",
+                                          "minimum": 0,
+                                          "maximum": 20
+                                        },
+                                        "capKg": {
+                                          "type": "number",
+                                          "minimum": 0,
+                                          "maximum": 1000
+                                        },
+                                        "capPct": {
+                                          "type": "number",
+                                          "minimum": 0,
+                                          "maximum": 110
+                                        }
+                                      },
+                                      "required": [
+                                        "kind"
+                                      ]
+                                    },
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "kind": {
+                                          "type": "string",
+                                          "const": "add_set"
+                                        },
+                                        "everyWeeks": {
+                                          "type": "integer",
+                                          "minimum": 1,
+                                          "maximum": 8
+                                        },
+                                        "maxSets": {
+                                          "type": "integer",
+                                          "minimum": 1,
+                                          "maximum": 20
+                                        }
+                                      },
+                                      "required": [
+                                        "kind",
+                                        "everyWeeks",
+                                        "maxSets"
+                                      ]
+                                    },
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "kind": {
+                                          "type": "string",
+                                          "const": "double_progression"
+                                        },
+                                        "incrementKg": {
+                                          "type": "number",
+                                          "minimum": 0,
+                                          "maximum": 50
+                                        }
+                                      },
+                                      "required": [
+                                        "kind",
+                                        "incrementKg"
+                                      ]
+                                    }
+                                  ]
+                                },
+                                "notesForClient": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 500
+                                },
+                                "side": {
+                                  "type": "string",
+                                  "enum": [
+                                    "both",
+                                    "left",
+                                    "right",
+                                    "each"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "exercise"
+                              ]
+                            }
+                          }
+                        },
+                        "required": [
+                          "type",
+                          "exercises"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "dayLabel",
+                    "title",
+                    "blocks"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "name",
+              "mesocycles"
+            ]
+          }
+        },
+        "sessions": {
+          "maxItems": 7,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "maxLength": 64
+              },
+              "dayLabel": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 20
+              },
+              "title": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120
+              },
+              "objective": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 300
+              },
+              "durationMin": {
+                "type": "integer",
+                "minimum": 5,
+                "maximum": 300
+              },
+              "notesForClient": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              },
+              "blocks": {
+                "maxItems": 12,
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "maxLength": 64
+                    },
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "warm_up",
+                        "activation",
+                        "power_potentiation",
+                        "main_strength",
+                        "hypertrophy",
+                        "plyometric",
+                        "sprint_cod",
+                        "conditioning",
+                        "core",
+                        "mobility",
+                        "cool_down",
+                        "custom"
+                      ]
+                    },
+                    "organization": {
+                      "type": "string",
+                      "enum": [
+                        "straight_sets",
+                        "superset",
+                        "triset",
+                        "circuit",
+                        "cluster",
+                        "contrast",
+                        "complex",
+                        "emom",
+                        "amrap",
+                        "intervals"
+                      ]
+                    },
+                    "label": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 80
+                    },
+                    "rounds": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 20
+                    },
+                    "restBetweenRoundsS": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 900
+                    },
+                    "notes": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 500
+                    },
+                    "exercises": {
+                      "maxItems": 30,
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "maxLength": 64
+                          },
+                          "exercise": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 120
+                          },
+                          "pairingLabel": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 10
+                          },
+                          "prescription": {
+                            "type": "object",
+                            "properties": {
+                              "sets": {
+                                "anyOf": [
+                                  {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 20
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "repsMin": {
+                                "anyOf": [
+                                  {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 100
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "repsMax": {
+                                "anyOf": [
+                                  {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 100
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "repsPerCluster": {
+                                "anyOf": [
+                                  {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 20
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "intraClusterRestS": {
+                                "anyOf": [
+                                  {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 120
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "durationS": {
+                                "anyOf": [
+                                  {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 7200
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "distanceM": {
+                                "anyOf": [
+                                  {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "maximum": 50000
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "contacts": {
+                                "anyOf": [
+                                  {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 500
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "loadKg": {
+                                "anyOf": [
+                                  {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "maximum": 1000
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "loadPct1rm": {
+                                "anyOf": [
+                                  {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "maximum": 110
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "rirMin": {
+                                "anyOf": [
+                                  {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 10
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "rirMax": {
+                                "anyOf": [
+                                  {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 10
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "rpeTarget": {
+                                "anyOf": [
+                                  {
+                                    "type": "number",
+                                    "minimum": 1,
+                                    "maximum": 10
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "effortCharacter": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "maxLength": 60
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "velocityTargetMps": {
+                                "anyOf": [
+                                  {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "maximum": 5
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "velocityLossPct": {
+                                "anyOf": [
+                                  {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 60
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "tempo": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "maxLength": 15
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "restS": {
+                                "anyOf": [
+                                  {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 900
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "rom": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "enum": [
+                                      "full",
+                                      "partial_lengthened",
+                                      "partial_shortened",
+                                      "specified"
+                                    ]
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "intensityNote": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "maxLength": 200
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "chainLoadKg": {
+                                "anyOf": [
+                                  {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "maximum": 500
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              }
+                            }
+                          },
+                          "loadBasisMetric": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 80
+                          },
+                          "methods": {
+                            "maxItems": 20,
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 80
+                            }
+                          },
+                          "progression": {
+                            "oneOf": [
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "kind": {
+                                    "type": "string",
+                                    "const": "none"
+                                  }
+                                },
+                                "required": [
+                                  "kind"
+                                ]
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "kind": {
+                                    "type": "string",
+                                    "const": "rir_wave"
+                                  },
+                                  "step": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 3
+                                  },
+                                  "floor": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 10
+                                  }
+                                },
+                                "required": [
+                                  "kind",
+                                  "step",
+                                  "floor"
+                                ]
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "kind": {
+                                    "type": "string",
+                                    "const": "linear_load"
+                                  },
+                                  "incrementKg": {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "maximum": 50
+                                  },
+                                  "incrementPct": {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "maximum": 20
+                                  },
+                                  "capKg": {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "maximum": 1000
+                                  },
+                                  "capPct": {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "maximum": 110
+                                  }
+                                },
+                                "required": [
+                                  "kind"
+                                ]
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "kind": {
+                                    "type": "string",
+                                    "const": "add_set"
+                                  },
+                                  "everyWeeks": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 8
+                                  },
+                                  "maxSets": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 20
+                                  }
+                                },
+                                "required": [
+                                  "kind",
+                                  "everyWeeks",
+                                  "maxSets"
+                                ]
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "kind": {
+                                    "type": "string",
+                                    "const": "double_progression"
+                                  },
+                                  "incrementKg": {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "maximum": 50
+                                  }
+                                },
+                                "required": [
+                                  "kind",
+                                  "incrementKg"
+                                ]
+                              }
+                            ]
+                          },
+                          "notesForClient": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 500
+                          },
+                          "side": {
+                            "type": "string",
+                            "enum": [
+                              "both",
+                              "left",
+                              "right",
+                              "each"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "exercise"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "exercises"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "dayLabel",
+              "title",
+              "blocks"
+            ]
+          }
+        },
+        "weeks": {
+          "maxItems": 52,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "weekIndex": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 52
+              },
+              "sessions": {
+                "maxItems": 7,
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "maxLength": 64
+                    },
+                    "dayLabel": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 20
+                    },
+                    "title": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 120
+                    },
+                    "objective": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 300
+                    },
+                    "durationMin": {
+                      "type": "integer",
+                      "minimum": 5,
+                      "maximum": 300
+                    },
+                    "notesForClient": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 1000
+                    },
+                    "blocks": {
+                      "maxItems": 12,
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "maxLength": 64
+                          },
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "warm_up",
+                              "activation",
+                              "power_potentiation",
+                              "main_strength",
+                              "hypertrophy",
+                              "plyometric",
+                              "sprint_cod",
+                              "conditioning",
+                              "core",
+                              "mobility",
+                              "cool_down",
+                              "custom"
+                            ]
+                          },
+                          "organization": {
+                            "type": "string",
+                            "enum": [
+                              "straight_sets",
+                              "superset",
+                              "triset",
+                              "circuit",
+                              "cluster",
+                              "contrast",
+                              "complex",
+                              "emom",
+                              "amrap",
+                              "intervals"
+                            ]
+                          },
+                          "label": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 80
+                          },
+                          "rounds": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 20
+                          },
+                          "restBetweenRoundsS": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 900
+                          },
+                          "notes": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 500
+                          },
+                          "exercises": {
+                            "maxItems": 30,
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string",
+                                  "maxLength": 64
+                                },
+                                "exercise": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 120
+                                },
+                                "pairingLabel": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 10
+                                },
+                                "prescription": {
+                                  "type": "object",
+                                  "properties": {
+                                    "sets": {
+                                      "anyOf": [
+                                        {
+                                          "type": "integer",
+                                          "minimum": 1,
+                                          "maximum": 20
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "repsMin": {
+                                      "anyOf": [
+                                        {
+                                          "type": "integer",
+                                          "minimum": 1,
+                                          "maximum": 100
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "repsMax": {
+                                      "anyOf": [
+                                        {
+                                          "type": "integer",
+                                          "minimum": 1,
+                                          "maximum": 100
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "repsPerCluster": {
+                                      "anyOf": [
+                                        {
+                                          "type": "integer",
+                                          "minimum": 1,
+                                          "maximum": 20
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "intraClusterRestS": {
+                                      "anyOf": [
+                                        {
+                                          "type": "integer",
+                                          "minimum": 0,
+                                          "maximum": 120
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "durationS": {
+                                      "anyOf": [
+                                        {
+                                          "type": "integer",
+                                          "minimum": 1,
+                                          "maximum": 7200
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "distanceM": {
+                                      "anyOf": [
+                                        {
+                                          "type": "number",
+                                          "minimum": 0,
+                                          "maximum": 50000
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "contacts": {
+                                      "anyOf": [
+                                        {
+                                          "type": "integer",
+                                          "minimum": 0,
+                                          "maximum": 500
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "loadKg": {
+                                      "anyOf": [
+                                        {
+                                          "type": "number",
+                                          "minimum": 0,
+                                          "maximum": 1000
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "loadPct1rm": {
+                                      "anyOf": [
+                                        {
+                                          "type": "number",
+                                          "minimum": 0,
+                                          "maximum": 110
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "rirMin": {
+                                      "anyOf": [
+                                        {
+                                          "type": "integer",
+                                          "minimum": 0,
+                                          "maximum": 10
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "rirMax": {
+                                      "anyOf": [
+                                        {
+                                          "type": "integer",
+                                          "minimum": 0,
+                                          "maximum": 10
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "rpeTarget": {
+                                      "anyOf": [
+                                        {
+                                          "type": "number",
+                                          "minimum": 1,
+                                          "maximum": 10
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "effortCharacter": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string",
+                                          "maxLength": 60
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "velocityTargetMps": {
+                                      "anyOf": [
+                                        {
+                                          "type": "number",
+                                          "minimum": 0,
+                                          "maximum": 5
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "velocityLossPct": {
+                                      "anyOf": [
+                                        {
+                                          "type": "integer",
+                                          "minimum": 0,
+                                          "maximum": 60
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "tempo": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string",
+                                          "maxLength": 15
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "restS": {
+                                      "anyOf": [
+                                        {
+                                          "type": "integer",
+                                          "minimum": 0,
+                                          "maximum": 900
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "rom": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string",
+                                          "enum": [
+                                            "full",
+                                            "partial_lengthened",
+                                            "partial_shortened",
+                                            "specified"
+                                          ]
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "intensityNote": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string",
+                                          "maxLength": 200
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "chainLoadKg": {
+                                      "anyOf": [
+                                        {
+                                          "type": "number",
+                                          "minimum": 0,
+                                          "maximum": 500
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    }
+                                  }
+                                },
+                                "loadBasisMetric": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 80
+                                },
+                                "methods": {
+                                  "maxItems": 20,
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 80
+                                  }
+                                },
+                                "progression": {
+                                  "oneOf": [
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "kind": {
+                                          "type": "string",
+                                          "const": "none"
+                                        }
+                                      },
+                                      "required": [
+                                        "kind"
+                                      ]
+                                    },
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "kind": {
+                                          "type": "string",
+                                          "const": "rir_wave"
+                                        },
+                                        "step": {
+                                          "type": "integer",
+                                          "minimum": 0,
+                                          "maximum": 3
+                                        },
+                                        "floor": {
+                                          "type": "integer",
+                                          "minimum": 0,
+                                          "maximum": 10
+                                        }
+                                      },
+                                      "required": [
+                                        "kind",
+                                        "step",
+                                        "floor"
+                                      ]
+                                    },
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "kind": {
+                                          "type": "string",
+                                          "const": "linear_load"
+                                        },
+                                        "incrementKg": {
+                                          "type": "number",
+                                          "minimum": 0,
+                                          "maximum": 50
+                                        },
+                                        "incrementPct": {
+                                          "type": "number",
+                                          "minimum": 0,
+                                          "maximum": 20
+                                        },
+                                        "capKg": {
+                                          "type": "number",
+                                          "minimum": 0,
+                                          "maximum": 1000
+                                        },
+                                        "capPct": {
+                                          "type": "number",
+                                          "minimum": 0,
+                                          "maximum": 110
+                                        }
+                                      },
+                                      "required": [
+                                        "kind"
+                                      ]
+                                    },
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "kind": {
+                                          "type": "string",
+                                          "const": "add_set"
+                                        },
+                                        "everyWeeks": {
+                                          "type": "integer",
+                                          "minimum": 1,
+                                          "maximum": 8
+                                        },
+                                        "maxSets": {
+                                          "type": "integer",
+                                          "minimum": 1,
+                                          "maximum": 20
+                                        }
+                                      },
+                                      "required": [
+                                        "kind",
+                                        "everyWeeks",
+                                        "maxSets"
+                                      ]
+                                    },
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "kind": {
+                                          "type": "string",
+                                          "const": "double_progression"
+                                        },
+                                        "incrementKg": {
+                                          "type": "number",
+                                          "minimum": 0,
+                                          "maximum": 50
+                                        }
+                                      },
+                                      "required": [
+                                        "kind",
+                                        "incrementKg"
+                                      ]
+                                    }
+                                  ]
+                                },
+                                "notesForClient": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 500
+                                },
+                                "side": {
+                                  "type": "string",
+                                  "enum": [
+                                    "both",
+                                    "left",
+                                    "right",
+                                    "each"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "exercise"
+                              ]
+                            }
+                          }
+                        },
+                        "required": [
+                          "type",
+                          "exercises"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "dayLabel",
+                    "title",
+                    "blocks"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "weekIndex",
+              "sessions"
+            ]
+          }
+        },
+        "deload": {
+          "type": "object",
+          "properties": {
+            "setsDelta": {
+              "type": "integer",
+              "minimum": -5,
+              "maximum": 0
+            },
+            "rirDelta": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 5
+            }
+          },
+          "required": [
+            "setsDelta",
+            "rirDelta"
+          ]
+        }
+      },
+      "required": [
+        "durationMonths",
+        "sessionsPerWeek",
+        "phases",
+        "sessions"
+      ]
+    },
+    "templateQuerySchema": {
+      "type": "object",
+      "properties": {
+        "q": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "profile": {
+          "type": "string",
+          "maxLength": 80
+        },
+        "level": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3
+        },
+        "days": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 7
+        },
+        "population": {
+          "type": "string",
+          "enum": [
+            "adultos",
+            "adulto_mayor",
+            "deportistas",
+            "jovenes",
+            "pc_leve"
+          ]
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "training",
+            "risk_reduction",
+            "readaptation"
+          ]
+        },
+        "scope": {
+          "type": "string",
+          "enum": [
+            "all",
+            "global",
+            "mine"
+          ]
+        },
+        "archived": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ]
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "fitsEquipment": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ]
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "client": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        }
+      }
     },
     "testSchema": {
       "type": "object",
@@ -8582,6 +10554,1850 @@
           "type": "integer",
           "minimum": 1,
           "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "expectedVersion"
+      ]
+    },
+    "updateTemplateSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 1000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "profileSlug": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 80
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "levelN": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 3
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "population": {
+          "maxItems": 5,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "adultos",
+              "adulto_mayor",
+              "deportistas",
+              "jovenes",
+              "pc_leve"
+            ]
+          }
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "training",
+            "risk_reduction",
+            "readaptation"
+          ]
+        },
+        "expectedVersion": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "definition": {
+          "type": "object",
+          "properties": {
+            "durationMonths": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            "sessionsPerWeek": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 7
+            },
+            "phases": {
+              "minItems": 1,
+              "maxItems": 16,
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 80
+                  },
+                  "objective": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 300
+                  },
+                  "emphasis": {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string"
+                    },
+                    "additionalProperties": {
+                      "type": "number"
+                    }
+                  },
+                  "sessionsPerWeek": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 7
+                  },
+                  "mesocycles": {
+                    "minItems": 1,
+                    "maxItems": 16,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 80
+                        },
+                        "weeks": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 16
+                        },
+                        "focus": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 200
+                        },
+                        "weekTypes": {
+                          "maxItems": 16,
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "enum": [
+                              "introduction",
+                              "progression",
+                              "peak",
+                              "deload",
+                              "test",
+                              "taper",
+                              "transition",
+                              "competition"
+                            ]
+                          }
+                        },
+                        "assessmentPlanned": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "name",
+                        "weeks"
+                      ]
+                    }
+                  },
+                  "sessions": {
+                    "maxItems": 7,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "maxLength": 64
+                        },
+                        "dayLabel": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 20
+                        },
+                        "title": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 120
+                        },
+                        "objective": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 300
+                        },
+                        "durationMin": {
+                          "type": "integer",
+                          "minimum": 5,
+                          "maximum": 300
+                        },
+                        "notesForClient": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 1000
+                        },
+                        "blocks": {
+                          "maxItems": 12,
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "maxLength": 64
+                              },
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "warm_up",
+                                  "activation",
+                                  "power_potentiation",
+                                  "main_strength",
+                                  "hypertrophy",
+                                  "plyometric",
+                                  "sprint_cod",
+                                  "conditioning",
+                                  "core",
+                                  "mobility",
+                                  "cool_down",
+                                  "custom"
+                                ]
+                              },
+                              "organization": {
+                                "type": "string",
+                                "enum": [
+                                  "straight_sets",
+                                  "superset",
+                                  "triset",
+                                  "circuit",
+                                  "cluster",
+                                  "contrast",
+                                  "complex",
+                                  "emom",
+                                  "amrap",
+                                  "intervals"
+                                ]
+                              },
+                              "label": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 80
+                              },
+                              "rounds": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 20
+                              },
+                              "restBetweenRoundsS": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 900
+                              },
+                              "notes": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 500
+                              },
+                              "exercises": {
+                                "maxItems": 30,
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "id": {
+                                      "type": "string",
+                                      "maxLength": 64
+                                    },
+                                    "exercise": {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 120
+                                    },
+                                    "pairingLabel": {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 10
+                                    },
+                                    "prescription": {
+                                      "type": "object",
+                                      "properties": {
+                                        "sets": {
+                                          "anyOf": [
+                                            {
+                                              "type": "integer",
+                                              "minimum": 1,
+                                              "maximum": 20
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "repsMin": {
+                                          "anyOf": [
+                                            {
+                                              "type": "integer",
+                                              "minimum": 1,
+                                              "maximum": 100
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "repsMax": {
+                                          "anyOf": [
+                                            {
+                                              "type": "integer",
+                                              "minimum": 1,
+                                              "maximum": 100
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "repsPerCluster": {
+                                          "anyOf": [
+                                            {
+                                              "type": "integer",
+                                              "minimum": 1,
+                                              "maximum": 20
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "intraClusterRestS": {
+                                          "anyOf": [
+                                            {
+                                              "type": "integer",
+                                              "minimum": 0,
+                                              "maximum": 120
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "durationS": {
+                                          "anyOf": [
+                                            {
+                                              "type": "integer",
+                                              "minimum": 1,
+                                              "maximum": 7200
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "distanceM": {
+                                          "anyOf": [
+                                            {
+                                              "type": "number",
+                                              "minimum": 0,
+                                              "maximum": 50000
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "contacts": {
+                                          "anyOf": [
+                                            {
+                                              "type": "integer",
+                                              "minimum": 0,
+                                              "maximum": 500
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "loadKg": {
+                                          "anyOf": [
+                                            {
+                                              "type": "number",
+                                              "minimum": 0,
+                                              "maximum": 1000
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "loadPct1rm": {
+                                          "anyOf": [
+                                            {
+                                              "type": "number",
+                                              "minimum": 0,
+                                              "maximum": 110
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "rirMin": {
+                                          "anyOf": [
+                                            {
+                                              "type": "integer",
+                                              "minimum": 0,
+                                              "maximum": 10
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "rirMax": {
+                                          "anyOf": [
+                                            {
+                                              "type": "integer",
+                                              "minimum": 0,
+                                              "maximum": 10
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "rpeTarget": {
+                                          "anyOf": [
+                                            {
+                                              "type": "number",
+                                              "minimum": 1,
+                                              "maximum": 10
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "effortCharacter": {
+                                          "anyOf": [
+                                            {
+                                              "type": "string",
+                                              "maxLength": 60
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "velocityTargetMps": {
+                                          "anyOf": [
+                                            {
+                                              "type": "number",
+                                              "minimum": 0,
+                                              "maximum": 5
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "velocityLossPct": {
+                                          "anyOf": [
+                                            {
+                                              "type": "integer",
+                                              "minimum": 0,
+                                              "maximum": 60
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "tempo": {
+                                          "anyOf": [
+                                            {
+                                              "type": "string",
+                                              "maxLength": 15
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "restS": {
+                                          "anyOf": [
+                                            {
+                                              "type": "integer",
+                                              "minimum": 0,
+                                              "maximum": 900
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "rom": {
+                                          "anyOf": [
+                                            {
+                                              "type": "string",
+                                              "enum": [
+                                                "full",
+                                                "partial_lengthened",
+                                                "partial_shortened",
+                                                "specified"
+                                              ]
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "intensityNote": {
+                                          "anyOf": [
+                                            {
+                                              "type": "string",
+                                              "maxLength": 200
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "chainLoadKg": {
+                                          "anyOf": [
+                                            {
+                                              "type": "number",
+                                              "minimum": 0,
+                                              "maximum": 500
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        }
+                                      }
+                                    },
+                                    "loadBasisMetric": {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 80
+                                    },
+                                    "methods": {
+                                      "maxItems": 20,
+                                      "type": "array",
+                                      "items": {
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "maxLength": 80
+                                      }
+                                    },
+                                    "progression": {
+                                      "oneOf": [
+                                        {
+                                          "type": "object",
+                                          "properties": {
+                                            "kind": {
+                                              "type": "string",
+                                              "const": "none"
+                                            }
+                                          },
+                                          "required": [
+                                            "kind"
+                                          ]
+                                        },
+                                        {
+                                          "type": "object",
+                                          "properties": {
+                                            "kind": {
+                                              "type": "string",
+                                              "const": "rir_wave"
+                                            },
+                                            "step": {
+                                              "type": "integer",
+                                              "minimum": 0,
+                                              "maximum": 3
+                                            },
+                                            "floor": {
+                                              "type": "integer",
+                                              "minimum": 0,
+                                              "maximum": 10
+                                            }
+                                          },
+                                          "required": [
+                                            "kind",
+                                            "step",
+                                            "floor"
+                                          ]
+                                        },
+                                        {
+                                          "type": "object",
+                                          "properties": {
+                                            "kind": {
+                                              "type": "string",
+                                              "const": "linear_load"
+                                            },
+                                            "incrementKg": {
+                                              "type": "number",
+                                              "minimum": 0,
+                                              "maximum": 50
+                                            },
+                                            "incrementPct": {
+                                              "type": "number",
+                                              "minimum": 0,
+                                              "maximum": 20
+                                            },
+                                            "capKg": {
+                                              "type": "number",
+                                              "minimum": 0,
+                                              "maximum": 1000
+                                            },
+                                            "capPct": {
+                                              "type": "number",
+                                              "minimum": 0,
+                                              "maximum": 110
+                                            }
+                                          },
+                                          "required": [
+                                            "kind"
+                                          ]
+                                        },
+                                        {
+                                          "type": "object",
+                                          "properties": {
+                                            "kind": {
+                                              "type": "string",
+                                              "const": "add_set"
+                                            },
+                                            "everyWeeks": {
+                                              "type": "integer",
+                                              "minimum": 1,
+                                              "maximum": 8
+                                            },
+                                            "maxSets": {
+                                              "type": "integer",
+                                              "minimum": 1,
+                                              "maximum": 20
+                                            }
+                                          },
+                                          "required": [
+                                            "kind",
+                                            "everyWeeks",
+                                            "maxSets"
+                                          ]
+                                        },
+                                        {
+                                          "type": "object",
+                                          "properties": {
+                                            "kind": {
+                                              "type": "string",
+                                              "const": "double_progression"
+                                            },
+                                            "incrementKg": {
+                                              "type": "number",
+                                              "minimum": 0,
+                                              "maximum": 50
+                                            }
+                                          },
+                                          "required": [
+                                            "kind",
+                                            "incrementKg"
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    "notesForClient": {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 500
+                                    },
+                                    "side": {
+                                      "type": "string",
+                                      "enum": [
+                                        "both",
+                                        "left",
+                                        "right",
+                                        "each"
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "exercise"
+                                  ]
+                                }
+                              }
+                            },
+                            "required": [
+                              "type",
+                              "exercises"
+                            ]
+                          }
+                        }
+                      },
+                      "required": [
+                        "dayLabel",
+                        "title",
+                        "blocks"
+                      ]
+                    }
+                  }
+                },
+                "required": [
+                  "name",
+                  "mesocycles"
+                ]
+              }
+            },
+            "sessions": {
+              "maxItems": 7,
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "maxLength": 64
+                  },
+                  "dayLabel": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 20
+                  },
+                  "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "objective": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 300
+                  },
+                  "durationMin": {
+                    "type": "integer",
+                    "minimum": 5,
+                    "maximum": 300
+                  },
+                  "notesForClient": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 1000
+                  },
+                  "blocks": {
+                    "maxItems": 12,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "maxLength": 64
+                        },
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "warm_up",
+                            "activation",
+                            "power_potentiation",
+                            "main_strength",
+                            "hypertrophy",
+                            "plyometric",
+                            "sprint_cod",
+                            "conditioning",
+                            "core",
+                            "mobility",
+                            "cool_down",
+                            "custom"
+                          ]
+                        },
+                        "organization": {
+                          "type": "string",
+                          "enum": [
+                            "straight_sets",
+                            "superset",
+                            "triset",
+                            "circuit",
+                            "cluster",
+                            "contrast",
+                            "complex",
+                            "emom",
+                            "amrap",
+                            "intervals"
+                          ]
+                        },
+                        "label": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 80
+                        },
+                        "rounds": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 20
+                        },
+                        "restBetweenRoundsS": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 900
+                        },
+                        "notes": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 500
+                        },
+                        "exercises": {
+                          "maxItems": 30,
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "maxLength": 64
+                              },
+                              "exercise": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 120
+                              },
+                              "pairingLabel": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 10
+                              },
+                              "prescription": {
+                                "type": "object",
+                                "properties": {
+                                  "sets": {
+                                    "anyOf": [
+                                      {
+                                        "type": "integer",
+                                        "minimum": 1,
+                                        "maximum": 20
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ]
+                                  },
+                                  "repsMin": {
+                                    "anyOf": [
+                                      {
+                                        "type": "integer",
+                                        "minimum": 1,
+                                        "maximum": 100
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ]
+                                  },
+                                  "repsMax": {
+                                    "anyOf": [
+                                      {
+                                        "type": "integer",
+                                        "minimum": 1,
+                                        "maximum": 100
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ]
+                                  },
+                                  "repsPerCluster": {
+                                    "anyOf": [
+                                      {
+                                        "type": "integer",
+                                        "minimum": 1,
+                                        "maximum": 20
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ]
+                                  },
+                                  "intraClusterRestS": {
+                                    "anyOf": [
+                                      {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 120
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ]
+                                  },
+                                  "durationS": {
+                                    "anyOf": [
+                                      {
+                                        "type": "integer",
+                                        "minimum": 1,
+                                        "maximum": 7200
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ]
+                                  },
+                                  "distanceM": {
+                                    "anyOf": [
+                                      {
+                                        "type": "number",
+                                        "minimum": 0,
+                                        "maximum": 50000
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ]
+                                  },
+                                  "contacts": {
+                                    "anyOf": [
+                                      {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 500
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ]
+                                  },
+                                  "loadKg": {
+                                    "anyOf": [
+                                      {
+                                        "type": "number",
+                                        "minimum": 0,
+                                        "maximum": 1000
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ]
+                                  },
+                                  "loadPct1rm": {
+                                    "anyOf": [
+                                      {
+                                        "type": "number",
+                                        "minimum": 0,
+                                        "maximum": 110
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ]
+                                  },
+                                  "rirMin": {
+                                    "anyOf": [
+                                      {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 10
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ]
+                                  },
+                                  "rirMax": {
+                                    "anyOf": [
+                                      {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 10
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ]
+                                  },
+                                  "rpeTarget": {
+                                    "anyOf": [
+                                      {
+                                        "type": "number",
+                                        "minimum": 1,
+                                        "maximum": 10
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ]
+                                  },
+                                  "effortCharacter": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string",
+                                        "maxLength": 60
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ]
+                                  },
+                                  "velocityTargetMps": {
+                                    "anyOf": [
+                                      {
+                                        "type": "number",
+                                        "minimum": 0,
+                                        "maximum": 5
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ]
+                                  },
+                                  "velocityLossPct": {
+                                    "anyOf": [
+                                      {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 60
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ]
+                                  },
+                                  "tempo": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string",
+                                        "maxLength": 15
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ]
+                                  },
+                                  "restS": {
+                                    "anyOf": [
+                                      {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 900
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ]
+                                  },
+                                  "rom": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string",
+                                        "enum": [
+                                          "full",
+                                          "partial_lengthened",
+                                          "partial_shortened",
+                                          "specified"
+                                        ]
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ]
+                                  },
+                                  "intensityNote": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string",
+                                        "maxLength": 200
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ]
+                                  },
+                                  "chainLoadKg": {
+                                    "anyOf": [
+                                      {
+                                        "type": "number",
+                                        "minimum": 0,
+                                        "maximum": 500
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ]
+                                  }
+                                }
+                              },
+                              "loadBasisMetric": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 80
+                              },
+                              "methods": {
+                                "maxItems": 20,
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 80
+                                }
+                              },
+                              "progression": {
+                                "oneOf": [
+                                  {
+                                    "type": "object",
+                                    "properties": {
+                                      "kind": {
+                                        "type": "string",
+                                        "const": "none"
+                                      }
+                                    },
+                                    "required": [
+                                      "kind"
+                                    ]
+                                  },
+                                  {
+                                    "type": "object",
+                                    "properties": {
+                                      "kind": {
+                                        "type": "string",
+                                        "const": "rir_wave"
+                                      },
+                                      "step": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 3
+                                      },
+                                      "floor": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 10
+                                      }
+                                    },
+                                    "required": [
+                                      "kind",
+                                      "step",
+                                      "floor"
+                                    ]
+                                  },
+                                  {
+                                    "type": "object",
+                                    "properties": {
+                                      "kind": {
+                                        "type": "string",
+                                        "const": "linear_load"
+                                      },
+                                      "incrementKg": {
+                                        "type": "number",
+                                        "minimum": 0,
+                                        "maximum": 50
+                                      },
+                                      "incrementPct": {
+                                        "type": "number",
+                                        "minimum": 0,
+                                        "maximum": 20
+                                      },
+                                      "capKg": {
+                                        "type": "number",
+                                        "minimum": 0,
+                                        "maximum": 1000
+                                      },
+                                      "capPct": {
+                                        "type": "number",
+                                        "minimum": 0,
+                                        "maximum": 110
+                                      }
+                                    },
+                                    "required": [
+                                      "kind"
+                                    ]
+                                  },
+                                  {
+                                    "type": "object",
+                                    "properties": {
+                                      "kind": {
+                                        "type": "string",
+                                        "const": "add_set"
+                                      },
+                                      "everyWeeks": {
+                                        "type": "integer",
+                                        "minimum": 1,
+                                        "maximum": 8
+                                      },
+                                      "maxSets": {
+                                        "type": "integer",
+                                        "minimum": 1,
+                                        "maximum": 20
+                                      }
+                                    },
+                                    "required": [
+                                      "kind",
+                                      "everyWeeks",
+                                      "maxSets"
+                                    ]
+                                  },
+                                  {
+                                    "type": "object",
+                                    "properties": {
+                                      "kind": {
+                                        "type": "string",
+                                        "const": "double_progression"
+                                      },
+                                      "incrementKg": {
+                                        "type": "number",
+                                        "minimum": 0,
+                                        "maximum": 50
+                                      }
+                                    },
+                                    "required": [
+                                      "kind",
+                                      "incrementKg"
+                                    ]
+                                  }
+                                ]
+                              },
+                              "notesForClient": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 500
+                              },
+                              "side": {
+                                "type": "string",
+                                "enum": [
+                                  "both",
+                                  "left",
+                                  "right",
+                                  "each"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "exercise"
+                            ]
+                          }
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "exercises"
+                      ]
+                    }
+                  }
+                },
+                "required": [
+                  "dayLabel",
+                  "title",
+                  "blocks"
+                ]
+              }
+            },
+            "weeks": {
+              "maxItems": 52,
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "weekIndex": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 52
+                  },
+                  "sessions": {
+                    "maxItems": 7,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "maxLength": 64
+                        },
+                        "dayLabel": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 20
+                        },
+                        "title": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 120
+                        },
+                        "objective": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 300
+                        },
+                        "durationMin": {
+                          "type": "integer",
+                          "minimum": 5,
+                          "maximum": 300
+                        },
+                        "notesForClient": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 1000
+                        },
+                        "blocks": {
+                          "maxItems": 12,
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "maxLength": 64
+                              },
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "warm_up",
+                                  "activation",
+                                  "power_potentiation",
+                                  "main_strength",
+                                  "hypertrophy",
+                                  "plyometric",
+                                  "sprint_cod",
+                                  "conditioning",
+                                  "core",
+                                  "mobility",
+                                  "cool_down",
+                                  "custom"
+                                ]
+                              },
+                              "organization": {
+                                "type": "string",
+                                "enum": [
+                                  "straight_sets",
+                                  "superset",
+                                  "triset",
+                                  "circuit",
+                                  "cluster",
+                                  "contrast",
+                                  "complex",
+                                  "emom",
+                                  "amrap",
+                                  "intervals"
+                                ]
+                              },
+                              "label": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 80
+                              },
+                              "rounds": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 20
+                              },
+                              "restBetweenRoundsS": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 900
+                              },
+                              "notes": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 500
+                              },
+                              "exercises": {
+                                "maxItems": 30,
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "id": {
+                                      "type": "string",
+                                      "maxLength": 64
+                                    },
+                                    "exercise": {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 120
+                                    },
+                                    "pairingLabel": {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 10
+                                    },
+                                    "prescription": {
+                                      "type": "object",
+                                      "properties": {
+                                        "sets": {
+                                          "anyOf": [
+                                            {
+                                              "type": "integer",
+                                              "minimum": 1,
+                                              "maximum": 20
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "repsMin": {
+                                          "anyOf": [
+                                            {
+                                              "type": "integer",
+                                              "minimum": 1,
+                                              "maximum": 100
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "repsMax": {
+                                          "anyOf": [
+                                            {
+                                              "type": "integer",
+                                              "minimum": 1,
+                                              "maximum": 100
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "repsPerCluster": {
+                                          "anyOf": [
+                                            {
+                                              "type": "integer",
+                                              "minimum": 1,
+                                              "maximum": 20
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "intraClusterRestS": {
+                                          "anyOf": [
+                                            {
+                                              "type": "integer",
+                                              "minimum": 0,
+                                              "maximum": 120
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "durationS": {
+                                          "anyOf": [
+                                            {
+                                              "type": "integer",
+                                              "minimum": 1,
+                                              "maximum": 7200
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "distanceM": {
+                                          "anyOf": [
+                                            {
+                                              "type": "number",
+                                              "minimum": 0,
+                                              "maximum": 50000
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "contacts": {
+                                          "anyOf": [
+                                            {
+                                              "type": "integer",
+                                              "minimum": 0,
+                                              "maximum": 500
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "loadKg": {
+                                          "anyOf": [
+                                            {
+                                              "type": "number",
+                                              "minimum": 0,
+                                              "maximum": 1000
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "loadPct1rm": {
+                                          "anyOf": [
+                                            {
+                                              "type": "number",
+                                              "minimum": 0,
+                                              "maximum": 110
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "rirMin": {
+                                          "anyOf": [
+                                            {
+                                              "type": "integer",
+                                              "minimum": 0,
+                                              "maximum": 10
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "rirMax": {
+                                          "anyOf": [
+                                            {
+                                              "type": "integer",
+                                              "minimum": 0,
+                                              "maximum": 10
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "rpeTarget": {
+                                          "anyOf": [
+                                            {
+                                              "type": "number",
+                                              "minimum": 1,
+                                              "maximum": 10
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "effortCharacter": {
+                                          "anyOf": [
+                                            {
+                                              "type": "string",
+                                              "maxLength": 60
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "velocityTargetMps": {
+                                          "anyOf": [
+                                            {
+                                              "type": "number",
+                                              "minimum": 0,
+                                              "maximum": 5
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "velocityLossPct": {
+                                          "anyOf": [
+                                            {
+                                              "type": "integer",
+                                              "minimum": 0,
+                                              "maximum": 60
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "tempo": {
+                                          "anyOf": [
+                                            {
+                                              "type": "string",
+                                              "maxLength": 15
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "restS": {
+                                          "anyOf": [
+                                            {
+                                              "type": "integer",
+                                              "minimum": 0,
+                                              "maximum": 900
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "rom": {
+                                          "anyOf": [
+                                            {
+                                              "type": "string",
+                                              "enum": [
+                                                "full",
+                                                "partial_lengthened",
+                                                "partial_shortened",
+                                                "specified"
+                                              ]
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "intensityNote": {
+                                          "anyOf": [
+                                            {
+                                              "type": "string",
+                                              "maxLength": 200
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "chainLoadKg": {
+                                          "anyOf": [
+                                            {
+                                              "type": "number",
+                                              "minimum": 0,
+                                              "maximum": 500
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        }
+                                      }
+                                    },
+                                    "loadBasisMetric": {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 80
+                                    },
+                                    "methods": {
+                                      "maxItems": 20,
+                                      "type": "array",
+                                      "items": {
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "maxLength": 80
+                                      }
+                                    },
+                                    "progression": {
+                                      "oneOf": [
+                                        {
+                                          "type": "object",
+                                          "properties": {
+                                            "kind": {
+                                              "type": "string",
+                                              "const": "none"
+                                            }
+                                          },
+                                          "required": [
+                                            "kind"
+                                          ]
+                                        },
+                                        {
+                                          "type": "object",
+                                          "properties": {
+                                            "kind": {
+                                              "type": "string",
+                                              "const": "rir_wave"
+                                            },
+                                            "step": {
+                                              "type": "integer",
+                                              "minimum": 0,
+                                              "maximum": 3
+                                            },
+                                            "floor": {
+                                              "type": "integer",
+                                              "minimum": 0,
+                                              "maximum": 10
+                                            }
+                                          },
+                                          "required": [
+                                            "kind",
+                                            "step",
+                                            "floor"
+                                          ]
+                                        },
+                                        {
+                                          "type": "object",
+                                          "properties": {
+                                            "kind": {
+                                              "type": "string",
+                                              "const": "linear_load"
+                                            },
+                                            "incrementKg": {
+                                              "type": "number",
+                                              "minimum": 0,
+                                              "maximum": 50
+                                            },
+                                            "incrementPct": {
+                                              "type": "number",
+                                              "minimum": 0,
+                                              "maximum": 20
+                                            },
+                                            "capKg": {
+                                              "type": "number",
+                                              "minimum": 0,
+                                              "maximum": 1000
+                                            },
+                                            "capPct": {
+                                              "type": "number",
+                                              "minimum": 0,
+                                              "maximum": 110
+                                            }
+                                          },
+                                          "required": [
+                                            "kind"
+                                          ]
+                                        },
+                                        {
+                                          "type": "object",
+                                          "properties": {
+                                            "kind": {
+                                              "type": "string",
+                                              "const": "add_set"
+                                            },
+                                            "everyWeeks": {
+                                              "type": "integer",
+                                              "minimum": 1,
+                                              "maximum": 8
+                                            },
+                                            "maxSets": {
+                                              "type": "integer",
+                                              "minimum": 1,
+                                              "maximum": 20
+                                            }
+                                          },
+                                          "required": [
+                                            "kind",
+                                            "everyWeeks",
+                                            "maxSets"
+                                          ]
+                                        },
+                                        {
+                                          "type": "object",
+                                          "properties": {
+                                            "kind": {
+                                              "type": "string",
+                                              "const": "double_progression"
+                                            },
+                                            "incrementKg": {
+                                              "type": "number",
+                                              "minimum": 0,
+                                              "maximum": 50
+                                            }
+                                          },
+                                          "required": [
+                                            "kind",
+                                            "incrementKg"
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    "notesForClient": {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 500
+                                    },
+                                    "side": {
+                                      "type": "string",
+                                      "enum": [
+                                        "both",
+                                        "left",
+                                        "right",
+                                        "each"
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "exercise"
+                                  ]
+                                }
+                              }
+                            },
+                            "required": [
+                              "type",
+                              "exercises"
+                            ]
+                          }
+                        }
+                      },
+                      "required": [
+                        "dayLabel",
+                        "title",
+                        "blocks"
+                      ]
+                    }
+                  }
+                },
+                "required": [
+                  "weekIndex",
+                  "sessions"
+                ]
+              }
+            },
+            "deload": {
+              "type": "object",
+              "properties": {
+                "setsDelta": {
+                  "type": "integer",
+                  "minimum": -5,
+                  "maximum": 0
+                },
+                "rirDelta": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 5
+                }
+              },
+              "required": [
+                "setsDelta",
+                "rirDelta"
+              ]
+            }
+          },
+          "required": [
+            "durationMonths",
+            "sessionsPerWeek",
+            "phases",
+            "sessions"
+          ]
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 300
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "required": [

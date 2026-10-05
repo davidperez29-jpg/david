@@ -15,10 +15,12 @@ Medido el 2026-10-03 en el ordenador de desarrollo, con build de producción y d
 | 1 | Entrenadora, escritorio: atender la alerta roja de dolor desde el inicio y resolverla con nota | Inicio (Mis clientes) → alerta resuelta | **4** (≤ 4): motivo en la fila del cliente → «Resolver…» → nota → «Resolver» | **1,0 s** (< 30 s) |
 | 2 | Entrenadora, escritorio: encontrar la sesión de la semana que viene de un cliente y abrirla | Inicio → revisión de la sesión | **6** (≤ 6): «Ver calendario» → Semana → Siguiente → cliente → Filtrar → sesión | **1,8 s** (< 30 s) |
 | 3 | Cliente, móvil (Pixel 7): abrir la próxima sesión y registrar la primera serie | Hoy → serie guardada | **2** (≤ 2): «Ver sesión» o «Empezar» → ✓ | **0,7 s** (< 20 s) |
+| 4 | Entrenadora, escritorio: cambiar la carga de la próxima sesión de un cliente (fase 2) | Inicio → carga guardada | **4** (≤ 4): fila del cliente → celda CARGA → escribir → Intro | **1,2 s** (< 20 s) |
+| 5 | Entrenadora, escritorio: crear el plan de un cliente sin plan desde una plantilla (fase 3) | Programa → plan creado | **4** (≤ 4): «Usar plantilla» → «Usar con …» → fecha → «Crear plan» | **1,4 s** (< 30 s) |
 
 Los tiempos son del sistema (navegación y respuesta), no del pensamiento humano. Lo que se controla es el número de interacciones; el tiempo detecta regresiones graves de rendimiento.
 
-**Código:** `apps/web/e2e/ux.spec.ts`, `apps/web/e2e/ux.mobile.spec.ts` y `apps/web/e2e/ux-tasks.ts`. Cada ejecución añade una línea por tarea a `apps/web/test-results/ux-timings.jsonl`.
+**Código:** `apps/web/e2e/ux.spec.ts`, `apps/web/e2e/ux.mobile.spec.ts`, `apps/web/e2e/session-grid.spec.ts` (tarea 4), `apps/web/e2e/templates.spec.ts` (tarea 5) y `apps/web/e2e/ux-tasks.ts`. Cada ejecución añade una línea por tarea a `apps/web/test-results/ux-timings.jsonl`.
 
 ## 2. Problemas encontrados en la revisión y corregidos
 

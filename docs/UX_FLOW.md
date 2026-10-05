@@ -19,7 +19,7 @@
 - **Cuatro entradas**, frente a las 13 de la versión anterior.
 - El menú del usuario («Menú ▾») agrupa Calendario, Alertas, Informes, Ciencia, Ajustes, Usuarios y Privacidad (administración) y Cerrar sesión.
 - Las alertas urgentes (rojas y amarillas) se cuentan junto al menú (`⚠ n`); el contador abre la lista de alertas.
-- **Buscar** encuentra clientes desde cualquier pantalla (fase 1). Ejercicios y plantillas se añadirán en las fases 2 y 3.
+- **Buscar** encuentra clientes desde cualquier pantalla (fase 1). Las plantillas se buscan y filtran en **Plantillas** (fase 3: perfil, nivel, días, población, tipo, origen y texto); desde un cliente, primero las que encajan con él.
 
 ### Cliente (móvil)
 
@@ -165,7 +165,7 @@ Hoy · Sesión B (45 min)
 | Ver la sesión de hoy de un cliente | Inicio → fila del cliente (abre Programa en la semana actual) → sesión | 2 |
 | Cambiar una carga | … → sesión → celda | 3 (+ escribir) |
 | Crear cliente | **+ Nuevo cliente** → formulario único → Guardar | 2 |
-| Asignar un plan desde plantilla | Programa → **Usar plantilla** → elegir (filtrada por perfil, nivel y días) → Crear | 3 |
+| Asignar un plan desde plantilla | Programa → **Usar plantilla** → elegir (filtrada por perfil, nivel y días) → Crear | 3 (+ la fecha; E2E «UX 5», fase 3) |
 | Registrar una evaluación | Evaluación → **+ Nueva** (batería del perfil ya elegida) → escribir en la hoja | 2 |
 | Comparar dos evaluaciones | Evaluación → Comparar con ▾ → elegir | 2 |
 | Generar un informe | Informes → tipo → Generar (PDF en la vista previa) | 3 |

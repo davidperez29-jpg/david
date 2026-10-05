@@ -5,6 +5,7 @@ import { formatCell, parseSessionTsv, type PastedRow } from '@tp/domain';
 import { ExerciseCombobox } from '@/components/library/exercise-combobox';
 import { Button } from '@/components/ui/button';
 import { api } from '@/lib/api-client';
+import type { NewRow, StoreResult } from './grid-store';
 
 interface Resolution {
   name: string;
@@ -28,12 +29,15 @@ const LABEL: Record<(typeof SHOWN)[number], string> = {
  * any row is invalid nothing is added at all.
  */
 export function PastePanel({
-  sessionId,
+  gridId,
   initial,
+  onAdd,
   onDone,
 }: {
-  sessionId: string;
+  gridId: string;
   initial: string;
+  /** Adds the rows where the table saves (a client's session or a template). */
+  onAdd: (rows: NewRow[]) => Promise<StoreResult<{ ids: string[] }>>;
   onDone: (ids: string[]) => void;
 }) {
   const [text, setText] = useState(initial);
@@ -79,21 +83,19 @@ export function PastePanel({
   async function add() {
     setPending(true);
     setError(null);
-    const res = await api<{ ids: string[] }>(`/plan-sessions/${sessionId}/exercises`, {
-      method: 'POST',
-      body: {
-        rows: ready.map(({ row, ex }) => ({
-          exerciseId: ex!.id,
-          prescription: row.prescription,
-          notesForClient: row.notes,
-        })),
-      },
-    });
+    const res = await onAdd(
+      ready.map(({ row, ex }) => ({
+        exerciseId: ex!.id,
+        exerciseName: ex!.name,
+        prescription: row.prescription,
+        notesForClient: row.notes,
+      })),
+    );
     setPending(false);
-    if (res.ok) return onDone(res.data.ids);
-    setError(res.error.message);
+    if (res.ok) return onDone(res.ids);
+    setError(res.message);
     const byRow: Record<number, string> = {};
-    for (const [k, v] of Object.entries(res.error.details ?? {})) {
+    for (const [k, v] of Object.entries(res.details ?? {})) {
       const m = /^rows\.(\d+)\./.exec(k);
       if (m) byRow[ready[Number(m[1])]!.i] = v.join(' ');
     }
@@ -105,11 +107,11 @@ export function PastePanel({
       aria-label="Pegar filas desde Excel"
       className="flex flex-col gap-3 rounded-md border border-accent bg-bg p-3"
     >
-      <label htmlFor={`${sessionId}-paste`} className="text-sm font-medium">
+      <label htmlFor={`${gridId}-paste`} className="text-sm font-medium">
         Pega aquí las filas copiadas de Excel o Google Sheets (con o sin la fila de títulos)
       </label>
       <textarea
-        id={`${sessionId}-paste`}
+        id={`${gridId}-paste`}
         autoFocus={!initial}
         value={text}
         onChange={(e) => setText(e.target.value)}

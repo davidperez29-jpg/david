@@ -12,12 +12,14 @@ test('trainer creates a 12-week, 3-day plan from a template and edits a session'
   const more = page.locator('details', { has: page.getByRole('heading', { name: 'Nuevo plan' }) });
   if (await more.count()) await more.evaluate((d) => ((d as HTMLDetailsElement).open = true));
 
-  // The tab also offers the engine's plan proposal (Phase 11): use the "Nuevo plan" card.
-  const form = page.locator('section').filter({
-    has: page.getByRole('heading', { name: 'Nuevo plan' }),
+  // «Usar plantilla» opens the library for this client (restructure phase 3).
+  await page.getByRole('link', { name: 'Usar plantilla' }).click();
+  const item = page.getByRole('listitem').filter({
+    has: page.getByRole('link', { name: 'Hipertrofia · 3 días (full body)', exact: true }),
   });
-  await form.getByLabel('Plantilla').selectOption({ label: 'Hipertrofia · 3 días (full body)' });
-  await form.getByLabel('Nombre').fill(`Plan E2E ${Date.now()}`);
+  await item.getByText(/^Usar con /).click();
+  const form = item.getByRole('form', { name: /^Usar «Hipertrofia · 3 días/ });
+  await form.getByLabel('Nombre del plan').fill(`Plan E2E ${Date.now()}`);
   await form.getByLabel('Inicio').fill('2026-11-02');
   for (const day of ['Martes', 'Jueves']) {
     const b = form.getByRole('button', { name: day, exact: true });

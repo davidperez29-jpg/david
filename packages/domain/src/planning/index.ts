@@ -5,3 +5,4 @@ export * from './progression';
 export * from './plan-document';
 export * from './grid';
 export * from './program-view';
+export * from './templates';

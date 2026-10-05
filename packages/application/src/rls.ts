@@ -1,6 +1,20 @@
 import { bindActor, type Database } from '@tp/db';
+import { DomainError } from '@tp/domain';
 import { reportError } from './observability';
 import type { RequestContext } from './context';
+
+/**
+ * A malformed id (text that is not a UUID, e.g. /clients/abc) reaching a query makes PostgreSQL
+ * fail with 22P02. It names nothing: answer «not found» instead of an internal error. Every other
+ * input is validated before any query, so this only catches ids taken from the URL.
+ */
+function notFoundIfMalformedId(e: unknown): never {
+  const code =
+    (e as { code?: string } | null)?.code ??
+    (e as { cause?: { code?: string } } | null)?.cause?.code;
+  if (code === '22P02') throw new DomainError('not_found', 'No encontrado.');
+  throw e;
+}
 
 const BOUND = new WeakSet<RequestContext>();
 type Hook = (root: RequestContext) => Promise<unknown>;
@@ -52,6 +66,7 @@ export function secured<A extends unknown[], R>(
         HOOKS.set(bound, hooks);
         return fn(bound, ...args);
       })
+      .catch(notFoundIfMalformedId)
       .then(async (result) => {
         for (const [key, hook] of hooks) {
           try {

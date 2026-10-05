@@ -27,6 +27,7 @@ import {
   DomainError,
   exerciseNameMatcher,
   expandTemplate,
+  fitToDuration,
   hasActiveConsent,
   loadFromPct,
   prescriptionForClient,
@@ -37,8 +38,10 @@ import {
   weekDates,
   weekIndicators,
   weeksFor,
+  withEditorIds,
   type ConsentPurpose,
   type IndicatorSession,
+  type PlanDuration,
   type Prescription,
   type TemplateDefinition,
   type TemplateSession,
@@ -50,6 +53,11 @@ import { writeAudit } from './audit';
 import { authorizeClient, requirePermission } from './authz';
 import type { RequestContext } from './context';
 import { secured } from './rls';
+import {
+  markTemplateVersionUsed,
+  recordTemplateVersion,
+  templateEquipment,
+} from './template-store';
 import { parse } from './validation';
 
 const {
@@ -74,6 +82,7 @@ const {
   clients,
   clientEquipment,
   clientTrainingProfiles,
+  programmingProfiles,
   consents,
   exerciseTolerances,
   assessmentResults,
@@ -242,32 +251,6 @@ async function latestTestValue(
 
 // ── Templates ─────────────────────────────────────────────────────────────────
 
-async function listPlanTemplates_(ctx: RequestContext) {
-  requirePermission(ctx, 'plans:templates');
-  const rows = await ctx.db
-    .select({
-      id: planTemplates.id,
-      slug: planTemplates.slug,
-      name: planTemplates.name,
-      description: planTemplates.description,
-      goalSlug: planTemplates.goalSlug,
-      level: planTemplates.level,
-      sessionsPerWeek: planTemplates.sessionsPerWeek,
-      durationMonths: planTemplates.durationMonths,
-      methodSlugs: planTemplates.methodSlugs,
-      organizationId: planTemplates.organizationId,
-    })
-    .from(planTemplates)
-    .where(and(visible(ctx, planTemplates.organizationId), eq(planTemplates.status, 'published')))
-    .orderBy(
-      asc(planTemplates.goalSlug),
-      asc(planTemplates.sessionsPerWeek),
-      asc(planTemplates.name),
-    );
-  return rows.map(({ organizationId, ...r }) => ({ ...r, isGlobal: organizationId === null }));
-}
-export type PlanTemplateSummary = Awaited<ReturnType<typeof listPlanTemplates_>>[number];
-
 export async function resolveExercises(ctx: RequestContext, refs: string[]) {
   const ids = refs.filter((r) => UUID_RE.test(r));
   const slugs = refs.filter((r) => !UUID_RE.test(r));
@@ -302,64 +285,6 @@ export async function resolveExercises(ctx: RequestContext, refs: string[]) {
   }
   return m;
 }
-
-async function getPlanTemplate_(ctx: RequestContext, id: string) {
-  requirePermission(ctx, 'plans:templates');
-  const [t] = await ctx.db
-    .select()
-    .from(planTemplates)
-    .where(and(eq(planTemplates.id, id), visible(ctx, planTemplates.organizationId)));
-  if (!t) throw new DomainError('not_found', 'Plantilla no encontrada.');
-  const def = t.definition as TemplateDefinition;
-  const refs = [
-    ...new Set(
-      [...def.sessions, ...(def.weeks ?? []).flatMap((w) => w.sessions)].flatMap((x) =>
-        x.blocks.flatMap((b) => b.exercises.map((e) => e.exercise)),
-      ),
-    ),
-  ];
-  const ex = await resolveExercises(ctx, refs);
-  const ms = t.methodSlugs.length
-    ? await ctx.db
-        .select({ id: methods.id, slug: methods.slug, name: methods.name })
-        .from(methods)
-        .where(and(isNull(methods.organizationId), inArray(methods.slug, t.methodSlugs)))
-    : [];
-  const expanded = expandTemplate(def);
-  return {
-    ...t,
-    isGlobal: t.organizationId === null,
-    totalWeeks: expanded.totalWeeks,
-    methods: ms,
-    phases: expanded.phases.map((p) => ({
-      name: p.name,
-      objective: p.objective ?? null,
-      startWeek: p.startWeek,
-      endWeek: p.endWeek,
-      mesocycles: p.mesocycles.map((m) => ({
-        name: m.name,
-        weeks: m.weeks,
-        focus: m.focus ?? null,
-        weekTypes: m.microcycles.map((w) => w.weekType),
-      })),
-    })),
-    sessions: def.sessions.map((x) => ({
-      dayLabel: x.dayLabel,
-      title: x.title,
-      objective: x.objective ?? null,
-      blocks: x.blocks.map((b) => ({
-        type: b.type,
-        label: b.label ?? null,
-        exercises: b.exercises.map((e) => ({
-          name: ex.get(e.exercise)?.name ?? e.exercise,
-          short: prescriptionShort(e.prescription),
-          progression: e.progression?.kind ?? 'none',
-        })),
-      })),
-    })),
-  };
-}
-export type PlanTemplateDetail = Awaited<ReturnType<typeof getPlanTemplate_>>;
 
 // ── Materialization (template definition → plan rows) ─────────────────────────
 
@@ -731,9 +656,14 @@ async function createPlanFromTemplate_(
     .select()
     .from(planTemplates)
     .where(and(eq(planTemplates.id, d.templateId), visible(ctx, planTemplates.organizationId)));
-  if (!t)
+  if (!t || t.archivedAt)
     throw new DomainError('validation', 'Plantilla desconocida.', { templateId: ['unknown'] });
-  const def = t.definition as TemplateDefinition;
+  // The duration is chosen when using the template (decision A17); the plan is an independent copy.
+  const base = t.definition as TemplateDefinition;
+  const def =
+    d.durationMonths && d.durationMonths !== t.durationMonths
+      ? fitToDuration(base, d.durationMonths as PlanDuration)
+      : base;
   if (d.weekdays.length !== def.sessionsPerWeek) {
     throw new DomainError(
       'validation',
@@ -753,12 +683,13 @@ async function createPlanFromTemplate_(
         description: t.description,
         primaryGoalId: d.primaryGoalId ?? null,
         startDate: d.startDate,
-        durationMonths: t.durationMonths,
+        durationMonths: def.durationMonths,
         endDate: addDays(d.startDate, 7 * totalWeeks - 1),
         sessionsPerWeek: def.sessionsPerWeek,
         periodizationModel: 'flexible',
         status: 'draft',
         basedOnTemplateId: t.id,
+        basedOnTemplateVersion: t.templateVersion,
         createdBy: ctx.actor.userId,
       })
       .returning({
@@ -773,6 +704,8 @@ async function createPlanFromTemplate_(
       def,
       { startDate: d.startDate, weekdays: d.weekdays },
     );
+    // From now on that version of an own template never changes (global ones never do).
+    if (t.organizationId) await markTemplateVersionUsed(tx, ctx, t.id, t.templateVersion);
     await writeAudit(tx, ctx, {
       action: 'create',
       entityType: 'training_plan',
@@ -780,6 +713,8 @@ async function createPlanFromTemplate_(
       clientId,
       changes: {
         template: t.slug,
+        templateVersion: t.templateVersion,
+        durationMonths: def.durationMonths,
         startDate: d.startDate,
         weekdays: d.weekdays,
         conflicts: r.conflicts.length,
@@ -2167,6 +2102,15 @@ async function saveAsTemplate_(
     throw new DomainError('validation', 'El plan no puede guardarse como plantilla.', {
       definition: issues.map((i) => i.message),
     });
+  // The client's profile and level describe whom the template suits (no personal data is kept).
+  const [who] = plan.clientId
+    ? await ctx.db
+        .select({ profileSlug: programmingProfiles.slug, levelN: clients.programmingLevel })
+        .from(clients)
+        .leftJoin(programmingProfiles, eq(programmingProfiles.id, clients.programmingProfileId))
+        .where(eq(clients.id, plan.clientId))
+    : [];
+  const content = withEditorIds(def, uuidv7);
   return ctx.db.transaction(async (tx) => {
     const base = slugify(d.name);
     const taken = (
@@ -2184,14 +2128,24 @@ async function saveAsTemplate_(
         slug,
         name: d.name,
         description: d.description ?? null,
-        sessionsPerWeek: def.sessionsPerWeek,
-        durationMonths: def.durationMonths,
-        definition: def,
+        sessionsPerWeek: content.sessionsPerWeek,
+        durationMonths: content.durationMonths,
+        definition: content,
         status: 'published',
         derivedFromPlanId: planId,
+        profileSlug: who?.profileSlug ?? null,
+        levelN: who?.levelN ?? null,
+        equipmentSlugs: await templateEquipment(tx, ctx, content),
         createdBy: ctx.actor.userId,
       })
-      .returning({ id: planTemplates.id });
+      .returning({ id: planTemplates.id, organizationId: planTemplates.organizationId });
+    await recordTemplateVersion(
+      tx,
+      ctx,
+      t!,
+      { name: d.name, definition: content },
+      { note: 'Guardada desde un plan' },
+    );
     await writeAudit(tx, ctx, {
       action: 'create',
       entityType: 'plan_template',
@@ -2204,8 +2158,6 @@ async function saveAsTemplate_(
 }
 
 // Use cases run under Row Level Security (see rls.ts).
-export const listPlanTemplates = secured(listPlanTemplates_);
-export const getPlanTemplate = secured(getPlanTemplate_);
 export const listClientPlans = secured(listClientPlans_);
 export const createPlan = secured(createPlan_);
 export const createPlanFromTemplate = secured(createPlanFromTemplate_);

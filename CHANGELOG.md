@@ -2,6 +2,26 @@
 
 Formato: fecha · cambio · motivo · archivos · impacto.
 
+## 2026-10-05 — Reestructuración, fase 3 (primera parte): biblioteca de plantillas con versiones
+
+- **Cambio:** **Plantillas** es una biblioteca con **filtros** (perfil, nivel, días, población, tipo, origen y texto).
+  - Desde un cliente («Usar plantilla» en Programa), primero las que encajan con su perfil, nivel, días y material; avisa del material que le falta o deja fuera las que no puede hacer.
+  - El material necesario se calcula solo a partir de los ejercicios.
+  - **Motivo:** §6 del encargo; antes era una lista sin filtros y el plan se creaba desde un desplegable.
+- **Cambio:** **usar una plantilla** crea un plan independiente con la **duración elegida** (3, 6, 9 o 12 meses): se toman sus fases en orden y, si hace falta, se repiten como nuevos ciclos, sin «colas» de 1–2 semanas. El plan guarda la plantilla y la versión de la que salió. En 3 clics y la fecha.
+- **Cambio:** **Mis plantillas**:
+  - **crear desde cero** (sesiones vacías de una semana), **duplicar** (también las de la plataforma, que son de solo lectura), **archivar** y recuperar;
+  - **editar en la misma tabla que una sesión** (teclas, pegar desde Excel, duplicar, mover, quitar, deshacer), con bloqueo optimista de la plantilla entera;
+  - **versiones**: cada edición guardada es una versión; las seguidas de la misma persona se agrupan hasta que un plan la usa, y una versión usada no cambia nunca. **Restaurar** crea una versión nueva con el contenido anterior.
+- **Cambio:** la tabla de sesión guarda a través de un «almacén» intercambiable (`GridStore`): el mismo componente edita sesiones de cliente y plantillas.
+- **Cambio:** en la tabla, el primer clic selecciona la celda y lo que se escribe sustituye su valor; un segundo clic, Intro o F2 la modifican.
+  - **Motivo:** la celda activa por defecto entraba en edición al primer clic y lo tecleado se añadía al valor («1» + «4» = «14»). Lo detectó una prueba E2E.
+- **Corrección:** un identificador mal formado en la ruta (`/api/v1/clients/abc`, `/app/clients/abc`) devolvía 500 desde la base de datos; ahora es «no encontrado» (404), en la API y en las páginas.
+- **Esquema:** migraciones `0037` (columnas de filtro y versión en `plan_templates`, tabla `plan_template_versions` con `used_at`, `training_plans.based_on_template_version`, versión 1 de las existentes) y `0038` (RLS de catálogo y disparador `inherit_org`).
+- **API:** `GET /plan-templates` con filtros, `POST /plan-templates`, `PATCH /plan-templates/{id}`, `POST /plan-templates/{id}/duplicate`, `/archive`, `/restore`; `durationMonths` en `POST /clients/{id}/plans/from-template`. Contratos actualizados (solo añadidos).
+- **Decisiones:** A17–A20 en `PRODUCT_ARCHITECTURE.md`.
+- **Pendiente de esta fase:** las plantillas iniciales por perfil × nivel × días.
+
 ## 2026-10-05 — Reestructuración, fase 2: tabla de sesión tipo Excel y Programa por meses
 
 - **Cambio:** la sesión se edita en una **tabla tipo hoja de cálculo** (EJERCICIO · CAT. · SERIES · REPS · CARGA · RIR · RPE · DESC. · NOTAS).

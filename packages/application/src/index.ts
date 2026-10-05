@@ -19,6 +19,7 @@ export * from './library-import';
 export * from './science';
 export * from './assessments';
 export * from './planning';
+export * from './templates';
 export * from './plan-pdf';
 export * from './sessions';
 export * from './monitoring';

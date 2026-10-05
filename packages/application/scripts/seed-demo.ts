@@ -29,6 +29,7 @@ import {
   updateDecisionRules,
   setProgressMetrics,
   createPlanFromTemplate,
+  saveAsTemplate,
   getPlan,
   getPlayerSession,
   listPlanTemplates,
@@ -642,6 +643,7 @@ const PROFILES: HistoryProfile[] = [
   { adherence: 1 },
 ];
 let profileIndex = 0;
+let firstPlanId: string | null = null;
 for (const [i, c] of created.entries()) {
   const goals = specs[i]!.goals;
   const main = goals.find((g) => g.primary)?.slug ?? goals[0]?.slug;
@@ -656,11 +658,20 @@ for (const [i, c] of created.entries()) {
     weekdays: WEEKDAYS[t.sessionsPerWeek] ?? [1, 2, 4, 5],
   });
   if (i % 2 === 0 || c.user) await setPlanStatus(c.by, plan.id, { status: 'active' });
+  firstPlanId ??= plan.id;
   plansCreated++;
   const name = String(specs[i]!.basics.firstName);
   if (c.user) await runSessions(c, plan.id, today, name);
   else if (i % 2 === 0)
     await roomHistory(c, plan.id, today, PROFILES[profileIndex++ % PROFILES.length]!);
+}
+// «Mis plantillas» (restructure phase 3): one of the centre's own, saved anonymized from a plan.
+if (firstPlanId) {
+  await saveAsTemplate(lucia, firstPlanId, {
+    name: 'Plantilla del centro · fuerza general',
+    description: 'Guardada desde el plan de un cliente, sin datos personales ni fechas.',
+  });
+  console.log('Templates: 1 of the organization (Mis plantillas).');
 }
 // Calendar demo (Fase 9): upcoming and overdue assessments; Iker sees only two tests in Progreso.
 {

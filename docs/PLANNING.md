@@ -164,11 +164,37 @@ Criterio de aceptación (§16.2): crear un plan de 12 semanas y 3 días desde pl
 | NOTAS | texto | `notesForClient` (las ve el cliente) |
 
 - Intérpretes puros en el dominio (`planning/grid.ts`: `parseCell`, `formatCell`), con pruebas de ida y vuelta (propiedades). Los rangos los valida `validatePrescription`, también en el servidor.
+- **Ratón**: un clic selecciona la celda (escribir sustituye su valor, como en una hoja de cálculo); un segundo clic o doble clic la modifica.
 - **Teclado**: flechas, Intro/F2 o escribir para editar, Intro guarda y baja, Tab guarda y pasa a la derecha, Esc cancela, Supr borra, Alt+↑/↓ mueve la fila, Mayús+Espacio selecciona, Ctrl+A todas, Ctrl+C copia filas (texto con tabuladores, se pega en Excel), Ctrl+V pega, Ctrl+Z deshace. Tab desde la última celda de la fila lleva a «⋯ Más opciones» de esa fila; la tabla no captura las teclas de los botones, enlaces y campos del panel de opciones.
 - **Autoguardado por celda con bloqueo optimista** (`expectedVersion` de la fila). Los cambios de una fila se envían en orden. Si otra persona cambió la fila, el cambio no se aplica: se avisa, se recarga la fila y se puede volver a escribir. No se pierde nada sin avisar.
 - **Pegar desde Excel o Google Sheets** (`parseSessionTsv`): con o sin fila de títulos (EJERCICIO, SERIES, REPS, CARGA, RIR, RPE, DESC., NOTAS; también «Carga (kg)», «Descanso», «Observaciones»). Vista previa con los ejercicios reconocidos por nombre (`exerciseNameMatcher`: exacto sin tildes ni mayúsculas, alias, o el claramente más parecido; si hay duda, el entrenador elige). Se añaden todas las filas en una transacción (`addSessionExercises`).
 - **Deshacer**: cambios de celda, filas añadidas, pegadas o duplicadas y movimientos. Quitar filas pide confirmación.
 - Pendiente: tarjetas por ejercicio en el móvil (hoy la tabla se desplaza en horizontal) y sugerencias del motor dentro de la celda.
+
+## 6 ter. Biblioteca de plantillas (reestructuración, fase 3)
+
+> Diseño en `UX_FLOW.md` §3 y `IMPLEMENTATION_ROADMAP.md` (fase 3). Decisiones A17–A20 en `PRODUCT_ARCHITECTURE.md`.
+
+**Plantillas** (menú principal) es la biblioteca: las de la plataforma (solo lectura) y las del centro («Mis plantillas»), compartidas por su equipo.
+
+- **Filtros** (`listPlanTemplates`, `GET /plan-templates`): texto (sin tildes ni mayúsculas), perfil, nivel 1–3, días por semana, población, tipo (entrenamiento · reducción de factores de riesgo · readaptación), origen y archivadas. Solo se leen los metadatos, nunca el contenido.
+- **Para un cliente** (`?client=`): primero las que encajan con su perfil (8 puntos), su nivel (4; uno adyacente, 1), sus días (3) y su material (2); a igualdad, las del centro. «Solo con su material» deja fuera las que necesitan algo que no tiene; si no, se avisa de lo que falta («se puede adaptar»).
+- **Material**: se calcula solo, a partir del material no opcional de sus ejercicios (`equipment_slugs`); nadie lo escribe a mano.
+
+**Usar una plantilla** (Programa → «Usar plantilla» → elegir → Crear: 3 clics y la fecha):
+- crea un **plan independiente**: cambiar el plan no toca la plantilla, ni al revés;
+- la **duración se elige al usarla** (3, 6, 9 o 12 meses, decisión A17): `fitToDuration` toma las fases en orden y, si la plantilla es más corta, las repite como nuevos ciclos («ciclo 2»). El último mesociclo se acorta para encajar, nunca por debajo de 3 semanas (el plan puede acabar hasta 2 semanas antes del final de la duración). Si no se elige otra duración, la plantilla se usa tal cual;
+- las plantillas guardadas desde un plan real (con semanas explícitas) pueden acortarse, no alargarse;
+- el plan guarda la plantilla y la **versión** de la que salió (`based_on_template_id`, `based_on_template_version`).
+
+**Mis plantillas**:
+- **Crear desde cero**: nombre, sesiones por semana, perfil y nivel → una fase con mesociclos de 4 semanas y las sesiones A, B, C… vacías, listas para rellenar en la tabla;
+- **Duplicar** (también una de la plataforma: «Duplicar en mis plantillas») crea una copia independiente;
+- **Editar** en la misma tabla que una sesión (decisión A19): mismas teclas, pegar desde Excel, duplicar, mover, quitar y deshacer. La plantilla se guarda entera con su versión (bloqueo optimista): si otra persona la guardó entretanto, no se pisa nada, se avisa y se recarga;
+- **Versiones** (decisión A18): cada edición guardada es una versión (`plan_template_versions`). Las ediciones seguidas de la misma persona (menos de 30 minutos) se agrupan en una, salvo que ya se haya creado un plan con ella (`used_at`): una versión usada no cambia nunca. **Restaurar** una versión anterior crea una versión nueva con su contenido: no se pierde nada;
+- **Archivar** la oculta de la biblioteca sin borrarla (los planes siguen apuntando a ella); se puede recuperar. Una plantilla archivada no se edita ni se usa.
+
+**Seguridad**: permiso `plans:templates`; las de otra organización no existen para ti (404). RLS de catálogo en `plan_template_versions`, cuya organización copia un disparador desde la plantilla (`inherit_org`), así que una versión nunca puede quedar en otra organización. Todo cambio queda auditado.
 
 ## 7. Permisos
 

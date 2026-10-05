@@ -146,6 +146,7 @@ CREATE POLICY tca_delete ON trainer_client_assignments FOR DELETE USING (organiz
 
   // ── Planning ────────────────────────────────────────────────────────────────
   plan_templates: { kind: 'catalog' },
+  plan_template_versions: { kind: 'catalog' },
   training_plans: { kind: 'client_optional', clientWrite: false, clientRead: true },
   plan_revisions: { kind: 'client_optional', clientWrite: false, clientRead: false },
   phases: { kind: 'client_optional', clientWrite: false, clientRead: true },
@@ -235,6 +236,14 @@ export const INHERIT_SCOPE: Record<string, [string, string]> = {
   exercise_feedback: ['sessions', 'session_id'],
   assessment_results: ['assessments', 'assessment_id'],
   import_rows: ['import_jobs', 'job_id'],
+};
+
+/**
+ * Children of a catalogue row: copy organization_id from the parent, NULL included (global
+ * catalogue rows have no organization). [parent table, fk column].
+ */
+export const INHERIT_ORG: Record<string, [string, string]> = {
+  plan_template_versions: ['plan_templates', 'template_id'],
 };
 
 /** Tables with organization_id + client_id whose pair must be consistent (client belongs to org). */
