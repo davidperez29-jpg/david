@@ -33,6 +33,7 @@ export const RLS_POLICIES: Record<string, PolicyKind> = {
   role_permissions: { kind: 'global_readonly' },
   login_attempts: { kind: 'system_only' },
   api_rate_limits: { kind: 'system_only' },
+  scheduled_job_runs: { kind: 'system_only' },
   password_reset_tokens: { kind: 'system_only' },
   organizations: {
     kind: 'custom',

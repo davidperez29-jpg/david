@@ -19,6 +19,8 @@ describe('session execution rules', () => {
     expect(pickToday(s, '2026-10-07')).toEqual({ session: s[1], isToday: true });
     expect(pickToday(s, '2026-10-08')).toEqual({ session: s[2], isToday: false });
     expect(pickToday(s, '2026-10-10').session).toBeNull();
+    // Today's session already done: the next pending one, not the finished one.
+    expect(pickToday(s, '2026-10-05')).toEqual({ session: s[1], isToday: false });
   });
   it('preloads the prescribed load, else the last one used', () => {
     const p = {

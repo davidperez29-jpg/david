@@ -4,7 +4,8 @@ import { login } from './helpers';
 test('client report with 11 sections and PDF; validated import; export', async ({ page }) => {
   await login(page, 'lucia.moreno@example.com');
   await page.getByRole('link', { name: 'Clientes', exact: true }).click();
-  await page.locator('main').getByRole('link', { name: /Iker/ }).first().click();
+  // The client's own link (on training days the list also shows today's sessions by name).
+  await page.locator('main').getByRole('link', { name: 'Arrieta, Iker', exact: true }).click();
   await page
     .getByRole('navigation', { name: 'Secciones del cliente' })
     .getByRole('link', { name: 'Informes', exact: true })

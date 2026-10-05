@@ -7,6 +7,7 @@ import { schema } from '@tp/db';
 import {
   addDays,
   adherence,
+  dueSessions,
   DomainError,
   localDate,
   milestones,
@@ -356,11 +357,7 @@ async function clientDashboard_(ctx: RequestContext, clientId: string) {
     .filter((s) => s.published || s.attendance)
     .map((s) => ({ date: s.date!, status: s.attendance, id: s.id }));
   const streak = sessionStreak(past, today);
-  const a28 = adherence(
-    past.filter((s) => s.date <= today),
-    addDays(today, -27),
-    today,
-  );
+  const a28 = adherence(dueSessions(past, today), addDays(today, -27), today);
   const [c] = await ctx.db
     .select({ progressTestIds: clients.progressTestIds })
     .from(clients)

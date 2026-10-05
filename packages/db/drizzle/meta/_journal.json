@@ -232,6 +232,20 @@
       "when": 1791133821402,
       "tag": "0032_rls_v10",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1791194860377,
+      "tag": "0033_scheduled_job_runs",
+      "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1791194861959,
+      "tag": "0034_rls_v11",
+      "breakpoints": true
     }
   ]
 }

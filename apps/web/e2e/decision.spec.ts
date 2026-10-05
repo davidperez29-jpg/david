@@ -6,7 +6,8 @@ test('trainer reviews the footballer’s needs with their “why”, decides and
 }) => {
   await login(page, 'lucia.moreno@example.com');
   await page.getByRole('link', { name: 'Clientes', exact: true }).click();
-  await page.locator('main').getByRole('link', { name: /Iker/ }).first().click();
+  // The client's own link (on training days the list also shows today's sessions by name).
+  await page.locator('main').getByRole('link', { name: 'Arrieta, Iker', exact: true }).click();
   await page.getByRole('link', { name: 'Necesidades', exact: true }).click();
 
   // Demo: centre thresholds for footballers (1.5 × BW) and a recent 1RM of 98 kg at 75 kg.

@@ -80,7 +80,7 @@ jobs:
   image:
     # The production image builds (Dockerfile, docs/OPERATIONS.md); it is not pushed anywhere.
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v3
@@ -88,3 +88,8 @@ jobs:
         run: |
           docker build --target web -t training-platform:ci .
           docker build --target jobs -t training-platform-jobs:ci .
+      # The image Render builds (render.yaml), started twice on an empty, non-superuser database.
+      - name: Build the online deployment image and smoke-test it
+        run: |
+          docker build -f Dockerfile.render -t training-platform-render:ci .
+          deploy/smoke-test.sh training-platform-render:ci

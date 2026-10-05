@@ -9,7 +9,8 @@ test('client logs a session offline and it syncs once, without duplicates', asyn
   context,
 }) => {
   await login(page, 'marcos.villalba@example.com');
-  await page.getByRole('link', { name: /^(Empezar|Ver sesión)$/ }).click();
+  // «Empezar ▶» on a training day, «Ver sesión» otherwise.
+  await page.getByRole('link', { name: /^(Empezar|Ver sesión)/ }).click();
   await expect(page).toHaveURL(/\/me\/sesion\//);
   const sessionId = page.url().split('/').pop()!;
   await expect(page.getByRole('status').filter({ hasText: 'Sincronizado' })).toBeVisible();

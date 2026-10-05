@@ -2,6 +2,24 @@
 
 Formato: fecha · cambio · motivo · archivos · impacto.
 
+## 2026-10-05 — Reestructuración, fase 0: despliegue online
+
+- **Cambio:** la aplicación se puede publicar en Render (UE, Frankfurt) sin comandos (`DEPLOY_RENDER.md`).
+  - **Incluye:**
+    - `render.yaml` con web y PostgreSQL en Frankfurt; la clave de cifrado la genera Render;
+    - el email y la contraseña del primer administrador se piden en un formulario;
+    - `Dockerfile.render` (imagen todo en uno) y `deploy/start.sh`, idempotente: migraciones → catálogos → administrador → datos de ejemplo opcionales → servidor;
+    - trabajos diarios dentro de la app (`DAILY_JOBS=in-app`, `scheduled_job_runs`, migraciones `0033`–`0034`);
+    - aviso en el inicio de sesión si falta el administrador;
+    - CI arranca la imagen dos veces sobre una base vacía con propietario sin privilegios de superusuario (`deploy/smoke-test.sh`).
+  - **Motivo:** el usuario no puede usar Docker ni PowerShell; el producto final es una URL.
+- **Cambio:** corrección de la adherencia.
+  - **Error:** una sesión programada para **hoy** y aún sin hacer contaba como no realizada. Bajaba la adherencia y podía disparar una alerta por la mañana, antes de que el cliente entrenara.
+  - **Corrección:** ahora cuenta solo cuando hay registro (`dueSessions`).
+  - Además, «Hoy» en la app del cliente pasa a la siguiente sesión pendiente cuando la de hoy ya está hecha.
+  - **Cómo se encontró:** al ejecutar los tests en lunes, día con sesión. Se arreglaron también tests que dependían del día de la semana.
+- **Cambio:** el contrato de respuestas trata los mapas por fecha o id (p. ej. totales por día) como mapas, no como campos.
+
 ## 2026-10-05 — Reestructuración: auditoría y diseño
 
 - **Cambio:** auditoría del proyecto y diseño de la reestructuración.

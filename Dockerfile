@@ -1,6 +1,8 @@
 # Production images (docs/OPERATIONS.md).
-# - target `web` (default): the self-contained Next.js server only (no dev dependencies).
+# - target `web`: the self-contained Next.js server only (no dev dependencies).
 # - target `jobs`: the whole workspace, for migrations, catalogues and the daily jobs.
+# - target `platform` (default, last stage): web + jobs in one image for managed hosts that build
+#   a single image and have no separate job runner (Render: render.yaml, docs/DEPLOY_RENDER.md).
 # Stateless: everything lives in PostgreSQL; uploaded images in object storage (S3-compatible) or
 # FILE_STORAGE_DIR.
 FROM node:22-bookworm-slim AS base
@@ -37,3 +39,17 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
   CMD node -e "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 # Plain node at runtime: nothing is downloaded when the container starts.
 CMD ["node", "apps/web/server.js"]
+
+# All-in-one image (default target): migrates, seeds, creates the first administrator and serves.
+FROM base AS platform
+ENV NODE_ENV=production HOSTNAME=0.0.0.0 PORT=3000 NEXT_TELEMETRY_DISABLED=1
+COPY --from=build --chown=node:node /app /app
+RUN cp -r /app/apps/web/.next/static /app/apps/web/.next/standalone/apps/web/.next/static \
+ && cp -r /app/apps/web/public /app/apps/web/.next/standalone/apps/web/public \
+ && mkdir -p /data/files && chown node:node /data/files
+ENV FILE_STORAGE_DIR=/data/files
+USER node
+EXPOSE 3000
+HEALTHCHECK --interval=30s --timeout=5s --start-period=180s --retries=3 \
+  CMD node -e "fetch('http://127.0.0.1:'+(process.env.PORT||3000)+'/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+CMD ["sh", "/app/deploy/start.sh"]

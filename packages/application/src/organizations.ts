@@ -62,3 +62,12 @@ export async function bootstrapOrganization(
     return { organizationId: org!.id, adminUserId: user!.id, trainerId };
   });
 }
+
+/**
+ * Whether the deployment already has an organization (system query, no personal data). The login
+ * page uses it to explain a first-run deployment whose administrator could not be created.
+ */
+export async function hasAnyOrganization(db: Database): Promise<boolean> {
+  const [row] = await db.select({ id: organizations.id }).from(organizations).limit(1);
+  return !!row;
+}

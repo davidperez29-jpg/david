@@ -34,8 +34,8 @@ export function pickToday(
   today: string,
 ): { session: DaySession | null; isToday: boolean } {
   const dated = sessions.filter((s) => s.date).sort((a, b) => (a.date! < b.date! ? -1 : 1));
-  const t =
-    dated.find((s) => s.date === today && !s.attended) ?? dated.find((s) => s.date === today);
+  // Today's session while it is pending; once done, the next pending one.
+  const t = dated.find((s) => s.date === today && !s.attended);
   if (t) return { session: t, isToday: true };
   const next = dated.find((s) => s.date! > today && !s.attended);
   return { session: next ?? null, isToday: false };

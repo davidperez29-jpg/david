@@ -6,7 +6,8 @@ test('trainer accepts a load progression, undoes it and turns the plan proposal 
 }) => {
   await login(page, 'lucia.moreno@example.com');
   await page.getByRole('link', { name: 'Clientes', exact: true }).click();
-  await page.locator('main').getByRole('link', { name: /Iker/ }).first().click();
+  // The client's own link (on training days the list also shows today's sessions by name).
+  await page.locator('main').getByRole('link', { name: 'Arrieta, Iker', exact: true }).click();
 
   // Seguimiento points to the pending adjustments (they never change the plan on their own).
   await page
@@ -17,7 +18,8 @@ test('trainer accepts a load progression, undoes it and turns the plan proposal 
   const card = page.locator('section').filter({ has: page.locator('#ajustes') });
   const item = card
     .locator('li')
-    .filter({ hasText: /Sentadilla trasera con barra: subir de 80 kg a 82,5 kg/ })
+    // The loads depend on which week comes next on the day of the run (e.g. 77,5 → 80 or 80 → 82,5).
+    .filter({ hasText: /Sentadilla trasera con barra: subir de [\d,]+ kg a [\d,]+ kg/ })
     .first();
   await expect(item).toBeVisible();
   await item.getByText('¿Por qué?').click();

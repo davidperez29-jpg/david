@@ -210,17 +210,25 @@ describe('rule configuration', () => {
         ],
       }),
     ).rejects.toMatchObject({ code: 'validation' });
-    // Client A: 8 of 12 sessions in the last 28 days (66,7 %) → yellow with the defaults.
+    // Client A: 8 sessions done of the 11–12 in the last 28 days (the count depends on the
+    // weekday of the run): 66,7–72,7 % → yellow with the defaults.
     await refreshClientAlerts(o.admin, o.clientA);
     const adh = async () =>
       (await listAlerts(o.admin, { clientId: o.clientA, status: 'live' })).find(
         (x) => x.type === 'adherence_low',
       );
     expect((await adh())?.severity).toBe('yellow');
-    expect((await adh())?.message).toContain('66,7 %');
+    const [, pct, done, planned] = /Adherencia del ([\d,]+) % .*\((\d+) de (\d+) sesiones\)/.exec(
+      (await adh())!.message,
+    )!;
+    expect(Number(done)).toBe(8);
+    expect([11, 12]).toContain(Number(planned));
+    expect(pct).toBe(
+      (Math.round((Number(done) / Number(planned)) * 1000) / 10).toLocaleString('es-ES'),
+    );
     const v = await updateMonitoringRules(o.admin, {
       rules: [
-        { key: 'adherence_low', enabled: true, parameters: { yellowBelow: 90, redBelow: 70 } },
+        { key: 'adherence_low', enabled: true, parameters: { yellowBelow: 90, redBelow: 75 } },
       ],
       notes: 'Más exigentes con la constancia',
     });
@@ -231,8 +239,8 @@ describe('rule configuration', () => {
       after.rules
         .find((r) => r.key === 'adherence_low')!
         .parameters.find((p) => p.key === 'redBelow')!.value,
-    ).toBe(70);
-    // Same alert, escalated in place.
+    ).toBe(75);
+    // Same alert, escalated in place (66,7–72,7 % is below the new 75 %).
     await refreshClientAlerts(o.admin, o.clientA);
     expect((await adh())?.severity).toBe('red');
     expect(

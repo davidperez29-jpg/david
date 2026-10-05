@@ -22,7 +22,10 @@
 | `DATABASE_URL` | Sí | Conexión. El usuario debe ser propietario de las tablas y miembro de `app_runtime`: la app cambia a ese rol (sin `BYPASSRLS`) en cada transacción |
 | `APP_ENCRYPTION_KEY` | Sí | 32 bytes en base64. Cifra el teléfono, el texto de salud y los secretos TOTP |
 | `APP_ENCRYPTION_KEYS_PREVIOUS` | No | Claves anteriores durante una rotación (§5) |
-| `APP_BASE_URL` | Sí | URL pública: enlaces de invitación y recuperación |
+| `APP_BASE_URL` | Sí (en Render no: usa `RENDER_EXTERNAL_URL`) | URL pública: enlaces de invitación y recuperación |
+| `ADMIN_EMAIL` · `ADMIN_PASSWORD` · `ADMIN_NAME` · `ORG_NAME` | Solo en la imagen todo en uno | Primer administrador y su organización; se crean una vez, si no existen. `REQUIRE_ADMIN_2FA=false` desactiva el 2FA obligatorio de esa organización |
+| `DAILY_JOBS` | No | `in-app`: trabajos diarios dentro de la app (sin *cron*) |
+| `DEMO_DATA` | No | `true`: datos de ejemplo; sus usuarios usan la contraseña del administrador |
 | `FILE_STORAGE_DIR` | No | `/data/files` en la imagen; solo si no hay `S3_BUCKET` |
 | `S3_ENDPOINT` · `S3_REGION` · `S3_BUCKET` · `S3_ACCESS_KEY_ID` · `S3_SECRET_ACCESS_KEY` · `S3_SSE` | No | Almacenamiento de objetos. Firma AWS SigV4 con URL de tipo *path* (AWS, Scaleway, OVH, MinIO…). Bucket **privado**, en la UE, sin versionado o con caducidad corta de versiones antiguas, para que una supresión RGPD borre de verdad |
 | `PWNED_PASSWORDS_CHECK` | No | `on` = rechazar contraseñas filtradas (k-anonimato) |
@@ -34,6 +37,14 @@
 Los secretos van en el gestor de secretos del proveedor, nunca en el repositorio ni en la imagen *[Completar: vault o KMS]*.
 
 ## 3. Desplegar
+
+**Opción recomendada: Render (UE), sin comandos.** Guía en `DEPLOY_RENDER.md`.
+- `render.yaml` crea la web y PostgreSQL en Frankfurt.
+- `Dockerfile.render` es una imagen todo en uno: al arrancar migra, carga catálogos, crea el primer administrador desde `ADMIN_EMAIL`/`ADMIN_PASSWORD` y sirve la aplicación (`deploy/start.sh`).
+- Con `DAILY_JOBS=in-app`, los trabajos diarios se ejecutan dentro de la app, una vez al día (`scheduled_job_runs`).
+- CI la arranca dos veces sobre una base vacía con un propietario sin privilegios de superusuario (`deploy/smoke-test.sh`).
+
+**Con contenedores propios** (servidor propio, otro proveedor):
 
 ```bash
 docker build --target web  -t training-platform:$VERSION .

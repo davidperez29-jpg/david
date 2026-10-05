@@ -35,6 +35,18 @@ export interface Adherence {
 const round1 = (x: number) => Math.round(x * 10) / 10;
 
 /**
+ * Sessions that already count for adherence on `today`: every earlier one, and today's only once
+ * something was recorded. A session scheduled for today and not done yet is still pending: counting
+ * it would lower adherence (and could fire an alert) before the client had the chance to train.
+ */
+export function dueSessions<T extends { date: string; status: AttendanceStatus | null }>(
+  sessions: T[],
+  today: string,
+): T[] {
+  return sessions.filter((s) => s.date < today || (s.date === today && s.status != null));
+}
+
+/**
  * Adherence over [from, to] (inclusive). Rescheduled sessions and sessions cancelled by the
  * trainer are not counted as planned. Example from the specification: 24 planned, 21 done →
  * 87.5 %.

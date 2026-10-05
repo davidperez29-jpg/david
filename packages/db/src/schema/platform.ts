@@ -2,11 +2,13 @@ import { sql } from 'drizzle-orm';
 import {
   bigserial,
   check,
+  date,
   index,
   integer,
   jsonb,
   pgEnum,
   pgTable,
+  primaryKey,
   text,
   timestamp,
   unique,
@@ -188,4 +190,20 @@ export const externalMeasurements = pgTable(
     index('external_measurements_client_idx').on(t.clientId, t.type, t.measuredAt),
     unique('external_measurements_dedupe_uq').on(t.source, t.externalId),
   ],
+);
+
+/**
+ * Daily jobs run inside the app (DAILY_JOBS=in-app, e.g. on a managed host without a paid cron):
+ * one row per job and day, so concurrent instances or restarts never run the same day twice.
+ */
+export const scheduledJobRuns = pgTable(
+  'scheduled_job_runs',
+  {
+    job: text('job').notNull(),
+    runOn: date('run_on').notNull(),
+    startedAt: timestamp('started_at', { withTimezone: true }).notNull().defaultNow(),
+    finishedAt: timestamp('finished_at', { withTimezone: true }),
+    result: jsonb('result'),
+  },
+  (t) => [primaryKey({ columns: [t.job, t.runOn] })],
 );

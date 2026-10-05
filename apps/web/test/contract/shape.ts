@@ -20,6 +20,12 @@ const OPEN_MAPS = new Set([
   'metadata',
 ]);
 
+/** Keys that are data, not fields: dates and ids (e.g. totals per day). */
+const DATA_KEY =
+  /^(\d{4}-\d{2}-\d{2}|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i;
+/** Placeholder key of a map's values in a recorded shape. */
+export const MAP_KEY = '<clave>';
+
 export function shapeOf(v: unknown, depth = 0): Shape {
   if (v === null || v === undefined) return 'null';
   if (Array.isArray(v)) {
@@ -28,6 +34,15 @@ export function shapeOf(v: unknown, depth = 0): Shape {
   }
   if (typeof v === 'object') {
     if (depth > 6) return 'object';
+    const keys = Object.keys(v as object);
+    // A map keyed by dates or ids: its keys change with the data; only its values have a shape.
+    if (keys.length && keys.every((k) => DATA_KEY.test(k)))
+      return {
+        [MAP_KEY]: keys
+          .slice(0, 5)
+          .map((k) => shapeOf((v as Record<string, unknown>)[k], depth + 1))
+          .reduce(mergeShapes),
+      };
     return Object.fromEntries(
       Object.keys(v as object)
         .sort()
@@ -74,8 +89,10 @@ export function breakingDiff(before: Shape, after: Shape, where: string, out: st
   if (isObj(before)) {
     if (!isObj(after)) return void out.push(`${where}: era un objeto`);
     for (const k of Object.keys(before))
-      if (!(k in after)) out.push(`${where}.${k}: campo eliminado`);
-      else breakingDiff(before[k]!, after[k]!, `${where}.${k}`, out);
+      if (!(k in after)) {
+        // An empty map today is not a removed field.
+        if (k !== MAP_KEY) out.push(`${where}.${k}: campo eliminado`);
+      } else breakingDiff(before[k]!, after[k]!, `${where}.${k}`, out);
     return;
   }
   if (typeof after !== 'string') return void out.push(`${where}: era ${before}`);

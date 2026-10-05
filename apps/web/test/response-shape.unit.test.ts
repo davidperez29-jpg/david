@@ -43,4 +43,16 @@ describe('response contract rules', () => {
       'r.changes: object → string',
     ]);
   });
+
+  it('maps keyed by dates or ids record the shape of their values, not their keys', () => {
+    const day = (d: string) => ({ [d]: { done: 1, planned: 2 } });
+    expect(shapeOf(day('2026-09-01'))).toEqual({
+      '<clave>': { done: 'number', planned: 'number' },
+    });
+    expect(diff(day('2026-09-01'), day('2026-10-05'))).toEqual([]);
+    expect(diff(day('2026-09-01'), {})).toEqual([]);
+    expect(diff(day('2026-09-01'), { '2026-10-05': { done: 1 } })).toEqual([
+      'r.<clave>.planned: campo eliminado',
+    ]);
+  });
 });

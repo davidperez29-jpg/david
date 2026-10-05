@@ -315,50 +315,7 @@
     ],
     "from": "string",
     "sessionTotals": {
-      "2026-09-01": "number",
-      "2026-09-02": "number",
-      "2026-09-03": "number",
-      "2026-09-04": "number",
-      "2026-09-07": "number",
-      "2026-09-08": "number",
-      "2026-09-09": "number",
-      "2026-09-10": "number",
-      "2026-09-11": "number",
-      "2026-09-14": "number",
-      "2026-09-15": "number",
-      "2026-09-16": "number",
-      "2026-09-17": "number",
-      "2026-09-18": "number",
-      "2026-09-21": "number",
-      "2026-09-22": "number",
-      "2026-09-23": "number",
-      "2026-09-24": "number",
-      "2026-09-25": "number",
-      "2026-09-28": "number",
-      "2026-09-29": "number",
-      "2026-09-30": "number",
-      "2026-10-01": "number",
-      "2026-10-02": "number",
-      "2026-10-05": "number",
-      "2026-10-06": "number",
-      "2026-10-07": "number",
-      "2026-10-08": "number",
-      "2026-10-09": "number",
-      "2026-10-12": "number",
-      "2026-10-13": "number",
-      "2026-10-14": "number",
-      "2026-10-15": "number",
-      "2026-10-16": "number",
-      "2026-10-19": "number",
-      "2026-10-20": "number",
-      "2026-10-21": "number",
-      "2026-10-22": "number",
-      "2026-10-23": "number",
-      "2026-10-26": "number",
-      "2026-10-27": "number",
-      "2026-10-28": "number",
-      "2026-10-29": "number",
-      "2026-10-30": "number"
+      "<clave>": "number"
     },
     "sessions": [
       {
@@ -762,7 +719,7 @@
     {
       "action": "string",
       "actor": "string",
-      "changes": "[object Object]|object|object|object|object|[object Object]|object|object|object|object|object",
+      "changes": "object",
       "entityType": "string",
       "id": "string",
       "occurredAt": "string",
@@ -1431,9 +1388,9 @@
       "id": "string",
       "organizationId": "string",
       "requestedBy": "string",
-      "resolvedAt": "string",
-      "resolvedBy": "string",
-      "response": "string",
+      "resolvedAt": "null",
+      "resolvedBy": "null",
+      "response": "null",
       "status": "string",
       "type": "string",
       "updatedAt": "string"
@@ -1484,8 +1441,8 @@
         "data": "object",
         "id": "string",
         "message": "string",
-        "resolutionNote": "string",
-        "resolvedAt": "string",
+        "resolutionNote": "null",
+        "resolvedAt": "null",
         "resolvedBy": "null",
         "ruleKey": "string",
         "ruleSetVersion": "null",
@@ -1610,13 +1567,13 @@
         "bandTension": "null",
         "blockId": "string",
         "chainLoadKg": "null",
-        "coachNotes": "string",
+        "coachNotes": "null",
         "contacts": "null",
         "createdAt": "string",
         "createdBy": "string",
         "derived": "boolean",
         "distanceM": "null",
-        "durationS": "number",
+        "durationS": "null",
         "effortCharacter": "null",
         "exerciseId": "string",
         "extra": "null",
@@ -1949,9 +1906,9 @@
         "dueOn": "string",
         "id": "string",
         "requestedBy": "string",
-        "resolvedAt": "string",
-        "resolvedBy": "string",
-        "response": "string",
+        "resolvedAt": "null",
+        "resolvedBy": "null",
+        "response": "null",
         "status": "string",
         "type": "string",
         "updatedAt": "string"
@@ -2046,7 +2003,7 @@
       }
     ],
     "lastSession": {
-      "comment": "null",
+      "comment": "string",
       "date": "string",
       "durationMin": "number",
       "fatigue": "number",
@@ -2199,7 +2156,7 @@
   "GET exercises/[exerciseId]": {
     "altNames": [],
     "axialLoad": "null",
-    "bodyRegion": "string",
+    "bodyRegion": "null",
     "categories": [
       {
         "id": "string",
@@ -2249,16 +2206,12 @@
       }
     ],
     "methodIds": [],
-    "movementPatternId": "string",
+    "movementPatternId": "null",
     "muscles": [],
     "name": "string",
     "needsReview": "boolean",
     "organizationId": "string",
-    "pattern": {
-      "family": "string",
-      "id": "string",
-      "name": "string"
-    },
+    "pattern": "null",
     "planes": [],
     "prescriptionProfileId": "string",
     "profile": {
@@ -2813,9 +2766,9 @@
       "organizationId": "string",
       "overdue": "boolean",
       "requestedBy": "string",
-      "resolvedAt": "string",
-      "resolvedBy": "string",
-      "response": "string",
+      "resolvedAt": "null",
+      "resolvedBy": "null",
+      "response": "null",
       "status": "string",
       "type": "string",
       "updatedAt": "string"
@@ -2910,7 +2863,19 @@
   "GET reports/[id]/download": "file:application/pdf",
   "GET review-inbox": {
     "flaggedLogs": [],
-    "sessionsToday": [],
+    "sessionsToday": [
+      {
+        "attendance": "null",
+        "clientId": "string",
+        "dayLabel": "string",
+        "firstName": "string",
+        "id": "string",
+        "lastName": "string",
+        "published": "boolean",
+        "time": "null",
+        "title": "string"
+      }
+    ],
     "substitutions": [
       {
         "clientId": "string",
@@ -3271,7 +3236,7 @@
     "comparison": "string",
     "corrections": "null",
     "createdAt": "string",
-    "createdBy": "string",
+    "createdBy": "null",
     "doi": "string",
     "findings": [
       {
@@ -3318,24 +3283,14 @@
     "issue": "string",
     "journal": "string",
     "limitations": "string",
-    "organizationId": "string",
+    "organizationId": "null",
     "outcomesMeasured": "string",
     "pages": "string",
     "pmcid": "null",
     "pmid": "string",
     "populationSummary": "string",
     "practicalApplication": "string",
-    "qa": [
-      {
-        "code": "string",
-        "message": "string",
-        "severity": "string",
-        "target": {
-          "key": "string",
-          "type": "string"
-        }
-      }
-    ],
+    "qa": [],
     "resultsSummary": "string",
     "reviews": [],
     "sex": "string",
@@ -3346,11 +3301,11 @@
     "trainingStatus": "string",
     "updatedAt": "string",
     "updatedBy": "null",
-    "url": "string",
+    "url": "null",
     "verificationMethod": "string",
     "verificationStatus": "string",
     "verifiedAt": "string",
-    "verifiedBy": "string",
+    "verifiedBy": "null",
     "version": "number",
     "volume": "string",
     "year": "number"

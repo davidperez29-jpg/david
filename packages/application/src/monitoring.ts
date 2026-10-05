@@ -17,6 +17,7 @@ import { schema, type Database } from '@tp/db';
 import {
   addDays,
   adherence,
+  dueSessions,
   DEFAULT_DECISION_RULES,
   DomainError,
   evaluateAlerts,
@@ -759,7 +760,7 @@ async function clientMonitoring_(ctx: RequestContext, clientId: string) {
   const today = localDate(ctx.now());
   const from = addDays(today, -7 * 12 + 1);
   const ses = await monitoredSessions(ctx.db as Database, clientId, from, addDays(today, 6));
-  const past = ses.filter((s) => s.date <= today);
+  const past = dueSessions(ses, today);
   const adh = (days: number) => adherence(past, addDays(today, -(days - 1)), today);
   const weeks = weeklyLoad(
     past.map((s) => ({
@@ -848,7 +849,11 @@ async function monitoringOverview_(ctx: RequestContext) {
   const today = localDate(ctx.now());
   const from = addDays(today, -27);
   const rows = await ctx.db
-    .select({ clientId: sessions.clientId, status: attendance.status })
+    .select({
+      clientId: sessions.clientId,
+      date: sessions.scheduledDate,
+      status: attendance.status,
+    })
     .from(sessions)
     .innerJoin(microcycles, eq(microcycles.id, sessions.microcycleId))
     .innerJoin(mesocycles, eq(mesocycles.id, microcycles.mesocycleId))
@@ -864,8 +869,11 @@ async function monitoringOverview_(ctx: RequestContext) {
       ),
     );
   const a = adherence(
-    rows.map((r, i) => ({ id: String(i), date: today, status: r.status })),
-    today,
+    dueSessions(
+      rows.map((r, i) => ({ id: String(i), date: r.date!, status: r.status })),
+      today,
+    ),
+    from,
     today,
   );
   const counts = await ctx.db

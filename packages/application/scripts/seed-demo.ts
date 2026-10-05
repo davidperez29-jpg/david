@@ -64,7 +64,7 @@ const ctx: AppContext = {
   keys: keyRingFromBase64(process.env.APP_ENCRYPTION_KEY),
   mailer: new MemoryMailer(),
   storage: new MemoryStorage(),
-  baseUrl: process.env.APP_BASE_URL ?? 'http://localhost:3000',
+  baseUrl: process.env.APP_BASE_URL ?? process.env.RENDER_EXTERNAL_URL ?? 'http://localhost:3000',
   now: () => new Date(),
 };
 const as = async (userId: string): Promise<RequestContext> => ({

@@ -6,7 +6,13 @@
  */
 import { REFERRAL_TEXT } from '../clients/health';
 import { addDays } from '../planning/structure';
-import { adherence, wellnessScore, type AttendanceStatus, type ReadinessEntry } from './metrics';
+import {
+  adherence,
+  dueSessions,
+  wellnessScore,
+  type AttendanceStatus,
+  type ReadinessEntry,
+} from './metrics';
 
 export type AlertSeverity = 'green' | 'yellow' | 'red';
 
@@ -224,11 +230,7 @@ type Evaluator = (i: MonitoringInput, p: Record<string, number>) => AlertCandida
 const EVALUATORS: Record<string, Evaluator> = {
   adherence_low(i, p) {
     const from = addDays(i.today, -(p.windowDays! - 1));
-    const a = adherence(
-      i.sessions.filter((s) => s.date <= i.today),
-      from,
-      i.today,
-    );
+    const a = adherence(dueSessions(i.sessions, i.today), from, i.today);
     if (a.percent == null || a.planned < p.minPlanned!) return [];
     const severity: AlertSeverity | null =
       a.percent < p.redBelow! ? 'red' : a.percent < p.yellowBelow! ? 'yellow' : null;

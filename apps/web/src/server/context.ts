@@ -53,7 +53,8 @@ export function baseContext(meta: { ip?: string | null; requestId?: string } = {
     keys: s.keys,
     mailer: s.mailer,
     storage: s.storage,
-    baseUrl: process.env.APP_BASE_URL ?? 'http://localhost:3000',
+    // On Render the public URL is known without configuration (docs/DEPLOY_RENDER.md).
+    baseUrl: process.env.APP_BASE_URL ?? process.env.RENDER_EXTERNAL_URL ?? 'http://localhost:3000',
     now: () => new Date(),
     requestId: meta.requestId ?? randomUUID(),
     ipHash: meta.ip ? keyedHash(s.keys.hashKey, meta.ip) : null,
