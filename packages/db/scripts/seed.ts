@@ -18,4 +18,6 @@ console.log(
 );
 for (const e of evidence.qaErrors) console.warn(`  QA ${e.code}: ${e.target.key} — ${e.message}`);
 await close();
-console.log('Catalogue seeded (roles, permissions, goals, sports, equipment).');
+console.log(
+  'Catalogue seeded (roles, permissions, goals, sports, equipment, programming profiles).',
+);

@@ -11,14 +11,7 @@ export interface ProfileDraft {
   location: string;
   notes: string;
 }
-export const emptyProfile: ProfileDraft = {
-  experienceLevel: 'none',
-  yearsTraining: '',
-  sessionsPerWeek: '',
-  sessionDurationMin: '',
-  location: '',
-  notes: '',
-};
+
 const opts = (o: Record<string, string>) =>
   Object.entries(o).map(([value, label]) => ({ value, label }));
 
@@ -88,7 +81,7 @@ export function ProfileFields({
         />
       </Field>
       <div className="md:col-span-3">
-        <Field label="Notas de entrenamiento" htmlFor="notes">
+        <Field label="Observaciones" htmlFor="notes">
           <Textarea id="notes" value={value.notes} onChange={set('notes')} />
         </Field>
       </div>

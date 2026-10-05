@@ -5,6 +5,7 @@ export * from './clients/age';
 export * from './clients/goals';
 export * from './clients/consents';
 export * from './clients/health';
+export * from './clients/levels';
 export * from './audit/diff';
 export * from './shared/errors';
 export * from './library';

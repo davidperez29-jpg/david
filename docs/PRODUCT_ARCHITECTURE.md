@@ -78,7 +78,7 @@
 | **Plantillas** | Biblioteca con filtros (objetivo, nivel, días, duración, población, material); Mis plantillas; protocolos de readaptación | Planificación (catálogo) |
 | **Ejercicios** | Biblioteca con silueta, vídeo, progresiones y referencias | Ejercicios |
 | **Tests** | Tests, baterías por objetivo, referencias normativas, grupos (equipos) | Evaluación (catálogo) |
-| Menú de usuario | Ajustes, Usuarios, Privacidad, Ciencia (consulta), Salir | Ciencia, Informes, Usuarios, Privacidad, Ajustes |
+| Menú de usuario | Calendario, Alertas, Informes (importar/exportar), Ciencia (consulta), Ajustes, Usuarios, Privacidad, Salir | Calendario, Alertas, Ciencia, Informes, Usuarios, Privacidad, Ajustes |
 
 **Ficha de cliente** (todo lo de un cliente, sin salir de ella):
 
@@ -103,7 +103,7 @@
 | Motor de programación (ajustes semana a semana) | **Oculto**; sugerencias junto a la celda | El entrenador decide en la tabla |
 | Reglas de decisión y de alertas | **Ajustes avanzados** (ADMIN) | Configuración, no trabajo diario |
 | Alertas | **Reducidas** a un punto de color en la lista de clientes y a «Revisar antes de progresar» en readaptación | Panel saturado (§42) |
-| Calendario global | **Retirado del menú**; «Entrenamientos de hoy» lo cubre | Menos puertas |
+| Calendario global | **Retirado del menú principal**: en el menú de usuario y como enlace «Ver calendario» de «Entrenamientos de hoy» | Menos puertas |
 | Ciencia (fuentes, afirmaciones, control de calidad) | **Consulta** desde el menú de usuario; las referencias aparecen junto al ejercicio, el test o el criterio que respaldan | La ciencia sirve en contexto |
 | Importación/exportación | **Dentro** de cada zona (importar clientes en Clientes, tests en Tests) | Menos puertas |
 | Modo sala, sustituciones, sincronización sin conexión | **Se conservan** | Ya son sencillos y útiles |
@@ -184,3 +184,9 @@ Un cliente **nunca** accede a otros clientes, referencias privadas, notas intern
 | A8 | Normalización en el dominio, con la dirección de mejora aplicada antes de cualquier radar | §14: nunca mezclar unidades |
 | A9 | Tabla editable propia (`DataGrid`) en lugar de una librería de hojas de cálculo | Control total de accesibilidad, permisos por celda y autoguardado con bloqueo optimista; sin dependencias pesadas |
 | A10 | Los documentos del usuario se usan como fuente de estructura, **anonimizados** (sin nombres de jugadores ni datos de salud reales) | RGPD |
+| A11 | Nombres de tabla `programming_profiles` y columnas `clients.programming_profile_id` / `programming_level` | Ya existía `client_training_profiles` (experiencia, días…): «perfil de programación» evita la confusión |
+| A12 | Las 10 dimensiones de los niveles viven en el dominio (`LEVEL_DIMENSIONS`), iguales para todos los perfiles; cada perfil solo añade su resumen por nivel | Una sola escala que se explica igual en todas partes; añadir un perfil no exige redactar 30 descriptores |
+| A13 | El perfil propone el objetivo (`default_goal_slug`) y la experiencia propone el nivel; ambos se ven y se cambian en el formulario | Alta en 2 clics sin decisiones ocultas: el entrenador tiene la última palabra |
+| A14 | «Mis clientes» muestra los clientes **accesibles** (el entrenador, los suyos; la administración, todos los del centro), primero los que requieren revisión | Mismo criterio de acceso que el resto de la aplicación (RLS); lo urgente, arriba |
+| A15 | La edad se guarda como fecha de nacimiento y se calcula | Se mantiene al día y permite elegir referencias por edad |
+| A16 | En el cribado, el resultado «apto» se muestra como «Sin derivación» | Coherencia con la regla de no mostrar nunca «apto»: el cuestionario indica si derivar, no autoriza a entrenar |

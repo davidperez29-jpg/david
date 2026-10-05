@@ -25,6 +25,7 @@ import {
   listExerciseTolerances,
   listHealthDeclarations,
   listLibraryTaxonomies,
+  listProgrammingProfiles,
   listTrainers,
 } from '@tp/application';
 import { DomainError } from '@tp/domain';
@@ -45,7 +46,7 @@ import { ExportForm, GenerateReportForm } from '@/components/reports/actions';
 import { AdjustmentsCard } from '@/components/programming/adjustments-card';
 import { GenerateProposalForm } from '@/components/programming/actions';
 import { Badge, Card, EmptyState } from '@/components/ui/card';
-import { formatDate, formatDateTime, label, LABELS } from '@/lib/labels';
+import { formatDate, formatDateTime, label } from '@/lib/labels';
 import { requireStaff } from '@/server/session';
 import {
   AccountPanel,
@@ -57,6 +58,7 @@ import {
   HealthPanel,
   HistoryPanel,
   ProfilePanel,
+  ProgrammingPanel,
   TolerancesPanel,
 } from './panels';
 import { DecisionTab } from './decision-tab';
@@ -93,21 +95,30 @@ function ClientRequestsCard({ requests }: { requests: PrivacyRequestRow[] }) {
   );
 }
 
+/**
+ * Client page (docs/UX_FLOW.md §2.2): five tabs. Readaptación joins them in phase 7 for clients
+ * with an injury case. The decision engine («necesidades») and the change history («historial»)
+ * open from links, not tabs. Old tab names still work.
+ */
 const TABS = [
-  ['resumen', 'Resumen'],
-  ['perfil', 'Perfil'],
-  ['objetivos', 'Objetivos'],
-  ['evaluaciones', 'Evaluaciones'],
-  ['necesidades', 'Necesidades'],
-  ['planificacion', 'Planificación'],
-  ['sesiones', 'Sesiones'],
+  ['programa', 'Programa'],
+  ['evaluacion', 'Evaluación'],
   ['seguimiento', 'Seguimiento'],
-  ['salud', 'Salud declarada'],
-  ['privacidad', 'Consentimientos'],
-  ['equipo', 'Entrenadores'],
   ['informes', 'Informes'],
-  ['historial', 'Historial de cambios'],
+  ['ficha', 'Ficha'],
 ] as const;
+const ALIASES: Record<string, string> = {
+  resumen: 'programa',
+  planificacion: 'programa',
+  sesiones: 'programa',
+  evaluaciones: 'evaluacion',
+  perfil: 'ficha',
+  objetivos: 'ficha',
+  salud: 'ficha',
+  privacidad: 'ficha',
+  equipo: 'ficha',
+};
+const LINKED = ['necesidades', 'historial'];
 
 export default async function ClientPage({
   params,
@@ -118,35 +129,66 @@ export default async function ClientPage({
 }) {
   const ctx = await requireStaff();
   const { clientId } = await params;
-  const { tab = 'resumen', nuevo } = await searchParams;
+  const sp = await searchParams;
+  const requested = ALIASES[sp.tab ?? ''] ?? sp.tab ?? 'programa';
+  const tab =
+    TABS.some(([k]) => k === requested) || LINKED.includes(requested) ? requested : 'programa';
   const client = await getClient(ctx, clientId).catch((e) => {
     if (e instanceof DomainError && e.code === 'not_found') notFound();
     throw e;
   });
   const isAdmin = ctx.actor.roles.includes('ADMIN');
-  const catalog = tab === 'perfil' || tab === 'objetivos' ? await listCatalog(ctx) : null;
-  const summary = tab === 'resumen' ? await clientSummary(ctx, client.id) : null;
+  const primaryGoal = client.goals.find((g) => g.isPrimary) ?? null;
+  const facts = [
+    client.programmingProfile
+      ? `${client.programmingProfile.name} · Nivel ${client.programmingLevel ?? 1}`
+      : null,
+    client.profile?.sessionsPerWeek ? `${client.profile.sessionsPerWeek} días/semana` : null,
+    primaryGoal ? `Objetivo: ${primaryGoal.name}` : null,
+    client.sport?.name ?? null,
+    client.age !== null ? `${client.age} años` : null,
+  ].filter(Boolean);
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center gap-3">
-        <Link href="/app/clients" className="text-sm text-muted hover:underline">
-          ← Clientes
+      <div className="flex flex-col gap-1">
+        <Link href="/app" className="text-sm text-muted hover:underline">
+          ← Mis clientes
         </Link>
-        <h1 className="text-2xl font-semibold">
-          {client.firstName} {client.lastName}
-        </h1>
-        <Badge tone={client.status === 'active' ? 'ok' : 'neutral'}>
-          {label('status', client.status)}
-        </Badge>
-        <Badge>{label('modality', client.modality)}</Badge>
-        {client.age !== null ? <span className="text-sm text-muted">{client.age} años</span> : null}
+        <div className="flex flex-wrap items-center gap-3">
+          <h1 className="text-2xl font-semibold">
+            {client.firstName} {client.lastName}
+          </h1>
+          <Badge tone={client.status === 'active' ? 'ok' : 'neutral'}>
+            {label('status', client.status)}
+          </Badge>
+          <Badge>{label('modality', client.modality)}</Badge>
+        </div>
+        <p className="text-sm text-muted">
+          {facts.join(' · ')}
+          {client.programmingProfile ? null : (
+            <>
+              {facts.length ? ' · ' : ''}
+              <Link href="?tab=ficha#perfil" className="text-accent underline">
+                Elegir perfil principal
+              </Link>
+            </>
+          )}
+        </p>
       </div>
       <ReferralBanner text={client.referral.text} />
-      {nuevo ? (
+      {sp.nuevo ? (
         <p className="rounded-md border border-accent p-3 text-sm">
-          Cliente creado. Registra ahora el consentimiento para datos de salud y el cribado previo a
-          la participación.
+          Cliente creado. Antes de entrenar, registra el consentimiento para datos de salud y el
+          cribado previo a la participación en{' '}
+          <a href="#salud" className="text-accent underline">
+            Salud
+          </a>
+          . Después crea su programa en{' '}
+          <Link href="?tab=programa" className="text-accent underline">
+            Programa
+          </Link>
+          .
         </p>
       ) : null}
       <nav
@@ -165,153 +207,19 @@ export default async function ClientPage({
         ))}
       </nav>
 
-      {summary ? <SummaryRow clientId={client.id} s={summary} /> : null}
+      {tab === 'programa' ? await programTab(ctx, client.id) : null}
 
-      {tab === 'resumen' ? (
-        <div className="grid gap-4 md:grid-cols-3">
-          <Card title="Objetivo">
-            {client.goals.length === 0 ? (
-              <EmptyState>Sin objetivos definidos.</EmptyState>
-            ) : (
-              <ul className="flex flex-col gap-1 text-sm">
-                {client.goals.map((g) => (
-                  <li key={g.id} className="flex items-center gap-2">
-                    {g.isPrimary ? (
-                      <Badge tone="accent">Principal</Badge>
-                    ) : (
-                      <Badge>Secundario</Badge>
-                    )}
-                    <span>{g.name}</span>
-                    {g.sportName ? <span className="text-muted">· {g.sportName}</span> : null}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </Card>
-          <Card title="Entrenamiento">
-            <dl className="grid grid-cols-2 gap-1 text-sm">
-              <dt className="text-muted">Experiencia</dt>
-              <dd>{label('experience', client.profile?.experienceLevel)}</dd>
-              <dt className="text-muted">Años</dt>
-              <dd>{client.profile?.yearsTraining ?? '—'}</dd>
-              <dt className="text-muted">Sesiones/sem</dt>
-              <dd>{client.profile?.sessionsPerWeek ?? '—'}</dd>
-              <dt className="text-muted">Duración</dt>
-              <dd>
-                {client.profile?.sessionDurationMin
-                  ? `${client.profile.sessionDurationMin} min`
-                  : '—'}
-              </dd>
-              <dt className="text-muted">Días</dt>
-              <dd>
-                {client.availability
-                  .map((a) => LABELS.weekday[a.weekday]?.slice(0, 3))
-                  .join(', ') || '—'}
-              </dd>
-            </dl>
-          </Card>
-          <Card title="Accesos rápidos">
-            <ul className="flex flex-col gap-1 text-sm">
-              <li>
-                <Link href="?tab=seguimiento" className="text-accent underline">
-                  Seguimiento: adherencia, carga y alertas
-                </Link>
-              </li>
-              <li>
-                <Link href="?tab=sesiones" className="text-accent underline">
-                  Sesiones registradas
-                </Link>
-              </li>
-              <li>
-                <Link href={`/app/calendar?cliente=${client.id}`} className="text-accent underline">
-                  Calendario del cliente
-                </Link>
-              </li>
-            </ul>
-          </Card>
-        </div>
-      ) : null}
-
-      {tab === 'perfil' && catalog ? (
-        <div className="flex flex-col gap-4">
-          <BasicsPanel client={client} />
-          <ProfilePanel client={client} catalog={catalog} />
-          <AccountPanel clientId={client.id} hasAccount={client.hasAccount} email={client.email} />
-          <ArchivePanel clientId={client.id} archived={client.status === 'archived'} />
-        </div>
-      ) : null}
-
-      {tab === 'objetivos' && catalog ? <GoalsPanel client={client} catalog={catalog} /> : null}
-
-      {tab === 'evaluaciones' ? await assessmentsTab(ctx, client.id, client.progressTestIds) : null}
+      {tab === 'evaluacion' ? await assessmentsTab(ctx, client.id, client.progressTestIds) : null}
 
       {tab === 'necesidades' ? (
         <DecisionTab ctx={ctx} clientId={client.id} isAdmin={isAdmin} />
       ) : null}
 
-      {tab === 'informes' ? await reportsTab(ctx, client.id) : null}
-
-      {tab === 'planificacion' ? await plansTab(ctx, client.id) : null}
-
-      {tab === 'sesiones' ? await sessionsTab(ctx, client.id) : null}
-
       {tab === 'seguimiento' ? await monitoringTab(ctx, client.id) : null}
 
-      {tab === 'salud' ? (
-        <div className="flex flex-col gap-4">
-          <HealthPanel
-            clientId={client.id}
-            data={await listHealthDeclarations(ctx, client.id)}
-            consents={await listConsents(ctx, client.id)}
-          />
-          <TolerancesPanel
-            clientId={client.id}
-            rows={await listExerciseTolerances(ctx, client.id)}
-            patterns={(await listLibraryTaxonomies(ctx)).patterns}
-            hasConsent={
-              (await listConsents(ctx, client.id)).status.find((s) => s.purpose === 'health_data')
-                ?.active ?? false
-            }
-          />
-        </div>
-      ) : null}
+      {tab === 'informes' ? await reportsTab(ctx, client.id) : null}
 
-      {tab === 'privacidad' ? (
-        <div className="flex flex-col gap-4">
-          <ConsentsPanel clientId={client.id} data={await listConsents(ctx, client.id)} />
-          {isAdmin ? (
-            <>
-              <ClientRequestsCard requests={await listClientPrivacyRequests(ctx, client.id)} />
-              <SubjectRightsPanel
-                clientId={client.id}
-                fullName={`${client.firstName} ${client.lastName}`}
-                anonymized={client.anonymizedAt != null}
-              />
-            </>
-          ) : null}
-        </div>
-      ) : null}
-
-      {tab === 'equipo' ? (
-        <div className="flex flex-col gap-4">
-          <AssignmentsPanel
-            clientId={client.id}
-            assignments={client.assignments}
-            trainers={isAdmin ? await listTrainers(ctx) : []}
-            canManage={isAdmin}
-          />
-          <HistoryPanel
-            clientId={client.id}
-            history={client.history.map((h) => ({
-              id: h.id,
-              kind: h.kind,
-              periodStart: h.periodStart,
-              periodEnd: h.periodEnd,
-              description: h.description,
-            }))}
-          />
-        </div>
-      ) : null}
+      {tab === 'ficha' ? await fichaTab(ctx, client, isAdmin) : null}
 
       {tab === 'historial' ? (
         <Card title="Historial de cambios">
@@ -343,6 +251,107 @@ export default async function ClientPage({
         </Card>
       ) : null}
       <p className="text-xs text-muted">Alta: {formatDate(client.joinedAt)}</p>
+    </div>
+  );
+}
+
+type Ctx = Awaited<ReturnType<typeof requireStaff>>;
+type Client = Awaited<ReturnType<typeof getClient>>;
+
+const FICHA_SECTIONS = [
+  ['perfil', 'Perfil y nivel'],
+  ['datos', 'Datos personales'],
+  ['objetivos', 'Objetivos'],
+  ['entrenamiento', 'Entrenamiento y material'],
+  ['salud', 'Salud'],
+  ['privacidad', 'Consentimientos'],
+  ['equipo', 'Entrenadores'],
+  ['acceso', 'Acceso a la app'],
+] as const;
+
+/** Everything about the client that is not training: one page with an index (no sub-tabs). */
+async function fichaTab(ctx: Ctx, client: Client, isAdmin: boolean) {
+  const [catalog, profiles, health, consents, tolerances, taxonomies, requests, trainers] =
+    await Promise.all([
+      listCatalog(ctx),
+      listProgrammingProfiles(ctx),
+      listHealthDeclarations(ctx, client.id),
+      listConsents(ctx, client.id),
+      listExerciseTolerances(ctx, client.id),
+      listLibraryTaxonomies(ctx),
+      isAdmin ? listClientPrivacyRequests(ctx, client.id) : Promise.resolve([]),
+      isAdmin ? listTrainers(ctx) : Promise.resolve([]),
+    ]);
+  const healthConsent = consents.status.find((s) => s.purpose === 'health_data')?.active ?? false;
+  return (
+    <div className="flex flex-col gap-4">
+      <nav aria-label="Apartados de la ficha" className="flex flex-wrap gap-x-3 gap-y-1 text-sm">
+        {FICHA_SECTIONS.map(([id, name]) => (
+          <a key={id} href={`#${id}`} className="text-accent underline">
+            {name}
+          </a>
+        ))}
+        <Link href="?tab=historial" className="text-accent underline">
+          Historial de cambios
+        </Link>
+      </nav>
+      <div id="perfil" className="scroll-mt-4">
+        <ProgrammingPanel client={client} profiles={profiles} catalog={catalog} />
+      </div>
+      <div id="datos" className="scroll-mt-4">
+        <BasicsPanel client={client} />
+      </div>
+      <div id="objetivos" className="scroll-mt-4">
+        <GoalsPanel client={client} catalog={catalog} />
+      </div>
+      <div id="entrenamiento" className="flex scroll-mt-4 flex-col gap-4">
+        <ProfilePanel client={client} catalog={catalog} />
+      </div>
+      <div id="salud" className="flex scroll-mt-4 flex-col gap-4">
+        <h2 className="text-lg font-semibold">Salud</h2>
+        <HealthPanel clientId={client.id} data={health} consents={consents} />
+        <TolerancesPanel
+          clientId={client.id}
+          rows={tolerances}
+          patterns={taxonomies.patterns}
+          hasConsent={healthConsent}
+        />
+      </div>
+      <div id="privacidad" className="flex scroll-mt-4 flex-col gap-4">
+        <ConsentsPanel clientId={client.id} data={consents} />
+        {isAdmin ? (
+          <>
+            <ClientRequestsCard requests={requests} />
+            <SubjectRightsPanel
+              clientId={client.id}
+              fullName={`${client.firstName} ${client.lastName}`}
+              anonymized={client.anonymizedAt != null}
+            />
+          </>
+        ) : null}
+      </div>
+      <div id="equipo" className="flex scroll-mt-4 flex-col gap-4">
+        <AssignmentsPanel
+          clientId={client.id}
+          assignments={client.assignments}
+          trainers={trainers}
+          canManage={isAdmin}
+        />
+        <HistoryPanel
+          clientId={client.id}
+          history={client.history.map((h) => ({
+            id: h.id,
+            kind: h.kind,
+            periodStart: h.periodStart,
+            periodEnd: h.periodEnd,
+            description: h.description,
+          }))}
+        />
+      </div>
+      <div id="acceso" className="flex scroll-mt-4 flex-col gap-4">
+        <AccountPanel clientId={client.id} hasAccount={client.hasAccount} email={client.email} />
+        <ArchivePanel clientId={client.id} archived={client.status === 'archived'} />
+      </div>
     </div>
   );
 }
@@ -445,6 +454,24 @@ async function assessmentsTab(
   );
 }
 
+/** Programa: active plan and next session, plans and proposals, and the sessions to review. */
+async function programTab(ctx: Ctx, clientId: string) {
+  const [summary, plans, sessions] = await Promise.all([
+    clientSummary(ctx, clientId),
+    plansTab(ctx, clientId),
+    sessionsTab(ctx, clientId),
+  ]);
+  return (
+    <div className="flex flex-col gap-4">
+      <ProgramSummary clientId={clientId} s={summary} />
+      {plans}
+      <div id="sesiones" className="scroll-mt-4">
+        {sessions}
+      </div>
+    </div>
+  );
+}
+
 async function plansTab(ctx: Awaited<ReturnType<typeof requireStaff>>, clientId: string) {
   const [plans, templates, proposals, adjustments, decision] = await Promise.all([
     listClientPlans(ctx, clientId),
@@ -470,7 +497,16 @@ async function plansTab(ctx: Awaited<ReturnType<typeof requireStaff>>, clientId:
           autoApply={adjustments.autoApplyLoadProgressions}
         />
       ) : null}
-      <Card title="Propuesta de plan del motor">
+      <Card
+        title="Propuesta de plan del motor"
+        actions={
+          decision.run ? (
+            <Link href="?tab=necesidades" className="text-sm text-accent underline">
+              Ver necesidades
+            </Link>
+          ) : null
+        }
+      >
         {open.length ? (
           <ul className="mb-3 divide-y divide-border">
             {open.map((p) => (
@@ -654,7 +690,7 @@ async function monitoringTab(ctx: Awaited<ReturnType<typeof requireStaff>>, clie
             .slice(0, 2)
             .join(' · ')}
           {pendingAdj.length > 2 ? '…' : ''}).
-          <Link href="?tab=planificacion#ajustes" className="text-accent underline">
+          <Link href="?tab=programa#ajustes" className="text-accent underline">
             Ver propuesta de ajuste
           </Link>
         </p>
@@ -879,92 +915,51 @@ async function monitoringTab(ctx: Awaited<ReturnType<typeof requireStaff>>, clie
   );
 }
 
-function SummaryRow({
+function ProgramSummary({
   clientId,
   s,
 }: {
   clientId: string;
   s: Awaited<ReturnType<typeof clientSummary>>;
 }) {
-  const pctTxt =
-    s.adherence28.percent == null ? '—' : `${s.adherence28.percent.toLocaleString('es-ES')} %`;
   return (
-    <div className="flex flex-col gap-4">
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <Card title="Plan activo">
-          {s.plan ? (
-            <>
-              <Link href={`/app/plans/${s.plan.id}`} className="font-medium hover:underline">
-                {s.plan.name}
-              </Link>
-              <p className="text-sm text-muted">
-                {s.plan.current
-                  ? `${s.plan.current.phase} · semana ${s.plan.current.weekIndex} de ${s.plan.current.totalWeeks} (${label('weekType', s.plan.current.weekType)})`
-                  : 'Fuera de las fechas del plan'}
-              </p>
-            </>
-          ) : (
-            <p className="text-sm text-muted">Sin plan activo.</p>
-          )}
-        </Card>
-        <Card title="Próxima sesión">
-          {s.next ? (
-            <>
-              <Link
-                href={`/app/clients/${clientId}/sessions/${s.next.id}`}
-                className="font-medium hover:underline"
-              >
-                {s.next.title ?? `Sesión ${s.next.dayLabel}`}
-              </Link>
-              <p className="text-sm text-muted">
-                {s.next.isToday ? 'Hoy' : formatDate(s.next.date)}
-                {s.next.published ? '' : ' · no publicada'}
-              </p>
-            </>
-          ) : (
-            <p className="text-sm text-muted">Nada programado.</p>
-          )}
-        </Card>
-        <Card title="Adherencia 4 semanas">
-          <p className="text-2xl font-semibold tabular-nums">{pctTxt}</p>
-          <p className="text-xs text-muted">
-            {s.adherence28.done} de {s.adherence28.planned} sesiones
+    <div className="grid gap-3 sm:grid-cols-2">
+      <Card title="Plan activo">
+        {s.plan ? (
+          <>
+            <Link href={`/app/plans/${s.plan.id}`} className="font-medium hover:underline">
+              {s.plan.name}
+            </Link>
+            <p className="text-sm text-muted">
+              {s.plan.current
+                ? `${s.plan.current.phase} · semana ${s.plan.current.weekIndex} de ${s.plan.current.totalWeeks} (${label('weekType', s.plan.current.weekType)})`
+                : 'Fuera de las fechas del plan'}
+            </p>
+          </>
+        ) : (
+          <p className="text-sm text-muted">
+            Sin plan activo: créalo desde una plantilla aquí abajo.
           </p>
-        </Card>
-        <Card title="Alertas">
-          <p className="text-sm">
-            🔴 {s.alerts.red} · 🟡 {s.alerts.yellow} · 🟢 {s.alerts.green}
-          </p>
-          <ul className="mt-1 flex flex-col gap-1 text-xs">
-            {s.alerts.top.map((a) => (
-              <li key={a.id} className="line-clamp-2">
-                {a.message}
-              </li>
-            ))}
-          </ul>
-          <Link href="?tab=seguimiento" className="text-xs text-accent underline">
-            Seguimiento
-          </Link>
-        </Card>
-      </div>
-      {s.keyMetrics.length ? (
-        <Card title="Métricas clave">
-          <ul className="grid gap-2 text-sm sm:grid-cols-2 lg:grid-cols-5">
-            {s.keyMetrics.map((m) => (
-              <li key={m.testId} className="rounded-md border border-border p-2">
-                <p className="text-xs text-muted">{m.name}</p>
-                <p className="font-semibold tabular-nums">
-                  {m.last.value.toLocaleString('es-ES', { maximumFractionDigits: 2 })} {m.unit}
-                </p>
-                <p className="text-xs text-muted">
-                  {formatDate(m.last.on)}
-                  {m.label ? ` · ${m.label}` : m.points < 2 ? ' · una sola medición' : ''}
-                </p>
-              </li>
-            ))}
-          </ul>
-        </Card>
-      ) : null}
+        )}
+      </Card>
+      <Card title="Próxima sesión">
+        {s.next ? (
+          <>
+            <Link
+              href={`/app/clients/${clientId}/sessions/${s.next.id}`}
+              className="font-medium hover:underline"
+            >
+              {s.next.title ?? `Sesión ${s.next.dayLabel}`}
+            </Link>
+            <p className="text-sm text-muted">
+              {s.next.isToday ? 'Hoy' : formatDate(s.next.date)}
+              {s.next.published ? '' : ' · no publicada'}
+            </p>
+          </>
+        ) : (
+          <p className="text-sm text-muted">Nada programado.</p>
+        )}
+      </Card>
     </div>
   );
 }

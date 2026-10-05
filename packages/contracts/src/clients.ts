@@ -45,6 +45,11 @@ const clientBasicsFields = z.object({
   modality: z.enum(MODALITY),
   status: z.enum(CLIENT_STATUS),
   preferences: optionalText(2000),
+  /** Main programming profile (catalogue) and its level 1–3. */
+  programmingProfileId: z.uuid().nullable().optional(),
+  programmingLevel: z.coerce.number().int().min(1).max(3).nullable().optional(),
+  /** Main sport. */
+  sportId: z.uuid().nullable().optional(),
 });
 
 /** Creation: enums get defaults. */

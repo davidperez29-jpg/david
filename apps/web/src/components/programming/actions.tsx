@@ -166,7 +166,7 @@ export function ProposalActions({
               { reason: reason.trim() || null },
               { refresh: false },
             );
-            if (r !== null) router.push(`/app/clients/${clientId}?tab=planificacion`);
+            if (r !== null) router.push(`/app/clients/${clientId}?tab=programa`);
           }}
         >
           Descartar propuesta

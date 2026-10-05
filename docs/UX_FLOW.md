@@ -17,8 +17,9 @@
 ```
 
 - **Cuatro entradas**, frente a las 13 de la versión anterior.
-- El menú del usuario `(L) ▾` agrupa Ajustes, Usuarios, Privacidad, Ciencia y Salir.
-- **Buscar** encuentra clientes, ejercicios y plantillas desde cualquier pantalla (atajo `/`).
+- El menú del usuario («Menú ▾») agrupa Calendario, Alertas, Informes, Ciencia, Ajustes, Usuarios y Privacidad (administración) y Cerrar sesión.
+- Las alertas urgentes (rojas y amarillas) se cuentan junto al menú (`⚠ n`); el contador abre la lista de alertas.
+- **Buscar** encuentra clientes desde cualquier pantalla (fase 1). Ejercicios y plantillas se añadirán en las fases 2 y 3.
 
 ### Cliente (móvil)
 
@@ -45,13 +46,18 @@ Entrenamientos de hoy
   - perfil y nivel;
   - próxima sesión;
   - adherencia de 4 semanas.
-- No hay tarjetas ni paneles de alertas. Lo que requiere atención aparece **en la fila del cliente**.
+- No hay tarjetas ni paneles de alertas. Lo que requiere atención aparece **en la fila del cliente**, con su motivo y un enlace al sitio donde se resuelve:
+  - alerta roja o amarilla → Seguimiento;
+  - «Requiere valoración por profesional sanitario» → Ficha → Salud;
+  - ejercicio cambiado o registro de series por revisar → la sesión.
+- Las filas en rojo van primero; después, orden alfabético por apellidos.
+- «Entrenamientos de hoy» enlaza con el calendario completo («Ver calendario»).
 
 ### 2.2 Ficha de cliente: Programa (pestaña por defecto)
 
 ```
-Marcos Villalba · Hipertrofia · Nivel 2 · 3 días/semana            [Ficha]
- Programa | Evaluación | Seguimiento | Informes
+Marcos Villalba · Hipertrofia · Nivel 2 · 3 días/semana · Objetivo: Hipertrofia
+ Programa | Evaluación | Seguimiento | Informes | Ficha
 ──────────────────────────────────────────────────────────────────────────
 Plan: Hipertrofia N2 · 3 días · 3 meses (desde plantilla v4)   [⋯]
   Octubre ▾  │ Sem 1 ✓ │ Sem 2 ● │ Sem 3 │ Sem 4 (descarga) │
@@ -169,17 +175,21 @@ Los tests E2E de UX miden estos recorridos y fallan si se superan (`ux.spec.ts`)
 ```
 Nuevo cliente
  Nombre*  [            ]   Apellidos* [            ]
- Fecha de nacimiento [    ]   Sexo [▾]
- Perfil principal* [Hipertrofia ▾]      Nivel [1 · Inicial ▾]
- Deporte [▾]   Objetivo [▾]   Experiencia [▾]
- Días/semana [3]   Material [Mancuernas ✕] [Barra ✕] [+]
+ Fecha de nacimiento [    ] (34 años)   Sexo [▾]
+ Perfil principal* [Hipertrofia ▾]      Nivel [2 · Intermedio ▾]
+ Experiencia [▾]   Objetivo [Hipertrofia ▾]
+ Deporte [▾]       Días por semana [3]
+ Dónde entrena [▾] Email (para invitar) [      ]
+ Material [Mancuernas ✕] [Barra ✕] [+ Añadir…] [Gimnasio completo] [Casa básica] [Sin material]
  Observaciones [                                 ]
-                                       [Guardar] [Guardar e invitar a la app]
+                                       [Guardar e invitar a la app] [Guardar]
 ```
 
 - Los campos obligatorios son tres: nombre, apellidos y perfil.
-- El perfil sugiere el nivel según la experiencia; el entrenador lo puede cambiar.
-- La salud (cribado y lesiones previas) se registra después en **Ficha**, con su consentimiento.
+- El perfil propone el objetivo y la experiencia propone el nivel (inicial → 1, intermedio → 2, avanzado → 3). Los dos se ven en el formulario y el entrenador los cambia si quiere. Bajo el nivel aparece qué significa ese nivel en ese perfil.
+- «Guardar e invitar a la app» necesita email; muestra el enlace de invitación (válido 7 días).
+- Al guardar se abre la Ficha en **Salud**: consentimiento y cribado antes de entrenar. La salud no se pregunta en el alta.
+- En la Ficha, «Perfil y nivel» explica qué cambia en cada una de las 10 dimensiones (complejidad, intensidad, volumen…).
 
 ## 5. Reglas de interfaz
 

@@ -15,18 +15,6 @@ export interface BasicsDraft {
   preferences: string;
 }
 
-export const emptyBasics: BasicsDraft = {
-  firstName: '',
-  lastName: '',
-  birthDate: '',
-  sex: 'undisclosed',
-  email: '',
-  phone: '',
-  modality: 'in_person',
-  status: 'active',
-  preferences: '',
-};
-
 const opts = (o: Record<string, string>) =>
   Object.entries(o).map(([value, label]) => ({ value, label }));
 

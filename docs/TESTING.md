@@ -79,7 +79,7 @@ Los tests de integración no truncan tablas (la auditoría es *append-only*): ca
 | Esquema (Fase 2) | Perfiles de prescripción solo con variables existentes, slugs únicos, RIR 0–10, mapa RLS coherente, salud y decisiones nunca escribibles por el cliente, migración RLS sin desviación respecto al generador | `packages/db/test/catalog.unit.test.ts` |
 | Cálculos | Edad, validación de objetivos, consentimientos vigentes, diff y redacción | `clients.unit.test.ts` |
 | Rutas | Todos los handlers usan `authedRoute`/`publicRoute`; lista cerrada de públicos | `apps/web/test/routes.unit.test.ts` |
-| E2E | Alta de cliente con asistente + consentimiento + cribado + historial; aislamiento entre entrenadores; cliente no accede al área de entrenador ni a la API de usuarios; CSRF; API sin sesión; experiencia móvil (consentimiento, perfil, objetivos táctiles ≥ 48 px) | `apps/web/e2e/*.spec.ts` |
+| E2E | Alta de cliente en un formulario + consentimiento + cribado + historial; aislamiento entre entrenadores; cliente no accede al área de entrenador ni a la API de usuarios; CSRF; API sin sesión; experiencia móvil (consentimiento, perfil, objetivos táctiles ≥ 48 px) | `apps/web/e2e/*.spec.ts` |
 
 Las áreas que entonces quedaban pendientes se cubrieron en las fases siguientes; el estado actual está en §3.
 
@@ -383,3 +383,16 @@ pnpm --filter @tp/web test:e2e -- e2e/perf.spec.ts e2e/perf.mobile.spec.ts
   - `contract-responses.spec.ts`: contrato de respuestas de cada `GET`.
   - Compartir el informe y verlo en la app del cliente, con su PDF; descargar el PDF del plan como entrenador (dos versiones) y como cliente.
   - Accesibilidad: la versión del cliente del informe, en escritorio y en móvil.
+
+## Resultado de la reestructuración, fase 1 (clientes, perfiles y navegación)
+
+- **Unidad: 409 tests ✔.** Nuevo `levels.unit.test.ts`: tres niveles, diez dimensiones con descriptores distintos y sugerencia de nivel solo por la experiencia.
+- **Integración: 168 tests ✔.** Nuevos:
+  - `profiles.int.test.ts`: los 16 perfiles globales con sus niveles, objetivo y batería que existen; un perfil propio solo lo ve y lo usa su organización; perfil o deporte de otra organización y nivel fuera de 1–3, rechazados; cambios auditados; el cliente no puede cambiar su nivel;
+  - `home.int.test.ts`: filas de «Mis clientes» (adherencia, próxima sesión, estado y motivo), orden con lo urgente primero, sesiones de hoy, ámbito del entrenador y acceso denegado al cliente.
+- **Seguridad: 578 comprobaciones RLS ✔** (incluye `programming_profiles`, de tipo catálogo).
+- **E2E: 43 tests ✔** (1 omitido sin datos de carga).
+  - Alta en un formulario: perfil obligatorio, objetivo propuesto por el perfil, nivel propuesto por la experiencia, atajos de material; la ficha se abre en Salud.
+  - Menú principal de 4 entradas y menú de usuario; recorridos de UX desde el inicio sin más interacciones que antes.
+  - Accesibilidad de las pestañas nuevas (claro y oscuro): 0 infracciones graves.
+- **Rendimiento** (1 000 clientes): inicio `/app` 145–162 ms p95; `GET /api/v1/dashboard/home` 80 ms p95.

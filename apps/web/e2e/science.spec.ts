@@ -1,9 +1,9 @@
 import { expect, test } from '@playwright/test';
-import { login } from './helpers';
+import { fromMenu, login } from './helpers';
 
 test('trainer traces a method dose to verified PubMed sources', async ({ page }) => {
   await login(page, 'pablo.ibarra@example.com');
-  await page.getByRole('link', { name: 'Ciencia', exact: true }).click();
+  await fromMenu(page, 'Ciencia');
   await expect(page.getByRole('heading', { name: 'Biblioteca científica' })).toBeVisible();
 
   await page.getByRole('link', { name: 'Fuerza máxima (cargas altas)' }).click();
@@ -16,7 +16,7 @@ test('trainer traces a method dose to verified PubMed sources', async ({ page })
 
   // Trainers can propose evidence but not publish it.
   await page.getByRole('link', { name: 'Fuentes' }).click();
-  await page.getByLabel('Buscar').fill('19204579');
+  await page.getByLabel('Buscar', { exact: true }).fill('19204579');
   await page.getByRole('button', { name: 'Filtrar' }).click();
   await page.getByRole('link', { name: /Progression models in resistance training/ }).click();
   await expect(page.getByText('Según PubMed (NCBI).', { exact: false })).toBeVisible();

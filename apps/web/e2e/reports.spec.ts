@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { login } from './helpers';
+import { fromMenu, login } from './helpers';
 
 test('client report with 11 sections and PDF; validated import; export', async ({ page }) => {
   await login(page, 'lucia.moreno@example.com');
@@ -42,7 +42,7 @@ test('client report with 11 sections and PDF; validated import; export', async (
   await expect(page.getByRole('button', { name: 'Compartir con el cliente' })).toBeVisible();
 
   // Import: errors per row and column before anything is written; only valid rows imported.
-  await page.getByRole('link', { name: 'Informes', exact: true }).first().click();
+  await fromMenu(page, 'Informes');
   await page.getByRole('link', { name: 'Nueva importación' }).click();
   await page.getByLabel('Qué importar').selectOption('clients');
   await page.locator('input[type=file]').setInputFiles({

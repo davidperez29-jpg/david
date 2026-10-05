@@ -88,6 +88,7 @@
     "clients/[clientId]/trait-flags PUT authenticated",
     "clients GET authenticated",
     "clients POST authenticated",
+    "dashboard/home GET authenticated",
     "dashboard/trainer GET authenticated",
     "decision/rules GET authenticated",
     "decision/rules PUT authenticated",
@@ -146,6 +147,7 @@
     "privacy-requests/[id]/cancel POST authenticated",
     "privacy-requests/[id]/resolve POST authenticated",
     "privacy-requests GET authenticated",
+    "programming-profiles GET authenticated",
     "recommendations/[id]/decision POST authenticated",
     "reports/[id]/client-view/download GET authenticated",
     "reports/[id]/client-view GET authenticated",
@@ -943,6 +945,42 @@
               "type": "null"
             }
           ]
+        },
+        "programmingProfileId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "programmingLevel": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 3
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sportId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "required": [
@@ -1454,6 +1492,42 @@
                 {
                   "type": "string",
                   "maxLength": 2000
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "programmingProfileId": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "programmingLevel": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 3
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "sportId": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                 },
                 {
                   "type": "null"
@@ -6714,6 +6788,42 @@
             {
               "type": "string",
               "maxLength": 2000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "programmingProfileId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "programmingLevel": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 3
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sportId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
             },
             {
               "type": "null"

@@ -57,18 +57,12 @@ export async function a11yIds() {
 }
 
 export const CLIENT_TABS = [
-  'resumen',
-  'perfil',
-  'objetivos',
-  'evaluaciones',
+  'programa',
+  'evaluacion',
   'necesidades',
-  'informes',
-  'planificacion',
-  'sesiones',
   'seguimiento',
-  'salud',
-  'privacidad',
-  'equipo',
+  'informes',
+  'ficha',
   'historial',
 ];
 

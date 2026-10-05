@@ -9,7 +9,7 @@ test('trainer creates, completes and publishes an exercise; videos need verifica
   await expect(page.getByRole('heading', { name: 'Biblioteca de ejercicios' })).toBeVisible();
 
   // imported bank is searchable without accents and marked for review
-  await page.getByLabel('Buscar').fill('nordico');
+  await page.getByLabel('Buscar', { exact: true }).fill('nordico');
   await page.getByRole('button', { name: 'Filtrar' }).click();
   await expect(page.getByRole('link', { name: /Curl nórdico/i }).first()).toBeVisible();
   await expect(

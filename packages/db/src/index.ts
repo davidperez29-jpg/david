@@ -12,3 +12,4 @@ export * from './seed/assessment';
 export * from './seed/knowledge';
 export * from './seed/exercises';
 export * from './seed/templates';
+export * from './seed/profiles';

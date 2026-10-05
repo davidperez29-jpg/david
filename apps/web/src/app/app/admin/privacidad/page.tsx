@@ -33,7 +33,7 @@ export default async function AdminPrivacyPage() {
                   ) : (
                     <Link
                       className="text-accent underline"
-                      href={`/app/clients/${r.clientId}?tab=privacidad`}
+                      href={`/app/clients/${r.clientId}?tab=ficha#privacidad`}
                     >
                       {r.client}
                     </Link>

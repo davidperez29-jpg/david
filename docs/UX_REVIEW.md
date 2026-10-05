@@ -8,10 +8,12 @@
 
 Medido el 2026-10-03 en el ordenador de desarrollo, con build de producción y datos demo recién cargados. Se tomó el último de dos pases completos.
 
+**2026-10-05 (reestructuración, fase 1):** el inicio pasa a ser «Mis clientes». Las tareas 1 y 2 se adaptan sin perder interacciones: el motivo de la alerta está en la fila del cliente y el calendario se abre con «Ver calendario» desde «Entrenamientos de hoy» (salió del menú principal).
+
 | # | Tarea (persona, dispositivo) | Inicio → fin | Interacciones (umbral) | Tiempo medido (umbral) |
 |---|---|---|---|---|
-| 1 | Entrenadora, escritorio: atender la alerta roja de dolor desde Hoy y resolverla con nota | Hoy → alerta resuelta | **4** (≤ 4): nombre del cliente en la alerta → «Resolver…» → nota → «Resolver» | **1,0 s** (< 30 s) |
-| 2 | Entrenadora, escritorio: encontrar la sesión de la semana que viene de un cliente y abrirla | Hoy → revisión de la sesión | **6** (≤ 6): Calendario → Semana → Siguiente → cliente → Filtrar → sesión | **1,8 s** (< 30 s) |
+| 1 | Entrenadora, escritorio: atender la alerta roja de dolor desde el inicio y resolverla con nota | Inicio (Mis clientes) → alerta resuelta | **4** (≤ 4): motivo en la fila del cliente → «Resolver…» → nota → «Resolver» | **1,0 s** (< 30 s) |
+| 2 | Entrenadora, escritorio: encontrar la sesión de la semana que viene de un cliente y abrirla | Inicio → revisión de la sesión | **6** (≤ 6): «Ver calendario» → Semana → Siguiente → cliente → Filtrar → sesión | **1,8 s** (< 30 s) |
 | 3 | Cliente, móvil (Pixel 7): abrir la próxima sesión y registrar la primera serie | Hoy → serie guardada | **2** (≤ 2): «Ver sesión» o «Empezar» → ✓ | **0,7 s** (< 20 s) |
 
 Los tiempos son del sistema (navegación y respuesta), no del pensamiento humano. Lo que se controla es el número de interacciones; el tiempo detecta regresiones graves de rendimiento.
@@ -30,7 +32,7 @@ Los tiempos son del sistema (navegación y respuesta), no del pensamiento humano
 
 ## 3. Heurísticas revisadas (capturas en escritorio y Pixel 7, tema claro y oscuro)
 
-- **Lo urgente primero:** Hoy pone las alertas por gravedad antes que el resto. El calendario marca hoy y las sesiones pasadas sin registrar («!»).
+- **Lo urgente primero:** el inicio pone primero los clientes que hay que revisar, con el motivo en su fila. El calendario marca hoy y las sesiones pasadas sin registrar («!»).
 - **Estado sin depender del color:** las alertas llevan icono y texto (🔴 Roja); las sesiones del calendario, icono y texto accesible.
 - **Objetivos táctiles:** de 48 px o más en la app del cliente; el botón «Empezar» mide 56 px.
 - **Lenguaje:** el cliente no ve niveles de evidencia, reglas ni alertas. Los hitos son positivos y nunca se comparan con otras personas.

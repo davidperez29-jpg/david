@@ -1,23 +1,23 @@
 import { expect, test } from '@playwright/test';
-import { login } from './helpers';
+import { fromMenu, login, logoutStaff } from './helpers';
 
 test('trainer sees alerts by severity, reviews a client follow-up and resolves an alert', async ({
   page,
 }) => {
   await login(page, 'lucia.moreno@example.com');
-  // Demo data: alerts of every colour, red first.
-  const alerts = page.getByRole('heading', { name: /^Alertas \(/ });
-  await expect(alerts).toBeVisible();
+  // Home: the clients to review come first, with the reason in their row.
+  const rows = page.locator('main ul').first().locator(':scope > li');
+  await expect(rows.first().getByText('Revisar', { exact: true })).toBeAttached();
+  await expect(
+    rows.filter({ hasText: 'Garrido, Tomás' }).getByRole('link', { name: /Adherencia del/ }),
+  ).toBeVisible();
+  // Urgent alerts are counted in the header; the counter opens the alerts page.
+  await page.getByRole('link', { name: /alertas pendientes$/ }).click();
+  await expect(page.getByRole('heading', { name: 'Alertas', exact: true })).toBeVisible();
+  // Demo data: alerts of every colour.
   await expect(page.getByText('🔴 Roja').first()).toBeVisible();
   await expect(page.getByText('🟡 Amarilla').first()).toBeVisible();
   await expect(page.getByText('🟢 Propuesta').first()).toBeVisible();
-  await expect(page.getByText(/Adherencia 28 d/i)).toBeVisible();
-
-  await page
-    .getByRole('link', { name: /^Alertas/ })
-    .first()
-    .click();
-  await expect(page.getByRole('heading', { name: 'Alertas', exact: true })).toBeVisible();
   // Tomás has red alerts in the demo (adherence; the pain one is resolved by the UX review).
   const red = page
     .locator('main li')
@@ -60,7 +60,7 @@ test('alert thresholds: trainers read, ADMIN saves a new version', async ({ page
   });
   expect(res.status()).toBe(403);
 
-  await page.getByRole('button', { name: 'Cerrar sesión' }).click();
+  await logoutStaff(page);
   await login(page, 'lucia.moreno@example.com');
   await page.goto('/app/settings/alertas');
   await page.getByLabel('Motivo del cambio (se audita)').fill('Ajuste E2E');
@@ -74,12 +74,9 @@ test('global calendar: month and week, filtered by client with phases and rest w
   page,
 }) => {
   await login(page, 'lucia.moreno@example.com');
-  await page
-    .getByRole('navigation', { name: 'Principal' })
-    .getByRole('link', { name: 'Calendario' })
-    .click();
+  await fromMenu(page, 'Calendario');
   await expect(page.getByRole('heading', { name: /de 20\d\d$/ })).toBeVisible();
-  await page.getByLabel('Cliente').selectOption({ label: 'Villalba, Marcos' });
+  await page.getByLabel('Cliente', { exact: true }).selectOption({ label: 'Villalba, Marcos' });
   await page.getByRole('button', { name: 'Filtrar' }).click();
   await expect(page.getByText(/fase del plan/)).toBeVisible();
   await expect(page.getByText('📋 Evaluación').first()).toBeVisible();

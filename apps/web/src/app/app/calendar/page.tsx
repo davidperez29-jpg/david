@@ -160,25 +160,25 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
         <form className="flex flex-wrap items-center gap-2 text-sm" action="/app/calendar">
           {week ? <input type="hidden" name="vista" value="semana" /> : null}
           <input type="hidden" name={week ? 'semana' : 'mes'} value={week ? weekStart : month} />
-          <label className="flex items-center gap-1">
-            Cliente
-            <select
-              name="cliente"
-              defaultValue={sp.cliente ?? ''}
-              className="h-9 rounded-md border border-border bg-bg px-2"
-            >
-              <option value="">Todos</option>
-              {clients.items.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.lastName}, {c.firstName}
-                </option>
-              ))}
-            </select>
-          </label>
+          <label htmlFor="cal-cliente">Cliente</label>
+          <select
+            id="cal-cliente"
+            name="cliente"
+            defaultValue={sp.cliente ?? ''}
+            className="h-9 rounded-md border border-border bg-bg px-2"
+          >
+            <option value="">Todos</option>
+            {clients.items.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.lastName}, {c.firstName}
+              </option>
+            ))}
+          </select>
           {trainers.length ? (
-            <label className="flex items-center gap-1">
-              Entrenador/a
+            <>
+              <label htmlFor="cal-entrenador">Entrenador/a</label>
               <select
+                id="cal-entrenador"
                 name="entrenador"
                 defaultValue={sp.entrenador ?? ''}
                 className="h-9 rounded-md border border-border bg-bg px-2"
@@ -190,7 +190,7 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
                   </option>
                 ))}
               </select>
-            </label>
+            </>
           ) : null}
           <button className="h-9 rounded-md border border-border px-3">Filtrar</button>
         </form>

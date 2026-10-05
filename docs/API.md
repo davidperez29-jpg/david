@@ -39,10 +39,11 @@ Base: `/api/v1`. JSON. Autenticación por cookie de sesión `tp_session` (httpOn
 | `POST /users/{id}/status` | `users:manage` | `{active: boolean}` | Activa/desactiva (revoca sesiones). |
 | `GET /trainers` | `clients:read` | — | Entrenadores activos. |
 | `GET /catalog` | `catalog:read` | — | Objetivos, deportes y material. |
-| `GET /clients` | `clients:read` | `listClientsSchema` (query: `q`, `status`, `limit`, `offset`) | Listado paginado según ámbito. |
-| `POST /clients` | `clients:create` | `createClientSchema` | Alta completa transaccional. |
+| `GET /programming-profiles` | `clients:read` | — | Perfiles de programación (globales y propios) con sus 3 niveles, objetivo y batería sugeridos (reestructuración, fase 1). |
+| `GET /clients` | `clients:read` | `listClientsSchema` (query: `q`, `status`, `limit`, `offset`) | Listado paginado según ámbito; incluye perfil y nivel. |
+| `POST /clients` | `clients:create` | `createClientSchema` | Alta completa transaccional. `basics` admite `programmingProfileId`, `programmingLevel` (1–3) y `sportId` (globales o de la organización). |
 | `GET /clients/{id}` | `clients:read` | — | Ficha (sin datos de salud; incluye `referral`). |
-| `PATCH /clients/{id}` | `clients:write` | `updateClientSchema` (`expectedVersion` obligatorio) | Cliente: solo `email`, `phone`, `preferences`. |
+| `PATCH /clients/{id}` | `clients:write` | `updateClientSchema` (`expectedVersion` obligatorio) | Incluye perfil, nivel y deporte. Cliente: solo `email`, `phone`, `preferences`. |
 | `POST /clients/{id}/archive` | `clients:archive` | `{archived, reason?}` | Archivar o restaurar. |
 | `PUT /clients/{id}/profile` | `clients:write` (staff) | `trainingProfileSchema` | Perfil de entrenamiento. |
 | `PUT /clients/{id}/goals` | `goals:write` (staff) | `setGoalsSchema` | Reemplaza objetivos activos (los anteriores pasan a historial). |
@@ -198,6 +199,7 @@ Detalle en `DASHBOARD.md`.
 |---|---|---|---|
 | `GET /calendar?from&to&clientId&trainerId&perDay` | `sessions:read` (solo personal) | Rango de 9 semanas como máximo; `perDay` 1–200 (opcional) | Sesiones, evaluaciones y, con `clientId`, fases y semanas de descarga (`spans`). `trainerId` es el filtro de ADMIN. Con `perDay`, como mucho ese número de sesiones por día; `sessionTotals` da siempre el total de cada día (Fase 14). |
 | `GET /dashboard/trainer` | `sessions:review` | — | Clientes activos, evaluaciones pendientes o vencidas y feedback reciente. |
+| `GET /dashboard/home` | `clients:read` + `alerts:manage` + `sessions:review` | `listClientsSchema` (query) | Inicio del entrenador: «Mis clientes» (perfil y nivel, próxima sesión, adherencia de 4 semanas, estado `ok`/`look`/`review` y sus motivos) y «Entrenamientos de hoy». |
 | `GET /clients/{id}/summary` | `monitoring:read` (personal) | — | Plan activo con fase y semana, próxima sesión, adherencia, alertas y métricas clave. |
 | `GET /clients/{id}/dashboard` | `sessions:read` | — | Próxima sesión con vista previa, racha, adherencia, hitos, próxima evaluación y tests visibles. |
 | `PUT /clients/{id}/progress-metrics` | `assessments:write` | `{testIds}` (hasta 5) | Tests visibles en el Progreso del cliente (auditado). |

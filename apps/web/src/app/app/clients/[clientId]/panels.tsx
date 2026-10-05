@@ -1,6 +1,7 @@
 'use client';
 
-import type { ClientDetail } from '@tp/application';
+import type { ClientDetail, ProgrammingProfileOption } from '@tp/application';
+import { LEVEL_DIMENSIONS, LEVEL_NAMES, type ProgrammingLevel } from '@tp/domain';
 import { useState } from 'react';
 import { AvailabilityEditor } from '@/components/clients/availability-editor';
 import { BasicsFields, basicsPayload, type BasicsDraft } from '@/components/clients/basics-fields';
@@ -68,6 +69,152 @@ export function BasicsPanel({ client }: { client: ClientDetail }) {
         <div>
           <Button type="submit" disabled={pending}>
             Guardar datos
+          </Button>
+        </div>
+      </form>
+    </Card>
+  );
+}
+
+const FAMILY: Record<string, string> = {
+  rendimiento: 'Rendimiento',
+  fuerza_hipertrofia: 'Fuerza e hipertrofia',
+  salud: 'Salud y función',
+  poblacion_especifica: 'Poblaciones específicas',
+  readaptacion: 'Readaptación',
+  personalizado: 'Personalizado',
+};
+
+/** Main profile, level and sport (restructure §2–§4): what the programming is built from. */
+export function ProgrammingPanel({
+  client,
+  profiles,
+  catalog,
+}: {
+  client: ClientDetail;
+  profiles: ProgrammingProfileOption[];
+  catalog: Catalog;
+}) {
+  const { run, pending, error, done, fieldError } = useApiAction();
+  const [profileId, setProfileId] = useState(client.programmingProfileId ?? '');
+  const [level, setLevel] = useState<ProgrammingLevel>(
+    (client.programmingLevel as ProgrammingLevel | null) ?? 1,
+  );
+  const [sportId, setSportId] = useState(client.sportId ?? '');
+  const profile = profiles.find((p) => p.id === profileId) ?? null;
+  const families = [...new Set(profiles.map((p) => p.family))];
+  return (
+    <Card title="Perfil y nivel" actions={<Saved show={done} />}>
+      <form
+        className="flex flex-col gap-4"
+        onSubmit={async (e) => {
+          e.preventDefault();
+          await run(`/clients/${client.id}`, 'PATCH', {
+            programmingProfileId: profileId || null,
+            programmingLevel: profileId ? level : null,
+            sportId: sportId || null,
+            expectedVersion: client.version,
+          });
+        }}
+      >
+        <div className="grid gap-4 md:grid-cols-3">
+          <Field
+            label="Perfil principal"
+            htmlFor="programmingProfileId"
+            error={fieldError('programmingProfileId')}
+            hint={profile?.description ?? undefined}
+          >
+            <select
+              id="programmingProfileId"
+              value={profileId}
+              onChange={(e) => setProfileId(e.target.value)}
+              className="h-10 w-full rounded-md border border-border bg-bg px-3 text-sm"
+            >
+              <option value="">Sin perfil</option>
+              {families.map((f) => (
+                <optgroup key={f} label={FAMILY[f] ?? f}>
+                  {profiles
+                    .filter((p) => p.family === f)
+                    .map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.name}
+                      </option>
+                    ))}
+                </optgroup>
+              ))}
+            </select>
+          </Field>
+          <Field
+            label="Nivel"
+            htmlFor="programmingLevel"
+            hint={profile?.levels[String(level)]?.summary}
+          >
+            <select
+              id="programmingLevel"
+              value={level}
+              disabled={!profileId}
+              onChange={(e) => setLevel(Number(e.target.value) as ProgrammingLevel)}
+              className="h-10 w-full rounded-md border border-border bg-bg px-3 text-sm disabled:opacity-50"
+            >
+              {([1, 2, 3] as const).map((n) => (
+                <option key={n} value={n}>
+                  {n} · {LEVEL_NAMES[n]}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Field label="Deporte" htmlFor="sportId" error={fieldError('sportId')}>
+            <Select
+              id="sportId"
+              placeholder="Ninguno"
+              value={sportId}
+              onChange={(e) => setSportId(e.target.value)}
+              options={catalog.sports.map((x) => ({ value: x.id, label: x.name }))}
+            />
+          </Field>
+        </div>
+        <details className="text-sm">
+          <summary className="cursor-pointer text-muted">¿Qué cambia con el nivel?</summary>
+          <div className="mt-2 overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead className="text-muted">
+                <tr>
+                  <th className="py-1 pr-2">Dimensión</th>
+                  {([1, 2, 3] as const).map((n) => (
+                    <th key={n} className={`pr-2 ${n === level ? 'text-text' : ''}`}>
+                      {n} · {LEVEL_NAMES[n]}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {LEVEL_DIMENSIONS.map((d) => (
+                  <tr key={d.key}>
+                    <th scope="row" className="py-1 pr-2 font-medium">
+                      {d.label}
+                    </th>
+                    {d.levels.map((t, i) => (
+                      <td
+                        key={i}
+                        className={`pr-2 ${i + 1 === level ? 'font-medium' : 'text-muted'}`}
+                      >
+                        {t}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <p className="mt-2 text-muted">
+              Descriptores prácticos para orientar la programación; el nivel lo decide el entrenador
+              y la evaluación lo ajusta, no la edad ni un diagnóstico por sí solos.
+            </p>
+          </div>
+        </details>
+        <FormError error={error} />
+        <div>
+          <Button type="submit" disabled={pending}>
+            Guardar perfil y nivel
           </Button>
         </div>
       </form>
@@ -352,7 +499,7 @@ export function HealthPanel({
                   {s.questionnaireVersion ? ` (${s.questionnaireVersion})` : ''}
                 </span>
                 <Badge tone={s.result === 'refer' ? 'danger' : 'ok'}>
-                  {s.result === 'refer' ? 'Derivar' : 'Apto'}
+                  {s.result === 'refer' ? 'Derivar' : 'Sin derivación'}
                 </Badge>
               </li>
             ))}
@@ -381,7 +528,7 @@ export function HealthPanel({
             value={screening.result}
             onChange={(e) => setScreening({ ...screening, result: e.target.value })}
             options={[
-              { value: 'clear', label: 'Apto' },
+              { value: 'clear', label: 'Sin derivación' },
               { value: 'refer', label: 'Derivar' },
             ]}
           />

@@ -8,17 +8,26 @@ Principio de §8.2: la información sale **ordenada por lo que requiere acción*
 
 ## 1. Entrenador
 
-### 1.1 Hoy (`/app`)
+### 1.1 Inicio: Mis clientes (`/app`)
+
+> Desde la reestructuración (fase 1) el antiguo «Hoy», con seis bloques de cifras, alertas y listas, se sustituye por dos listas (`docs/UX_FLOW.md` §2.1). Caso de uso: `trainerHome` (`packages/application/src/home.ts`), también en `GET /api/v1/dashboard/home`.
 
 | Bloque | Contenido |
 |---|---|
-| Cifras | Clientes activos (y cuántos requieren atención), sesiones de hoy (y cuántas hechas), adherencia de 28 días, evaluaciones pendientes en los próximos 7 días (y cuántas con fecha pasada). |
-| Alertas | Rojas, amarillas y propuestas vivas, con marcar vista y resolver (Fase 8). |
-| Sesiones de hoy | Por cliente, con su estado y acceso al modo sala. |
-| Revisión de sesiones | Sustituciones pendientes y registros marcados (Fase 7). |
-| Feedback reciente | Comentario y RPE de la sesión de los últimos 7 días. |
-| Evaluaciones pendientes | Planificadas o en curso hasta dentro de 7 días; «Fecha pasada» si ya vencieron. |
-| Requiere acción | Derivaciones a un profesional sanitario, clientes sin objetivo principal y clientes online sin cuenta. |
+| Mis clientes | Una fila por cliente accesible: punto de estado (verde: al día · ámbar: algo que mirar · rojo: revisar), perfil y nivel, próxima sesión, adherencia de 4 semanas y, si hace falta, el motivo con su enlace. Primero las filas en rojo. |
+| Entrenamientos de hoy | Sesiones publicadas o registradas hoy, con su estado y acceso al modo sala; enlace «Ver calendario». |
+
+Qué pone una fila en ámbar o en rojo:
+
+| Motivo | Estado | Enlace |
+|---|---|---|
+| Alerta roja viva | Revisar | Seguimiento |
+| «Requiere valoración por profesional sanitario» (declaración sin valorar o cribado con derivación) | Revisar | Ficha → Salud |
+| Ejercicio cambiado por dolor, pendiente de decidir | Revisar | La sesión |
+| Otro ejercicio cambiado o registro de series marcado | Mirar | La sesión |
+| Alerta amarilla viva | Mirar | Seguimiento |
+
+Las propuestas (alertas verdes) no cambian el color de la fila: se ven en Seguimiento y en Alertas (menú).
 
 ### 1.2 Calendario global (`/app/calendar`)
 

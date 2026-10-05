@@ -9,15 +9,16 @@ const MAX = {
   log: { interactions: 2, ms: 20_000 },
 };
 
-test('UX 1 · trainer handles the red pain alert from Hoy', async ({ page }) => {
+test('UX 1 · trainer handles the red pain alert from the home', async ({ page }) => {
   await login(page, 'lucia.moreno@example.com');
-  const t = new TimedTask(page, 'Resolver la alerta roja de dolor desde Hoy');
+  const t = new TimedTask(page, 'Resolver la alerta roja de dolor desde el inicio');
   const row = page
     .locator('li')
     .filter({ hasText: /Dolor 7\/10/ })
     .first();
   await expect(row).toBeVisible();
-  await t.step(() => row.getByRole('link', { name: /Tomás Garrido/ }).click());
+  // The reason is in the client's row of the home: one click to their follow-up.
+  await t.step(() => row.getByRole('link', { name: /Dolor 7\/10/ }).click());
   await expect(page.getByRole('heading', { name: /Carga interna semanal/ })).toBeVisible();
   const alert = page
     .locator('li')
@@ -39,12 +40,7 @@ test('UX 2 · trainer finds a client next week in the calendar and opens the ses
 }) => {
   await login(page, 'lucia.moreno@example.com');
   const t = new TimedTask(page, 'Encontrar la sesión de la semana que viene de un cliente');
-  await t.step(() =>
-    page
-      .getByRole('navigation', { name: 'Principal' })
-      .getByRole('link', { name: 'Calendario' })
-      .click(),
-  );
+  await t.step(() => page.getByRole('link', { name: 'Ver calendario' }).click());
   await expect(page.getByRole('heading', { name: 'Calendario', level: 1 })).toBeVisible();
   await t.step(() => page.getByRole('link', { name: 'Semana', exact: true }).click());
   const thisWeek = page.getByRole('heading', { name: /^Semana del/ });
@@ -52,7 +48,9 @@ test('UX 2 · trainer finds a client next week in the calendar and opens the ses
   const before = await thisWeek.textContent();
   await t.step(() => page.getByRole('link', { name: 'Siguiente →' }).click());
   await expect(thisWeek).not.toHaveText(before!);
-  await t.step(() => page.getByLabel('Cliente').selectOption({ label: 'Villalba, Marcos' }));
+  await t.step(() =>
+    page.getByLabel('Cliente', { exact: true }).selectOption({ label: 'Villalba, Marcos' }),
+  );
   await t.step(() => page.getByRole('button', { name: 'Filtrar' }).click());
   await expect(page).toHaveURL(/cliente=/);
   await expect(page.getByRole('heading', { name: /^Semana del/ })).toBeVisible();

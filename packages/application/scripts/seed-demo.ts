@@ -48,6 +48,7 @@ import {
   importExerciseBank,
   type ImportedBankEntry,
   listCatalog,
+  listProgrammingProfiles,
   loadActor,
   MemoryMailer,
   MemoryStorage,
@@ -134,6 +135,8 @@ const nerea = await acceptAs(
 const cat = await listCatalog(lucia);
 const goal = (slug: string) => cat.goals.find((g) => g.slug === slug)!.id;
 const sport = (slug: string) => cat.sports.find((s) => s.slug === slug)!.id;
+const profiles = await listProgrammingProfiles(lucia);
+const profileId = (slug: string) => profiles.find((p) => p.slug === slug)!.id;
 const eq = (...slugs: string[]) =>
   slugs.map((s) => ({
     equipmentId: cat.equipment.find((e) => e.slug === s)!.id,
@@ -153,6 +156,8 @@ const GYM = eq(
 type Spec = {
   by: RequestContext;
   basics: Record<string, unknown>;
+  /** Main programming profile (slug), level 1–3 and main sport (slug). */
+  programming?: { profile: string; level: 1 | 2 | 3; sport?: string };
   profile: Record<string, unknown>;
   goals: { slug: string; primary?: boolean; w: number; sport?: string; level?: string }[];
   days: number[];
@@ -171,6 +176,7 @@ type Spec = {
 const specs: Spec[] = [
   {
     by: lucia,
+    programming: { profile: 'hipertrofia', level: 2 },
     basics: {
       firstName: 'Marcos',
       lastName: 'Villalba',
@@ -197,6 +203,7 @@ const specs: Spec[] = [
   },
   {
     by: lucia,
+    programming: { profile: 'adulto-mayor', level: 1 },
     basics: {
       firstName: 'Rosa',
       lastName: 'Ferrán',
@@ -227,6 +234,7 @@ const specs: Spec[] = [
   },
   {
     by: pablo,
+    programming: { profile: 'deportes-equipo', level: 3, sport: 'football' },
     basics: {
       firstName: 'Iker',
       lastName: 'Arrieta',
@@ -260,6 +268,7 @@ const specs: Spec[] = [
   },
   {
     by: pablo,
+    programming: { profile: 'deportes-equipo', level: 2, sport: 'handball' },
     basics: {
       firstName: 'Claudia',
       lastName: 'Rey',
@@ -290,6 +299,7 @@ const specs: Spec[] = [
   },
   {
     by: nerea,
+    programming: { profile: 'deportes-resistencia', level: 1, sport: 'distance_running' },
     basics: {
       firstName: 'Tomás',
       lastName: 'Garrido',
@@ -319,6 +329,7 @@ const specs: Spec[] = [
   },
   {
     by: nerea,
+    programming: { profile: 'iniciacion-fuerza', level: 1 },
     basics: {
       firstName: 'Elena',
       lastName: 'Prieto',
@@ -351,6 +362,7 @@ const specs: Spec[] = [
   },
   {
     by: lucia,
+    programming: { profile: 'fuerza', level: 3 },
     basics: {
       firstName: 'Javier',
       lastName: 'Ocaña',
@@ -372,6 +384,7 @@ const specs: Spec[] = [
   },
   {
     by: pablo,
+    programming: { profile: 'deportes-individuales', level: 1, sport: 'sprint_athletics' },
     basics: {
       firstName: 'Sara',
       lastName: 'Lozano',
@@ -395,6 +408,7 @@ const specs: Spec[] = [
   },
   {
     by: nerea,
+    programming: { profile: 'recuperacion-readaptacion', level: 1 },
     basics: {
       firstName: 'Andrés',
       lastName: 'Molina',
@@ -457,7 +471,16 @@ const created: {
 }[] = [];
 for (const s of specs) {
   const { id } = await createClient(s.by, {
-    basics: s.basics,
+    basics: {
+      ...s.basics,
+      ...(s.programming
+        ? {
+            programmingProfileId: profileId(s.programming.profile),
+            programmingLevel: s.programming.level,
+            sportId: s.programming.sport ? sport(s.programming.sport) : null,
+          }
+        : {}),
+    },
     profile: s.profile,
     goals: s.goals.map((g) => ({
       goalId: goal(g.slug),

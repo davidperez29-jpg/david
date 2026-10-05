@@ -8,13 +8,17 @@ export function NavLink({
   href,
   children,
   exact = false,
+  also = [],
 }: {
   href: string;
   children: ReactNode;
   exact?: boolean;
+  /** Other sections that belong to this entry (e.g. «Clientes» covers /app and /app/clients). */
+  also?: string[];
 }) {
   const path = usePathname();
-  const active = exact ? path === href : path === href || path.startsWith(`${href}/`);
+  const within = (h: string) => path === h || path.startsWith(`${h}/`);
+  const active = (exact ? path === href : within(href)) || also.some(within);
   return (
     <Link
       href={href}

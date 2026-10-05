@@ -33,7 +33,7 @@ export default async function AssessmentPage({
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center gap-3">
         <Link
-          href={`/app/clients/${clientId}?tab=evaluaciones`}
+          href={`/app/clients/${clientId}?tab=evaluacion`}
           className="text-sm text-muted hover:underline"
         >
           ← {client.firstName} {client.lastName}

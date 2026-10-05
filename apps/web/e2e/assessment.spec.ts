@@ -6,8 +6,8 @@ test('trainer reviews progress, records a new assessment and sees change against
 }) => {
   await login(page, 'pablo.ibarra@example.com');
   // The catalogue shows reliability and references, or says when they are missing.
-  await page.getByRole('link', { name: 'Evaluación', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Evaluación', exact: true })).toBeVisible();
+  await page.getByRole('link', { name: 'Tests', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Tests', exact: true })).toBeVisible();
   await expect(page.getByText('Error de medida desconocido').first()).toBeVisible();
   await page
     .getByRole('link', { name: /Salto con contramovimiento|CMJ/ })
@@ -17,7 +17,10 @@ test('trainer reviews progress, records a new assessment and sees change against
 
   await page.getByRole('link', { name: 'Clientes', exact: true }).click();
   await page.getByRole('link', { name: 'Lozano, Sara' }).click();
-  await page.getByRole('link', { name: 'Evaluaciones' }).click();
+  await page
+    .getByRole('navigation', { name: 'Secciones del cliente' })
+    .getByRole('link', { name: 'Evaluación' })
+    .click();
   await expect(page.getByRole('heading', { name: 'Progreso' })).toBeVisible();
   await expect(page.getByText(/Desde la primera evaluación/).first()).toBeVisible();
 

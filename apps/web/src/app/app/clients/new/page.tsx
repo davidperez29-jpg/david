@@ -1,16 +1,22 @@
-import { listCatalog, listTrainers } from '@tp/application';
+import { listCatalog, listProgrammingProfiles, listTrainers } from '@tp/application';
 import { requireStaff } from '@/server/session';
-import { NewClientWizard } from './wizard';
+import { QuickClientForm } from './quick-form';
 
 export default async function NewClientPage() {
   const ctx = await requireStaff();
-  const [catalog, trainers] = await Promise.all([listCatalog(ctx), listTrainers(ctx)]);
+  const isAdmin = ctx.actor.roles.includes('ADMIN');
+  const [catalog, profiles, trainers] = await Promise.all([
+    listCatalog(ctx),
+    listProgrammingProfiles(ctx),
+    isAdmin ? listTrainers(ctx) : Promise.resolve([]),
+  ]);
   return (
     <div className="flex flex-col gap-4">
       <h1 className="text-2xl font-semibold">Nuevo cliente</h1>
-      <NewClientWizard
+      <QuickClientForm
         catalog={catalog}
-        trainers={ctx.actor.roles.includes('ADMIN') ? trainers : []}
+        profiles={profiles}
+        trainers={trainers}
         defaultTrainerId={ctx.actor.trainerId ?? null}
       />
     </div>

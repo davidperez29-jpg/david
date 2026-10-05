@@ -102,6 +102,7 @@ CREATE POLICY tca_delete ON trainer_client_assignments FOR DELETE USING (organiz
 
   // ── Catalogues ──────────────────────────────────────────────────────────────
   goals: { kind: 'catalog' },
+  programming_profiles: { kind: 'catalog' },
   sports: { kind: 'catalog' },
   equipment: { kind: 'catalog' },
   movement_patterns: { kind: 'catalog' },

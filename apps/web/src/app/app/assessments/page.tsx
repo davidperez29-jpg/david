@@ -19,7 +19,7 @@ export default async function AssessmentCatalogPage({
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold">Evaluación</h1>
+        <h1 className="text-2xl font-semibold">Tests</h1>
         <p className="text-sm text-muted">
           Cada test indica su protocolo, su fiabilidad (error de medida) y sus valores de referencia
           con la población estudiada. Sin fiabilidad aplicable no se emite veredicto de cambio; sin

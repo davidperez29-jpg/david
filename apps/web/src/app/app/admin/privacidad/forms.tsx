@@ -25,8 +25,11 @@ export function ResolveRequestForm({
       {type === 'erasure' ? (
         <p className="text-xs text-muted">
           Para atender una supresión, ejecútala antes en la{' '}
-          <Link className="text-accent underline" href={`/app/clients/${clientId}?tab=privacidad`}>
-            ficha del cliente → Privacidad
+          <Link
+            className="text-accent underline"
+            href={`/app/clients/${clientId}?tab=ficha#privacidad`}
+          >
+            ficha del cliente → Ficha → Consentimientos
           </Link>
           ; la solicitud se marca como atendida automáticamente.
         </p>

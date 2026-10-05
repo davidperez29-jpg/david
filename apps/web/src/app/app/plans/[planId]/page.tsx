@@ -101,7 +101,7 @@ export default async function PlanPage({
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center gap-3">
         <Link
-          href={`/app/clients/${client.id}?tab=planificacion`}
+          href={`/app/clients/${client.id}?tab=programa`}
           className="text-sm text-muted hover:underline"
         >
           ← {client.firstName} {client.lastName}

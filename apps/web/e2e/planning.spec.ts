@@ -8,10 +8,7 @@ test('trainer creates a 12-week, 3-day plan from a template and edits a session'
   await login(page, 'pablo.ibarra@example.com');
   await page.getByRole('link', { name: 'Clientes', exact: true }).click();
   await page.getByRole('link', { name: 'Rey, Claudia' }).click();
-  await page
-    .getByRole('navigation', { name: 'Secciones del cliente' })
-    .getByRole('link', { name: 'Planificación' })
-    .click();
+  // Programa (default tab) holds the plans.
 
   // The tab also offers the engine's plan proposal (Phase 11): use the "Nuevo plan" card.
   const form = page.locator('section').filter({

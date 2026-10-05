@@ -39,6 +39,7 @@ const {
   trainers,
   goals,
   sports,
+  programmingProfiles,
   equipment,
 } = schema;
 
@@ -52,6 +53,9 @@ export interface ClientSummary {
   primaryGoal: string | null;
   trainers: string[];
   hasAccount: boolean;
+  /** Main programming profile and level (null if not chosen yet). */
+  programmingProfile: string | null;
+  programmingLevel: number | null;
 }
 
 const BASIC_FIELDS = [
@@ -64,6 +68,9 @@ const BASIC_FIELDS = [
   'modality',
   'status',
   'preferences',
+  'programmingProfileId',
+  'programmingLevel',
+  'sportId',
 ] as const;
 
 function scopeCondition(ctx: RequestContext, scope: 'org' | 'assigned' | 'own'): SQL | undefined {
@@ -118,8 +125,11 @@ async function listClients_(ctx: RequestContext, query: unknown): Promise<Page<C
       status: clients.status,
       modality: clients.modality,
       userId: clients.userId,
+      programmingProfile: programmingProfiles.name,
+      programmingLevel: clients.programmingLevel,
     })
     .from(clients)
+    .leftJoin(programmingProfiles, eq(programmingProfiles.id, clients.programmingProfileId))
     .where(where)
     .orderBy(asc(clients.lastName), asc(clients.firstName))
     .limit(q.limit)
@@ -165,6 +175,8 @@ async function listClients_(ctx: RequestContext, query: unknown): Promise<Page<C
       primaryGoal: primaryGoals.find((g) => g.clientId === r.id)?.name ?? null,
       trainers: assigned.filter((a) => a.clientId === r.id).map((a) => a.name),
       hasAccount: r.userId != null,
+      programmingProfile: r.programmingProfile,
+      programmingLevel: r.programmingLevel,
     })),
     total: Number(total),
     limit: q.limit,
@@ -233,6 +245,25 @@ async function getClient_(ctx: RequestContext, clientId: string) {
     .from(clientHistoryEntries)
     .where(eq(clientHistoryEntries.clientId, clientId))
     .orderBy(desc(clientHistoryEntries.periodStart));
+  const [programming] = c.programmingProfileId
+    ? await ctx.db
+        .select({
+          id: programmingProfiles.id,
+          slug: programmingProfiles.slug,
+          name: programmingProfiles.name,
+          levels: programmingProfiles.levels,
+          defaultGoalSlug: programmingProfiles.defaultGoalSlug,
+          defaultBatterySlug: programmingProfiles.defaultBatterySlug,
+        })
+        .from(programmingProfiles)
+        .where(eq(programmingProfiles.id, c.programmingProfileId))
+    : [];
+  const [sport] = c.sportId
+    ? await ctx.db
+        .select({ id: sports.id, name: sports.name })
+        .from(sports)
+        .where(eq(sports.id, c.sportId))
+    : [];
   return {
     id: c.id,
     firstName: c.firstName,
@@ -248,6 +279,16 @@ async function getClient_(ctx: RequestContext, clientId: string) {
     preferences: c.preferences,
     progressTestIds: c.progressTestIds,
     hasAccount: c.userId != null,
+    programmingProfileId: c.programmingProfileId,
+    programmingLevel: c.programmingLevel,
+    programmingProfile: programming
+      ? {
+          ...programming,
+          levels: programming.levels as Record<string, { name: string; summary: string }>,
+        }
+      : null,
+    sportId: c.sportId,
+    sport: sport ?? null,
     anonymizedAt: c.anonymizedAt,
     version: c.version,
     profile: profile
@@ -395,11 +436,52 @@ async function resolveTrainerForNewClient(
   });
 }
 
+/**
+ * Profile and sport must be global or of the actor's organization (the foreign key alone would
+ * accept another organization's catalogue row). Read under RLS: invisible rows are not found.
+ */
+async function assertVisibleCatalogRefs(
+  ctx: RequestContext,
+  d: { programmingProfileId?: string | null; sportId?: string | null },
+): Promise<void> {
+  if (d.programmingProfileId) {
+    const [p] = await ctx.db
+      .select({ id: programmingProfiles.id })
+      .from(programmingProfiles)
+      .where(
+        and(
+          eq(programmingProfiles.id, d.programmingProfileId),
+          or(
+            isNull(programmingProfiles.organizationId),
+            eq(programmingProfiles.organizationId, ctx.actor.organizationId),
+          ),
+        ),
+      );
+    if (!p)
+      throw new DomainError('validation', 'Perfil no válido.', {
+        programmingProfileId: ['not_found'],
+      });
+  }
+  if (d.sportId) {
+    const [sp] = await ctx.db
+      .select({ id: sports.id })
+      .from(sports)
+      .where(
+        and(
+          eq(sports.id, d.sportId),
+          or(isNull(sports.organizationId), eq(sports.organizationId, ctx.actor.organizationId)),
+        ),
+      );
+    if (!sp) throw new DomainError('validation', 'Deporte no válido.', { sportId: ['not_found'] });
+  }
+}
+
 async function createClient_(ctx: RequestContext, input: unknown): Promise<{ id: string }> {
   const data = parse(createClientSchema, input);
   requirePermission(ctx, 'clients:create', { organizationId: ctx.actor.organizationId });
   const trainerId = await resolveTrainerForNewClient(ctx, data.trainerId);
   const b = data.basics;
+  await assertVisibleCatalogRefs(ctx, b);
   return ctx.db.transaction(async (tx) => {
     // Id generated here (no RETURNING): under RLS a trainer cannot see the row until the
     // assignment below exists.
@@ -416,6 +498,9 @@ async function createClient_(ctx: RequestContext, input: unknown): Promise<{ id:
       modality: b.modality,
       status: b.status,
       preferences: b.preferences ?? null,
+      programmingProfileId: b.programmingProfileId ?? null,
+      programmingLevel: b.programmingLevel ?? null,
+      sportId: b.sportId ?? null,
       createdBy: ctx.actor.userId,
       updatedBy: ctx.actor.userId,
     });
@@ -474,6 +559,7 @@ async function updateClient_(
   if (changes.status === 'archived') {
     throw new DomainError('validation', 'Usa la acción de archivar.', { status: ['use_archive'] });
   }
+  await assertVisibleCatalogRefs(ctx, changes);
   return ctx.db.transaction(async (tx) => {
     const [before] = await tx.select().from(clients).where(eq(clients.id, clientId)).for('update');
     if (!before) throw new DomainError('not_found', 'Cliente no encontrado.');
@@ -842,20 +928,21 @@ async function listClientsNeedingReferral_(
   const rows = await ctx.db
     .select({ id: clients.id, firstName: clients.firstName, lastName: clients.lastName })
     .from(clients)
-    .where(
-      and(
-        base,
-        sql`(
-          EXISTS (SELECT 1 FROM health_declarations h WHERE h.client_id = ${clients.id}
-                  AND h.requires_professional_assessment AND h.cleared_at IS NULL)
-          OR (SELECT s.result FROM screening_responses s WHERE s.client_id = ${clients.id}
-              ORDER BY s.completed_on DESC, s.created_at DESC LIMIT 1) = 'refer'
-        )`,
-      ),
-    )
+    .where(and(base, needsReferralCondition))
     .orderBy(asc(clients.lastName));
   return rows;
 }
+
+/**
+ * The client has a declaration requiring professional assessment not cleared yet, or their latest
+ * screening says «refer». Used in WHERE clauses over `clients`.
+ */
+export const needsReferralCondition = sql`(
+  EXISTS (SELECT 1 FROM health_declarations h WHERE h.client_id = ${clients.id}
+          AND h.requires_professional_assessment AND h.cleared_at IS NULL)
+  OR (SELECT s.result FROM screening_responses s WHERE s.client_id = ${clients.id}
+      ORDER BY s.completed_on DESC, s.created_at DESC LIMIT 1) = 'refer'
+)`;
 
 // Use cases run under Row Level Security (see rls.ts).
 export const listClients = secured(listClients_);
@@ -872,3 +959,30 @@ export const deleteHistoryEntry = secured(deleteHistoryEntry_);
 export const assignTrainer = secured(assignTrainer_);
 export const unassignTrainer = secured(unassignTrainer_);
 export const listClientsNeedingReferral = secured(listClientsNeedingReferral_);
+
+/** Programming profiles available to the organization (global + its own), for the selector. */
+async function listProgrammingProfiles_(ctx: RequestContext) {
+  requirePermission(ctx, 'clients:read');
+  const rows = await ctx.db
+    .select({
+      id: programmingProfiles.id,
+      slug: programmingProfiles.slug,
+      name: programmingProfiles.name,
+      family: programmingProfiles.family,
+      description: programmingProfiles.description,
+      levels: programmingProfiles.levels,
+      defaultGoalSlug: programmingProfiles.defaultGoalSlug,
+      defaultBatterySlug: programmingProfiles.defaultBatterySlug,
+      radarDimensions: programmingProfiles.radarDimensions,
+      global: sql<boolean>`${programmingProfiles.organizationId} IS NULL`,
+    })
+    .from(programmingProfiles)
+    .where(isNull(programmingProfiles.archivedAt))
+    .orderBy(asc(programmingProfiles.sortOrder), asc(programmingProfiles.name));
+  return rows.map((r) => ({
+    ...r,
+    levels: r.levels as Record<string, { name: string; summary: string }>,
+  }));
+}
+export const listProgrammingProfiles = secured(listProgrammingProfiles_);
+export type ProgrammingProfileOption = Awaited<ReturnType<typeof listProgrammingProfiles_>>[number];

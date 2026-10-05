@@ -40,40 +40,44 @@
 
 ## 3. Cambios por fase
 
-### Fase 1 · Clientes y perfiles
+### Fase 1 · Clientes y perfiles ✅
 
-**`training_profiles`** (catálogo; §3). Añadir un perfil es añadir una fila.
+**`programming_profiles`** (catálogo; §3; migraciones `0035`/`0036`). Añadir un perfil es añadir una fila. Se siembran 16 perfiles globales (`packages/db/src/seed/profiles.ts`).
 
 | Columna | Tipo | Nota |
 |---|---|---|
-| `id`, `organization_id` | uuid | `NULL` = global |
-| `slug`, `name` | text | p. ej. `rendimiento-deportes-equipo`, «Deportes de equipo» |
+| `id`, `organization_id` | uuid | `NULL` = global; si no, propio de la organización |
+| `slug`, `name` | text | p. ej. `deportes-equipo`, «Deportes de equipo». Único por organización |
 | `family` | text | `rendimiento` · `salud` · `fuerza_hipertrofia` · `readaptacion` · `poblacion_especifica` · `personalizado` |
 | `description` | text | Para quién es y qué prioriza |
-| `levels` | jsonb | Descriptores de los niveles 1–3 (§4 del encargo). Ver abajo. |
-| `default_battery_id` | uuid → `assessment_batteries` | Batería sugerida (fase 4) |
+| `levels` | jsonb | `{"1": {"name", "summary"}, "2": {…}, "3": {…}}`: qué cambia en cada nivel para este perfil |
+| `default_goal_slug` | text | Objetivo que el alta propone al elegir el perfil |
+| `default_battery_slug` | text | Batería de evaluación sugerida (fase 4) |
 | `radar_dimensions` | text[] | Dimensiones sugeridas del radar (fase 5) |
 | `sort_order`, `archived_at` | | |
 
-`levels` describe cada nivel en las dimensiones del §4: complejidad, intensidad, volumen, densidad, especificidad, velocidad, demanda neuromuscular, control técnico, tolerancia y experiencia:
+**RLS**: tipo `catalog` (lectura de los globales y de los propios; escritura solo de los propios). Está en la matriz de seguridad.
 
-```json
-{ "1": { "name": "Inicial", "summary": "…", "complexity": "…", "intensity": "…" }, "2": {}, "3": {} }
-```
+Las 10 dimensiones del §4 (complejidad, intensidad, volumen, densidad, especificidad, velocidad, demanda neuromuscular, control técnico, tolerancia y experiencia) son comunes a todos los perfiles: están en el dominio (`LEVEL_DIMENSIONS`, `packages/domain/src/clients/levels.ts`), no repetidas en cada fila.
 
 **`clients`**: nuevas columnas.
 
 | Columna | Tipo | Nota |
 |---|---|---|
-| `profile_id` | uuid → `training_profiles` | Perfil principal (selector) |
-| `level` | smallint 1–3 | Nivel de programación. Lo decide el entrenador; la evaluación lo sugiere |
+| `programming_profile_id` | uuid → `programming_profiles` | Perfil principal (selector) |
+| `programming_level` | smallint 1–3 (`CHECK`) | Nivel de programación. Lo decide el entrenador; el alta lo sugiere por la experiencia y la evaluación lo ajustará |
 | `sport_id` | uuid → `sports` | Deporte principal |
 
-El resto de campos del §2 ya existen y se escriben desde el alta rápida:
+- El perfil y el deporte deben ser globales o de la misma organización: si no, error de validación (`not_found`).
+- El trigger `clients_client_self_update` usa una lista de campos permitidos: el cliente no puede cambiar su perfil ni su nivel desde su app.
+
+El resto de campos del §2 ya existían y se escriben desde el alta rápida:
 - objetivo → `client_goals` principal;
-- experiencia, frecuencia y observaciones → `client_training_profiles`;
+- experiencia, frecuencia, lugar y observaciones → `client_training_profiles`;
 - material → `client_equipment`;
-- sexo y fecha de nacimiento (edad) → `clients`.
+- sexo y fecha de nacimiento (la edad se calcula) → `clients`.
+
+**`scheduled_job_runs`** (fase 0, `0033`/`0034`): una fila por trabajo y día para que los trabajos diarios se ejecuten una sola vez. RLS `system_only`.
 
 ### Fase 2 · Ejercicios, sesiones y planificación
 
@@ -193,7 +197,7 @@ Además:
 ## 4. Relaciones principales del nuevo flujo
 
 ```
-training_profiles ─< clients >─ sports
+programming_profiles ─< clients >─ sports
 clients ─< client_goals, client_equipment, client_training_profiles
 clients ─< training_plans ─< phases ─< mesocycles ─< microcycles ─< sessions ─< session_blocks ─< session_exercises >─ exercises
 plan_templates ─< plan_template_versions ;  training_plans >─ plan_templates (template_id + versión)

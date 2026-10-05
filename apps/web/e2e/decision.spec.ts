@@ -8,7 +8,11 @@ test('trainer reviews the footballer’s needs with their “why”, decides and
   await page.getByRole('link', { name: 'Clientes', exact: true }).click();
   // The client's own link (on training days the list also shows today's sessions by name).
   await page.locator('main').getByRole('link', { name: 'Arrieta, Iker', exact: true }).click();
-  await page.getByRole('link', { name: 'Necesidades', exact: true }).click();
+  // The decision engine opens from Programa (it is not a tab of its own).
+  await page
+    .getByRole('link', { name: /necesidades/i })
+    .first()
+    .click();
 
   // Demo: centre thresholds for footballers (1.5 × BW) and a recent 1RM of 98 kg at 75 kg.
   await expect(

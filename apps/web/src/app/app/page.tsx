@@ -1,260 +1,157 @@
 import Link from 'next/link';
-import {
-  listAlerts,
-  listClients,
-  listClientsNeedingReferral,
-  monitoringOverview,
-  reviewInbox,
-  trainerDashboard,
-} from '@tp/application';
-import { AlertActions } from '@/components/monitoring/actions';
-import { SeverityBadge } from '@/components/monitoring/severity';
-import { formatDate, label } from '@/lib/labels';
-import { Badge, Card, EmptyState, Stat } from '@/components/ui/card';
+import { trainerHome, type HomeAttention, type HomeStatus } from '@tp/application';
+import { Badge, Card, EmptyState } from '@/components/ui/card';
+import { label } from '@/lib/labels';
 import { requireStaff } from '@/server/session';
 
-export default async function TodayPage() {
+/** Home (docs/UX_FLOW.md §2.1): «Mis clientes» and «Entrenamientos de hoy», nothing else. */
+export default async function HomePage() {
   const ctx = await requireStaff();
-  const page = await listClients(ctx, { limit: 100 });
-  const active = page.items.filter((c) => c.status === 'active');
-  // Phase 1: attention list = referral flags and clients without a primary goal.
-  const referral = await listClientsNeedingReferral(ctx);
-  const noGoal = page.items.filter((c) => !c.primaryGoal);
-  const noAccount = page.items.filter((c) => !c.hasAccount && c.modality !== 'in_person');
-  const [inbox, overview, alerts, dash] = await Promise.all([
-    reviewInbox(ctx),
-    monitoringOverview(ctx),
-    listAlerts(ctx, { status: 'live', limit: 8 }),
-    trainerDashboard(ctx),
-  ]);
-  const overdue = dash.pendingAssessments.filter((a) => a.overdue);
-
+  const home = await trainerHome(ctx, { limit: 100 });
+  const { items, total } = home.clients;
   return (
-    <div className="flex flex-col gap-6">
-      <h1 className="text-2xl font-semibold">Hoy</h1>
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <Stat
-          label="Clientes activos"
-          value={active.length}
-          hint={`${referral.length + noGoal.length} requieren atención`}
-        />
-        <Stat
-          label="Sesiones hoy"
-          value={inbox.sessionsToday.length}
-          hint={`${inbox.sessionsToday.filter((x) => x.attendance).length} hechas`}
-        />
-        <Stat
-          label="Adherencia 28 d"
-          value={
-            overview.adherence28.percent == null
-              ? '—'
-              : `${overview.adherence28.percent.toLocaleString('es-ES')} %`
-          }
-          hint={`${overview.adherence28.done} de ${overview.adherence28.planned} sesiones`}
-        />
-        <Stat
-          label="Evaluaciones pendientes"
-          value={dash.pendingAssessments.length}
-          hint={overdue.length ? `${overdue.length} con fecha pasada` : 'próximos 7 días'}
-        />
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h1 className="text-2xl font-semibold">Mis clientes</h1>
+        <Link
+          href="/app/clients/new"
+          className="inline-flex h-10 items-center rounded-md bg-accent px-4 text-sm font-medium text-accent-contrast"
+        >
+          + Nuevo cliente
+        </Link>
       </div>
-      <Card
-        title={`Alertas (${overview.alerts.red} rojas · ${overview.alerts.yellow} amarillas · ${overview.alerts.green} propuestas)`}
-        actions={
-          <Link href="/app/alerts" className="text-sm text-accent underline">
-            Ver todas
-          </Link>
-        }
-      >
-        {alerts.length === 0 ? (
-          <EmptyState>Sin alertas activas.</EmptyState>
+      <Card>
+        {items.length === 0 ? (
+          <EmptyState>
+            Todavía no hay clientes. Pulsa «+ Nuevo cliente»: basta con el nombre y el perfil.
+          </EmptyState>
         ) : (
           <ul className="divide-y divide-border">
-            {alerts.map((a) => (
-              <li key={a.id} className="flex flex-wrap items-center gap-2 py-2 text-sm">
-                <SeverityBadge severity={a.severity} />
-                <Link
-                  className="font-medium hover:underline"
-                  href={`/app/clients/${a.clientId}?tab=seguimiento`}
-                >
-                  {a.firstName} {a.lastName}
+            {items.map((c) => (
+              <li
+                key={c.id}
+                className="grid grid-cols-[auto_1fr] items-start gap-x-3 gap-y-1 py-3 text-sm md:grid-cols-[auto_minmax(10rem,1.2fr)_minmax(9rem,1fr)_minmax(10rem,1.2fr)_6rem]"
+              >
+                <StatusDot status={c.status} />
+                <Link href={`/app/clients/${c.id}`} className="font-medium hover:underline">
+                  {c.lastName}, {c.firstName}
                 </Link>
-                <span className="min-w-0 flex-1 text-muted">{a.message}</span>
-                <AlertActions alertId={a.id} status={a.status} />
+                <span className="col-start-2 text-muted md:col-start-auto">
+                  {c.programmingProfile ? (
+                    <>
+                      {c.programmingProfile}
+                      {c.programmingLevel ? ` · N${c.programmingLevel}` : ''}
+                    </>
+                  ) : (
+                    <Link href={`/app/clients/${c.id}?tab=ficha`} className="underline">
+                      Elegir perfil
+                    </Link>
+                  )}
+                </span>
+                <span className="col-start-2 md:col-start-auto">
+                  {c.next ? (
+                    <Link
+                      href={`/app/clients/${c.id}/sessions/${c.next.id}`}
+                      className="hover:underline"
+                    >
+                      {dayLabel(c.next.date, home.today)} · {c.next.title}
+                      {c.next.published ? null : (
+                        <span className="text-muted"> (sin publicar)</span>
+                      )}
+                    </Link>
+                  ) : (
+                    <span className="text-muted">Sin sesiones próximas</span>
+                  )}
+                </span>
+                <span
+                  className="col-start-2 text-muted tabular-nums md:col-start-auto md:text-right"
+                  title="Adherencia de las últimas 4 semanas"
+                >
+                  {c.adherence28.percent == null ? (
+                    '—'
+                  ) : (
+                    <>
+                      <span className="text-text">
+                        {c.adherence28.percent.toLocaleString('es-ES')} %
+                      </span>
+                      <span className="sr-only"> de adherencia en 4 semanas</span>
+                    </>
+                  )}
+                </span>
+                {c.attention.length ? (
+                  <ul className="col-start-2 flex flex-col gap-0.5 md:col-span-4">
+                    {c.attention.slice(0, 2).map((a, i) => (
+                      <li key={i}>
+                        <Link
+                          href={attentionHref(c.id, a)}
+                          className={`text-xs hover:underline ${a.status === 'review' ? 'text-danger' : 'text-warn'}`}
+                        >
+                          {a.text}
+                        </Link>
+                      </li>
+                    ))}
+                    {c.attention.length > 2 ? (
+                      <li className="text-xs text-muted">y {c.attention.length - 2} más</li>
+                    ) : null}
+                  </ul>
+                ) : null}
               </li>
             ))}
           </ul>
         )}
-      </Card>
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card title="Sesiones de hoy">
-          {inbox.sessionsToday.length === 0 ? (
-            <EmptyState>No hay sesiones programadas hoy.</EmptyState>
-          ) : (
-            <ul className="divide-y divide-border">
-              {inbox.sessionsToday.map((x) => (
-                <li key={x.id} className="flex flex-wrap items-center gap-2 py-2 text-sm">
-                  <Link
-                    className="font-medium hover:underline"
-                    href={`/app/clients/${x.clientId}/sessions/${x.id}`}
-                  >
-                    {x.firstName} {x.lastName}
-                  </Link>
-                  <span className="text-muted">
-                    {x.time ? `${x.time.slice(0, 5)} · ` : ''}
-                    {x.dayLabel} · {x.title}
-                  </span>
-                  {x.attendance ? (
-                    <Badge tone={x.attendance === 'completed' ? 'ok' : 'warn'}>
-                      {label('attendance', x.attendance)}
-                    </Badge>
-                  ) : x.published ? null : (
-                    <Badge>No publicada</Badge>
-                  )}
-                  <Link
-                    className="ml-auto text-xs text-accent underline"
-                    href={`/app/clients/${x.clientId}/sessions/${x.id}/sala`}
-                  >
-                    Modo sala
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
-        </Card>
-        <Card title="Revisión de sesiones">
-          {inbox.substitutions.length + inbox.flaggedLogs.length === 0 ? (
-            <EmptyState>Nada pendiente de revisar.</EmptyState>
-          ) : (
-            <ul className="divide-y divide-border">
-              {inbox.substitutions.map((x) => (
-                <li key={x.id} className="flex flex-wrap items-center gap-2 py-2 text-sm">
-                  <Badge tone={x.reason === 'pain' ? 'danger' : 'warn'}>
-                    {label('substitutionReason', x.reason)}
-                  </Badge>
-                  <Link
-                    className="font-medium hover:underline"
-                    href={`/app/clients/${x.clientId}/sessions/${x.sessionId}`}
-                  >
-                    {x.firstName} {x.lastName}
-                  </Link>
-                  <span className="text-muted">no pudo hacer {x.exercise}</span>
-                </li>
-              ))}
-              {inbox.flaggedLogs.map((x) => (
-                <li key={x.sessionId} className="flex flex-wrap items-center gap-2 py-2 text-sm">
-                  <Badge tone="warn">Revisar registro</Badge>
-                  <Link
-                    className="font-medium hover:underline"
-                    href={`/app/clients/${x.clientId}/sessions/${x.sessionId}`}
-                  >
-                    {x.firstName} {x.lastName}
-                  </Link>
-                  <span className="text-muted">
-                    {x.count} series · {x.reason}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </Card>
-      </div>
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card title="Feedback reciente">
-          {dash.recentFeedback.length === 0 ? (
-            <EmptyState>Sin valoraciones en los últimos 7 días.</EmptyState>
-          ) : (
-            <ul className="divide-y divide-border">
-              {dash.recentFeedback.map((f) => (
-                <li key={f.sessionId} className="flex flex-wrap items-center gap-2 py-2 text-sm">
-                  <Link
-                    className="font-medium hover:underline"
-                    href={`/app/clients/${f.clientId}/sessions/${f.sessionId}`}
-                  >
-                    {f.firstName} {f.lastName}
-                  </Link>
-                  {f.comment ? <span className="italic">«{f.comment}»</span> : null}
-                  {f.sessionRpe != null ? (
-                    <span className="text-xs text-muted">RPE {f.sessionRpe}</span>
-                  ) : null}
-                  {f.status && f.status !== 'completed' ? (
-                    <Badge tone="warn">{label('attendance', f.status)}</Badge>
-                  ) : null}
-                </li>
-              ))}
-            </ul>
-          )}
-        </Card>
-        <Card
-          title="Evaluaciones pendientes"
-          actions={
-            <Link href="/app/calendar" className="text-sm text-accent underline">
-              Calendario
+        {total > items.length ? (
+          <p className="mt-3 text-sm text-muted">
+            Mostrando {items.length} de {total}.{' '}
+            <Link href="/app/clients" className="text-accent underline">
+              Ver todos los clientes
             </Link>
-          }
-        >
-          {dash.pendingAssessments.length === 0 ? (
-            <EmptyState>Ninguna en los próximos 7 días.</EmptyState>
-          ) : (
-            <ul className="divide-y divide-border">
-              {dash.pendingAssessments.map((a) => (
-                <li key={a.id} className="flex flex-wrap items-center gap-2 py-2 text-sm">
-                  <span className="w-24 text-muted tabular-nums">{formatDate(a.date)}</span>
-                  <Link
-                    className="font-medium hover:underline"
-                    href={`/app/clients/${a.clientId}/assessments/${a.id}`}
-                  >
-                    {a.firstName} {a.lastName}
-                  </Link>
-                  {a.overdue ? <Badge tone="warn">Fecha pasada</Badge> : null}
-                </li>
-              ))}
-            </ul>
-          )}
-        </Card>
-      </div>
-      <Card title="Requiere acción">
-        {referral.length + noGoal.length + noAccount.length === 0 ? (
-          <EmptyState>Nada pendiente.</EmptyState>
+          </p>
+        ) : items.length ? (
+          <p className="mt-3 text-sm">
+            <Link href="/app/clients" className="text-accent underline">
+              Buscar y filtrar clientes
+            </Link>
+          </p>
+        ) : null}
+      </Card>
+
+      <Card
+        title="Entrenamientos de hoy"
+        actions={
+          <Link href="/app/calendar" className="text-sm text-accent underline">
+            Ver calendario
+          </Link>
+        }
+      >
+        {home.todaySessions.length === 0 ? (
+          <EmptyState>No hay entrenamientos programados hoy.</EmptyState>
         ) : (
           <ul className="divide-y divide-border">
-            {referral.map((c) => (
-              <li key={`r-${c.id}`} className="flex items-center justify-between gap-2 py-2">
-                <span className="flex items-center gap-2">
-                  <Badge tone="danger">Atención</Badge>
-                  <Link
-                    className="font-medium hover:underline"
-                    href={`/app/clients/${c.id}?tab=salud`}
-                  >
-                    {c.firstName} {c.lastName}
-                  </Link>
-                  <span className="text-sm text-muted">
-                    Requiere valoración por profesional sanitario
-                  </span>
-                </span>
-              </li>
-            ))}
-            {noGoal.map((c) => (
-              <li key={`g-${c.id}`} className="flex items-center gap-2 py-2">
-                <Badge tone="warn">Revisar</Badge>
+            {home.todaySessions.map((s) => (
+              <li key={s.id} className="flex flex-wrap items-center gap-2 py-2 text-sm">
+                <span className="w-12 text-muted tabular-nums">{s.time ?? '—'}</span>
                 <Link
                   className="font-medium hover:underline"
-                  href={`/app/clients/${c.id}?tab=objetivos`}
+                  href={`/app/clients/${s.clientId}/sessions/${s.id}`}
                 >
-                  {c.firstName} {c.lastName}
+                  {s.firstName} {s.lastName}
                 </Link>
-                <span className="text-sm text-muted">Sin objetivo principal</span>
-              </li>
-            ))}
-            {noAccount.map((c) => (
-              <li key={`a-${c.id}`} className="flex items-center gap-2 py-2">
-                <Badge tone="neutral">Info</Badge>
-                <Link className="font-medium hover:underline" href={`/app/clients/${c.id}`}>
-                  {c.firstName} {c.lastName}
+                <span className="text-muted">· {s.title}</span>
+                {s.status ? (
+                  <Badge tone={s.status === 'completed' ? 'ok' : 'warn'}>
+                    {label('attendance', s.status)}
+                  </Badge>
+                ) : s.published ? (
+                  <Badge>Sin registrar</Badge>
+                ) : (
+                  <Badge>No publicada</Badge>
+                )}
+                <Link
+                  className="ml-auto text-xs text-accent underline"
+                  href={`/app/clients/${s.clientId}/sessions/${s.id}/sala`}
+                >
+                  Modo sala
                 </Link>
-                <span className="text-sm text-muted">
-                  Entrena online sin cuenta en la app: envía la invitación
-                </span>
               </li>
             ))}
           </ul>
@@ -262,4 +159,44 @@ export default async function TodayPage() {
       </Card>
     </div>
   );
+}
+
+const STATUS: Record<HomeStatus, { className: string; text: string }> = {
+  ok: { className: 'bg-ok', text: 'Al día' },
+  look: { className: 'bg-warn', text: 'Algo que mirar' },
+  review: { className: 'bg-danger', text: 'Revisar' },
+};
+
+function StatusDot({ status }: { status: HomeStatus }) {
+  const s = STATUS[status];
+  return (
+    <span className="mt-1 flex items-center" title={s.text}>
+      <span aria-hidden="true" className={`h-2.5 w-2.5 rounded-full ${s.className}`} />
+      <span className="sr-only">{s.text}</span>
+    </span>
+  );
+}
+
+function attentionHref(clientId: string, a: HomeAttention): string {
+  if (a.reason === 'session_review' && a.sessionId)
+    return `/app/clients/${clientId}/sessions/${a.sessionId}`;
+  if (a.reason === 'referral') return `/app/clients/${clientId}?tab=ficha#salud`;
+  return `/app/clients/${clientId}?tab=seguimiento`;
+}
+
+const WEEKDAY = new Intl.DateTimeFormat('es-ES', {
+  weekday: 'short',
+  day: '2-digit',
+  month: '2-digit',
+  timeZone: 'UTC',
+});
+
+/** «Hoy», «Mañana» or «mié., 08/10». */
+function dayLabel(date: string, today: string): string {
+  const days = Math.round(
+    (Date.parse(`${date}T00:00:00Z`) - Date.parse(`${today}T00:00:00Z`)) / 86_400_000,
+  );
+  if (days === 0) return 'Hoy';
+  if (days === 1) return 'Mañana';
+  return WEEKDAY.format(new Date(`${date}T00:00:00Z`));
 }

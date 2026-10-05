@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { expect, test } from '@playwright/test';
-import { login } from './helpers';
+import { fromMenu, login } from './helpers';
 
 test('client exercises their rights from the app; ADMIN resolves and erases', async ({
   page,
@@ -32,7 +32,7 @@ test('client exercises their rights from the app; ADMIN resolves and erases', as
   // ADMIN inbox: resolve the request with an answer to the data subject.
   const admin = await browser.newPage();
   await login(admin, 'lucia.moreno@example.com');
-  await admin.getByRole('link', { name: 'Privacidad', exact: true }).click();
+  await fromMenu(admin, 'Privacidad');
   const item = admin
     .getByRole('listitem')
     .filter({ hasText: 'Oposición' })

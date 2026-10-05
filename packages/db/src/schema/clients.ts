@@ -1,6 +1,7 @@
 import { sql } from 'drizzle-orm';
 import {
   boolean,
+  check,
   date,
   index,
   jsonb,
@@ -16,7 +17,7 @@ import {
 } from 'drizzle-orm/pg-core';
 import { authorship, id, timestamps, version } from './_common';
 import { organizations, users } from './iam';
-import { equipment, goals, sports } from './catalog';
+import { equipment, goals, programmingProfiles, sports } from './catalog';
 
 export const sex = pgEnum('sex', ['female', 'male', 'other', 'undisclosed']);
 export const clientStatus = pgEnum('client_status', ['lead', 'active', 'paused', 'archived']);
@@ -101,6 +102,11 @@ export const clients = pgTable(
     status: clientStatus('status').notNull().default('active'),
     modality: modality('modality').notNull().default('in_person'),
     preferences: text('preferences'),
+    /** Main programming profile and its level (1 inicial · 2 intermedio · 3 avanzado). */
+    programmingProfileId: uuid('programming_profile_id').references(() => programmingProfiles.id),
+    programmingLevel: smallint('programming_level'),
+    /** Main sport, if any. */
+    sportId: uuid('sport_id').references(() => sports.id),
     /** Tests the trainer shows in the client's "Progreso" (§9.5); empty = all. */
     progressTestIds: uuid('progress_test_ids')
       .array()
@@ -118,6 +124,7 @@ export const clients = pgTable(
   (t) => [
     index('clients_org_status_idx').on(t.organizationId, t.status),
     index('clients_org_name_idx').on(t.organizationId, t.lastName, t.firstName),
+    check('clients_programming_level_ck', sql`${t.programmingLevel} BETWEEN 1 AND 3`),
   ],
 );
 

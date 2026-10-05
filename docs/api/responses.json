@@ -375,6 +375,8 @@
         "lastName": "string",
         "modality": "string",
         "primaryGoal": "string",
+        "programmingLevel": "number",
+        "programmingProfile": "string",
         "status": "string",
         "trainers": [
           "string"
@@ -457,12 +459,37 @@
       "sessionsPerWeek": "number",
       "yearsTraining": "null"
     },
+    "programmingLevel": "number",
+    "programmingProfile": {
+      "defaultBatterySlug": "string",
+      "defaultGoalSlug": "string",
+      "id": "string",
+      "levels": {
+        "1": {
+          "name": "string",
+          "summary": "string"
+        },
+        "2": {
+          "name": "string",
+          "summary": "string"
+        },
+        "3": {
+          "name": "string",
+          "summary": "string"
+        }
+      },
+      "name": "string",
+      "slug": "string"
+    },
+    "programmingProfileId": "string",
     "progressTestIds": [],
     "referral": {
       "required": "boolean",
       "text": "null"
     },
     "sex": "string",
+    "sport": "null",
+    "sportId": "null",
     "status": "string",
     "version": "number"
   },
@@ -1499,8 +1526,11 @@
       "phone": "null",
       "photoFileId": "null",
       "preferences": "null",
+      "programmingLevel": "number",
+      "programmingProfileId": "string",
       "progressTestIds": [],
       "sex": "string",
+      "sportId": "null",
       "status": "string",
       "updatedAt": "string",
       "updatedBy": "string",
@@ -1567,7 +1597,7 @@
         "bandTension": "null",
         "blockId": "string",
         "chainLoadKg": "null",
-        "coachNotes": "null",
+        "coachNotes": "string",
         "contacts": "null",
         "createdAt": "string",
         "createdBy": "string",
@@ -2053,6 +2083,63 @@
       "reason": "string"
     }
   ],
+  "GET dashboard/home": {
+    "clients": {
+      "items": [
+        {
+          "adherence28": {
+            "done": "number",
+            "percent": "number",
+            "planned": "number"
+          },
+          "age": "number",
+          "attention": [
+            {
+              "reason": "string",
+              "sessionId": "string",
+              "status": "string",
+              "text": "string"
+            }
+          ],
+          "firstName": "string",
+          "hasAccount": "boolean",
+          "id": "string",
+          "lastName": "string",
+          "modality": "string",
+          "next": {
+            "date": "string",
+            "id": "string",
+            "published": "boolean",
+            "title": "string"
+          },
+          "primaryGoal": "string",
+          "programmingLevel": "number",
+          "programmingProfile": "string",
+          "status": "string",
+          "trainers": [
+            "string"
+          ]
+        }
+      ],
+      "limit": "number",
+      "offset": "number",
+      "total": "number"
+    },
+    "today": "string",
+    "todaySessions": [
+      {
+        "clientId": "string",
+        "dayLabel": "string",
+        "firstName": "string",
+        "id": "string",
+        "lastName": "string",
+        "published": "boolean",
+        "status": "null",
+        "time": "null",
+        "title": "string"
+      }
+    ]
+  },
   "GET dashboard/trainer": {
     "activeClients": "number",
     "pendingAssessments": [
@@ -2779,6 +2866,35 @@
     "requireAdmin2fa": "boolean",
     "retentionMonths": "null"
   },
+  "GET programming-profiles": [
+    {
+      "defaultBatterySlug": "string",
+      "defaultGoalSlug": "string",
+      "description": "string",
+      "family": "string",
+      "global": "boolean",
+      "id": "string",
+      "levels": {
+        "1": {
+          "name": "string",
+          "summary": "string"
+        },
+        "2": {
+          "name": "string",
+          "summary": "string"
+        },
+        "3": {
+          "name": "string",
+          "summary": "string"
+        }
+      },
+      "name": "string",
+      "radarDimensions": [
+        "string"
+      ],
+      "slug": "string"
+    }
+  ],
   "GET reports/[id]": {
     "clientId": "string",
     "createdAt": "string",

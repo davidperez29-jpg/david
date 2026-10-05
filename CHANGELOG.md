@@ -2,6 +2,33 @@
 
 Formato: fecha · cambio · motivo · archivos · impacto.
 
+## 2026-10-05 — Reestructuración, fase 1: clientes, perfiles y navegación
+
+- **Cambio:** navegación de **4 entradas** (Clientes · Plantillas · Ejercicios · Tests) y un menú de usuario con el resto (Calendario, Alertas, Informes, Ciencia, Ajustes, Usuarios, Privacidad, Cerrar sesión). Las alertas urgentes se cuentan junto al menú.
+  - **Antes:** 13 entradas. **Motivo:** §42 del encargo («dashboard saturado»).
+- **Cambio:** el inicio pasa a ser **Mis clientes + Entrenamientos de hoy**.
+  - Una fila por cliente: estado (verde · ámbar · rojo), perfil y nivel, próxima sesión y adherencia de 4 semanas. Si algo requiere atención, el motivo aparece en la fila con un enlace a donde se resuelve. Primero, las filas en rojo.
+  - Sustituye a los seis bloques del antiguo «Hoy». Caso de uso `trainerHome`; `GET /api/v1/dashboard/home`.
+- **Cambio:** **perfiles de programación** como catálogo (`programming_profiles`, migraciones `0035`–`0036`, RLS de catálogo): 16 perfiles globales con 3 niveles cada uno, objetivo y batería sugeridos.
+  - Cliente: `programming_profile_id`, `programming_level` (1–3) y `sport_id`, validados contra el catálogo de la organización. El cliente no puede cambiarlos desde su app.
+  - Las 10 dimensiones de los niveles (complejidad, intensidad, volumen…) están en el dominio (`LEVEL_DIMENSIONS`) y se explican en la ficha.
+  - `GET /api/v1/programming-profiles`.
+- **Cambio:** **alta de cliente en un solo formulario** (antes, un asistente de 4 pasos).
+  - Obligatorios: nombre, apellidos y perfil. El perfil propone el objetivo y la experiencia propone el nivel; ambos se pueden cambiar.
+  - Material con atajos (gimnasio completo, casa básica, sin material). «Guardar e invitar a la app» crea también la invitación.
+  - Al guardar se abre la Ficha en Salud (consentimiento y cribado antes de entrenar).
+- **Cambio:** **ficha de cliente con 5 pestañas** (Programa · Evaluación · Seguimiento · Informes · Ficha); Readaptación llegará en la fase 7.
+  - Antes había 13 pestañas. Programa reúne planificación y sesiones; Ficha reúne perfil y nivel, datos, objetivos, entrenamiento y material, salud, consentimientos, entrenadores y acceso, con un índice.
+  - El motor de decisiones («Necesidades») y el historial de cambios se abren desde enlaces. Los enlaces antiguos (`?tab=salud`, `?tab=planificacion`…) siguen funcionando.
+- **Cambio:** en el cribado, «Apto» pasa a «Sin derivación».
+  - **Motivo:** el software nunca muestra «apto»; el cuestionario indica si derivar, no autoriza a entrenar.
+- **Datos de ejemplo:** los clientes de demostración tienen perfil, nivel y deporte (Noelia, sin perfil, muestra el aviso «Elegir perfil»).
+- **Pruebas:**
+  - unitarias de niveles;
+  - integración de perfiles (catálogo, visibilidad entre organizaciones, validación, auditoría, bloqueo al cliente) y del inicio (filas, motivos, orden, ámbito por entrenador);
+  - E2E del alta en un formulario, del menú de usuario, de los recorridos de UX (2 clics desde el inicio) y de accesibilidad de las pestañas nuevas;
+  - contratos de API actualizados (solo campos y rutas nuevos).
+
 ## 2026-10-05 — Reestructuración, fase 0: despliegue online
 
 - **Cambio:** la aplicación se puede publicar en Render (UE, Frankfurt) sin comandos (`DEPLOY_RENDER.md`).

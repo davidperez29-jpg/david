@@ -1,33 +1,48 @@
 import { expect, test } from '@playwright/test';
 import { login } from './helpers';
 
-test('trainer creates a client with goals and records consent + screening', async ({ page }) => {
+test('trainer creates a client in one form and records consent + screening', async ({ page }) => {
   await login(page, 'pablo.ibarra@example.com');
-  await expect(page.getByRole('heading', { name: 'Hoy', exact: true })).toBeVisible();
-  // referral alert for a demo client with an uncleared declaration
+  await expect(page.getByRole('heading', { name: 'Mis clientes', exact: true })).toBeVisible();
+  // The main navigation has four entries.
+  await expect(page.getByRole('navigation', { name: 'Principal' }).getByRole('link')).toHaveText([
+    'Clientes',
+    'Plantillas',
+    'Ejercicios',
+    'Tests',
+  ]);
+  // referral need shown in the client's row
   await expect(
     page.getByText('Requiere valoración por profesional sanitario').first(),
   ).toBeVisible();
 
-  await page.getByRole('link', { name: 'Clientes', exact: true }).click();
-  await page.getByRole('link', { name: 'Nuevo cliente' }).click();
+  await page.getByRole('link', { name: '+ Nuevo cliente' }).click();
   const unique = `E2E${Date.now()}`;
-  await page.getByLabel('Nombre', { exact: true }).fill('Lola');
-  await page.getByLabel('Apellidos').fill(unique);
+  const save = page.getByRole('button', { name: 'Guardar', exact: true });
+  await page.getByLabel('Nombre *').fill('Lola');
+  await page.getByLabel('Apellidos *').fill(unique);
+  await expect(save).toBeDisabled(); // the main profile is required
   await page.getByLabel('Fecha de nacimiento').fill('1999-02-03');
-  await page.getByRole('button', { name: 'Siguiente' }).click();
-  await page.getByLabel('Experiencia').selectOption('beginner');
-  await page.getByRole('button', { name: 'Siguiente' }).click();
-  await page.getByRole('button', { name: 'Añadir objetivo' }).click();
-  await page.getByLabel('Objetivo', { exact: true }).selectOption({ label: 'Salud general' });
-  await page.getByRole('button', { name: 'Siguiente' }).click();
-  await page.getByRole('button', { name: 'Crear cliente' }).click();
+  await page.getByLabel('Perfil principal *').selectOption({ label: 'Salud' });
+  // the profile proposes its goal; the experience proposes the level
+  await expect(page.getByLabel('Objetivo')).toHaveValue(/.+/);
+  await expect(page.locator('#goalId option:checked')).toHaveText('Salud general');
+  await page.getByLabel('Experiencia').selectOption('intermediate');
+  await expect(page.getByLabel('Nivel')).toHaveValue('2');
+  await page.getByLabel('Días por semana').fill('2');
+  await page.getByRole('button', { name: 'Casa básica' }).click();
+  await expect(page.getByRole('button', { name: 'Quitar Mancuernas' })).toBeVisible();
+  await save.click();
 
   await expect(page.getByRole('heading', { name: `Lola ${unique}` })).toBeVisible();
+  await expect(
+    page.getByText('Salud · Nivel 2 · 2 días/semana · Objetivo: Salud general'),
+  ).toBeVisible();
   await expect(page.getByText('Cliente creado.')).toBeVisible();
   // health data needs explicit consent first
   await expect(page.getByRole('button', { name: 'Registrar declaración' })).toBeDisabled();
-  await page.getByRole('button', { name: 'Registrar consentimiento' }).click();
+  // The Salud section asks for the health-data consent in place (Consentimientos lists all).
+  await page.locator('#salud').getByRole('button', { name: 'Registrar consentimiento' }).click();
   await expect(page.getByRole('button', { name: 'Registrar declaración' })).toBeEnabled();
   await page.getByLabel('Resultado').selectOption('refer');
   await page
@@ -41,6 +56,29 @@ test('trainer creates a client with goals and records consent + screening', asyn
 
   await page.getByRole('link', { name: 'Historial de cambios' }).click();
   await expect(page.getByText('Consentimiento otorgado · Consentimiento')).toBeVisible();
+});
+
+test('the user menu holds everything else', async ({ page }) => {
+  await login(page, 'lucia.moreno@example.com');
+  const menu = page.locator('details', { has: page.locator('summary', { hasText: 'Menú' }) });
+  await menu.locator('summary').click();
+  for (const name of [
+    'Calendario',
+    'Alertas',
+    'Informes',
+    'Ciencia',
+    'Ajustes',
+    'Usuarios',
+    'Privacidad',
+    'Cerrar sesión',
+  ])
+    await expect(
+      menu.getByRole(name === 'Cerrar sesión' ? 'button' : 'link', { name }),
+    ).toBeVisible();
+  await menu.getByRole('link', { name: 'Calendario' }).click();
+  await expect(page.getByRole('heading', { name: 'Calendario', level: 1 })).toBeVisible();
+  // the menu closes after navigating
+  await expect(menu.getByRole('link', { name: 'Ciencia' })).toBeHidden();
 });
 
 test('trainer cannot open a client assigned to another trainer', async ({ page }) => {

@@ -406,7 +406,7 @@ export async function DecisionTab({
                 {r.planSkeleton.sessionsPerWeek} sesiones/semana · reevaluar cada{' '}
                 {r.planSkeleton.reassessmentEveryWeeks} semanas
               </p>
-              <Link href={`?tab=planificacion`} className="text-sm text-accent underline">
+              <Link href={`?tab=programa`} className="text-sm text-accent underline">
                 Crear el plan desde una plantilla
               </Link>
             </Proposal>

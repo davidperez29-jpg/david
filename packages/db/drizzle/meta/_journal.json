@@ -246,6 +246,20 @@
       "when": 1791194861959,
       "tag": "0034_rls_v11",
       "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "7",
+      "when": 1791198621638,
+      "tag": "0035_programming_profiles",
+      "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1791198627334,
+      "tag": "0036_rls_v12",
+      "breakpoints": true
     }
   ]
 }

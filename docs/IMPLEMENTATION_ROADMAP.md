@@ -17,8 +17,8 @@
 | Fase | Contenido | Reutiliza | Estado |
 |---|---|---|---|
 | **0** | **Despliegue online** (Render, UE): URL + login, sin comandos | Docker, migraciones, observabilidad | ✅ Preparado (falta el primer despliegue del usuario) |
-| 1 | Arquitectura + BD + autenticación + clientes (perfil principal, nivel, deporte, material, frecuencia); navegación nueva | Auth, RLS, clientes | ⏳ En curso |
-| 2 | Ejercicios + sesiones (tabla tipo Excel) + planificación MES → SEMANA → SESIÓN | Biblioteca, prescripción, planes | Pendiente |
+| 1 | Arquitectura + BD + autenticación + clientes (perfil principal, nivel, deporte, material, frecuencia); navegación nueva | Auth, RLS, clientes | ✅ Hecha |
+| 2 | Ejercicios + sesiones (tabla tipo Excel) + planificación MES → SEMANA → SESIÓN | Biblioteca, prescripción, planes | ⏳ Siguiente |
 | 3 | Plantillas + objetivos + niveles (filtros, usar plantilla = copia, desde cero, mis plantillas con versiones) | `plan_templates` | Pendiente |
 | 4 | Evaluaciones + referencias (hoja de intentos, baterías por perfil, fórmulas, grupos/equipos) | Evaluación actual | Pendiente |
 | 5 | Radares + evolución (normalización, dimensiones, comparativas) | Cambio real, gráficos | Pendiente |
@@ -54,21 +54,21 @@ La fase 10 se mantiene para el endurecimiento final.
 
 Se comprueba en CI con la imagen de despliegue sobre una base vacía, arrancada dos veces.
 
-## Fase 1 · Clientes, perfiles y navegación
+## Fase 1 · Clientes, perfiles y navegación ✅
 
-- Catálogo `training_profiles` con los 15 perfiles del §3 y sus 3 niveles (descriptores del §4).
-- `clients.profile_id`, `level`, `sport_id`.
-- Alta rápida en un formulario: nombre, edad/fecha, sexo, deporte, nivel, objetivo, experiencia, material, frecuencia, observaciones y perfil principal.
+- Catálogo `programming_profiles` con 16 perfiles (los 15 del §3 más «Perfil personalizado») y sus 3 niveles; las 10 dimensiones del §4 en el dominio (`LEVEL_DIMENSIONS`).
+- `clients.programming_profile_id`, `programming_level` y `sport_id` (decisión A11 sobre los nombres).
+- Alta rápida en un formulario: nombre, fecha de nacimiento (edad), sexo, perfil principal, nivel, experiencia, objetivo, deporte, días por semana, lugar, material, observaciones y email.
 - **Navegación nueva**: Clientes · Plantillas · Ejercicios · Tests, más el menú de usuario.
-- **Inicio = Mis clientes + Entrenamientos de hoy**.
-- Ficha de cliente con 6 pestañas: Programa, Evaluación, Readaptación (si procede), Seguimiento, Informes y Ficha. Las pestañas sin rediseñar todavía muestran el contenido actual.
+- **Inicio = Mis clientes + Entrenamientos de hoy**, con el motivo de atención en la fila del cliente.
+- Ficha de cliente con 5 pestañas: Programa, Evaluación, Seguimiento, Informes y Ficha. Readaptación se añade en la fase 7. Las pestañas sin rediseñar todavía muestran el contenido actual.
 
 **Criterios**:
-- crear un cliente con perfil en 2 clics y menos de 30 s;
-- el menú tiene 4 entradas;
-- la RLS de las tablas nuevas está en la matriz;
-- los E2E de alta y de navegación pasan;
-- axe sin infracciones.
+- ✅ crear un cliente con perfil en 2 clics (Nuevo cliente → Guardar) rellenando 3 campos (E2E `trainer.spec.ts`);
+- ✅ el menú tiene 4 entradas (E2E);
+- ✅ la RLS de las tablas nuevas está en la matriz (`programming_profiles`, `scheduled_job_runs`);
+- ✅ los E2E de alta y de navegación pasan;
+- ✅ axe sin infracciones en las páginas nuevas (claro y oscuro).
 
 ## Fase 2 · Ejercicios, sesiones y planificación
 
