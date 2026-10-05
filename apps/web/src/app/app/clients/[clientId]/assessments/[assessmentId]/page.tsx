@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { getAssessment, getClient } from '@tp/application';
 import { DomainError, STOP_SYMPTOMS } from '@tp/domain';
 import { notFound } from 'next/navigation';
+import { AttemptsSheet } from '@/components/assessment/attempts-sheet';
 import { ChangeLine } from '@/components/assessment/verdict';
 import { Identifiers } from '@/components/science/evidence';
 import { Badge, Card, EmptyState } from '@/components/ui/card';
@@ -85,6 +86,7 @@ export default async function AssessmentPage({
                   </span>
                   {r.test.isEstimate ? <Badge tone="warn">Estimación</Badge> : null}
                   {!r.valid ? <Badge tone="danger">No válido</Badge> : null}
+                  {r.confirm ? <Badge tone="warn">Confirmar medición</Badge> : null}
                   <span className="text-xs text-muted">
                     {r.test.aggregation} · intentos {(r.attempts as number[]).join(' / ')}
                     {r.cvIntraPercent != null ? ` · CV intra ${r.cvIntraPercent} %` : ''}
@@ -146,28 +148,57 @@ export default async function AssessmentPage({
       ) : null}
 
       {editable ? (
-        <Card title="Registrar">
-          <ul className="flex flex-col gap-4">
-            {a.tests.map((t) => (
-              <li
-                key={t.id}
-                className="flex flex-col gap-1 border-b border-border pb-4 last:border-0"
-              >
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-medium">{t.name}</span>
-                  {t.recorded ? <Badge tone="ok">Registrado</Badge> : null}
-                  <span className="text-xs text-muted">Se usa el {t.aggregation}.</span>
-                </div>
-                {t.protocol ? (
-                  <details className="text-xs text-muted">
-                    <summary className="cursor-pointer">Protocolo</summary>
-                    <p className="whitespace-pre-line">{t.protocol}</p>
-                  </details>
-                ) : null}
-                <RecordResultForm assessmentId={a.id} test={t} />
-              </li>
-            ))}
-          </ul>
+        <Card title="Hoja de intentos">
+          <AttemptsSheet
+            caption="Intentos de cada test"
+            rule="Cada test aplica su regla: mediana de los pliegues, mejor intento en sprints y saltos… El resultado y las métricas derivadas se recalculan al guardar."
+            rows={a.tests.flatMap((t) =>
+              (t.sided ? (['right', 'left'] as const) : (['both'] as const)).map((side) => {
+                const r = a.results.find((x) => x.testId === t.id && x.side === side);
+                return {
+                  key: `${t.id}:${side}`,
+                  label: t.name,
+                  sublabel: side === 'right' ? 'Derecha' : side === 'left' ? 'Izquierda' : null,
+                  assessmentId: a.id,
+                  testId: t.id,
+                  side,
+                  unit: t.unit,
+                  columns: t.defaultAttempts,
+                  existing: r
+                    ? { id: r.id, attempts: r.attempts as number[], valid: r.valid }
+                    : null,
+                  value: r ? formatValue(r.value) : null,
+                  flag: r?.confirm ? 'Confirmar medición' : null,
+                };
+              }),
+            )}
+          />
+          <details className="mt-4">
+            <summary className="cursor-pointer text-sm font-medium">
+              Registrar con método, notas o intento no válido
+            </summary>
+            <ul className="mt-3 flex flex-col gap-4">
+              {a.tests.map((t) => (
+                <li
+                  key={t.id}
+                  className="flex flex-col gap-1 border-b border-border pb-4 last:border-0"
+                >
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="font-medium">{t.name}</span>
+                    {t.recorded ? <Badge tone="ok">Registrado</Badge> : null}
+                    <span className="text-xs text-muted">Se usa el {t.aggregation}.</span>
+                  </div>
+                  {t.protocol ? (
+                    <details className="text-xs text-muted">
+                      <summary className="cursor-pointer">Protocolo</summary>
+                      <p className="whitespace-pre-line">{t.protocol}</p>
+                    </details>
+                  ) : null}
+                  <RecordResultForm assessmentId={a.id} test={t} />
+                </li>
+              ))}
+            </ul>
+          </details>
         </Card>
       ) : null}
     </div>

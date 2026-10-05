@@ -31,12 +31,13 @@ test('trainer reviews progress, records a new assessment and sees change against
   await firstTest.check();
   await page.getByRole('button', { name: 'Crear evaluación' }).click();
   await expect(page.getByRole('heading', { name: /Evaluación del/ })).toBeVisible();
+  // Hoja de intentos: type, leave the row, it saves.
   await page
-    .getByLabel(/Intento 1/)
+    .getByLabel(/intento 1/)
     .first()
     .fill('10');
-  await page.getByRole('button', { name: 'Guardar' }).first().click();
-  await expect(page.getByText('Registrado').first()).toBeVisible();
+  await page.getByRole('heading', { name: 'Hoja de intentos' }).click();
+  await expect(page.getByText('Guardado').first()).toBeVisible();
   await page.getByRole('button', { name: 'Marcar como completada' }).click();
   await expect(page.getByText('Completada', { exact: true })).toBeVisible();
 });

@@ -79,8 +79,11 @@ test('every API route refuses cross-tenant, cross-client and unassigned access',
     // Routes without parameters are only read (to look for leaks), never mutated.
     if (!used.length && MUTATING.has(h.method)) continue;
     const victimRecord = used.some((u) => CLIENT_PARAMS.has(u));
-    // `entity` and `purpose` are names (template type, consent purpose), not records.
-    const orgRecord = used.some((u) => u !== 'entity' && u !== 'purpose');
+    // `entity`, `purpose` and `slug` are names (template type, consent purpose, formula), not
+    // records: a formula PUT/DELETE by slug only ever touches the caller's own centre's copy
+    // (groups.int.test.ts checks the other centre keeps the platform's constants).
+    const NAMES = new Set(['entity', 'purpose', 'slug']);
+    const orgRecord = used.some((u) => !NAMES.has(u));
     if (orgRecord && !missing) stats.withRealIds++;
     if (global) stats.global++;
 

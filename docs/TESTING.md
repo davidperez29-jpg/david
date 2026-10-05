@@ -476,3 +476,22 @@ pnpm --filter @tp/web test:e2e -- e2e/perf.spec.ts e2e/perf.mobile.spec.ts
   - página Plantillas: p95 ≤ 60 ms;
   - para un cliente, ordenada por encaje: p95 ≤ 81 ms.
   - Criterio de la fase: < 300 ms.
+
+## Resultado de la reestructuración, fase 4 (evaluaciones y referencias)
+
+- **Test de oro** (`packages/domain/test/club-golden.unit.test.ts`): reproduce el informe del club con 20 jugadores sintéticos.
+  - Compara mediana de 3 pliegues, mínimo de 2 sprints, Σ6/Σ4, Faulkner, Yuhasz, masa grasa, MLG, IMC y asimetría.
+  - También las 30 filas del «Informe grupal» (N, media, DT, máx., mín., mejor, peor) y las 7 columnas de Z.
+  - La fixture se regenera con `python3 scripts/golden/make_club_fixture.py <libro.xlsx>` (requiere LibreOffice Calc); el libro no está en el repositorio.
+- **Unitarias** (`evaluation.unit.test.ts`):
+  - el lenguaje de fórmulas rechaza lo que no es aritmética (sin ejecución de código), detecta ciclos y nombres desconocidos, y sin dato no da valor;
+  - estadísticas y Z con propiedades: la media de Z es 0, sumar una constante no cambia Z, invertir el sentido invierte Z;
+  - bandas y datos atípicos (sin la propia persona).
+- **Integración** (`groups.int.test.ts`):
+  - grupos solo para el equipo técnico; un entrenador ve solo a sus miembros;
+  - la evaluación de grupo no duplica;
+  - el informe da medianas, mínimos, Σ, Faulkner, mejor, peor, Z, «confirmar medición» y asimetría;
+  - las constantes del centro se usan en los cálculos nuevos y no afectan a otros centros;
+  - se rechazan fórmulas inválidas y circulares; una fórmula propia se calcula.
+- **Seguridad:** la matriz RLS cubre `derived_formulas`, `client_groups` y `client_group_members` con datos de la demo (positivo y negativo).
+- **E2E** (`groups.spec.ts`): Mis clientes → Grupos y equipos → «Último informe» (2 clics); pegar un bloque de Excel en la hoja guarda las filas y aplica la mediana; cambiar y restaurar las constantes de Faulkner.

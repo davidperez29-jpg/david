@@ -1077,9 +1077,13 @@ async function getAssessment_(ctx: RequestContext, id: string) {
           )
         : [];
     for (const c of references) if (c.flag) flags.push({ test: t.name, ...c.flag });
+    const lo = n(t.plausibleMin);
+    const hi = n(t.plausibleMax);
     return {
       ...r,
       value,
+      /** Outside the test's plausible limits: kept, but «confirmar medición». */
+      confirm: value != null && ((lo != null && value < lo) || (hi != null && value > hi)),
       valueBest: n(r.valueBest),
       valueMean: n(r.valueMean),
       cvIntraPercent: n(r.cvIntraPercent),

@@ -2,6 +2,36 @@
 
 Formato: fecha · cambio · motivo · archivos · impacto.
 
+## 2026-10-05 — Reestructuración, fase 4: evaluaciones y referencias
+
+- **Cambio:** **hoja de intentos** tipo Excel en cada evaluación y en la evaluación de grupo.
+  - Se escribe o se pega un bloque de Excel; Intro baja de fila y cada fila se guarda al salir de ella.
+  - **Motivo:** introducir 20 jugadores × 3 pliegues como en la hoja del club, sin formularios.
+- **Cambio:** reglas de resultado nuevas: **mediana, mínimo y máximo**. Tests nuevos:
+  - 6 pliegues (mediana de 3);
+  - conducción de balón (mejor de 2);
+  - DSI (descriptivo).
+  - Cada test tiene ahora **límites plausibles**.
+- **Cambio:** **fórmulas como datos**, con constantes editables por centro y fórmulas propias (Tests → «Fórmulas y constantes»).
+  - Se incluyen Σ6/Σ4 pliegues, % graso de Faulkner y de Yuhasz (solo hombres), masa grasa y masa libre de grasa.
+  - Las ecuaciones del documento del club llevan [REQUIERE VERIFICACIÓN].
+  - Los valores calculados guardan la fórmula usada.
+- **Cambio:** **grupos y equipos** (Mis clientes → «Grupos y equipos»).
+  - Se crea el grupo, se marcan los miembros y se crea la evaluación de todo el grupo en una fecha.
+  - **Informe grupal:** N, media, referencia, DT, máximo, mínimo, mejor, peor, Z frente al grupo con semáforo y asimetrías.
+  - **«Confirmar medición»** marca los datos atípicos o fuera de límites; no se borran.
+  - Los grupos son solo del equipo técnico.
+- **Cambio:** las referencias guardan la **condición** de medida y las **limitaciones**, además de la población y la fuente.
+- **Cambio:** batería de equipo ampliada (talla, masa, pliegues, 5 m, CMJ unipodal, conducción, DSI). Batería nueva «Función y fuerza (parálisis cerebral y discapacidad motora)».
+- **Tests:**
+  - **test de oro** frente al informe del club: el motor reproduce medianas, mínimos, fórmulas, estadísticos de grupo y Z de la hoja original, recalculada por LibreOffice con jugadores sintéticos (`packages/domain/test/club-golden.unit.test.ts`; el generador no guarda nombres ni datos reales);
+  - unitarias del lenguaje de fórmulas (sin ejecución de código, ciclos, nombres desconocidos), de estadísticas y Z (propiedades) y de los datos atípicos;
+  - integración de grupos, hoja e informe, constantes del centro y fórmula propia;
+  - matriz RLS con las tablas nuevas;
+  - E2E: informe en 2 clics, pegar desde Excel, cambiar y restaurar constantes.
+- **Archivos:** `packages/domain/src/assessment/{formulas,group,derived,aggregate}.ts`, `packages/application/src/{formulas,groups}.ts`, migraciones `0039`/`0040`, `seed-data/assessment/*`, `apps/web/src/app/app/groups/**`, `apps/web/src/components/assessment/attempts-sheet.tsx`, `docs/EVALUATION_SYSTEM.md` §8, `docs/PRODUCT_ARCHITECTURE.md` A23–A28.
+- **Impacto:** al desplegar se aplican las migraciones y se cargan las fórmulas y los tests nuevos. Los datos existentes no cambian. Las métricas derivadas de evaluaciones antiguas se recalculan con el catálogo nuevo la próxima vez que se edite su evaluación.
+
 ## 2026-10-05 — Reestructuración, fase 3 (segunda parte): plantillas iniciales por perfil, nivel y días
 
 - **Cambio:** la plataforma trae **102 plantillas** (antes 17). Se generan las combinaciones perfil × nivel × días que faltaban:

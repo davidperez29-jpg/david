@@ -369,13 +369,17 @@ async function groupReport_(ctx: RequestContext, id: string, query: unknown) {
       .filter((r) => r.v.testId === testId)
       .map((r) => {
         const v = r.v.values as Record<string, number>;
+        const es = (x: unknown) =>
+          typeof x === 'number'
+            ? new Intl.NumberFormat('es-ES', { maximumFractionDigits: 2 }).format(x)
+            : String(x);
         const stat =
           v.mean != null
-            ? `${v.mean}${v.sd != null ? ` ± ${v.sd}` : ''}`
+            ? `${es(v.mean)}${v.sd != null ? ` ± ${es(v.sd)}` : ''}`
             : v.median != null
-              ? `mediana ${v.median}`
+              ? `mediana ${es(v.median)}`
               : Object.entries(v)
-                  .map(([k, x]) => `${k} ${x}`)
+                  .map(([k, x]) => `${k} ${es(x)}`)
                   .join(', ');
         const who = [
           r.population,

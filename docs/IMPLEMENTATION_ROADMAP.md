@@ -16,12 +16,12 @@
 
 | Fase | Contenido | Reutiliza | Estado |
 |---|---|---|---|
-| **0** | **Despliegue online** (Render, UE): URL + login, sin comandos | Docker, migraciones, observabilidad | ✅ Preparado (falta el primer despliegue del usuario) |
+| **0** | **Despliegue online** (Render, UE): URL + login, sin comandos | Docker, migraciones, observabilidad | ✅ Desplegado por el usuario |
 | 1 | Arquitectura + BD + autenticación + clientes (perfil principal, nivel, deporte, material, frecuencia); navegación nueva | Auth, RLS, clientes | ✅ Hecha |
 | 2 | Ejercicios + sesiones (tabla tipo Excel) + planificación MES → SEMANA → SESIÓN | Biblioteca, prescripción, planes | ✅ Hecha |
 | 3 | Plantillas + objetivos + niveles (filtros, usar plantilla = copia, desde cero, mis plantillas con versiones, 102 plantillas iniciales) | `plan_templates`, `plan_template_versions` | ✅ Hecha |
-| 4 | Evaluaciones + referencias (hoja de intentos, baterías por perfil, fórmulas, grupos/equipos) | Evaluación actual | Siguiente |
-| 5 | Radares + evolución (normalización, dimensiones, comparativas) | Cambio real, gráficos | Pendiente |
+| 4 | Evaluaciones + referencias (hoja de intentos, baterías por perfil, fórmulas, grupos/equipos) | Evaluación actual | ✅ Hecha |
+| 5 | Radares + evolución (normalización, dimensiones, comparativas) | Cambio real, gráficos | Siguiente |
 | 6 | Informes (8 tipos, comparativo, grupal, radar en PDF) | Motor de informes | Pendiente |
 | 7 | Lesiones / readaptación / RTP | Seguimiento de dolor, planes | Pendiente |
 | 8 | Cliente móvil + feedback + adherencia + fichaje | PWA, registro, asistencia | Pendiente |
@@ -107,17 +107,20 @@ Pendiente para fases siguientes: tarjetas por ejercicio en el móvil y sugerenci
   - página Plantillas: p95 ≤ 60 ms;
   - página Plantillas para un cliente, ordenada por encaje: p95 ≤ 81 ms.
 
-## Fase 4 · Evaluaciones y referencias
+## Fase 4 · Evaluaciones y referencias ✅
 
-- Hoja de intentos tipo Excel.
-- Reglas de resultado (mediana, mínimo, máximo…), fórmulas derivadas con constantes editables y bilateral con asimetría.
-- Baterías por perfil y referencias con tipo, población, condición y limitaciones.
-- Grupos/equipos (`client_groups`); detección de datos atípicos.
+- Hoja de intentos tipo Excel (pegar desde Excel, Intro para bajar, guardado por fila) en cada evaluación y en la evaluación de grupo.
+- Reglas de resultado: mediana, mínimo y máximo se suman a mejor, media, media de los mejores y último.
+- Fórmulas derivadas como datos (`derived_formulas`), con constantes editables por centro y fórmulas propias. Bilateral con asimetría por lado.
+- Tests nuevos: 6 pliegues, conducción de balón y DSI. Límites plausibles por test. Batería de equipo ampliada y batería «Función y fuerza (parálisis cerebral y discapacidad motora)».
+- Referencias con condición y limitaciones, además de población y fuente.
+- Grupos/equipos (`client_groups`) con informe grupal (N, media, referencia, DT, máximo, mínimo, mejor, peor, Z y bandas) y «confirmar medición» para datos atípicos o fuera de límites.
+- Detalle en `EVALUATION_SYSTEM.md` §8.
 
 **Criterios**:
-- reproducir el informe del club de los documentos (datos anonimizados): mismos resultados de mediana, mínimos, fórmulas y Z frente al equipo que la hoja original (test de oro).
+- ✅ reproduce el informe del club con datos anonimizados: mismas medianas, mínimos, fórmulas, estadísticos de grupo y Z frente al equipo que la hoja original (test de oro, `club-golden.unit.test.ts`).
 
-## Fase 5 · Radares y evolución
+## Fase 5 · Radares y evolución (siguiente)
 
 - Cadena de normalización del dominio (Z frente a referencia o equipo, percentil, % de referencia), con tests de propiedades (monotonía, dirección, sin dato = hueco).
 - `RadarChart` con dimensiones seleccionables y capas A/B/referencia/equipo.

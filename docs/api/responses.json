@@ -30,7 +30,11 @@
         "chair_stand_30s": "string",
         "cmj_height": "string",
         "cooper_test": "string",
+        "dribbling": "string",
         "drop_jump_rsi": "string",
+        "dsi": "string",
+        "five_times_sit_to_stand": "string",
+        "gait_speed": "string",
         "handgrip_strength": "string",
         "height": "string",
         "ift_30_15": "string",
@@ -39,11 +43,22 @@
         "one_rm_back_squat": "string",
         "one_rm_bench_press": "string",
         "one_rm_lv_estimate": "string",
+        "single_leg_cmj_height": "string",
+        "six_minute_walk_test": "string",
+        "skinfold_abdominal": "string",
+        "skinfold_front_thigh": "string",
+        "skinfold_iliac_crest": "string",
+        "skinfold_medial_calf": "string",
+        "skinfold_subscapular": "string",
+        "skinfold_triceps": "string",
         "sprint_10m": "string",
         "sprint_20m": "string",
         "sprint_30m": "string",
+        "sprint_5m": "string",
         "srpe": "string",
         "test_505": "string",
+        "timed_up_and_go": "string",
+        "unipedal_stance_eyes_open": "string",
         "waist_circumference": "string",
         "weight_bearing_lunge_distance": "string",
         "wellness_hooper": "string",
@@ -100,6 +115,8 @@
     "limitations": "string",
     "name": "string",
     "organizationId": "null",
+    "plausibleMax": "null",
+    "plausibleMin": "null",
     "protocol": "string",
     "protocolVersion": "string",
     "purpose": "string",
@@ -197,6 +214,7 @@
       }
     ],
     "flags": [],
+    "groupId": "null",
     "id": "string",
     "notes": "null",
     "organizationId": "string",
@@ -233,6 +251,7 @@
           ]
         },
         "clientId": "string",
+        "confirm": "boolean",
         "createdAt": "string",
         "createdBy": "string",
         "cvIntraPercent": "number",
@@ -1230,6 +1249,69 @@
         "unit": "string",
         "value": "number"
       },
+      "skinfold_abdominal": {
+        "change": "null",
+        "date": "string",
+        "name": "string",
+        "reference": "null",
+        "testSlug": "string",
+        "unit": "string",
+        "value": "number"
+      },
+      "skinfold_front_thigh": {
+        "change": "null",
+        "date": "string",
+        "name": "string",
+        "reference": "null",
+        "testSlug": "string",
+        "unit": "string",
+        "value": "number"
+      },
+      "skinfold_iliac_crest": {
+        "change": "null",
+        "date": "string",
+        "name": "string",
+        "reference": "null",
+        "testSlug": "string",
+        "unit": "string",
+        "value": "number"
+      },
+      "skinfold_medial_calf": {
+        "change": "null",
+        "date": "string",
+        "name": "string",
+        "reference": "null",
+        "testSlug": "string",
+        "unit": "string",
+        "value": "number"
+      },
+      "skinfold_subscapular": {
+        "change": "null",
+        "date": "string",
+        "name": "string",
+        "reference": "null",
+        "testSlug": "string",
+        "unit": "string",
+        "value": "number"
+      },
+      "skinfold_triceps": {
+        "change": "null",
+        "date": "string",
+        "name": "string",
+        "reference": "null",
+        "testSlug": "string",
+        "unit": "string",
+        "value": "number"
+      },
+      "sprint_5m": {
+        "change": "null",
+        "date": "string",
+        "name": "string",
+        "reference": "null",
+        "testSlug": "string",
+        "unit": "string",
+        "value": "number"
+      },
       "waist_circumference": {
         "change": "string",
         "date": "string",
@@ -1706,6 +1788,7 @@
         "context": "string",
         "createdAt": "string",
         "createdBy": "string",
+        "groupId": "string",
         "id": "string",
         "notes": "null",
         "planId": "null",
@@ -2276,6 +2359,30 @@
     ],
     "version": "number"
   },
+  "GET derived-formulas": [
+    {
+      "betterDirection": "string",
+      "constants": {
+        "a": "number",
+        "b": "number"
+      },
+      "definition": "string",
+      "expression": "string",
+      "id": "string",
+      "isEstimate": "boolean",
+      "name": "string",
+      "own": "boolean",
+      "platformConstants": {
+        "a": "number",
+        "b": "number"
+      },
+      "sex": "string",
+      "slug": "string",
+      "text": "string",
+      "unit": "string",
+      "version": "number"
+    }
+  ],
   "GET exercises": {
     "items": [
       {
@@ -2384,6 +2491,38 @@
     "version": "number"
   },
   "GET exports": "file:text/csv",
+  "GET groups": [
+    {
+      "archived": "boolean",
+      "description": "string",
+      "id": "string",
+      "lastAssessedOn": "string",
+      "members": "number",
+      "name": "string"
+    }
+  ],
+  "GET groups/[groupId]": {
+    "archived": "boolean",
+    "description": "string",
+    "id": "string",
+    "members": [
+      {
+        "clientId": "string",
+        "firstName": "string",
+        "lastName": "string",
+        "name": "string",
+        "role": "null"
+      }
+    ],
+    "name": "string",
+    "sessions": [
+      {
+        "assessedOn": "string",
+        "assessments": "number"
+      }
+    ],
+    "version": "number"
+  },
   "GET imports": [
     {
       "createdAt": "string",
@@ -3599,7 +3738,7 @@
     "attendance": {
       "durationMin": "number",
       "performedDate": "string",
-      "reasonCode": "null",
+      "reasonCode": "string",
       "reasonText": "null",
       "status": "string"
     },
@@ -3647,7 +3786,7 @@
                 "rir": "number",
                 "rpe": "null",
                 "setIndex": "number",
-                "side": "null"
+                "side": "string"
               }
             ],
             "name": "string",
@@ -3689,7 +3828,16 @@
             "sets": "number",
             "short": "string",
             "side": "string",
-            "substitutions": [],
+            "substitutions": [
+              {
+                "chosenExerciseId": "null",
+                "chosenName": "null",
+                "comment": "string",
+                "id": "string",
+                "reason": "string",
+                "status": "string"
+              }
+            ],
             "video": "null"
           }
         ],
@@ -3713,7 +3861,7 @@
     "downloadedAt": "string",
     "estimatedDurationMin": "number",
     "feedback": {
-      "comment": "null",
+      "comment": "string",
       "fatigue": "number",
       "feeling": "null",
       "motivation": "number",

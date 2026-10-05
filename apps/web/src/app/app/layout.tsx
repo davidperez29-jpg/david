@@ -28,7 +28,7 @@ export default async function StaffLayout({ children }: { children: ReactNode })
             <NavLink
               href="/app"
               exact
-              also={['/app/clients']}
+              also={['/app/clients', '/app/groups']}
               alsoPattern="^/app/plans/(?!templates)"
             >
               Clientes

@@ -13,6 +13,13 @@ export default async function HomePage() {
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h1 className="text-2xl font-semibold">Mis clientes</h1>
+        <span className="flex-1" />
+        <Link
+          href="/app/groups"
+          className="inline-flex h-10 items-center rounded-md border border-border bg-bg px-4 text-sm font-medium hover:bg-surface"
+        >
+          Grupos y equipos
+        </Link>
         <Link
           href="/app/clients/new"
           className="inline-flex h-10 items-center rounded-md bg-accent px-4 text-sm font-medium text-accent-contrast"

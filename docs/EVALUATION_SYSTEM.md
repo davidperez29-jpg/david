@@ -137,3 +137,64 @@ Para grupos, **informe grupal** con lo que ya hace el documento del usuario: N, 
 - Una evaluación **completada** queda bloqueada.
 - Corregirla crea una nueva versión con motivo y autor; los informes anteriores siguen mostrando lo que se sabía entonces (instantánea congelada).
 - Las referencias del equipo se calculan **en el momento**, pero el informe congela los valores usados.
+
+## 8. Implementación (reestructuración, fase 4)
+
+### 8.1 Hoja de intentos
+
+- En cada evaluación, **«Hoja de intentos»**: una fila por test y lado, una columna por intento.
+  - Se escribe o se **pega un bloque copiado de Excel** (tabuladores y saltos de línea).
+  - Intro baja a la fila siguiente. Cada fila se guarda al salir de ella; vaciarla borra el resultado.
+- El resultado aplica la **regla del test**:
+  - `median`: pliegues, 3 medidas como en ISAK;
+  - `best` o `min`: el menor tiempo de los sprints;
+  - también `mean`, `mean_of_best_n`, `last` y `max`.
+- Las **métricas derivadas** se recalculan al guardar. El formulario detallado (método, notas, intento no válido) sigue disponible.
+
+### 8.2 Fórmulas como datos
+
+- Tabla `derived_formulas`. Su lenguaje lo interpreta el dominio (`formulas.ts`) **sin `eval`**:
+  - nombres de tests, `test.left` y `test.right`, y otras fórmulas;
+  - constantes de una letra;
+  - operaciones + − × / ^ y las funciones sum, mean, min, max, abs y sqrt.
+- Si falta un dato, la fórmula **no da valor** (nunca un cero). Una división por cero tampoco da valor.
+- El catálogo de la plataforma sale de `DEFAULT_FORMULAS`:
+  - IMC, déficit COD, fuerza relativa, CMJ/SJ, IMTP relativo;
+  - Σ6 y Σ4 pliegues;
+  - % graso de Faulkner (a = 0,153; b = 5,783) y de Yuhasz (solo hombres; a = 0,1051; b = 2,585);
+  - masa grasa y masa libre de grasa.
+  - Las ecuaciones del documento del club llevan **[REQUIERE VERIFICACIÓN]**.
+- Un centro **edita las constantes** o crea fórmulas propias en Tests → «Fórmulas y constantes». Su copia sustituye a la global con el mismo identificador; «Volver a las de la plataforma» la borra.
+- Al guardar una fórmula se compila con todas las demás. Se rechazan los nombres desconocidos y las **dependencias circulares**.
+- El valor guardado lleva el texto de la fórmula con sus constantes. Los valores ya calculados no cambian.
+
+### 8.3 Grupos y equipos
+
+- Tablas `client_groups` y `client_group_members`, solo para el equipo técnico. La RLS hace que un entrenador vea solo a los miembros que tiene asignados.
+- **Evaluación de grupo**: en una fecha, una evaluación por miembro con los mismos tests (`assessments.group_id`).
+  - Repetirla no duplica: se salta a quien ya la tiene.
+  - La hoja de grupo muestra un test cada vez, con una fila por persona y lado.
+- **Informe grupal** para cada prueba, fórmula y asimetría:
+  - N, media, referencia (población, fuente, condición y limitaciones), DT muestral (n − 1), máximo y mínimo;
+  - mejor y peor según el sentido de la prueba; en las descriptivas no procede;
+  - Z frente al grupo con el signo corregido y su banda (verde, amarillo, rojo);
+  - asimetría con semáforo orientativo: < 10 %, 10–15 %, ≥ 15 %;
+  - aviso con menos de 5 personas.
+- **«Confirmar medición»**: aparece si el valor está fuera de los **límites plausibles** del test (`plausible_min`/`plausible_max`) o a más de 3 DT de la media del **resto** del grupo. Se excluye a la propia persona para que un valor extremo no se esconda inflando la DT. El dato original se conserva.
+- Para llegar al informe: Mis clientes → Grupos y equipos → «Último informe» (2 clics).
+
+### 8.4 Test de oro frente al documento del club
+
+`packages/domain/test/club-golden.unit.test.ts` compara el motor con la hoja del club, recalculada por LibreOffice con sus propias fórmulas. Coinciden en todo:
+- mediana de 3 pliegues y mínimo de 2 sprints;
+- Σ6, Σ4, Faulkner, Yuhasz, masa grasa, MLG e IMC;
+- asimetría del CMJ unipodal;
+- N, media, DT, máximo, mínimo, mejor y peor de las 30 filas del «Informe grupal»;
+- las 7 columnas de Z.
+
+Los jugadores son **sintéticos**. `scripts/golden/make_club_fixture.py` toma el libro original solo como estructura: borra las hojas individuales y sustituye nombres y datos. Ni el libro ni nombres reales entran en el repositorio.
+
+Hallazgos en el libro original, que la plataforma no reproduce:
+- la celda «Mejor» de la talla mezcla nombres de función en español e inglés (`=SI(CONTAR(…)`), así que fuera de un Excel en español da error;
+- algunas celdas de resultado eran valores tecleados y no fórmulas;
+- el DSI aparece como «más es mejor». En la plataforma es un cociente **descriptivo**: orienta el entrenamiento y sus puntos de corte están [REQUIERE VERIFICACIÓN].

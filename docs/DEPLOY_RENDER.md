@@ -47,7 +47,7 @@ El repositorio incluye un archivo (`render.yaml`) que le dice a Render todo lo q
 - La primera vez Render construye la aplicación: **10–15 minutos**. Lo verás en el servicio `plataforma-entrenamiento` → **Events/Logs**.
 - Al arrancar, la aplicación:
   1. prepara la base de datos;
-  2. carga la biblioteca: 92 ejercicios, 43 tests, 102 plantillas y la base científica;
+  2. carga la biblioteca: 92 ejercicios, 51 tests, 102 plantillas y la base científica;
   3. crea tu usuario administrador.
 - Cuando el estado sea **Live**, arriba aparece la dirección, por ejemplo `https://plataforma-entrenamiento-abcd.onrender.com`.
 
