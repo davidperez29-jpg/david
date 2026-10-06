@@ -1,0 +1,1888 @@
+{
+  "topic": "injury",
+  "sources": [
+    {
+      "sport": null,
+      "access": "abstract_only",
+      "key": "ardern2016_bern_rts_consensus",
+      "pmid": "27226389",
+      "doi": "10.1136/bjsports-2016-096278",
+      "title": "2016 Consensus statement on return to sport from the First World Congress in Sports Physical Therapy, Bern.",
+      "journal": "British journal of sports medicine",
+      "volume": "50",
+      "issue": "14",
+      "pages": "853-64",
+      "authors": [
+        "Ardern CL",
+        "Glasgow P",
+        "Schneiders A",
+        "Witvrouw E",
+        "Clarsen B",
+        "Cools A",
+        "Gojanovic B",
+        "Griffin S",
+        "Khan KM",
+        "Moksnes H",
+        "Mutch SA",
+        "Phillips N",
+        "Reurink G",
+        "Sadler R",
+        "Silbernagel KG",
+        "Thorborg K",
+        "Wangensteen A",
+        "Wilk KE",
+        "Bizzini M"
+      ],
+      "year": 2016,
+      "studyDesign": "consensus",
+      "populationSummary": "Deportistas lesionados en general (declaración de consenso de 17 clínicos expertos).",
+      "ageRange": "No especificado",
+      "sex": "unknown",
+      "trainingStatus": "mixed",
+      "intervention": "Recomendaciones para decidir la vuelta al deporte.",
+      "comparison": "Sin comparación (consenso).",
+      "outcomesMeasured": "Proceso de decisión de la vuelta al deporte, modelos biopsicosociales y marco StARRT.",
+      "resultsSummary": "La vuelta al deporte no es una decisión aislada al final de la recuperación, sino un continuo paralelo a la readaptación. Los modelos biopsicosociales y el marco StARRT pueden ayudar a decidir. La evidencia que respalda las decisiones de vuelta en la práctica clínica es escasa.",
+      "limitations": "Consenso de expertos en una reunión de media jornada, sin revisión sistemática formal; no fija criterios cuantitativos.",
+      "practicalApplication": "Planificar la vuelta al deporte desde el inicio de la readaptación y decidirla de forma compartida entre clínicos, deportista y entrenador."
+    },
+    {
+      "sport": null,
+      "access": "abstract_only",
+      "key": "shrier2015_starrt",
+      "pmid": "26036678",
+      "doi": "10.1136/bjsports-2014-094569",
+      "title": "Strategic Assessment of Risk and Risk Tolerance (StARRT) framework for return-to-play decision-making.",
+      "journal": "British journal of sports medicine",
+      "volume": "49",
+      "issue": "20",
+      "pages": "1311-5",
+      "authors": ["Shrier I"],
+      "year": 2015,
+      "studyDesign": "expert_opinion",
+      "populationSummary": "Pacientes deportistas que quieren volver a la actividad (artículo metodológico, sin muestra).",
+      "ageRange": "No especificado",
+      "sex": "unknown",
+      "trainingStatus": "mixed",
+      "intervention": "Marco StARRT revisado para decidir la vuelta al juego.",
+      "comparison": "Marco de 2010.",
+      "outcomesMeasured": "Estructura del proceso de decisión de vuelta al juego.",
+      "resultsSummary": "Presenta una versión revisada del marco de decisión de vuelta al juego de 2010 que corrige sus limitaciones e incluye ejemplos de aplicación en casos simples y complejos.",
+      "limitations": "Propuesta conceptual de un autor; no evalúa resultados clínicos.",
+      "practicalApplication": "Usar el marco para hacer explícito el razonamiento (riesgo del tejido, tolerancia al riesgo) y reducir conflictos entre clínicos, deportista y entrenador."
+    },
+    {
+      "sport": "Deportes profesionales (mixto)",
+      "access": "abstract_only",
+      "key": "kyritsis2016_acl_discharge",
+      "pmid": "27215935",
+      "doi": "10.1136/bjsports-2015-095908",
+      "title": "Likelihood of ACL graft rupture: not meeting six clinical discharge criteria before return to sport is associated with a four times greater risk of rupture.",
+      "journal": "British journal of sports medicine",
+      "volume": "50",
+      "issue": "15",
+      "pages": "946-51",
+      "authors": ["Kyritsis P", "Bahr R", "Landreau P", "Miladi R", "Witvrouw E"],
+      "year": 2016,
+      "studyDesign": "cohort",
+      "populationSummary": "158 deportistas profesionales varones tras reconstrucción del LCA que volvieron a su nivel previo.",
+      "ageRange": "Adultos jóvenes",
+      "sex": "male",
+      "trainingStatus": "elite",
+      "intervention": "Batería de pruebas de alta: isocinético a 60°, 180° y 300°/s, t-test de carrera, salto simple, triple salto y triple salto cruzado.",
+      "comparison": "Deportistas que cumplieron los seis criterios frente a los que no.",
+      "outcomesMeasured": "Rotura del injerto del LCA tras la vuelta (seguimiento mediano 646 días).",
+      "resultsSummary": "26 de 158 deportistas (16,5 %) sufrieron rotura del injerto. No cumplir los seis criterios de alta antes de volver al entrenamiento con el equipo se asoció a un riesgo unas 4 veces mayor (HR 4,1; IC 95 % 1,9 a 9,2). Un menor cociente isquiosurales/cuádriceps a 60°/s también se asoció a más roturas.",
+      "limitations": "Cohorte observacional de varones profesionales; el resumen enumera las pruebas pero no los umbrales de cada criterio; pocos eventos (26).",
+      "practicalApplication": "Usar una batería de fuerza y saltos como criterio de alta antes de volver al entrenamiento con el equipo, incluido el equilibrio isquiosurales/cuádriceps."
+    },
+    {
+      "sport": "Deportes de pivote",
+      "access": "abstract_only",
+      "key": "grindem2016_acl_decision_rules",
+      "pmid": "27162233",
+      "doi": "10.1136/bjsports-2016-096031",
+      "title": "Simple decision rules can reduce reinjury risk by 84% after ACL reconstruction: the Delaware-Oslo ACL cohort study.",
+      "journal": "British journal of sports medicine",
+      "volume": "50",
+      "issue": "13",
+      "pages": "804-8",
+      "authors": ["Grindem H", "Snyder-Mackler L", "Moksnes H", "Engebretsen L", "Risberg MA"],
+      "year": 2016,
+      "studyDesign": "cohort",
+      "populationSummary": "106 pacientes de deportes de pivote tras reconstrucción del LCA, seguidos 2 años.",
+      "ageRange": "Adolescentes y adultos",
+      "sex": "mixed",
+      "trainingStatus": "mixed",
+      "intervention": "Vuelta al deporte de nivel I, momento de la vuelta y función de la rodilla antes de volver (cuestionarios, simetría de fuerza de cuádriceps y de saltos).",
+      "comparison": "Superar (puntuaciones > 90 en todas las pruebas) o no los criterios; momento de la vuelta.",
+      "outcomesMeasured": "Relesión de la rodilla en 2 años.",
+      "resultsSummary": "Volver a deportes de nivel I multiplicó por 4,32 la tasa de relesión. La tasa se redujo un 51 % por cada mes de retraso de la vuelta hasta los 9 meses tras la cirugía, sin más reducción después. Una fuerza de cuádriceps más simétrica antes de volver redujo la tasa de relesión. Se relesionó el 38,2 % de quienes no superaron los criterios frente al 5,6 % de quienes los superaron (HR 0,16; p = 0,075).",
+      "limitations": "Cohorte observacional de 106 pacientes; la diferencia por superar los criterios no alcanzó significación estadística (p = 0,075).",
+      "practicalApplication": "No planificar la vuelta a deportes de pivote antes de los 9 meses tras la cirugía y exigir fuerza de cuádriceps simétrica antes de volver."
+    },
+    {
+      "sport": "Fútbol",
+      "access": "abstract_only",
+      "key": "vanderhorst2017_hamstring_rtp_delphi",
+      "pmid": "28360143",
+      "doi": "10.1136/bjsports-2016-097206",
+      "title": "Return to play after hamstring injuries in football (soccer): a worldwide Delphi procedure regarding definition, medical criteria and decision-making.",
+      "journal": "British journal of sports medicine",
+      "volume": "51",
+      "issue": "22",
+      "pages": "1583-1591",
+      "authors": ["van der Horst N", "Backx F", "Goedhart EA", "Huisstede BM"],
+      "year": 2017,
+      "studyDesign": "consensus",
+      "populationSummary": "Futbolistas con lesión de isquiosurales (Delphi con 58 expertos de 28 centros médicos de excelencia de la FIFA).",
+      "ageRange": "No especificado",
+      "sex": "unknown",
+      "trainingStatus": "trained",
+      "intervention": "Definición de vuelta al juego, criterios médicos y responsables de la decisión.",
+      "comparison": "Sin comparación (Delphi).",
+      "outcomesMeasured": "Consenso sobre la definición y los criterios de vuelta al juego.",
+      "resultsSummary": "Tras cuatro rondas se consensuó definir la vuelta al juego como el momento en que el jugador tiene el alta médica basada en criterios y está mentalmente preparado. Criterios: alta del equipo médico, sin dolor a la palpación, sin dolor en pruebas de fuerza y flexibilidad, sin dolor durante o tras pruebas funcionales, flexibilidad de isquiosurales similar, rendimiento en pruebas de campo y preparación psicológica. La decisión debe ser compartida.",
+      "limitations": "Opinión de expertos (Delphi), aunque partió de una revisión sistemática; criterios sin umbrales numéricos; solo fútbol.",
+      "practicalApplication": "Usar la lista de criterios consensuada como lista de comprobación de la vuelta tras lesión de isquiosurales, con decisión compartida."
+    },
+    {
+      "sport": "Mixto (sobre todo fútbol)",
+      "access": "abstract_only",
+      "key": "serner2020_adductor_prognosis",
+      "pmid": "32182099",
+      "doi": "10.1177/0363546520908610",
+      "title": "Associations Between Initial Clinical Examination and Imaging Findings and Return-to-Sport in Male Athletes With Acute Adductor Injuries: A Prospective Cohort Study.",
+      "journal": "The American journal of sports medicine",
+      "volume": "48",
+      "issue": "5",
+      "pages": "1151-1159",
+      "authors": [
+        "Serner A",
+        "Weir A",
+        "Tol JL",
+        "Thorborg K",
+        "Yamashiro E",
+        "Guermazi A",
+        "Roemer FW",
+        "Hölmich P"
+      ],
+      "year": 2020,
+      "studyDesign": "cohort",
+      "populationSummary": "81 deportistas varones adultos con lesión aguda de aductores, incluidos en los 7 días siguientes a la lesión.",
+      "ageRange": "Adultos",
+      "sex": "male",
+      "trainingStatus": "trained",
+      "intervention": "Exploración clínica e IRM iniciales; programa de ejercicio supervisado y basado en criterios.",
+      "comparison": "Asociación entre hallazgos iniciales y tiempo de vuelta.",
+      "outcomesMeasured": "Tiempo hasta tres hitos: sin dolor clínico, entrenamiento controlado completado y primer entrenamiento completo con el equipo.",
+      "resultsSummary": "Medianas de 15, 24 y 22 días para los tres hitos. La exploración clínica explicó el 63 %, 74 % y 68 % de la varianza; la IRM añadió un 7 %, 0 % y 7 %. Los predictores más fuertes de una vuelta más lenta fueron el dolor a la palpación de la inserción proximal del aductor largo, un defecto palpable y la lesión en la unión hueso-tendón en la IRM.",
+      "limitations": "Cohorte pronóstica solo de varones; sin esos hallazgos, la exploración y la IRM apenas afinan la estimación.",
+      "practicalApplication": "Usar la palpación de la inserción proximal y la presencia de defecto palpable para orientar el plazo esperado."
+    },
+    {
+      "sport": "Mixto",
+      "access": "abstract_only",
+      "key": "serner2020_adductor_criteria_rehab",
+      "pmid": "32064292",
+      "doi": "10.1177/2325967119897247",
+      "title": "Return to Sport After Criteria-Based Rehabilitation of Acute Adductor Injuries in Male Athletes: A Prospective Cohort Study.",
+      "journal": "Orthopaedic journal of sports medicine",
+      "volume": "8",
+      "issue": "1",
+      "pages": "2325967119897247",
+      "authors": [
+        "Serner A",
+        "Weir A",
+        "Tol JL",
+        "Thorborg K",
+        "Lanzinger S",
+        "Otten R",
+        "Hölmich P"
+      ],
+      "year": 2020,
+      "studyDesign": "cohort",
+      "populationSummary": "81 deportistas varones adultos con lesión aguda de aductores (IRM grado 0 a 3).",
+      "ageRange": "Adultos",
+      "sex": "male",
+      "trainingStatus": "trained",
+      "intervention": "Programa de readaptación con ejercicio supervisado, estandarizado y basado en criterios.",
+      "comparison": "Sin grupo control; comparación por grado de IRM y por hitos alcanzados.",
+      "outcomesMeasured": "Tiempo hasta los hitos de vuelta y relesiones en el primer año.",
+      "resultsSummary": "Con grado 0-2 en la IRM, los deportistas estaban sin dolor en unas 2 semanas y volvían al entrenamiento completo en unas 3 semanas; con grado 3, la mayoría volvió en 3 meses. La tasa de relesión al año fue del 8 %. Alcanzar el hito «sin dolor clínico» se asoció a menos relesiones (5 % frente a 21 %).",
+      "limitations": "Cohorte sin grupo control; solo varones; no todos alcanzaron los hitos intermedios.",
+      "practicalApplication": "Exigir el criterio «sin dolor clínico» antes de progresar y usar el grado de IRM para estimar plazos."
+    },
+    {
+      "sport": "Mixto",
+      "access": "abstract_only",
+      "key": "serner2021_adductor_progression",
+      "pmid": "33115342",
+      "doi": "10.2519/jospt.2021.9951",
+      "title": "Progression of Strength, Flexibility, and Palpation Pain During Rehabilitation of Athletes With Acute Adductor Injuries: A Prospective Cohort Study.",
+      "journal": "The Journal of orthopaedic and sports physical therapy",
+      "volume": "51",
+      "issue": "3",
+      "pages": "126-134",
+      "authors": [
+        "Serner A",
+        "Hölmich P",
+        "Tol JL",
+        "Thorborg K",
+        "Lanzinger S",
+        "Otten R",
+        "Whiteley R",
+        "Weir A"
+      ],
+      "year": 2021,
+      "studyDesign": "cohort",
+      "populationSummary": "Deportistas varones con lesión aguda de aductores (61 y 50 deportistas según el hito).",
+      "ageRange": "Adultos",
+      "sex": "male",
+      "trainingStatus": "trained",
+      "intervention": "Medidas clínicas repetidas durante una readaptación basada en criterios: extensión del dolor a la palpación, bent-knee fall-out, abducción de cadera y fuerza excéntrica de aducción.",
+      "comparison": "Asociación con el porcentaje de progreso hasta los hitos de vuelta.",
+      "outcomesMeasured": "Progreso de la readaptación hasta «sin dolor clínico» y «entrenamiento controlado completado».",
+      "resultsSummary": "Cada medida explicó entre el 13 % y el 36 % de la varianza del progreso; la extensión del dolor a la palpación fue la que más. La fuerza excéntrica de aducción mejoró a lo largo de la readaptación y la flexibilidad se normalizó pronto. Estas medidas solo dan una idea aproximada del progreso y no definen un punto preciso de recuperación.",
+      "limitations": "Observacional, solo varones; pérdidas entre hitos.",
+      "practicalApplication": "Usar fuerza, flexibilidad y dolor a la palpación como guía orientativa, no como punto de corte exacto."
+    },
+    {
+      "sport": "Deportes de campo y de pista",
+      "access": "abstract_only",
+      "key": "smith2021_paass_ankle",
+      "pmid": "34158354",
+      "doi": "10.1136/bjsports-2021-104087",
+      "title": "Return to sport decisions after an acute lateral ankle sprain injury: introducing the PAASS framework-an international multidisciplinary consensus.",
+      "journal": "British journal of sports medicine",
+      "volume": "55",
+      "issue": "22",
+      "pages": "1270-1276",
+      "authors": [
+        "Smith MD",
+        "Vicenzino B",
+        "Bahr R",
+        "Bandholm T",
+        "Cooke R",
+        "Mendonça LM",
+        "Fourchet F",
+        "Glasgow P",
+        "Gribble PA",
+        "Herrington L",
+        "Hiller CE",
+        "Lee SY",
+        "Macaluso A",
+        "Meeusen R",
+        "Owoeye OBA",
+        "Reid D",
+        "Tassignon B",
+        "Terada M",
+        "Thorborg K",
+        "Verhagen E",
+        "Verschueren J",
+        "Wang D",
+        "Whiteley R",
+        "Wikstrom EA",
+        "Delahunt E"
+      ],
+      "year": 2021,
+      "studyDesign": "consensus",
+      "populationSummary": "Deportistas de campo o pista con esguince lateral agudo de tobillo (Delphi con 155 profesionales sanitarios de deporte de élite).",
+      "ageRange": "No especificado",
+      "sex": "unknown",
+      "trainingStatus": "elite",
+      "intervention": "Elementos de valoración para decidir la vuelta al deporte.",
+      "comparison": "Sin comparación (Delphi en tres rondas, consenso > 70 %).",
+      "outcomesMeasured": "Elementos de valoración consensuados.",
+      "resultsSummary": "Dieciséis elementos alcanzaron consenso y se agruparon en cinco dominios (PAASS): dolor, alteraciones del tobillo (movilidad; fuerza, resistencia y potencia), percepción del deportista (confianza, estabilidad, preparación psicológica), control sensoriomotor (propiocepción, equilibrio dinámico) y rendimiento deportivo y funcional (saltos, agilidad, ejercicios específicos, completar una sesión).",
+      "limitations": "Opinión de expertos; no fija umbrales numéricos para ningún elemento.",
+      "practicalApplication": "Valorar los cinco dominios PAASS antes de la vuelta tras un esguince lateral; los umbrales los define cada protocolo y se etiquetan como orientativos."
+    },
+    {
+      "sport": null,
+      "access": "abstract_only",
+      "key": "doherty2017_ankle_sprain_overview",
+      "pmid": "28053200",
+      "doi": "10.1136/bjsports-2016-096178",
+      "title": "Treatment and prevention of acute and recurrent ankle sprain: an overview of systematic reviews with meta-analysis.",
+      "journal": "British journal of sports medicine",
+      "volume": "51",
+      "issue": "2",
+      "pages": "113-125",
+      "authors": ["Doherty C", "Bleakley C", "Delahunt E", "Holden S"],
+      "year": 2017,
+      "studyDesign": "umbrella_review",
+      "populationSummary": "Personas con esguince agudo de tobillo o inestabilidad crónica; 46 revisiones sistemáticas.",
+      "ageRange": "No especificado",
+      "sex": "mixed",
+      "trainingStatus": "mixed",
+      "intervention": "Tratamientos y estrategias de prevención (ortesis, entrenamiento neuromuscular, ejercicio, AINE, movilización temprana, terapia manual, cirugía, acupuntura, ultrasonidos).",
+      "comparison": "Según cada revisión.",
+      "outcomesMeasured": "Incidencia de lesión y de relesión; dolor, inflamación y función.",
+      "resultsSummary": "Evidencia fuerte para las ortesis y moderada para el entrenamiento neuromuscular en la reducción de la recidiva del esguince. Tras un esguince agudo, evidencia fuerte para AINE y movilización temprana y moderada para el ejercicio y la terapia manual (dolor, inflamación y función). Evidencia contradictoria para cirugía y acupuntura e insuficiente para ultrasonidos.",
+      "limitations": "Calidad media de las revisiones de 6,5/11 (AMSTAR); revisión de revisiones con solapamiento de estudios.",
+      "practicalApplication": "Incluir entrenamiento neuromuscular (y valorar la ortesis) tras un esguince lateral; movilización temprana y ejercicio en la fase aguda."
+    },
+    {
+      "sport": "Carrera y saltos",
+      "access": "abstract_only",
+      "key": "silbernagel2007_achilles_pain_monitoring",
+      "pmid": "17307888",
+      "doi": "10.1177/0363546506298279",
+      "title": "Continued sports activity, using a pain-monitoring model, during rehabilitation in patients with Achilles tendinopathy: a randomized controlled study.",
+      "journal": "The American journal of sports medicine",
+      "volume": "35",
+      "issue": "6",
+      "pages": "897-906",
+      "authors": ["Silbernagel KG", "Thomeé R", "Eriksson BI", "Karlsson J"],
+      "year": 2007,
+      "studyDesign": "rct",
+      "populationSummary": "38 pacientes con tendinopatía aquílea.",
+      "ageRange": "Adultos",
+      "sex": "mixed",
+      "trainingStatus": "recreational",
+      "intervention": "Programa progresivo de fortalecimiento con carga del tendón, continuando la carrera y los saltos con un modelo de monitorización del dolor (n = 19).",
+      "comparison": "El mismo programa con reposo activo: sin carrera ni saltos las primeras 6 semanas (n = 19).",
+      "outcomesMeasured": "VISA-A-S y dolor durante la actividad con carga del tendón; seguimiento a 12 meses.",
+      "resultsSummary": "No hubo diferencias en la mejora entre grupos; ambos mejoraron de forma significativa (VISA-A-S de 57 a 85 y de 57 a 91 a los 12 meses). No se observaron efectos negativos por seguir corriendo y saltando con el modelo de monitorización del dolor.",
+      "limitations": "Muestra pequeña (38); el resumen no detalla las reglas del modelo de dolor.",
+      "practicalApplication": "En tendinopatía aquílea se puede mantener la actividad con carga si el dolor se vigila con reglas explícitas."
+    },
+    {
+      "sport": null,
+      "access": "abstract_only",
+      "key": "holden2020_isometric_patellar",
+      "pmid": "31735531",
+      "doi": "10.1016/j.jsams.2019.09.015",
+      "title": "Isometric exercise and pain in patellar tendinopathy: A randomized crossover trial.",
+      "journal": "Journal of science and medicine in sport",
+      "volume": "23",
+      "issue": "3",
+      "pages": "208-214",
+      "authors": [
+        "Holden S",
+        "Lyng K",
+        "Graven-Nielsen T",
+        "Riel H",
+        "Olesen JL",
+        "Larsen LH",
+        "Rathleff MS"
+      ],
+      "year": 2020,
+      "studyDesign": "rct",
+      "populationSummary": "21 participantes con tendinopatía rotuliana.",
+      "ageRange": "Adultos jóvenes",
+      "sex": "mixed",
+      "trainingStatus": "mixed",
+      "intervention": "Una sesión de ejercicio isométrico de carga alta.",
+      "comparison": "Una sesión de ejercicio de fuerza dinámico (cruzado, lavado de 7 días).",
+      "outcomesMeasured": "Dolor (NRS 0-10) en la sentadilla declinada unipodal, umbrales de dolor a la presión y grosor del tendón.",
+      "resultsSummary": "El dolor durante la sentadilla declinada bajó de forma significativa justo después del ejercicio (reducción media 0,9 puntos; IC 95 % 0,1-1,7), pero el efecto no se mantuvo a los 45 min y no hubo diferencias entre isométrico y dinámico en ningún resultado.",
+      "limitations": "Una sola sesión; muestra pequeña; efecto de magnitud pequeña.",
+      "practicalApplication": "No elegir el isométrico como analgésico superior por defecto; el tipo de contracción puede importar menos que la carga en sí."
+    },
+    {
+      "sport": null,
+      "access": "abstract_only",
+      "key": "kongsgaard2009_hsr_patellar",
+      "pmid": "19793213",
+      "doi": "10.1111/j.1600-0838.2009.00949.x",
+      "title": "Corticosteroid injections, eccentric decline squat training and heavy slow resistance training in patellar tendinopathy.",
+      "journal": "Scandinavian journal of medicine & science in sports",
+      "volume": "19",
+      "issue": "6",
+      "pages": "790-802",
+      "authors": [
+        "Kongsgaard M",
+        "Kovanen V",
+        "Aagaard P",
+        "Doessing S",
+        "Hansen P",
+        "Laursen AH",
+        "Kaldau NC",
+        "Kjaer M",
+        "Magnusson SP"
+      ],
+      "year": 2009,
+      "studyDesign": "rct",
+      "populationSummary": "39 varones con tendinopatía rotuliana.",
+      "ageRange": "Adolescentes y adultos",
+      "sex": "male",
+      "trainingStatus": "mixed",
+      "intervention": "Fuerza pesada y lenta (HSR) o sentadilla excéntrica en plano declinado durante 12 semanas.",
+      "comparison": "Infiltraciones peritendinosas de corticoides.",
+      "outcomesMeasured": "VISA-p, dolor en la actividad (EVA), satisfacción, engrosamiento y vascularización del tendón, propiedades mecánicas y del colágeno; seguimiento a medio año.",
+      "resultsSummary": "Los tres grupos mejoraron VISA-p y EVA a las 12 semanas. Las mejoras se mantuvieron a medio año con excéntrico y con HSR, pero empeoraron con corticoides. HSR redujo el engrosamiento y la vascularización, aumentó el recambio del colágeno y tuvo la mayor satisfacción a medio año.",
+      "limitations": "Muestra pequeña de varones; el resumen no informa de una diferencia significativa en VISA-p entre HSR y excéntrico.",
+      "practicalApplication": "La fuerza pesada y lenta es una opción con buenos resultados a corto y medio plazo en tendinopatía rotuliana."
+    },
+    {
+      "sport": "Fútbol",
+      "access": "abstract_only",
+      "key": "askling2013_hamstring_football",
+      "pmid": "23536466",
+      "doi": "10.1136/bjsports-2013-092165",
+      "title": "Acute hamstring injuries in Swedish elite football: a prospective randomised controlled clinical trial comparing two rehabilitation protocols.",
+      "journal": "British journal of sports medicine",
+      "volume": "47",
+      "issue": "15",
+      "pages": "953-9",
+      "authors": ["Askling CM", "Tengvar M", "Thorstensson A"],
+      "year": 2013,
+      "studyDesign": "rct",
+      "populationSummary": "75 futbolistas suecos de élite con lesión aguda de isquiosurales confirmada por IRM.",
+      "ageRange": "Adultos",
+      "sex": "mixed",
+      "trainingStatus": "elite",
+      "intervention": "Protocolo con ejercicios en elongación (L-protocol; n = 37).",
+      "comparison": "Protocolo con ejercicios convencionales (C-protocol; n = 38).",
+      "outcomesMeasured": "Días hasta el entrenamiento completo con el equipo y la disponibilidad para jugar; relesiones en 12 meses.",
+      "resultsSummary": "La vuelta fue más rápida con el L-protocol (media 28 días) que con el C-protocol (media 51 días). Las lesiones de tipo estiramiento tardaron más que las de tipo sprint, y el L-protocol fue más eficaz en ambos tipos. Hubo una relesión, en el C-protocol.",
+      "limitations": "Un solo grupo de investigación; pocas relesiones para comparar; no ciego para el tratamiento.",
+      "practicalApplication": "Priorizar ejercicios en elongación (L-protocol) en la readaptación de lesiones agudas de isquiosurales."
+    },
+    {
+      "sport": "Atletismo (velocidad y saltos)",
+      "access": "abstract_only",
+      "key": "askling2014_hamstring_sprinters",
+      "pmid": "24620041",
+      "doi": "10.1136/bjsports-2013-093214",
+      "title": "Acute hamstring injuries in Swedish elite sprinters and jumpers: a prospective randomised controlled clinical trial comparing two rehabilitation protocols.",
+      "journal": "British journal of sports medicine",
+      "volume": "48",
+      "issue": "7",
+      "pages": "532-9",
+      "authors": ["Askling CM", "Tengvar M", "Tarassova O", "Thorstensson A"],
+      "year": 2014,
+      "studyDesign": "rct",
+      "populationSummary": "56 velocistas y saltadores suecos de élite con lesión aguda de isquiosurales confirmada por IRM.",
+      "ageRange": "Adolescentes y adultos",
+      "sex": "mixed",
+      "trainingStatus": "elite",
+      "intervention": "Protocolo con ejercicios en elongación (L-protocol; n = 28).",
+      "comparison": "Protocolo con ejercicios convencionales (C-protocol; n = 28).",
+      "outcomesMeasured": "Días hasta la vuelta al entrenamiento completo; relesiones en 12 meses.",
+      "resultsSummary": "La vuelta fue más rápida con el L-protocol (media 49 días) que con el C-protocol (media 86 días). Con afectación del tendón libre proximal, la vuelta tardó más en ambos protocolos. Hubo dos relesiones, ambas en el C-protocol.",
+      "limitations": "Un solo grupo de investigación; muestra pequeña; pocas relesiones.",
+      "practicalApplication": "Priorizar ejercicios en elongación y prever plazos más largos si la IRM muestra afectación del tendón libre proximal."
+    },
+    {
+      "sport": null,
+      "access": "abstract_only",
+      "key": "vanmelick2016_acl_rehab_guideline",
+      "pmid": "27539507",
+      "doi": "10.1136/bjsports-2015-095898",
+      "title": "Evidence-based clinical practice update: practice guidelines for anterior cruciate ligament rehabilitation based on a systematic review and multidisciplinary consensus.",
+      "journal": "British journal of sports medicine",
+      "volume": "50",
+      "issue": "24",
+      "pages": "1506-1515",
+      "authors": [
+        "van Melick N",
+        "van Cingel RE",
+        "Brooijmans F",
+        "Neeter C",
+        "van Tienen T",
+        "Hullegie W",
+        "Nijhuis-van der Sanden MW"
+      ],
+      "year": 2016,
+      "studyDesign": "guideline",
+      "populationSummary": "Personas con lesión y reconstrucción del LCA; guía basada en 90 estudios y consenso multidisciplinar.",
+      "ageRange": "No especificado",
+      "sex": "mixed",
+      "trainingStatus": "mixed",
+      "intervention": "Readaptación tras reconstrucción del LCA: prehabilitación y fases posoperatorias basadas en criterios.",
+      "comparison": "Según cada estudio incluido.",
+      "outcomesMeasured": "Nueve temas clínicos, entre ellos rendimiento funcional, vuelta al juego y riesgo de relesión.",
+      "resultsSummary": "Recomienda una fase de prehabilitación y tres fases posoperatorias basadas en criterios (basada en déficits, entrenamiento específico del deporte y vuelta al juego), progresar con una batería de pruebas de fuerza, saltos, calidad de movimiento y pruebas psicológicas, y mantener la readaptación 9-12 meses.",
+      "limitations": "Guía nacional (Países Bajos) que combina revisión sistemática y consenso; el resumen no detalla los umbrales de cada criterio.",
+      "practicalApplication": "Estructurar la readaptación del LCA en fases con criterios de paso y una duración de 9-12 meses."
+    },
+    {
+      "sport": "Sobre todo fútbol y rugby",
+      "access": "abstract_only",
+      "key": "knapik2023_rectus_femoris_rtp",
+      "pmid": "36743725",
+      "doi": "10.1177/23259671221144984",
+      "title": "Isolated, Full-Thickness Proximal Rectus Femoris Injury in Competitive Athletes: A Systematic Review of Injury Characteristics and Return to Play.",
+      "journal": "Orthopaedic journal of sports medicine",
+      "volume": "11",
+      "issue": "1",
+      "pages": "23259671221144984",
+      "authors": ["Knapik DM", "Alter TD", "Ganapathy A", "Smith MV", "Brophy RH", "Matava MJ"],
+      "year": 2023,
+      "studyDesign": "systematic_review",
+      "populationSummary": "132 deportistas de competición (edad media 24 años) con rotura completa o avulsión proximal aislada del recto femoral; 18 estudios.",
+      "ageRange": "12–43 años",
+      "sex": "unknown",
+      "trainingStatus": "trained",
+      "intervention": "Tratamiento quirúrgico o conservador.",
+      "comparison": "Quirúrgico frente a conservador (descriptivo).",
+      "outcomesMeasured": "Mecanismo de lesión, tasa y tiempo de vuelta al juego, complicaciones.",
+      "resultsSummary": "Los mecanismos más frecuentes fueron el golpeo y la flexión excesiva de rodilla con extensión forzada de cadera. La tasa de vuelta fue del 93,3 % con tratamiento conservador y del 100 % con cirugía; el tiempo medio de vuelta fue de 11,7 semanas con tratamiento conservador y de 22,1 semanas con cirugía.",
+      "limitations": "Nivel de evidencia 4 (estudios de casos); solo roturas completas o avulsiones, no las distensiones habituales del cuádriceps; pocos casos conservadores.",
+      "practicalApplication": "Orientar plazos solo en roturas completas o avulsiones proximales del recto femoral; para distensiones habituales usar criterio práctico."
+    },
+    {
+      "sport": "Fútbol",
+      "access": "abstract_only",
+      "key": "read2021_asymmetry_thresholds",
+      "pmid": "33264407",
+      "doi": "10.4085/1062-6050-0013.20",
+      "title": "Asymmetry Thresholds for Common Screening Tests and Their Effects on Jump Performance in Professional Soccer Players.",
+      "journal": "Journal of athletic training",
+      "volume": "56",
+      "issue": "1",
+      "pages": "46-53",
+      "authors": ["Read PJ", "McAuliffe S", "Bishop C", "Oliver JL", "Graham-Smith P", "Farooq MA"],
+      "year": 2021,
+      "studyDesign": "cross_sectional",
+      "populationSummary": "203 futbolistas profesionales varones.",
+      "ageRange": "Adultos",
+      "sex": "male",
+      "trainingStatus": "elite",
+      "intervention": "Pruebas de cribado: saltos bilaterales y unilaterales, movilidad y fuerza de isquiosurales, cuádriceps, aductores y abductores de cadera.",
+      "comparison": "Cuartiles de asimetría.",
+      "outcomesMeasured": "Asimetría entre extremidades por prueba y rendimiento en salto.",
+      "resultsSummary": "Las asimetrías variaron mucho entre pruebas (5,2 %-14,5 %). No hubo un umbral único válido para todas las pruebas: los resultados dependieron de la tarea, la variable y la población. Las asimetrías mayores de fuerza de isquiosurales y cuádriceps se asociaron a peor salto unilateral.",
+      "limitations": "Estudio transversal en futbolistas profesionales sanos; no evalúa lesiones ni vuelta al deporte.",
+      "practicalApplication": "Fijar umbrales de asimetría por prueba y por población, etiquetados como orientativos, en lugar de un umbral único."
+    }
+  ],
+  "findings": [
+    {
+      "key": "f_ardern_rts_continuum",
+      "source": "ardern2016_bern_rts_consensus",
+      "outcome": "rts_decision_criteria",
+      "population": "injured_athletes",
+      "intervention": "Vuelta al deporte planificada como un continuo",
+      "comparator": "Decisión aislada al final de la readaptación",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": null,
+      "heterogeneityI2": null,
+      "quote": "Instead, return to sport should be viewed as a continuum, paralleled with recovery and rehabilitation.",
+      "grading": {
+        "design": "consensus",
+        "basedOnSystematicReview": false,
+        "riskOfBias": "no",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "no",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_ardern_starrt_evidence",
+      "source": "ardern2016_bern_rts_consensus",
+      "outcome": "rts_decision_criteria",
+      "population": "injured_athletes",
+      "intervention": "Modelos biopsicosociales y marco StARRT para decidir la vuelta",
+      "comparator": "Sin comparación",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": null,
+      "heterogeneityI2": null,
+      "quote": "Research evidence to support return to sport decisions in clinical practice is scarce.",
+      "grading": {
+        "design": "consensus",
+        "basedOnSystematicReview": false,
+        "riskOfBias": "no",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "no",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_shrier_starrt_framework",
+      "source": "shrier2015_starrt",
+      "outcome": "rts_decision_criteria",
+      "population": "injured_athletes",
+      "intervention": "Marco StARRT revisado",
+      "comparator": "Marco de decisión de 2010",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": null,
+      "heterogeneityI2": null,
+      "quote": "This paper presents a revised framework that addresses the limitations, and provides concrete examples of how to apply it in simple and complex cases.",
+      "grading": {
+        "design": "expert_opinion",
+        "riskOfBias": "no",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "no",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_kyritsis_six_criteria_rupture",
+      "source": "kyritsis2016_acl_discharge",
+      "outcome": "reinjury",
+      "population": "acl_reconstruction_patients",
+      "intervention": "No cumplir los seis criterios de alta antes de volver al entrenamiento con el equipo",
+      "comparator": "Cumplir los seis criterios",
+      "effectMetric": "HR",
+      "effectValue": 4.1,
+      "ciLow": 1.9,
+      "ciHigh": 9.2,
+      "nStudies": null,
+      "nParticipants": 158,
+      "heterogeneityI2": null,
+      "quote": "not meeting all six of the discharge criteria before returning to team training (HR 4.1, 95% CI 1.9 to 9.2, p≤0.001)",
+      "grading": {
+        "design": "cohort",
+        "riskOfBias": "serious",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_kyritsis_discharge_battery",
+      "source": "kyritsis2016_acl_discharge",
+      "outcome": "rts_decision_criteria",
+      "population": "acl_reconstruction_patients",
+      "intervention": "Batería de pruebas de alta (isocinético, t-test, saltos)",
+      "comparator": "Sin comparación",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": 158,
+      "heterogeneityI2": null,
+      "quote": "Before players returned to sport they underwent a battery of discharge tests (isokinetic strength testing at 60°, 180° and 300°/s, a running t test, single hop, triple hop and triple crossover hop tests).",
+      "grading": {
+        "design": "cohort",
+        "riskOfBias": "serious",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "no",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_kyritsis_hq_ratio",
+      "source": "kyritsis2016_acl_discharge",
+      "outcome": "reinjury",
+      "population": "acl_reconstruction_patients",
+      "intervention": "Menor cociente isquiosurales/cuádriceps a 60°/s de la pierna operada",
+      "comparator": "Cociente mayor",
+      "effectMetric": "HR por 10 % de diferencia",
+      "effectValue": 10.6,
+      "ciLow": 10.2,
+      "ciHigh": 11,
+      "nStudies": null,
+      "nParticipants": 158,
+      "heterogeneityI2": null,
+      "quote": "decreased hamstring to quadriceps ratio of the involved leg at 60°/s (HR 10.6 per 10% difference, 95% CI 10.2 to 11, p=0.005)",
+      "grading": {
+        "design": "cohort",
+        "riskOfBias": "serious",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_grindem_delay_9_months",
+      "source": "grindem2016_acl_decision_rules",
+      "outcome": "reinjury",
+      "population": "acl_reconstruction_patients",
+      "intervention": "Retrasar la vuelta al deporte hasta los 9 meses tras la cirugía",
+      "comparator": "Volver antes",
+      "effectMetric": "Reducción de la tasa de relesión por mes de retraso (%)",
+      "effectValue": 51,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": 106,
+      "heterogeneityI2": null,
+      "quote": "The reinjury rate was significantly reduced by 51% for each month RTS was delayed until 9 months after surgery, after which no further risk reduction was observed.",
+      "grading": {
+        "design": "cohort",
+        "riskOfBias": "serious",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_grindem_quad_symmetry",
+      "source": "grindem2016_acl_decision_rules",
+      "outcome": "reinjury",
+      "population": "acl_reconstruction_patients",
+      "intervention": "Fuerza de cuádriceps más simétrica antes de volver",
+      "comparator": "Fuerza menos simétrica",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": 106,
+      "heterogeneityI2": null,
+      "quote": "More symmetrical quadriceps strength prior to return significantly reduced the knee reinjury rate.",
+      "grading": {
+        "design": "cohort",
+        "riskOfBias": "serious",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_grindem_criteria_90",
+      "source": "grindem2016_acl_decision_rules",
+      "outcome": "reinjury",
+      "population": "acl_reconstruction_patients",
+      "intervention": "Superar los criterios de vuelta (puntuaciones > 90 en todas las pruebas)",
+      "comparator": "No superar alguno",
+      "effectMetric": "HR",
+      "effectValue": 0.16,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": 106,
+      "heterogeneityI2": null,
+      "quote": "38.2% of those who failed RTS criteria suffered reinjuries versus 5.6% of those who passed (HR 0.16, p=0.075).",
+      "grading": {
+        "design": "cohort",
+        "riskOfBias": "serious",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_grindem_criteria_definition",
+      "source": "grindem2016_acl_decision_rules",
+      "outcome": "rts_decision_criteria",
+      "population": "acl_reconstruction_patients",
+      "intervention": "Criterios de vuelta: cuestionarios, escala global, simetría de fuerza de cuádriceps y de saltos",
+      "comparator": "Sin comparación",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": 106,
+      "heterogeneityI2": null,
+      "quote": "Pass RTS criteria were defined as scores >90 on all tests, failure as failing any.",
+      "grading": {
+        "design": "cohort",
+        "riskOfBias": "serious",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_grindem_level1_sports",
+      "source": "grindem2016_acl_decision_rules",
+      "outcome": "reinjury",
+      "population": "acl_reconstruction_patients",
+      "intervention": "Volver a deportes de nivel I (pivote)",
+      "comparator": "No volver a deportes de nivel I",
+      "effectMetric": "Razón de tasas de relesión",
+      "effectValue": 4.32,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": 106,
+      "heterogeneityI2": null,
+      "quote": "Patients who returned to level I sports had a 4.32 (p=0.048) times higher reinjury rate than those who did not.",
+      "grading": {
+        "design": "cohort",
+        "riskOfBias": "serious",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_vdh_rtp_definition",
+      "source": "vanderhorst2017_hamstring_rtp_delphi",
+      "outcome": "rts_decision_criteria",
+      "population": "athletes_muscle_injury",
+      "intervention": "Definición consensuada de vuelta al juego tras lesión de isquiosurales",
+      "comparator": "Sin comparación (Delphi)",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": 58,
+      "heterogeneityI2": null,
+      "quote": "consensus was achieved that RTP should be defined as 'the moment a player has received criteria-based medical clearance and is mentally ready for full availability for match selection and/or full training'",
+      "grading": {
+        "design": "consensus",
+        "basedOnSystematicReview": false,
+        "riskOfBias": "no",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "no",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_vdh_rtp_criteria",
+      "source": "vanderhorst2017_hamstring_rtp_delphi",
+      "outcome": "rts_decision_criteria",
+      "population": "athletes_muscle_injury",
+      "intervention": "Criterios médicos consensuados para la vuelta al juego",
+      "comparator": "Sin comparación (Delphi)",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": 58,
+      "heterogeneityI2": null,
+      "quote": "medical staff clearance, absence of pain on palpation, absence of pain during strength and flexibility testing, absence of pain during/after functional testing, similar hamstring flexibility, performance on field testing, and psychological readiness",
+      "grading": {
+        "design": "consensus",
+        "basedOnSystematicReview": false,
+        "riskOfBias": "no",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "no",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_vdh_shared_decision",
+      "source": "vanderhorst2017_hamstring_rtp_delphi",
+      "outcome": "rts_decision_criteria",
+      "population": "athletes_muscle_injury",
+      "intervention": "Decisión compartida de vuelta al juego",
+      "comparator": "Sin comparación (Delphi)",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": 58,
+      "heterogeneityI2": null,
+      "quote": "RTP decisions should be based on shared decision-making, primarily via consultation with the athlete, sports physician, physiotherapist, fitness trainer and team coach.",
+      "grading": {
+        "design": "consensus",
+        "basedOnSystematicReview": false,
+        "riskOfBias": "no",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "no",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_serner_prognosis_predictors",
+      "source": "serner2020_adductor_prognosis",
+      "outcome": "return_to_sport_time",
+      "population": "athletes_muscle_injury",
+      "intervention": "Hallazgos de la exploración clínica y la IRM iniciales",
+      "comparator": "Ausencia de esos hallazgos",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": 81,
+      "heterogeneityI2": null,
+      "quote": "The strongest predictors of a longer time to RTS after acute adductor injury were palpation pain at the proximal adductor longus insertion, a palpable defect, and/or an injury at the bone-tendon junction on MRI.",
+      "grading": {
+        "design": "cohort",
+        "riskOfBias": "no",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_serner_milestone_times",
+      "source": "serner2020_adductor_prognosis",
+      "outcome": "return_to_sport_time",
+      "population": "athletes_muscle_injury",
+      "intervention": "Programa de ejercicio basado en criterios tras lesión aguda de aductores",
+      "comparator": "Sin comparación",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": 81,
+      "heterogeneityI2": null,
+      "quote": "The median duration for the 3 RTS milestones were 15 days (interquartile range, 12-28 days), 24 days (16-32 days), and 22 days (15-31 days), respectively.",
+      "grading": {
+        "design": "cohort",
+        "riskOfBias": "no",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_serner_criteria_rehab_times",
+      "source": "serner2020_adductor_criteria_rehab",
+      "outcome": "return_to_sport_time",
+      "population": "athletes_muscle_injury",
+      "intervention": "Readaptación basada en criterios (IRM grado 0-2)",
+      "comparator": "Sin grupo control",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": 81,
+      "heterogeneityI2": null,
+      "quote": "Athletes with an MRI grade 0-2 adductor injury were clinically pain-free after approximately 2 weeks and returned to full team training after approximately 3 weeks.",
+      "grading": {
+        "design": "cohort",
+        "riskOfBias": "serious",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_serner_painfree_reinjury",
+      "source": "serner2020_adductor_criteria_rehab",
+      "outcome": "reinjury",
+      "population": "athletes_muscle_injury",
+      "intervention": "Alcanzar el hito «sin dolor clínico»",
+      "comparator": "No alcanzarlo",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": 81,
+      "heterogeneityI2": null,
+      "quote": "Meeting the clinically pain-free criteria resulted in fewer reinjuries compared with not meeting the criteria.",
+      "grading": {
+        "design": "cohort",
+        "riskOfBias": "serious",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_serner_clinical_measures_rough",
+      "source": "serner2021_adductor_progression",
+      "outcome": "rts_decision_criteria",
+      "population": "athletes_muscle_injury",
+      "intervention": "Medidas clínicas repetidas (fuerza, flexibilidad, dolor a la palpación)",
+      "comparator": "Sin comparación",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": 61,
+      "heterogeneityI2": null,
+      "quote": "Repeated measures of adductor strength, flexibility, and palpation pain provided only a rough impression of rehabilitation progress following acute adductor injuries in male athletes.",
+      "grading": {
+        "design": "cohort",
+        "riskOfBias": "serious",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_smith_paass_domains",
+      "source": "smith2021_paass_ankle",
+      "outcome": "rts_decision_criteria",
+      "population": "ankle_sprain_patients",
+      "intervention": "Dominios de valoración PAASS para la vuelta al deporte",
+      "comparator": "Sin comparación (Delphi)",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": 155,
+      "heterogeneityI2": null,
+      "quote": "Expert opinion indicated that pain severity, ankle impairments, sensorimotor control, athlete perception/readiness and sport/functional performance should be assessed to inform the RTS decision following an acute lateral ankle sprain injury.",
+      "grading": {
+        "design": "consensus",
+        "basedOnSystematicReview": false,
+        "riskOfBias": "no",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "no",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_smith_paass_items",
+      "source": "smith2021_paass_ankle",
+      "outcome": "rts_decision_criteria",
+      "population": "ankle_sprain_patients",
+      "intervention": "Elementos de valoración consensuados",
+      "comparator": "Sin comparación (Delphi)",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": 155,
+      "heterogeneityI2": null,
+      "quote": "Sixteen assessment items reached consensus to be included in the RTS decision after an acute lateral ankle sprain injury.",
+      "grading": {
+        "design": "consensus",
+        "basedOnSystematicReview": false,
+        "riskOfBias": "no",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "no",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_doherty_recurrence",
+      "source": "doherty2017_ankle_sprain_overview",
+      "outcome": "reinjury",
+      "population": "ankle_sprain_patients",
+      "intervention": "Ortesis y entrenamiento neuromuscular",
+      "comparator": "Sin intervención o control",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": 46,
+      "nParticipants": null,
+      "heterogeneityI2": null,
+      "quote": "There was strong evidence for bracing and moderate evidence for neuromuscular training in preventing recurrence of an ankle sprain.",
+      "grading": {
+        "design": "umbrella_review",
+        "riskOfBias": "serious",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "no",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_doherty_acute_function",
+      "source": "doherty2017_ankle_sprain_overview",
+      "outcome": "physical_function",
+      "population": "ankle_sprain_patients",
+      "intervention": "AINE, movilización temprana, ejercicio y terapia manual tras un esguince agudo",
+      "comparator": "Según cada revisión",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": 46,
+      "nParticipants": null,
+      "heterogeneityI2": null,
+      "quote": "For the combined outcomes of pain, swelling and function after an acute sprain, there was strong evidence for non-steroidal anti-inflammatory drugs and early mobilisation, with moderate evidence supporting exercise and manual therapy techniques.",
+      "grading": {
+        "design": "umbrella_review",
+        "riskOfBias": "serious",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "no",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_silbernagel_continued_activity",
+      "source": "silbernagel2007_achilles_pain_monitoring",
+      "outcome": "physical_function",
+      "population": "tendinopathy_patients",
+      "intervention": "Seguir corriendo y saltando con un modelo de monitorización del dolor",
+      "comparator": "Reposo activo las primeras 6 semanas",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": 38,
+      "heterogeneityI2": null,
+      "quote": "No negative effects could be demonstrated from continuing Achilles tendon-loading activity, such as running and jumping, with the use of a pain-monitoring model, during treatment.",
+      "grading": {
+        "design": "rct",
+        "riskOfBias": "no",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_silbernagel_no_difference",
+      "source": "silbernagel2007_achilles_pain_monitoring",
+      "outcome": "pain",
+      "population": "tendinopathy_patients",
+      "intervention": "Seguir corriendo y saltando con un modelo de monitorización del dolor",
+      "comparator": "Reposo activo las primeras 6 semanas",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": 38,
+      "heterogeneityI2": null,
+      "quote": "No significant differences in the rate of improvements were found between the groups.",
+      "grading": {
+        "design": "rct",
+        "riskOfBias": "no",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_holden_no_difference",
+      "source": "holden2020_isometric_patellar",
+      "outcome": "pain",
+      "population": "tendinopathy_patients",
+      "intervention": "Una sesión de ejercicio isométrico de carga alta",
+      "comparator": "Una sesión de ejercicio dinámico",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": 21,
+      "heterogeneityI2": null,
+      "quote": "There were no differences between exercise on any outcome.",
+      "grading": {
+        "design": "rct",
+        "riskOfBias": "no",
+        "inconsistency": "contradictory",
+        "indirectness": "no",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_holden_small_acute_effect",
+      "source": "holden2020_isometric_patellar",
+      "outcome": "pain",
+      "population": "tendinopathy_patients",
+      "intervention": "Una sesión de ejercicio de fuerza (isométrico o dinámico)",
+      "comparator": "Antes del ejercicio",
+      "effectMetric": "Reducción media del dolor (NRS 0-10)",
+      "effectValue": 0.9,
+      "ciLow": 0.1,
+      "ciHigh": 1.7,
+      "nStudies": null,
+      "nParticipants": 21,
+      "heterogeneityI2": null,
+      "quote": "There was a significant decrease in pain NRS scores (mean reduction 0.9, NRS 95%CI 0.1-1.7; p = 0.028)",
+      "grading": {
+        "design": "rct",
+        "riskOfBias": "no",
+        "inconsistency": "contradictory",
+        "indirectness": "no",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_kongsgaard_hsr_maintained",
+      "source": "kongsgaard2009_hsr_patellar",
+      "outcome": "physical_function",
+      "population": "tendinopathy_patients",
+      "intervention": "Fuerza pesada y lenta (HSR) o sentadilla excéntrica declinada, 12 semanas",
+      "comparator": "Infiltraciones de corticoides",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": 39,
+      "heterogeneityI2": null,
+      "quote": "VISA-p and VAS improvements were maintained at follow-up in ECC and HSR but deteriorated in CORT (P<0.05).",
+      "grading": {
+        "design": "rct",
+        "riskOfBias": "no",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_kongsgaard_hsr_satisfaction",
+      "source": "kongsgaard2009_hsr_patellar",
+      "outcome": "physical_function",
+      "population": "tendinopathy_patients",
+      "intervention": "Fuerza pesada y lenta (HSR)",
+      "comparator": "Sentadilla excéntrica declinada y corticoides",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": 39,
+      "heterogeneityI2": null,
+      "quote": "At the half-year follow-up, treatment satisfaction differed between groups, with HSR being most satisfied.",
+      "grading": {
+        "design": "rct",
+        "riskOfBias": "no",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_askling13_rtp_time",
+      "source": "askling2013_hamstring_football",
+      "outcome": "return_to_sport_time",
+      "population": "athletes_muscle_injury",
+      "intervention": "Protocolo con ejercicios en elongación (L-protocol)",
+      "comparator": "Protocolo convencional (C-protocol)",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": 75,
+      "heterogeneityI2": null,
+      "quote": "Time to return was significantly shorter for the players in the L-protocol, mean 28 days (1SD±15, range 8-58 days), compared with the C-protocol, mean 51 days (1SD±21, range 12-94 days).",
+      "grading": {
+        "design": "rct",
+        "riskOfBias": "serious",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "no",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_askling14_rtp_time",
+      "source": "askling2014_hamstring_sprinters",
+      "outcome": "return_to_sport_time",
+      "population": "athletes_muscle_injury",
+      "intervention": "Protocolo con ejercicios en elongación (L-protocol)",
+      "comparator": "Protocolo convencional (C-protocol)",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": 56,
+      "heterogeneityI2": null,
+      "quote": "Time to return was significantly shorter for the athletes in the L-protocol, mean 49 days (1SD±26, range 18-107 days), compared with the C-protocol, mean 86 days (1SD±34, range 26-140 days).",
+      "grading": {
+        "design": "rct",
+        "riskOfBias": "serious",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_askling14_free_tendon",
+      "source": "askling2014_hamstring_sprinters",
+      "outcome": "return_to_sport_time",
+      "population": "athletes_muscle_injury",
+      "intervention": "Lesión con afectación del tendón libre proximal",
+      "comparator": "Lesión sin afectación del tendón libre",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": 56,
+      "heterogeneityI2": null,
+      "quote": "Irrespective of protocol, hamstring injuries where the proximal free tendon was involved took a significantly longer time to return than injuries that did not involve the free tendon",
+      "grading": {
+        "design": "rct",
+        "riskOfBias": "serious",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_vanmelick_criteria_phases",
+      "source": "vanmelick2016_acl_rehab_guideline",
+      "outcome": "rts_decision_criteria",
+      "population": "acl_reconstruction_patients",
+      "intervention": "Prehabilitación y tres fases posoperatorias basadas en criterios",
+      "comparator": "Según cada estudio",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": 90,
+      "nParticipants": null,
+      "heterogeneityI2": null,
+      "quote": "Rehabilitation after ACL injury should include a prehabilitation phase and 3 criterion-based postoperative phases: (1) impairment-based, (2) sport-specific training and (3) return to play.",
+      "grading": {
+        "design": "guideline",
+        "basedOnSystematicReview": true,
+        "riskOfBias": "serious",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "no",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_vanmelick_test_battery",
+      "source": "vanmelick2016_acl_rehab_guideline",
+      "outcome": "rts_decision_criteria",
+      "population": "acl_reconstruction_patients",
+      "intervention": "Batería de pruebas de fuerza, saltos, calidad de movimiento y psicológicas para progresar",
+      "comparator": "Según cada estudio",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": 90,
+      "nParticipants": null,
+      "heterogeneityI2": null,
+      "quote": "A battery of strength and hop tests, quality of movement and psychological tests should be used to guide progression from one rehabilitation stage to the next. Postoperative rehabilitation should continue for 9-12 months.",
+      "grading": {
+        "design": "guideline",
+        "basedOnSystematicReview": true,
+        "riskOfBias": "serious",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "no",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_knapik_rf_rtp_time",
+      "source": "knapik2023_rectus_femoris_rtp",
+      "outcome": "return_to_sport_time",
+      "population": "athletes_muscle_injury",
+      "intervention": "Tratamiento conservador de la rotura completa proximal del recto femoral",
+      "comparator": "Tratamiento quirúrgico",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": 18,
+      "nParticipants": 132,
+      "heterogeneityI2": null,
+      "quote": "the mean RTP time was 11.7 weeks (range, 5.5-15.2 weeks) in nonoperatively treated and 22.1 weeks (range, 14.0-37.6 weeks) in operatively treated athletes.",
+      "grading": {
+        "design": "systematic_review",
+        "riskOfBias": "serious",
+        "inconsistency": "no",
+        "indirectness": "serious",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_read_no_single_threshold",
+      "source": "read2021_asymmetry_thresholds",
+      "outcome": "interlimb_asymmetry",
+      "population": "football_players",
+      "intervention": "Pruebas de cribado habituales",
+      "comparator": "Entre pruebas",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": 203,
+      "heterogeneityI2": null,
+      "quote": "No single asymmetry threshold was present for all tests; the outcomes were task, variable, and population specific.",
+      "grading": {
+        "design": "cross_sectional",
+        "riskOfBias": "no",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "no",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_read_asymmetry_range",
+      "source": "read2021_asymmetry_thresholds",
+      "outcome": "interlimb_asymmetry",
+      "population": "football_players",
+      "intervention": "Pruebas de cribado habituales",
+      "comparator": "Entre pruebas",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": 203,
+      "heterogeneityI2": null,
+      "quote": "Large variability (range = 5.2%-14.5%) was evident in asymmetry scores across the different tests and physical qualities.",
+      "grading": {
+        "design": "cross_sectional",
+        "riskOfBias": "no",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "no",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_read_jump_asymmetry",
+      "source": "read2021_asymmetry_thresholds",
+      "outcome": "jump_height",
+      "population": "football_players",
+      "intervention": "Mayor asimetría de fuerza de isquiosurales y cuádriceps (cuartil superior)",
+      "comparator": "Cuartiles inferiores",
+      "effectMetric": null,
+      "effectValue": null,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": 203,
+      "heterogeneityI2": null,
+      "quote": "Larger asymmetries in HAM and QUAD strength appeared to be detrimental to unilateral jump performance.",
+      "grading": {
+        "design": "cross_sectional",
+        "riskOfBias": "no",
+        "inconsistency": "no",
+        "indirectness": "no",
+        "imprecision": "no",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    }
+  ],
+  "claims": [
+    {
+      "key": "c_rts_continuum_shared",
+      "statement": "La vuelta al deporte se entiende como un continuo paralelo a la readaptación, no como una decisión aislada al final, y se recomienda decidirla de forma compartida con un marco explícito de riesgo (StARRT). La evidencia que respalda estas decisiones es escasa.",
+      "scope": "vuelta al deporte / proceso de decisión",
+      "epistemicType": "inference",
+      "findings": [
+        {
+          "finding": "f_ardern_rts_continuum",
+          "role": "supports"
+        },
+        {
+          "finding": "f_ardern_starrt_evidence",
+          "role": "supports"
+        },
+        {
+          "finding": "f_shrier_starrt_framework",
+          "role": "supports"
+        }
+      ],
+      "confidence": "low",
+      "limitations": "Consenso y opinión de expertos; sin datos de resultados clínicos.",
+      "applicability": {
+        "appliesTo": ["injured_athletes"],
+        "notFor": []
+      }
+    },
+    {
+      "key": "c_acl_rts_criteria_reinjury",
+      "statement": "Tras la reconstrucción del LCA, no cumplir una batería de criterios de alta (fuerza isocinética, t-test y saltos) se asoció a un riesgo de rotura del injerto unas 4 veces mayor, y volver a los 9 meses o más con una fuerza de cuádriceps más simétrica se asoció a menos relesiones (estudios de cohortes).",
+      "scope": "LCA / criterios de vuelta / relesión",
+      "epistemicType": "fact",
+      "findings": [
+        {
+          "finding": "f_kyritsis_six_criteria_rupture",
+          "role": "supports"
+        },
+        {
+          "finding": "f_grindem_delay_9_months",
+          "role": "supports"
+        },
+        {
+          "finding": "f_grindem_quad_symmetry",
+          "role": "supports"
+        },
+        {
+          "finding": "f_grindem_criteria_90",
+          "role": "context"
+        },
+        {
+          "finding": "f_vanmelick_test_battery",
+          "role": "context"
+        }
+      ],
+      "confidence": "low",
+      "limitations": "Cohortes observacionales (158 varones profesionales; 106 pacientes de deportes de pivote); asociación, no causalidad. En Grindem, la diferencia por superar los criterios (> 90 en todas las pruebas) no fue significativa (p = 0,075).",
+      "applicability": {
+        "appliesTo": ["acl_reconstruction_patients"],
+        "notFor": []
+      }
+    },
+    {
+      "key": "c_acl_criteria_based_phases",
+      "statement": "La guía neerlandesa de readaptación del LCA recomienda una prehabilitación y tres fases posoperatorias con paso por criterios (batería de fuerza, saltos, calidad de movimiento y pruebas psicológicas) y una duración de 9-12 meses.",
+      "scope": "LCA / progresión por criterios",
+      "epistemicType": "fact",
+      "findings": [
+        {
+          "finding": "f_vanmelick_criteria_phases",
+          "role": "supports"
+        },
+        {
+          "finding": "f_vanmelick_test_battery",
+          "role": "supports"
+        },
+        {
+          "finding": "f_kyritsis_discharge_battery",
+          "role": "context"
+        }
+      ],
+      "confidence": "moderate",
+      "limitations": "Guía basada en revisión sistemática y consenso; el resumen no fija umbrales numéricos por criterio.",
+      "applicability": {
+        "appliesTo": ["acl_reconstruction_patients"],
+        "notFor": []
+      }
+    },
+    {
+      "key": "c_hamstring_rtp_criteria",
+      "statement": "Tras una lesión de isquiosurales en fútbol, un consenso Delphi propone decidir la vuelta al juego con alta médica, ausencia de dolor a la palpación y en pruebas de fuerza, flexibilidad y funcionales, flexibilidad similar, pruebas de campo y preparación psicológica, de forma compartida.",
+      "scope": "isquiosurales / criterios de vuelta al juego",
+      "epistemicType": "inference",
+      "findings": [
+        {
+          "finding": "f_vdh_rtp_definition",
+          "role": "supports"
+        },
+        {
+          "finding": "f_vdh_rtp_criteria",
+          "role": "supports"
+        },
+        {
+          "finding": "f_vdh_shared_decision",
+          "role": "supports"
+        }
+      ],
+      "confidence": "low",
+      "limitations": "Opinión de expertos (Delphi); criterios sin umbrales numéricos; no se ha comprobado su relación con las relesiones.",
+      "applicability": {
+        "appliesTo": ["athletes_muscle_injury"],
+        "notFor": []
+      }
+    },
+    {
+      "key": "c_hamstring_lengthening_rtp",
+      "statement": "En futbolistas y atletas de élite con lesión aguda de isquiosurales, un protocolo con ejercicios en elongación acortó el tiempo de vuelta frente a ejercicios convencionales (medias de 28 frente a 51 días y de 49 frente a 86 días); con afectación del tendón libre proximal la vuelta fue más lenta.",
+      "scope": "isquiosurales / tipo de ejercicio / tiempo de vuelta",
+      "epistemicType": "fact",
+      "findings": [
+        {
+          "finding": "f_askling13_rtp_time",
+          "role": "supports"
+        },
+        {
+          "finding": "f_askling14_rtp_time",
+          "role": "supports"
+        },
+        {
+          "finding": "f_askling14_free_tendon",
+          "role": "context"
+        }
+      ],
+      "confidence": "moderate",
+      "limitations": "Dos ensayos del mismo grupo de investigación en deportistas suecos de élite; muy pocas relesiones para sacar conclusiones sobre recidiva.",
+      "applicability": {
+        "appliesTo": ["athletes_muscle_injury"],
+        "notFor": []
+      }
+    },
+    {
+      "key": "c_adductor_rts_prognosis",
+      "statement": "En deportistas varones con lesión aguda de aductores y readaptación basada en criterios, la vuelta al entrenamiento completo llevó unas 3 semanas en lesiones de grado 0-2 en la IRM; el dolor a la palpación de la inserción proximal, un defecto palpable o la lesión en la unión hueso-tendón se asociaron a vueltas más lentas, y alcanzar el hito «sin dolor clínico» se asoció a menos relesiones.",
+      "scope": "aductores / pronóstico y criterios de vuelta",
+      "epistemicType": "fact",
+      "findings": [
+        {
+          "finding": "f_serner_criteria_rehab_times",
+          "role": "supports"
+        },
+        {
+          "finding": "f_serner_prognosis_predictors",
+          "role": "supports"
+        },
+        {
+          "finding": "f_serner_painfree_reinjury",
+          "role": "supports"
+        },
+        {
+          "finding": "f_serner_clinical_measures_rough",
+          "role": "context"
+        }
+      ],
+      "confidence": "low",
+      "limitations": "Cohortes del mismo grupo, solo varones, sin grupo control; las medidas clínicas repetidas solo dan una idea aproximada del progreso.",
+      "applicability": {
+        "appliesTo": ["athletes_muscle_injury"],
+        "notFor": []
+      }
+    },
+    {
+      "key": "c_ankle_paass_domains",
+      "statement": "Tras un esguince lateral agudo de tobillo, un consenso internacional propone valorar cinco dominios antes de la vuelta (PAASS): dolor, alteraciones del tobillo, percepción del deportista, control sensoriomotor y rendimiento deportivo y funcional. No fija umbrales numéricos.",
+      "scope": "tobillo / criterios de vuelta",
+      "epistemicType": "inference",
+      "findings": [
+        {
+          "finding": "f_smith_paass_domains",
+          "role": "supports"
+        },
+        {
+          "finding": "f_smith_paass_items",
+          "role": "supports"
+        }
+      ],
+      "confidence": "low",
+      "limitations": "Opinión de expertos (Delphi); los umbrales de cada elemento los debe fijar cada protocolo como orientativos.",
+      "applicability": {
+        "appliesTo": ["ankle_sprain_patients"],
+        "notFor": []
+      }
+    },
+    {
+      "key": "c_ankle_neuromuscular_recurrence",
+      "statement": "Tras un esguince de tobillo, hay evidencia moderada de que el entrenamiento neuromuscular y evidencia fuerte de que las ortesis reducen la recidiva; en la fase aguda, el ejercicio y la terapia manual tienen evidencia moderada para dolor, inflamación y función.",
+      "scope": "tobillo / ejercicio / recidiva",
+      "epistemicType": "fact",
+      "findings": [
+        {
+          "finding": "f_doherty_recurrence",
+          "role": "supports"
+        },
+        {
+          "finding": "f_doherty_acute_function",
+          "role": "supports"
+        }
+      ],
+      "confidence": "moderate",
+      "limitations": "Revisión de revisiones de calidad media (AMSTAR 6,5/11), con solapamiento de estudios.",
+      "applicability": {
+        "appliesTo": ["ankle_sprain_patients"],
+        "notFor": []
+      }
+    },
+    {
+      "key": "c_achilles_pain_monitoring",
+      "statement": "En tendinopatía aquílea, seguir corriendo y saltando con un modelo de monitorización del dolor durante un programa progresivo de carga no empeoró los resultados a 12 meses frente al reposo activo.",
+      "scope": "tendón de Aquiles / gestión de la carga",
+      "epistemicType": "fact",
+      "findings": [
+        {
+          "finding": "f_silbernagel_continued_activity",
+          "role": "supports"
+        },
+        {
+          "finding": "f_silbernagel_no_difference",
+          "role": "supports"
+        }
+      ],
+      "confidence": "low",
+      "limitations": "Un ensayo de 38 pacientes; el resumen no detalla las reglas del modelo de dolor.",
+      "applicability": {
+        "appliesTo": ["tendinopathy_patients"],
+        "notFor": []
+      }
+    },
+    {
+      "key": "c_patellar_isometric_analgesia_uncertain",
+      "statement": "En tendinopatía rotuliana, la ventaja analgésica inmediata del ejercicio isométrico sobre el dinámico no está establecida: un ensayo cruzado con 21 participantes encontró una reducción pequeña y pasajera del dolor tras ambos tipos de ejercicio, sin diferencias entre ellos, al contrario que un estudio previo con 6 deportistas.",
+      "scope": "tendón rotuliano / isométricos / dolor",
+      "epistemicType": "inference",
+      "findings": [
+        {
+          "finding": "f_holden_no_difference",
+          "role": "supports"
+        },
+        {
+          "finding": "f_holden_small_acute_effect",
+          "role": "supports"
+        }
+      ],
+      "confidence": "very_low",
+      "limitations": "Evidencia contradictoria: estudios de una sola sesión con muestras muy pequeñas. El estudio previo (Rio et al., 2015) está en otro archivo del catálogo.",
+      "applicability": {
+        "appliesTo": ["tendinopathy_patients"],
+        "notFor": []
+      }
+    },
+    {
+      "key": "c_patellar_hsr",
+      "statement": "En varones con tendinopatía rotuliana, 12 semanas de fuerza pesada y lenta mejoraron la función y el dolor con mejoras mantenidas a medio año, como la sentadilla excéntrica y a diferencia de los corticoides, y con la mayor satisfacción.",
+      "scope": "tendón rotuliano / fuerza pesada y lenta",
+      "epistemicType": "fact",
+      "findings": [
+        {
+          "finding": "f_kongsgaard_hsr_maintained",
+          "role": "supports"
+        },
+        {
+          "finding": "f_kongsgaard_hsr_satisfaction",
+          "role": "supports"
+        }
+      ],
+      "confidence": "low",
+      "limitations": "Un ensayo de 39 varones; el resumen no informa de diferencias significativas en VISA-p entre HSR y excéntrico.",
+      "applicability": {
+        "appliesTo": ["tendinopathy_patients"],
+        "notFor": []
+      }
+    },
+    {
+      "key": "c_rectus_femoris_rupture_rtp",
+      "statement": "En roturas completas o avulsiones proximales del recto femoral en deportistas de competición, el tiempo medio de vuelta descrito fue de unas 12 semanas con tratamiento conservador y de unas 22 semanas con cirugía. No se aplica a las distensiones habituales del cuádriceps.",
+      "scope": "cuádriceps / recto femoral / tiempo de vuelta",
+      "epistemicType": "fact",
+      "findings": [
+        {
+          "finding": "f_knapik_rf_rtp_time",
+          "role": "supports"
+        }
+      ],
+      "confidence": "very_low",
+      "limitations": "Revisión de estudios de casos (nivel 4); pocos casos con tratamiento conservador; grupos no comparables.",
+      "applicability": {
+        "appliesTo": ["athletes_muscle_injury"],
+        "notFor": []
+      }
+    },
+    {
+      "key": "c_asymmetry_no_single_threshold",
+      "statement": "No existe un umbral de asimetría entre extremidades válido para todas las pruebas: en futbolistas profesionales varió entre el 5,2 % y el 14,5 % según la prueba, por lo que los umbrales deben fijarse por prueba y población y tratarse como orientativos.",
+      "scope": "asimetrías / umbrales",
+      "epistemicType": "inference",
+      "findings": [
+        {
+          "finding": "f_read_no_single_threshold",
+          "role": "supports"
+        },
+        {
+          "finding": "f_read_asymmetry_range",
+          "role": "supports"
+        },
+        {
+          "finding": "f_read_jump_asymmetry",
+          "role": "context"
+        }
+      ],
+      "confidence": "low",
+      "limitations": "Estudio transversal en futbolistas profesionales sanos; no relaciona las asimetrías con lesiones ni con la vuelta al deporte.",
+      "applicability": {
+        "appliesTo": ["football_players"],
+        "notFor": []
+      }
+    }
+  ],
+  "newOutcomes": [
+    {
+      "slug": "return_to_sport_time",
+      "name": "Tiempo hasta la vuelta al deporte",
+      "domain": "clinical"
+    },
+    {
+      "slug": "reinjury",
+      "name": "Relesión / recidiva",
+      "domain": "clinical"
+    },
+    {
+      "slug": "rts_decision_criteria",
+      "name": "Criterios de decisión para la vuelta al deporte",
+      "domain": "clinical"
+    },
+    {
+      "slug": "interlimb_asymmetry",
+      "name": "Asimetría entre extremidades",
+      "domain": "assessment"
+    }
+  ],
+  "newPopulations": [
+    {
+      "slug": "injured_athletes",
+      "name": "Deportistas en readaptación tras una lesión (solo contexto clínico)",
+      "trainingStatus": "mixed"
+    },
+    {
+      "slug": "acl_reconstruction_patients",
+      "name": "Personas tras reconstrucción del LCA (solo contexto clínico)",
+      "trainingStatus": "mixed"
+    },
+    {
+      "slug": "athletes_muscle_injury",
+      "name": "Deportistas con lesión muscular aguda (isquiosurales, aductores, cuádriceps)",
+      "trainingStatus": "trained"
+    },
+    {
+      "slug": "ankle_sprain_patients",
+      "name": "Personas con esguince lateral de tobillo o inestabilidad crónica",
+      "trainingStatus": "mixed"
+    }
+  ],
+  "notFound": [
+    "Cuádriceps / recto femoral: no se encontró en PubMed una revisión sistemática sobre la vuelta al juego tras distensiones habituales (no completas) del cuádriceps con readaptación por ejercicio (búsquedas: «quadriceps OR rectus femoris muscle strain injury return to play systematic review»; título con quadriceps/rectus femoris + strain/injury + return). Solo se incluyó Knapik et al., 2023 (roturas completas/avulsiones); se descartó una revisión narrativa de imagen (PMID 39989034).",
+    "Tobillo: la búsqueda «Doherty lateral ankle sprain treatment exercise systematic review meta-analysis» y otra de metaanálisis específico de ejercicio y recidiva no devolvieron resultados; se usó la revisión de revisiones de Doherty et al., 2017 (PMID 28053200).",
+    "Tendón rotuliano: no se buscó otro ensayo HSR frente a excéntrico; el resumen de Kongsgaard et al., 2009 no informa de una diferencia significativa entre ambos.",
+    "van der Horst et al., 2017: el registro de PubMed incluye un quinto autor sin nombre (probablemente un autor corporativo); solo se listan los cuatro autores con nombre."
+  ]
+}

@@ -288,6 +288,20 @@
       "when": 1791232801458,
       "tag": "0040_rls_v14",
       "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1791280098798,
+      "tag": "0041_injury_module",
+      "breakpoints": true
+    },
+    {
+      "idx": 42,
+      "version": "7",
+      "when": 1791280100605,
+      "tag": "0042_rls_v15",
+      "breakpoints": true
     }
   ]
 }

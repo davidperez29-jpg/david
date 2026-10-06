@@ -6,7 +6,10 @@ import { SEED_DIR } from './evidence-path';
 
 const { db, close } = createDb(process.env.DATABASE_URL!);
 await seedCatalog(db);
-const { evidence, assessment, exercises, templates } = await seedKnowledgeBase(db, SEED_DIR);
+const { evidence, assessment, exercises, templates, injury } = await seedKnowledgeBase(
+  db,
+  SEED_DIR,
+);
 console.log(
   `Global library: ${exercises.exercises} exercises, ${exercises.progressions} progressions, ${templates.templates} plan templates.`,
 );
@@ -15,6 +18,9 @@ console.log(
 );
 console.log(
   `Assessment catalogue: ${assessment.tests} tests, ${assessment.reliability} reliability rows, ${assessment.references} reference rows, ${assessment.batteries} batteries.`,
+);
+console.log(
+  `Injury catalogue: ${injury.conditions} conditions, ${injury.protocols} new protocol versions.`,
 );
 for (const e of evidence.qaErrors) console.warn(`  QA ${e.code}: ${e.target.key} — ${e.message}`);
 await close();

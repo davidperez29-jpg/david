@@ -3,6 +3,7 @@ import type { Database } from '../client';
 import { loadAssessmentFiles, seedAssessment, type AssessmentSeedReport } from './assessment';
 import { loadEvidenceFiles, seedEvidence, type EvidenceSeedReport } from './evidence';
 import { loadExerciseFile, seedGlobalExercises } from './exercises';
+import { loadInjuryFile, seedInjuryCatalog } from './injury';
 import { generateProfileTemplates } from './profile-templates';
 import { loadTemplateFiles, seedTemplates } from './templates';
 
@@ -18,6 +19,7 @@ export async function seedKnowledgeBase(
   assessment: AssessmentSeedReport;
   exercises: { exercises: number; progressions: number };
   templates: { templates: number };
+  injury: { conditions: number; protocols: number };
 }> {
   const evidenceData = loadEvidenceFiles(join(seedDir, 'evidence'));
   const assessmentData = loadAssessmentFiles(join(seedDir, 'assessment'));
@@ -42,5 +44,10 @@ export async function seedKnowledgeBase(
     ...handWritten,
     ...generateProfileTemplates(handWritten),
   ]);
-  return { evidence, assessment, exercises, templates };
+  // Injury protocols cite evidence sources and assessment tests (both seeded above).
+  const injury = await seedInjuryCatalog(
+    db,
+    loadInjuryFile(join(seedDir, 'injury', 'protocols.json')),
+  );
+  return { evidence, assessment, exercises, templates, injury };
 }

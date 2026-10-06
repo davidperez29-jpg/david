@@ -49,7 +49,7 @@ export async function referralStatus(db: Executor, clientId: string): Promise<Re
   return { required, text: required ? REFERRAL_TEXT : null };
 }
 
-async function requireHealthConsent(db: Executor, clientId: string): Promise<void> {
+export async function requireHealthConsent(db: Executor, clientId: string): Promise<void> {
   const rows = await db.select().from(consents).where(eq(consents.clientId, clientId));
   const ok = hasActiveConsent(
     rows.map((r) => ({

@@ -399,6 +399,27 @@ export const POPULATIONS: {
     status: 'mixed',
   },
   { slug: 'cerebral_palsy', name: 'Personas con parálisis cerebral', status: 'mixed' },
+  // Injury / return-to-sport populations (seed-data/evidence/injury.json).
+  {
+    slug: 'injured_athletes',
+    name: 'Deportistas en readaptación tras una lesión (solo contexto clínico)',
+    status: 'mixed',
+  },
+  {
+    slug: 'acl_reconstruction_patients',
+    name: 'Personas tras reconstrucción del LCA (solo contexto clínico)',
+    status: 'mixed',
+  },
+  {
+    slug: 'athletes_muscle_injury',
+    name: 'Deportistas con lesión muscular aguda (isquiosurales, aductores, cuádriceps)',
+    status: 'trained',
+  },
+  {
+    slug: 'ankle_sprain_patients',
+    name: 'Personas con esguince lateral de tobillo o inestabilidad crónica',
+    status: 'mixed',
+  },
 ];
 
 export const OUTCOMES: [string, string, string][] = [
@@ -442,6 +463,10 @@ export const OUTCOMES: [string, string, string][] = [
   ['joint_kinematics', 'Cinemática articular (p. ej., valgo de rodilla)', 'biomechanics'],
   ['training_load_quantification', 'Cuantificación de la carga de entrenamiento', 'monitoring'],
   ['illness_incidence', 'Incidencia de enfermedades leves', 'clinical'],
+  ['return_to_sport_time', 'Tiempo hasta la vuelta al deporte', 'clinical'],
+  ['reinjury', 'Relesión / recidiva', 'clinical'],
+  ['rts_decision_criteria', 'Criterios de decisión para la vuelta al deporte', 'clinical'],
+  ['interlimb_asymmetry', 'Asimetría entre extremidades', 'assessment'],
 ];
 
 async function insertGlobal<T extends PgTable>(

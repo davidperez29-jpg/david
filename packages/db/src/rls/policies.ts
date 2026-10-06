@@ -133,6 +133,14 @@ CREATE POLICY tca_delete ON trainer_client_assignments FOR DELETE USING (organiz
   evidence_reviews: { kind: 'catalog' },
   assessment_tests: { kind: 'catalog' },
   derived_formulas: { kind: 'catalog' },
+  injury_conditions: { kind: 'catalog' },
+  injury_protocols: { kind: 'catalog' },
+  injury_protocol_phases: { kind: 'catalog_child', parent: 'injury_protocols', fk: 'protocol_id' },
+  injury_protocol_criteria: {
+    kind: 'catalog_child',
+    parent: 'injury_protocols',
+    fk: 'protocol_id',
+  },
   test_reliability_data: { kind: 'catalog' },
   reference_values: { kind: 'catalog' },
   assessment_batteries: { kind: 'catalog' },
@@ -144,6 +152,14 @@ CREATE POLICY tca_delete ON trainer_client_assignments FOR DELETE USING (organiz
   assessments: { kind: 'client_owned', clientWrite: false, clientRead: true },
   assessment_results: { kind: 'client_owned', clientWrite: false, clientRead: true },
   derived_metrics: { kind: 'client_owned', clientWrite: false, clientRead: true },
+  // Phase 7 [SALUD]: injury cases and everything under them are staff-only health data (the
+  // client never reads or writes them here; their session pain stays in pain_logs).
+  injuries: { kind: 'client_owned', clientWrite: false, clientRead: false },
+  injury_phase_history: { kind: 'client_owned', clientWrite: false, clientRead: false },
+  injury_symptoms: { kind: 'client_owned', clientWrite: false, clientRead: false },
+  injury_alerts: { kind: 'client_owned', clientWrite: false, clientRead: false },
+  injury_criterion_checks: { kind: 'client_owned', clientWrite: false, clientRead: false },
+  rtp_decisions: { kind: 'client_owned', clientWrite: false, clientRead: false },
   // Phase 4: groups/teams are staff-only; a trainer sees the members they can access and only
   // adds members to a group of their organization.
   client_groups: {
@@ -249,6 +265,11 @@ export const INHERIT_SCOPE: Record<string, [string, string]> = {
   exercise_feedback: ['sessions', 'session_id'],
   assessment_results: ['assessments', 'assessment_id'],
   import_rows: ['import_jobs', 'job_id'],
+  injury_phase_history: ['injuries', 'injury_id'],
+  injury_symptoms: ['injuries', 'injury_id'],
+  injury_alerts: ['injuries', 'injury_id'],
+  injury_criterion_checks: ['injuries', 'injury_id'],
+  rtp_decisions: ['injuries', 'injury_id'],
 };
 
 /**
@@ -266,6 +287,7 @@ export const CHECK_CLIENT_ORG = [
   'assessments',
   'derived_metrics',
   'client_group_members',
+  'injuries',
   'readiness',
   'pain_logs',
   'exercise_substitutions',

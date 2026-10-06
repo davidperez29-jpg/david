@@ -1,0 +1,1134 @@
+{
+  "_comment": "Hand-curated injury catalogue (restructure phase 7). Sources are keys of seed-data/evidence/injury.json; every threshold without a source is a practical criterion (evidence: practical). Never a diagnosis; never «apto».",
+  "conditions": [
+    {
+      "slug": "acl",
+      "region": "knee",
+      "name": "Ligamento cruzado anterior (LCA)",
+      "description": "Readaptación tras reconstrucción o tratamiento conservador del LCA, siempre con la información y las restricciones del profesional sanitario."
+    },
+    {
+      "slug": "hamstring_strain",
+      "region": "hamstrings",
+      "name": "Lesión muscular de isquiosurales",
+      "description": "Lesión muscular aguda de isquiosurales diagnosticada por un profesional sanitario."
+    },
+    {
+      "slug": "adductor_strain",
+      "region": "adductors",
+      "name": "Lesión aguda de aductores",
+      "description": "Lesión muscular aguda de aductores (dolor inguinal agudo) diagnosticada por un profesional sanitario."
+    },
+    {
+      "slug": "lateral_ankle_sprain",
+      "region": "ankle",
+      "name": "Esguince lateral de tobillo",
+      "description": "Esguince lateral agudo de tobillo valorado por un profesional sanitario."
+    },
+    {
+      "slug": "patellar_tendinopathy",
+      "region": "knee",
+      "name": "Tendinopatía rotuliana",
+      "description": "Dolor tendinoso rotuliano valorado por un profesional sanitario."
+    },
+    {
+      "slug": "achilles_tendinopathy",
+      "region": "calf_achilles",
+      "name": "Tendinopatía aquílea",
+      "description": "Dolor tendinoso aquíleo valorado por un profesional sanitario."
+    }
+  ],
+  "protocols": [
+    {
+      "slug": "acl_criteria_based",
+      "condition": "acl",
+      "name": "LCA · progresión basada en criterios",
+      "description": "Fases con criterios de paso (no plazos fijos), batería de fuerza y saltos con índice de simetría y decisión compartida. Plantilla editable: cada centro la ajusta con su equipo sanitario.",
+      "painThreshold": 5,
+      "painThresholdBasis": "Criterio práctico (umbral editable por el centro).",
+      "sources": [
+        "vanmelick2016_acl_rehab_guideline",
+        "grindem2016_acl_decision_rules",
+        "kyritsis2016_acl_discharge",
+        "ardern2016_bern_rts_consensus"
+      ],
+      "limitations": "Los estudios de criterios de vuelta son observacionales y con pocos eventos; cumplir los criterios no garantiza la ausencia de relesión. La guía de van Melick 2016 estructura la rehabilitación en fases basadas en criterios.",
+      "phases": [
+        {
+          "name": "Control de síntomas y protección",
+          "goals": [
+            "Controlar dolor y derrame",
+            "Recuperar la extensión completa",
+            "Activación del cuádriceps"
+          ],
+          "restrictions": "Según el profesional sanitario (carga, ortesis, rango).",
+          "exercises": [
+            "Activación isométrica de cuádriceps",
+            "Movilidad de rodilla en rango permitido",
+            "Bicicleta estática sin resistencia"
+          ],
+          "dosage": "Diaria, volumen bajo, sin aumento de dolor ni derrame.",
+          "recommendedTests": [],
+          "criteria": [
+            {
+              "role": "entry",
+              "text": "Indicaciones y restricciones del profesional sanitario recibidas y registradas.",
+              "mandatory": true,
+              "evidence": "practical",
+              "rtpItem": "clinical"
+            },
+            {
+              "role": "progression",
+              "text": "Extensión completa de rodilla y derrame mínimo según la valoración sanitaria.",
+              "mandatory": true,
+              "evidence": "practical",
+              "rtpItem": "rom"
+            },
+            {
+              "role": "progression",
+              "text": "Marcha sin cojera y elevación de pierna recta sin déficit de extensión.",
+              "mandatory": true,
+              "evidence": "practical"
+            },
+            {
+              "role": "stop",
+              "text": "Síntomas neurológicos, dolor nocturno o en reposo, o empeoramiento claro: detener la progresión y derivar al profesional sanitario.",
+              "mandatory": false,
+              "evidence": "practical"
+            }
+          ]
+        },
+        {
+          "name": "Fuerza básica y control",
+          "goals": [
+            "Recuperar fuerza de cuádriceps e isquiosurales",
+            "Control neuromuscular en apoyo bipodal y unipodal"
+          ],
+          "restrictions": null,
+          "exercises": [
+            "Prensa y sentadilla en rango progresivo",
+            "Extensión de rodilla en cadena abierta (rango permitido)",
+            "Puente y curl nórdico asistido",
+            "Equilibrio unipodal"
+          ],
+          "dosage": "2–3 sesiones de fuerza por semana, 3–4 series, progresión por tolerancia.",
+          "recommendedTests": ["knee_extensor_isometric", "knee_flexor_isometric"],
+          "criteria": [
+            {
+              "role": "progression",
+              "text": "Dolor ≤ umbral del protocolo durante las tareas de la fase y sin aumento al día siguiente.",
+              "mandatory": true,
+              "evidence": "practical",
+              "rtpItem": "load_tolerance"
+            },
+            {
+              "role": "progression",
+              "text": "Sentadilla bipodal y step-down sin dolor y con control de rodilla en el plano frontal (valoración visual del entrenador).",
+              "mandatory": true,
+              "evidence": "practical",
+              "rtpItem": "functional"
+            },
+            {
+              "role": "progression",
+              "text": "Fuerza isométrica de extensores de rodilla, índice de simetría ≥ 70 %.",
+              "mandatory": true,
+              "evidence": "practical",
+              "auto": {
+                "test": "knee_extensor_isometric",
+                "metric": "lsi",
+                "operator": ">=",
+                "threshold": 70
+              },
+              "rtpItem": "strength",
+              "limitations": "No existe un umbral único de asimetría válido para todos los tests (Read 2021); 90 % es una convención de los estudios citados, no un valor de seguridad."
+            },
+            {
+              "role": "stop",
+              "text": "Síntomas neurológicos, dolor nocturno o en reposo, o empeoramiento claro: detener la progresión y derivar al profesional sanitario.",
+              "mandatory": false,
+              "evidence": "practical"
+            }
+          ]
+        },
+        {
+          "name": "Carrera y pliometría inicial",
+          "goals": [
+            "Iniciar la carrera en línea recta",
+            "Saltos bipodales y aterrizajes controlados"
+          ],
+          "restrictions": null,
+          "exercises": [
+            "Progresión de carrera (intervalos carrera/marcha)",
+            "Saltos bipodales y aterrizajes",
+            "Fuerza pesada de tren inferior"
+          ],
+          "dosage": null,
+          "recommendedTests": ["knee_extensor_isometric", "single_leg_hop_distance"],
+          "criteria": [
+            {
+              "role": "progression",
+              "text": "Dolor ≤ umbral del protocolo durante las tareas de la fase y sin aumento al día siguiente.",
+              "mandatory": true,
+              "evidence": "practical",
+              "rtpItem": "load_tolerance"
+            },
+            {
+              "role": "progression",
+              "text": "Fuerza isométrica de extensores de rodilla, índice de simetría ≥ 80 %.",
+              "mandatory": true,
+              "evidence": "practical",
+              "auto": {
+                "test": "knee_extensor_isometric",
+                "metric": "lsi",
+                "operator": ">=",
+                "threshold": 80
+              },
+              "rtpItem": "strength",
+              "limitations": "No existe un umbral único de asimetría válido para todos los tests (Read 2021); 90 % es una convención de los estudios citados, no un valor de seguridad."
+            },
+            {
+              "role": "progression",
+              "text": "Carrera continua de 10 minutos sin dolor ni derrame al día siguiente.",
+              "mandatory": true,
+              "evidence": "practical",
+              "rtpItem": "running"
+            },
+            {
+              "role": "stop",
+              "text": "Síntomas neurológicos, dolor nocturno o en reposo, o empeoramiento claro: detener la progresión y derivar al profesional sanitario.",
+              "mandatory": false,
+              "evidence": "practical"
+            }
+          ]
+        },
+        {
+          "name": "Potencia, aceleración y cambios de dirección",
+          "goals": [
+            "Saltos unipodales",
+            "Aceleración y desaceleración",
+            "Cambios de dirección planificados y luego reactivos"
+          ],
+          "restrictions": null,
+          "exercises": [
+            "Saltos unipodales en varias direcciones",
+            "Aceleraciones y frenadas",
+            "Cambios de dirección 45°–90°",
+            "Fuerza máxima y potencia"
+          ],
+          "dosage": null,
+          "recommendedTests": [
+            "single_leg_hop_distance",
+            "knee_extensor_isometric",
+            "knee_flexor_isometric",
+            "test_505"
+          ],
+          "criteria": [
+            {
+              "role": "progression",
+              "text": "Dolor ≤ umbral del protocolo durante las tareas de la fase y sin aumento al día siguiente.",
+              "mandatory": true,
+              "evidence": "practical",
+              "rtpItem": "load_tolerance"
+            },
+            {
+              "role": "progression",
+              "text": "Salto unipodal a distancia, índice de simetría ≥ 90 %.",
+              "mandatory": true,
+              "evidence": "evidence",
+              "auto": {
+                "test": "single_leg_hop_distance",
+                "metric": "lsi",
+                "operator": ">=",
+                "threshold": 90
+              },
+              "rtpItem": "functional",
+              "sources": ["grindem2016_acl_decision_rules", "kyritsis2016_acl_discharge"],
+              "limitations": "No existe un umbral único de asimetría válido para todos los tests (Read 2021); 90 % es una convención de los estudios citados, no un valor de seguridad. En Grindem 2016 la diferencia de relesión entre cumplir o no los criterios no fue estadísticamente significativa (p = 0,075)."
+            },
+            {
+              "role": "progression",
+              "text": "Fuerza de extensores de rodilla, índice de simetría ≥ 90 %.",
+              "mandatory": true,
+              "evidence": "evidence",
+              "auto": {
+                "test": "knee_extensor_isometric",
+                "metric": "lsi",
+                "operator": ">=",
+                "threshold": 90
+              },
+              "rtpItem": "strength",
+              "sources": ["grindem2016_acl_decision_rules", "kyritsis2016_acl_discharge"],
+              "limitations": "No existe un umbral único de asimetría válido para todos los tests (Read 2021); 90 % es una convención de los estudios citados, no un valor de seguridad. Los estudios midieron la fuerza con dinamometría isocinética; la isométrica con dinamómetro manual no es equivalente."
+            },
+            {
+              "role": "progression",
+              "text": "Cambios de dirección a máxima intensidad sin dolor ni inestabilidad.",
+              "mandatory": true,
+              "evidence": "practical",
+              "rtpItem": "cod"
+            },
+            {
+              "role": "progression",
+              "text": "Aceleraciones y desaceleraciones máximas toleradas.",
+              "mandatory": true,
+              "evidence": "practical",
+              "rtpItem": "acceleration"
+            },
+            {
+              "role": "stop",
+              "text": "Síntomas neurológicos, dolor nocturno o en reposo, o empeoramiento claro: detener la progresión y derivar al profesional sanitario.",
+              "mandatory": false,
+              "evidence": "practical"
+            }
+          ]
+        },
+        {
+          "name": "Tareas específicas del deporte",
+          "goals": [
+            "Entrenamiento con el equipo de forma progresiva",
+            "Exposición a las demandas del deporte"
+          ],
+          "restrictions": null,
+          "exercises": [
+            "Tareas del deporte con oposición progresiva",
+            "Entrenamiento parcial y luego completo con el equipo"
+          ],
+          "dosage": null,
+          "recommendedTests": [],
+          "criteria": [
+            {
+              "role": "progression",
+              "text": "Dolor ≤ umbral del protocolo durante las tareas de la fase y sin aumento al día siguiente.",
+              "mandatory": true,
+              "evidence": "practical",
+              "rtpItem": "load_tolerance"
+            },
+            {
+              "role": "progression",
+              "text": "Al menos 9 meses desde la cirugía antes de volver a deportes de pivote (si hubo reconstrucción).",
+              "mandatory": true,
+              "evidence": "evidence",
+              "rtpItem": "sport_exposure",
+              "sources": ["grindem2016_acl_decision_rules"],
+              "limitations": "Asociación observacional (cohorte de 106 personas): por cada mes de retraso hasta los 9 meses la tasa de relesión bajó un 51 %."
+            },
+            {
+              "role": "progression",
+              "text": "Entrenamiento completo con el equipo sin restricciones durante varias sesiones.",
+              "mandatory": true,
+              "evidence": "practical",
+              "rtpItem": "full_training"
+            },
+            {
+              "role": "progression",
+              "text": "El deportista se siente preparado para volver (registrar su opinión).",
+              "mandatory": true,
+              "evidence": "consensus",
+              "rtpItem": "athlete_feedback",
+              "sources": ["ardern2016_bern_rts_consensus"]
+            }
+          ]
+        },
+        {
+          "name": "Vuelta a la competición y al rendimiento",
+          "goals": ["Competición progresiva", "Recuperar el rendimiento previo"],
+          "restrictions": null,
+          "exercises": [],
+          "dosage": null,
+          "recommendedTests": [
+            "single_leg_hop_distance",
+            "knee_extensor_isometric",
+            "knee_flexor_isometric"
+          ],
+          "criteria": [
+            {
+              "role": "success",
+              "text": "Valoración del equipo responsable (sanitario + entrenador + deportista), registrada como decisión.",
+              "mandatory": true,
+              "evidence": "consensus",
+              "sources": ["ardern2016_bern_rts_consensus", "shrier2015_starrt"]
+            },
+            {
+              "role": "success",
+              "text": "Mantener el trabajo de fuerza y neuromuscular durante la temporada.",
+              "mandatory": false,
+              "evidence": "practical"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "hamstring_criteria_based",
+      "condition": "hamstring_strain",
+      "name": "Isquiosurales · progresión basada en criterios",
+      "description": "Progresión por criterios con ejercicios en elongación desde fases tempranas y criterios de vuelta al juego consensuados.",
+      "painThreshold": 3,
+      "painThresholdBasis": "Criterio práctico: en lesión muscular aguda se progresa con dolor bajo (umbral editable).",
+      "sources": [
+        "vanderhorst2017_hamstring_rtp_delphi",
+        "askling2013_hamstring_football",
+        "askling2014_hamstring_sprinters"
+      ],
+      "limitations": "Los criterios de vuelta al juego proceden de un consenso Delphi (sin umbrales numéricos). Los tiempos de los ensayos de Askling dependen del tipo de lesión (la afectación del tendón libre proximal alarga la vuelta).",
+      "phases": [
+        {
+          "name": "Control de síntomas y protección",
+          "goals": ["Controlar el dolor", "Marcha normal"],
+          "restrictions": null,
+          "exercises": ["Isometría submáxima de isquiosurales", "Movilidad sin dolor"],
+          "dosage": "Diaria, sin dolor por encima del umbral.",
+          "recommendedTests": [],
+          "criteria": [
+            {
+              "role": "entry",
+              "text": "Información del profesional sanitario recibida (localización, gravedad, restricciones).",
+              "mandatory": true,
+              "evidence": "practical",
+              "rtpItem": "clinical"
+            },
+            {
+              "role": "progression",
+              "text": "Marcha normal y elevación de pierna recta activa sin dolor importante.",
+              "mandatory": true,
+              "evidence": "practical",
+              "rtpItem": "rom"
+            },
+            {
+              "role": "stop",
+              "text": "Síntomas neurológicos, dolor nocturno o en reposo, o empeoramiento claro: detener la progresión y derivar al profesional sanitario.",
+              "mandatory": false,
+              "evidence": "practical"
+            }
+          ]
+        },
+        {
+          "name": "Fuerza en elongación",
+          "goals": ["Recuperar fuerza en rangos largos", "Iniciar carrera suave"],
+          "restrictions": null,
+          "exercises": [
+            "Extender (Askling)",
+            "Diver (Askling)",
+            "Glider (Askling)",
+            "Puente con talón"
+          ],
+          "dosage": null,
+          "recommendedTests": ["knee_flexor_isometric", "hip_flexion_rom"],
+          "criteria": [
+            {
+              "role": "progression",
+              "text": "Dolor ≤ umbral del protocolo durante las tareas de la fase y sin aumento al día siguiente.",
+              "mandatory": true,
+              "evidence": "practical",
+              "rtpItem": "load_tolerance"
+            },
+            {
+              "role": "progression",
+              "text": "Ejercicios en elongación (tipo L-protocol) sin dolor.",
+              "mandatory": true,
+              "evidence": "evidence",
+              "sources": ["askling2013_hamstring_football", "askling2014_hamstring_sprinters"],
+              "limitations": "Ensayos en futbolistas y velocistas suecos: el protocolo en elongación acortó el tiempo hasta la vuelta frente al convencional."
+            },
+            {
+              "role": "progression",
+              "text": "Fuerza isométrica de flexores de rodilla, índice de simetría ≥ 80 %.",
+              "mandatory": true,
+              "evidence": "practical",
+              "auto": {
+                "test": "knee_flexor_isometric",
+                "metric": "lsi",
+                "operator": ">=",
+                "threshold": 80
+              },
+              "rtpItem": "strength",
+              "limitations": "No existe un umbral único de asimetría válido para todos los tests (Read 2021); 90 % es una convención de los estudios citados, no un valor de seguridad."
+            },
+            {
+              "role": "stop",
+              "text": "Síntomas neurológicos, dolor nocturno o en reposo, o empeoramiento claro: detener la progresión y derivar al profesional sanitario.",
+              "mandatory": false,
+              "evidence": "practical"
+            }
+          ]
+        },
+        {
+          "name": "Carrera y velocidad progresiva",
+          "goals": ["Carrera hasta velocidad alta", "Fuerza excéntrica"],
+          "restrictions": null,
+          "exercises": [
+            "Progresión de carrera hasta sprints",
+            "Curl nórdico",
+            "Peso muerto rumano"
+          ],
+          "dosage": null,
+          "recommendedTests": ["knee_flexor_isometric", "sprint_20m", "hip_flexion_rom"],
+          "criteria": [
+            {
+              "role": "progression",
+              "text": "Dolor ≤ umbral del protocolo durante las tareas de la fase y sin aumento al día siguiente.",
+              "mandatory": true,
+              "evidence": "practical",
+              "rtpItem": "running"
+            },
+            {
+              "role": "progression",
+              "text": "Sin dolor a la palpación ni durante las pruebas de fuerza y flexibilidad.",
+              "mandatory": true,
+              "evidence": "consensus",
+              "rtpItem": "load_tolerance",
+              "sources": ["vanderhorst2017_hamstring_rtp_delphi"]
+            },
+            {
+              "role": "progression",
+              "text": "Flexibilidad de isquiosurales similar a la del lado sano.",
+              "mandatory": true,
+              "evidence": "consensus",
+              "rtpItem": "rom",
+              "sources": ["vanderhorst2017_hamstring_rtp_delphi"]
+            },
+            {
+              "role": "progression",
+              "text": "Fuerza isométrica de flexores de rodilla, índice de simetría ≥ 90 %.",
+              "mandatory": true,
+              "evidence": "practical",
+              "auto": {
+                "test": "knee_flexor_isometric",
+                "metric": "lsi",
+                "operator": ">=",
+                "threshold": 90
+              },
+              "rtpItem": "strength",
+              "limitations": "No existe un umbral único de asimetría válido para todos los tests (Read 2021); 90 % es una convención de los estudios citados, no un valor de seguridad."
+            }
+          ]
+        },
+        {
+          "name": "Tareas específicas del deporte",
+          "goals": ["Sprint máximo y tareas del deporte", "Entrenamiento con el equipo"],
+          "restrictions": null,
+          "exercises": [],
+          "dosage": null,
+          "recommendedTests": ["sprint_20m", "knee_flexor_isometric"],
+          "criteria": [
+            {
+              "role": "progression",
+              "text": "Sin dolor durante y después de las pruebas funcionales y de campo.",
+              "mandatory": true,
+              "evidence": "consensus",
+              "rtpItem": "specific_tasks",
+              "sources": ["vanderhorst2017_hamstring_rtp_delphi"]
+            },
+            {
+              "role": "progression",
+              "text": "Sprint a máxima velocidad sin dolor.",
+              "mandatory": true,
+              "evidence": "practical",
+              "rtpItem": "acceleration"
+            },
+            {
+              "role": "progression",
+              "text": "Disposición psicológica del deportista para volver.",
+              "mandatory": true,
+              "evidence": "consensus",
+              "rtpItem": "athlete_feedback",
+              "sources": ["vanderhorst2017_hamstring_rtp_delphi"]
+            },
+            {
+              "role": "progression",
+              "text": "Entrenamiento completo con el equipo.",
+              "mandatory": true,
+              "evidence": "practical",
+              "rtpItem": "full_training"
+            }
+          ]
+        },
+        {
+          "name": "Vuelta a la competición y al rendimiento",
+          "goals": ["Competición", "Mantener el trabajo excéntrico"],
+          "restrictions": null,
+          "exercises": [],
+          "dosage": null,
+          "recommendedTests": [],
+          "criteria": [
+            {
+              "role": "success",
+              "text": "Alta médica del personal sanitario registrada (decisión compartida).",
+              "mandatory": true,
+              "evidence": "consensus",
+              "sources": ["vanderhorst2017_hamstring_rtp_delphi"]
+            },
+            {
+              "role": "success",
+              "text": "Valoración del equipo responsable (sanitario + entrenador + deportista), registrada como decisión.",
+              "mandatory": true,
+              "evidence": "consensus",
+              "sources": ["ardern2016_bern_rts_consensus", "shrier2015_starrt"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "adductor_criteria_based",
+      "condition": "adductor_strain",
+      "name": "Aductores · progresión basada en criterios",
+      "description": "Progresión de carga de aductores con hitos clínicos (sin dolor) y vuelta al entrenamiento completo.",
+      "painThreshold": 3,
+      "painThresholdBasis": "Criterio práctico (umbral editable).",
+      "sources": [
+        "serner2020_adductor_criteria_rehab",
+        "serner2020_adductor_prognosis",
+        "serner2021_adductor_progression"
+      ],
+      "limitations": "Fuerza, flexibilidad y dolor a la palpación solo dan una imagen aproximada del progreso (Serner 2021).",
+      "phases": [
+        {
+          "name": "Control de síntomas y carga inicial",
+          "goals": ["Controlar el dolor", "Isometría de aductores sin dolor"],
+          "restrictions": null,
+          "exercises": [
+            "Isometría de aductores (balón entre rodillas)",
+            "Movilidad de cadera sin dolor"
+          ],
+          "dosage": null,
+          "recommendedTests": [],
+          "criteria": [
+            {
+              "role": "entry",
+              "text": "Información del profesional sanitario recibida.",
+              "mandatory": true,
+              "evidence": "practical",
+              "rtpItem": "clinical"
+            },
+            {
+              "role": "progression",
+              "text": "Dolor ≤ umbral del protocolo durante las tareas de la fase y sin aumento al día siguiente.",
+              "mandatory": true,
+              "evidence": "practical",
+              "rtpItem": "load_tolerance"
+            },
+            {
+              "role": "stop",
+              "text": "Síntomas neurológicos, dolor nocturno o en reposo, o empeoramiento claro: detener la progresión y derivar al profesional sanitario.",
+              "mandatory": false,
+              "evidence": "practical"
+            }
+          ]
+        },
+        {
+          "name": "Fuerza y carga progresiva",
+          "goals": ["Fuerza de aductores en rangos largos", "Carrera en línea recta"],
+          "restrictions": null,
+          "exercises": [
+            "Copenhagen adductor progresivo",
+            "Aducción con banda/polea",
+            "Carrera progresiva"
+          ],
+          "dosage": null,
+          "recommendedTests": ["hhd_isometric_strength"],
+          "criteria": [
+            {
+              "role": "progression",
+              "text": "Sin dolor clínico: palpación, estiramiento y contracción resistida de aductores sin dolor.",
+              "mandatory": true,
+              "evidence": "evidence",
+              "rtpItem": "load_tolerance",
+              "sources": ["serner2020_adductor_criteria_rehab"],
+              "limitations": "Cohorte de 81 deportistas: alcanzar este hito se asoció a menos relesiones."
+            },
+            {
+              "role": "progression",
+              "text": "Fuerza isométrica de aductores, índice de simetría ≥ 90 %.",
+              "mandatory": true,
+              "evidence": "practical",
+              "auto": {
+                "test": "hhd_isometric_strength",
+                "metric": "lsi",
+                "operator": ">=",
+                "threshold": 90
+              },
+              "rtpItem": "strength",
+              "limitations": "No existe un umbral único de asimetría válido para todos los tests (Read 2021); 90 % es una convención de los estudios citados, no un valor de seguridad. Registrar en la evaluación que se midieron los aductores."
+            },
+            {
+              "role": "stop",
+              "text": "Síntomas neurológicos, dolor nocturno o en reposo, o empeoramiento claro: detener la progresión y derivar al profesional sanitario.",
+              "mandatory": false,
+              "evidence": "practical"
+            }
+          ]
+        },
+        {
+          "name": "Cambios de dirección y golpeo",
+          "goals": ["Cambios de dirección", "Golpeo progresivo"],
+          "restrictions": null,
+          "exercises": ["Cambios de dirección progresivos", "Golpeo progresivo"],
+          "dosage": null,
+          "recommendedTests": ["test_505", "hhd_isometric_strength"],
+          "criteria": [
+            {
+              "role": "progression",
+              "text": "Dolor ≤ umbral del protocolo durante las tareas de la fase y sin aumento al día siguiente.",
+              "mandatory": true,
+              "evidence": "practical",
+              "rtpItem": "cod"
+            },
+            {
+              "role": "progression",
+              "text": "Golpeo de balón largo y cambios de dirección máximos sin dolor.",
+              "mandatory": true,
+              "evidence": "practical",
+              "rtpItem": "specific_tasks"
+            }
+          ]
+        },
+        {
+          "name": "Vuelta al entrenamiento completo y a la competición",
+          "goals": ["Entrenamiento completo", "Competición"],
+          "restrictions": null,
+          "exercises": [],
+          "dosage": null,
+          "recommendedTests": [],
+          "criteria": [
+            {
+              "role": "progression",
+              "text": "Entrenamiento completo con el equipo sin dolor.",
+              "mandatory": true,
+              "evidence": "practical",
+              "rtpItem": "full_training"
+            },
+            {
+              "role": "success",
+              "text": "Valoración del equipo responsable (sanitario + entrenador + deportista), registrada como decisión.",
+              "mandatory": true,
+              "evidence": "consensus",
+              "sources": ["ardern2016_bern_rts_consensus", "shrier2015_starrt"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "ankle_sprain_criteria_based",
+      "condition": "lateral_ankle_sprain",
+      "name": "Esguince lateral de tobillo · PAASS",
+      "description": "Progresión basada en los dominios PAASS (dolor, alteraciones del tobillo, control sensoriomotor, percepción del deportista y rendimiento) y entrenamiento neuromuscular.",
+      "painThreshold": 4,
+      "painThresholdBasis": "Criterio práctico (umbral editable).",
+      "sources": ["smith2021_paass_ankle", "doherty2017_ankle_sprain_overview"],
+      "limitations": "El consenso PAASS no fija umbrales numéricos: los umbrales de este protocolo son prácticos.",
+      "phases": [
+        {
+          "name": "Control de síntomas y movilidad",
+          "goals": ["Controlar dolor e inflamación", "Recuperar movilidad y carga"],
+          "restrictions": null,
+          "exercises": ["Movilización temprana y carga según tolerancia", "Elevaciones de talón"],
+          "dosage": "Diaria, según tolerancia.",
+          "recommendedTests": ["weight_bearing_lunge_distance"],
+          "criteria": [
+            {
+              "role": "entry",
+              "text": "Valoración sanitaria registrada (descartar fractura u otras lesiones).",
+              "mandatory": true,
+              "evidence": "practical",
+              "rtpItem": "clinical"
+            },
+            {
+              "role": "progression",
+              "text": "Marcha sin dolor y sin cojera.",
+              "mandatory": true,
+              "evidence": "consensus",
+              "sources": ["smith2021_paass_ankle"]
+            },
+            {
+              "role": "progression",
+              "text": "Dorsiflexión en carga (lunge), índice de simetría ≥ 90 %.",
+              "mandatory": true,
+              "evidence": "practical",
+              "auto": {
+                "test": "weight_bearing_lunge_distance",
+                "metric": "lsi",
+                "operator": ">=",
+                "threshold": 90
+              },
+              "rtpItem": "rom",
+              "limitations": "No existe un umbral único de asimetría válido para todos los tests (Read 2021); 90 % es una convención de los estudios citados, no un valor de seguridad."
+            },
+            {
+              "role": "stop",
+              "text": "Síntomas neurológicos, dolor nocturno o en reposo, o empeoramiento claro: detener la progresión y derivar al profesional sanitario.",
+              "mandatory": false,
+              "evidence": "practical"
+            }
+          ]
+        },
+        {
+          "name": "Fuerza y control sensoriomotor",
+          "goals": ["Fuerza de tobillo", "Equilibrio unipodal"],
+          "restrictions": null,
+          "exercises": [
+            "Entrenamiento neuromuscular y propioceptivo",
+            "Fuerza de eversores y flexores plantares"
+          ],
+          "dosage": null,
+          "recommendedTests": ["unipedal_stance_eyes_open", "weight_bearing_lunge_distance"],
+          "criteria": [
+            {
+              "role": "progression",
+              "text": "Dolor ≤ umbral del protocolo durante las tareas de la fase y sin aumento al día siguiente.",
+              "mandatory": true,
+              "evidence": "practical",
+              "rtpItem": "load_tolerance"
+            },
+            {
+              "role": "progression",
+              "text": "Equilibrio unipodal con ojos abiertos similar al del lado sano.",
+              "mandatory": true,
+              "evidence": "consensus",
+              "rtpItem": "functional",
+              "sources": ["smith2021_paass_ankle"]
+            },
+            {
+              "role": "progression",
+              "text": "Inflamación mínima tras la carga.",
+              "mandatory": true,
+              "evidence": "consensus",
+              "rtpItem": "load_tolerance",
+              "sources": ["smith2021_paass_ankle"]
+            }
+          ]
+        },
+        {
+          "name": "Carrera, saltos y cambios de dirección",
+          "goals": ["Carrera", "Saltos y aterrizajes", "Cambios de dirección"],
+          "restrictions": null,
+          "exercises": ["Saltos y aterrizajes", "Cambios de dirección"],
+          "dosage": null,
+          "recommendedTests": ["single_leg_hop_distance", "test_505"],
+          "criteria": [
+            {
+              "role": "progression",
+              "text": "Dolor ≤ umbral del protocolo durante las tareas de la fase y sin aumento al día siguiente.",
+              "mandatory": true,
+              "evidence": "practical",
+              "rtpItem": "running"
+            },
+            {
+              "role": "progression",
+              "text": "Salto unipodal a distancia, índice de simetría ≥ 90 %.",
+              "mandatory": true,
+              "evidence": "practical",
+              "auto": {
+                "test": "single_leg_hop_distance",
+                "metric": "lsi",
+                "operator": ">=",
+                "threshold": 90
+              },
+              "rtpItem": "functional",
+              "limitations": "No existe un umbral único de asimetría válido para todos los tests (Read 2021); 90 % es una convención de los estudios citados, no un valor de seguridad."
+            },
+            {
+              "role": "progression",
+              "text": "Cambios de dirección sin dolor ni inestabilidad.",
+              "mandatory": true,
+              "evidence": "consensus",
+              "rtpItem": "cod",
+              "sources": ["smith2021_paass_ankle"]
+            }
+          ]
+        },
+        {
+          "name": "Vuelta al deporte y al rendimiento",
+          "goals": ["Entrenamiento completo", "Competición"],
+          "restrictions": null,
+          "exercises": [],
+          "dosage": null,
+          "recommendedTests": [],
+          "criteria": [
+            {
+              "role": "progression",
+              "text": "El deportista percibe el tobillo preparado (registrar).",
+              "mandatory": true,
+              "evidence": "consensus",
+              "rtpItem": "athlete_feedback",
+              "sources": ["smith2021_paass_ankle"]
+            },
+            {
+              "role": "progression",
+              "text": "Entrenamiento completo con el equipo.",
+              "mandatory": true,
+              "evidence": "practical",
+              "rtpItem": "full_training"
+            },
+            {
+              "role": "success",
+              "text": "Valoración del equipo responsable (sanitario + entrenador + deportista), registrada como decisión.",
+              "mandatory": true,
+              "evidence": "consensus",
+              "sources": ["ardern2016_bern_rts_consensus", "shrier2015_starrt"]
+            },
+            {
+              "role": "success",
+              "text": "Mantener el entrenamiento neuromuscular y valorar ortesis: reducen la recurrencia del esguince.",
+              "mandatory": false,
+              "evidence": "evidence",
+              "sources": ["doherty2017_ankle_sprain_overview"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "patellar_tendinopathy_loading",
+      "condition": "patellar_tendinopathy",
+      "name": "Tendinopatía rotuliana · carga progresiva",
+      "description": "Carga progresiva del tendón (isometría, fuerza pesada lenta, almacenamiento de energía, tareas del deporte) guiada por el dolor.",
+      "painThreshold": 4,
+      "painThresholdBasis": "Criterio práctico: el dolor durante la carga debe ser tolerable y volver a su nivel en 24 h.",
+      "sources": ["kongsgaard2009_hsr_patellar", "holden2020_isometric_patellar"],
+      "limitations": "La isometría no mostró ventajas frente al ejercicio dinámico y su efecto analgésico es pequeño y breve (Holden 2020). Fuerza pesada lenta y excéntrico no difirieron significativamente (Kongsgaard 2009).",
+      "phases": [
+        {
+          "name": "Isometría y control del dolor",
+          "goals": ["Reducir la irritabilidad", "Mantener actividad"],
+          "restrictions": null,
+          "exercises": ["Isometría de cuádriceps (prensa o extensión) 5 × 45 s"],
+          "dosage": "Diaria o en días alternos. [REQUIERE VERIFICACIÓN] dosis exacta.",
+          "recommendedTests": [],
+          "criteria": [
+            {
+              "role": "entry",
+              "text": "Valoración sanitaria registrada.",
+              "mandatory": true,
+              "evidence": "practical",
+              "rtpItem": "clinical"
+            },
+            {
+              "role": "progression",
+              "text": "Dolor ≤ umbral del protocolo durante las tareas de la fase y sin aumento al día siguiente.",
+              "mandatory": true,
+              "evidence": "practical",
+              "rtpItem": "load_tolerance"
+            },
+            {
+              "role": "stop",
+              "text": "Síntomas neurológicos, dolor nocturno o en reposo, o empeoramiento claro: detener la progresión y derivar al profesional sanitario.",
+              "mandatory": false,
+              "evidence": "practical"
+            }
+          ]
+        },
+        {
+          "name": "Fuerza pesada lenta",
+          "goals": ["Aumentar la capacidad de carga del tendón"],
+          "restrictions": null,
+          "exercises": ["Sentadilla, prensa y extensión de rodilla pesadas y lentas"],
+          "dosage": "3 días por semana, cargas altas y tempo lento (Kongsgaard 2009).",
+          "recommendedTests": ["knee_extensor_isometric"],
+          "criteria": [
+            {
+              "role": "progression",
+              "text": "Dolor ≤ umbral del protocolo durante las tareas de la fase y sin aumento al día siguiente.",
+              "mandatory": true,
+              "evidence": "practical",
+              "rtpItem": "load_tolerance"
+            },
+            {
+              "role": "progression",
+              "text": "Fuerza pesada lenta tolerada varias semanas sin aumento de dolor.",
+              "mandatory": true,
+              "evidence": "evidence",
+              "rtpItem": "strength",
+              "sources": ["kongsgaard2009_hsr_patellar"]
+            },
+            {
+              "role": "progression",
+              "text": "Fuerza isométrica de extensores de rodilla, índice de simetría ≥ 90 %.",
+              "mandatory": true,
+              "evidence": "practical",
+              "auto": {
+                "test": "knee_extensor_isometric",
+                "metric": "lsi",
+                "operator": ">=",
+                "threshold": 90
+              },
+              "rtpItem": "strength",
+              "limitations": "No existe un umbral único de asimetría válido para todos los tests (Read 2021); 90 % es una convención de los estudios citados, no un valor de seguridad."
+            }
+          ]
+        },
+        {
+          "name": "Almacenamiento de energía y saltos",
+          "goals": ["Saltos progresivos", "Carrera y cambios de dirección"],
+          "restrictions": null,
+          "exercises": ["Saltos progresivos", "Pliometría"],
+          "dosage": null,
+          "recommendedTests": ["single_leg_cmj_height", "cmj_height"],
+          "criteria": [
+            {
+              "role": "progression",
+              "text": "Dolor ≤ umbral del protocolo durante las tareas de la fase y sin aumento al día siguiente.",
+              "mandatory": true,
+              "evidence": "practical",
+              "rtpItem": "functional"
+            },
+            {
+              "role": "progression",
+              "text": "Saltos y aterrizajes sin aumento de dolor a las 24 h.",
+              "mandatory": true,
+              "evidence": "practical",
+              "rtpItem": "functional"
+            }
+          ]
+        },
+        {
+          "name": "Vuelta al deporte",
+          "goals": ["Tareas del deporte", "Entrenamiento completo"],
+          "restrictions": null,
+          "exercises": [],
+          "dosage": null,
+          "recommendedTests": [],
+          "criteria": [
+            {
+              "role": "progression",
+              "text": "Entrenamiento completo con el equipo sin aumento de dolor.",
+              "mandatory": true,
+              "evidence": "practical",
+              "rtpItem": "full_training"
+            },
+            {
+              "role": "success",
+              "text": "Valoración del equipo responsable (sanitario + entrenador + deportista), registrada como decisión.",
+              "mandatory": true,
+              "evidence": "consensus",
+              "sources": ["ardern2016_bern_rts_consensus", "shrier2015_starrt"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "achilles_pain_monitoring",
+      "condition": "achilles_tendinopathy",
+      "name": "Tendinopatía aquílea · carga con monitorización del dolor",
+      "description": "Carga progresiva del tendón manteniendo la actividad (carrera, saltos) guiada por un modelo de monitorización del dolor.",
+      "painThreshold": 5,
+      "painThresholdBasis": "Modelo de monitorización del dolor (Silbernagel 2007): se puede seguir con actividad si el dolor se mantiene en un nivel aceptable y no aumenta al día siguiente. El valor 5/10 del modelo [REQUIERE VERIFICACIÓN] en el texto completo.",
+      "sources": ["silbernagel2007_achilles_pain_monitoring"],
+      "limitations": "Ensayo de 38 personas: sin efectos negativos por seguir corriendo y saltando con el modelo, y sin diferencias entre grupos en la mejora.",
+      "phases": [
+        {
+          "name": "Control de síntomas y carga isométrica",
+          "goals": ["Mantener actividad tolerable", "Isometría de flexores plantares"],
+          "restrictions": null,
+          "exercises": ["Isometría de flexores plantares", "Elevaciones de talón bipodales"],
+          "dosage": null,
+          "recommendedTests": [],
+          "criteria": [
+            {
+              "role": "entry",
+              "text": "Valoración sanitaria registrada.",
+              "mandatory": true,
+              "evidence": "practical",
+              "rtpItem": "clinical"
+            },
+            {
+              "role": "progression",
+              "text": "Dolor ≤ umbral del protocolo durante las tareas de la fase y sin aumento al día siguiente.",
+              "mandatory": true,
+              "evidence": "practical",
+              "rtpItem": "load_tolerance"
+            },
+            {
+              "role": "stop",
+              "text": "Síntomas neurológicos, dolor nocturno o en reposo, o empeoramiento claro: detener la progresión y derivar al profesional sanitario.",
+              "mandatory": false,
+              "evidence": "practical"
+            }
+          ]
+        },
+        {
+          "name": "Fuerza de flexores plantares",
+          "goals": ["Elevaciones de talón unipodales con carga"],
+          "restrictions": null,
+          "exercises": ["Elevación de talón unipodal con carga", "Elevación excéntrica de talón"],
+          "dosage": null,
+          "recommendedTests": ["single_leg_heel_raise"],
+          "criteria": [
+            {
+              "role": "progression",
+              "text": "Actividad de carga con dolor dentro del modelo de monitorización y sin aumento al día siguiente.",
+              "mandatory": true,
+              "evidence": "evidence",
+              "rtpItem": "load_tolerance",
+              "sources": ["silbernagel2007_achilles_pain_monitoring"]
+            },
+            {
+              "role": "progression",
+              "text": "Elevaciones de talón unipodales, índice de simetría ≥ 90 %.",
+              "mandatory": true,
+              "evidence": "practical",
+              "auto": {
+                "test": "single_leg_heel_raise",
+                "metric": "lsi",
+                "operator": ">=",
+                "threshold": 90
+              },
+              "rtpItem": "strength",
+              "limitations": "No existe un umbral único de asimetría válido para todos los tests (Read 2021); 90 % es una convención de los estudios citados, no un valor de seguridad."
+            }
+          ]
+        },
+        {
+          "name": "Carrera y saltos",
+          "goals": ["Carrera progresiva", "Saltos"],
+          "restrictions": null,
+          "exercises": ["Progresión de carrera", "Saltos y pliometría"],
+          "dosage": null,
+          "recommendedTests": ["single_leg_heel_raise", "single_leg_cmj_height"],
+          "criteria": [
+            {
+              "role": "progression",
+              "text": "Dolor ≤ umbral del protocolo durante las tareas de la fase y sin aumento al día siguiente.",
+              "mandatory": true,
+              "evidence": "practical",
+              "rtpItem": "running"
+            },
+            {
+              "role": "progression",
+              "text": "Saltos unipodales sin aumento del dolor al día siguiente.",
+              "mandatory": true,
+              "evidence": "practical",
+              "rtpItem": "functional"
+            }
+          ]
+        },
+        {
+          "name": "Vuelta al deporte",
+          "goals": ["Entrenamiento completo"],
+          "restrictions": null,
+          "exercises": [],
+          "dosage": null,
+          "recommendedTests": [],
+          "criteria": [
+            {
+              "role": "progression",
+              "text": "Entrenamiento completo sin aumento de dolor.",
+              "mandatory": true,
+              "evidence": "practical",
+              "rtpItem": "full_training"
+            },
+            {
+              "role": "success",
+              "text": "Valoración del equipo responsable (sanitario + entrenador + deportista), registrada como decisión.",
+              "mandatory": true,
+              "evidence": "consensus",
+              "sources": ["ardern2016_bern_rts_consensus", "shrier2015_starrt"]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
