@@ -5,6 +5,7 @@
 > - Cada fila resume los requisitos del capítulo que aplican a esta aplicación y cómo se cumplen.
 > - La correspondencia requisito a requisito con el texto oficial (numeración `V2.1.1`…) está sin hacer: **[REQUIERE VERIFICACIÓN]** por una persona revisora con el estándar delante.
 > - Estados: ✅ cumple · ◐ parcial (motivo) · ⏳ fuera de alcance de la aplicación o del despliegue · — no aplica.
+> - **Revisada de nuevo en la fase 10 de la reestructuración** (06/10/2026) con la interfaz nueva y los módulos de lesiones, fichaje, cola sin conexión y fichas «Fuente». Los cambios están marcados «(Reestr. F10)»; los hallazgos, en `PENTEST.md` (P-10 a P-13).
 
 ## V1 Arquitectura y modelo de amenazas
 
@@ -53,6 +54,8 @@
 | Aislamiento entre organizaciones | ✅ | RLS + triggers de integridad; tests de integración multi-tenant; matriz RLS de todas las tablas (Fase 14) |
 | Operaciones sensibles con confirmación adicional | ✅ | Supresión RGPD con doble confirmación; 2FA para ADMIN |
 | CSRF | ✅ | `SameSite=Lax` + comprobación de `Origin`/`Referer` |
+| Datos de salud solo para quien los necesita | ✅ | (Reestr. F10) Los casos de lesión son solo de staff con el cliente en su ámbito: la RLS los oculta a la app del cliente, y sus lecturas se auditan como `view_sensitive` (`INJURY_MODULE.md`) |
+| Estados que impiden editar | ✅ | (Reestr. F10) Un plan completado o archivado no se edita tampoco por la API (`409`, P-12) |
 
 ## V5 Validación, saneamiento y codificación
 
@@ -91,10 +94,10 @@
 |---|---|---|
 | Datos sensibles fuera de cachés | ✅ | Descargas con `Cache-Control: no-store` |
 | Minimización y consentimiento | ✅ | `SECURITY.md` §2.1 |
-| Exportación y supresión de los datos del interesado | ✅ | `SECURITY.md` §2.2 |
+| Exportación y supresión de los datos del interesado | ✅ | `SECURITY.md` §2.2. (Reestr. F10) Cubren los casos de lesión y el resto de tablas nuevas. Una prueba de guardia exige que toda tabla con `client_id` se exporte o tenga un motivo escrito (P-11) |
 | Retención configurable y depuración automática | ✅ | `SECURITY.md` §2.3 (plazo de clientes: **[REQUIERE VALIDACIÓN LEGAL]**) |
 | Datos sensibles fuera de la URL | ✅ | Los tokens de invitación y de recuperación se consumen y se guardan como hash; ninguna consulta lleva datos personales |
-| Almacenamiento en el cliente | ◐ | La PWA guarda en IndexedDB la cola sin conexión (series y, si el cliente las informa, molestias y comentarios de la sesión) solo hasta sincronizar, y entonces la borra; no se cifra en el dispositivo |
+| Almacenamiento en el cliente | ◐ | La PWA guarda en IndexedDB la cola sin conexión (series y, si el cliente las informa, molestias y comentarios de la sesión) solo hasta sincronizar, y entonces la borra; no se cifra en el dispositivo. (Reestr. F10) La cola es del usuario que la escribió: al cerrar sesión se vacía (avisando si queda algo pendiente) y al entrar otra cuenta se borra lo ajeno (P-10) |
 
 ## V9 Comunicaciones
 
@@ -114,7 +117,7 @@
 
 | Control | Estado | Evidencia |
 |---|---|---|
-| Flujos en orden y sin saltos | ✅ | Máquinas de estado: planes, importaciones, solicitudes RGPD, sesiones |
+| Flujos en orden y sin saltos | ✅ | Máquinas de estado: planes (completado o archivado = solo lectura en el servidor), importaciones, solicitudes RGPD, sesiones, fases de lesión (avanzar solo con criterios cumplidos, sin avisos abiertos y por decisión humana) |
 | Límites antiautomatización en operaciones caras | ✅ | Login limitado; en la Fase 15, presupuesto por usuario y minuto para lecturas, escrituras y operaciones pesadas (`api-limits.ts`) |
 | Concurrencia | ✅ | Bloqueo optimista; consumo atómico de tokens y códigos; sincronización idempotente |
 
@@ -149,6 +152,6 @@
 - **Parciales**:
   - avisos por email (D4);
   - HSTS y TLS dependen del despliegue;
-  - cola sin conexión de la PWA en IndexedDB: transitoria, pero puede incluir molestias (riesgo aceptado en la DPIA, R-6).
+  - cola sin conexión de la PWA en IndexedDB: transitoria y ligada al usuario, pero sin cifrar en el dispositivo y puede incluir molestias (riesgo aceptado en la DPIA, R-6).
 - **Fuera de alcance**: vault de secretos, TLS a la BD y retención de registros del servidor. Son del despliegue (Fase 15).
 - **Ningún parcial es un fallo de autorización ni de aislamiento de datos.**

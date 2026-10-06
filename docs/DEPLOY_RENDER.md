@@ -85,6 +85,36 @@ Para ver la aplicación con clientes, planes y evaluaciones ficticios:
 
 Se crean el «Centro Demo» y sus usuarios (`lucia.moreno@example.com`, `marcos.villalba@example.com`…). Comparten **tu misma contraseña de administrador**; la contraseña pública de la demo no funciona online.
 
+## Dominio propio (opcional)
+
+Para usar una dirección como `entrenamiento.tucentro.es` en lugar de `….onrender.com`:
+
+1. En `plataforma-entrenamiento` → **Settings** → **Custom Domains** → **Add Custom Domain**, escribe el dominio.
+2. Render te indica el registro DNS que debes crear. Normalmente es un `CNAME` del subdominio hacia `plataforma-entrenamiento.onrender.com`. Créalo en el panel de tu proveedor de dominio.
+3. Espera a que Render marque el dominio como verificado. El certificado HTTPS lo emite Render solo.
+4. En **Environment**, pon `APP_BASE_URL` = `https://entrenamiento.tucentro.es` y pulsa **Save, rebuild and deploy**. Así los enlaces de invitación usan el dominio nuevo.
+5. Entra por la dirección nueva. Las sesiones abiertas en la antigua no se trasladan: hay que volver a iniciar sesión.
+
+La protección CSRF compara el origen de cada petición con el dominio por el que se entra, así que no hace falta configurar nada más. El nombre exacto de los menús puede variar: **[REQUIERE VERIFICACIÓN en el panel de Render]**.
+
+## Copias y restauración
+
+- **Plan gratuito**: **sin copias**. No guardes datos reales en él.
+- **Planes de pago**: Render ofrece recuperación a un instante (PITR) de la base de datos y exportaciones descargables. Los días de retención dependen del plan: consúltalos en la web de Render antes de contratar **[REQUIERE VERIFICACIÓN]**.
+
+**Simulacro de restauración en Render** (cada 6 meses; también antes de empezar a usarlo con clientes reales). Lo haces tú desde el panel; no se ha podido probar desde aquí:
+
+1. En `plataforma-db` → **Recovery** (o **Backups**), elige un instante de hace unos minutos y restaura en una **base nueva**. Nunca sobre la de producción.
+2. Copia la **Internal Database URL** de la base nueva.
+3. Crea un servicio web temporal desde el mismo repositorio, con las mismas variables de entorno, pero con `DATABASE_URL` = la URL de la base nueva. Usa **la misma `APP_ENCRYPTION_KEY`**: sin ella, los datos cifrados no se pueden leer.
+4. Comprueba:
+   - que `https://<servicio-temporal>/api/ready` responde `ready`;
+   - que puedes entrar y ver tus clientes.
+5. Apunta la fecha y cuánto tardó en `OPERATIONS.md` → «Registro de simulacros».
+6. Borra el servicio y la base temporales.
+
+Si una restauración real sustituye a la base de producción, vuelve a aplicar después las supresiones RGPD hechas desde la copia (`OPERATIONS.md` §6). Si no, las personas suprimidas desde entonces volverían a aparecer.
+
 ## Actualizaciones
 
 - Cada vez que se publica un cambio en la rama, Render vuelve a desplegar **solo**, en unos 10 minutos.

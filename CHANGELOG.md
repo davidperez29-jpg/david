@@ -2,6 +2,28 @@
 
 Formato: fecha · cambio · motivo · archivos · impacto.
 
+## 2026-10-06 — Reestructuración, fase 10: endurecimiento final
+
+- **Cambio:** el servidor **bloquea la edición de planes completados o archivados** (`409`, `plan: locked`). También se bloquea añadir una alternativa al aprobar una sustitución. Reabrir, leer, duplicar y guardar como plantilla siguen permitidos.
+  - **Motivo:** antes solo lo impedía la interfaz (`PENTEST.md` P-12).
+- **Cambio:** la **cola sin conexión** del reproductor es del usuario que la escribió:
+  - al entrar otra cuenta se borran las entradas ajenas;
+  - al cerrar sesión se vacía, avisando si queda algo sin sincronizar.
+  - **Motivo:** en un dispositivo compartido quedaban notas de otra persona (P-10).
+- **Cambio:** **derechos RGPD con los módulos nuevos**:
+  - la supresión borra los casos de lesión con todo lo que cuelga de ellos, las ejecuciones del motor y los rasgos anotados, y vacía los motivos libres;
+  - la exportación del interesado incluye lesiones, grupos, rasgos y series prescritas;
+  - cuando la pide el propio cliente, ya no salen vacías las secciones que la RLS le oculta en la app (avisos, propuestas, lesiones).
+  - **Motivo:** P-11. Una prueba de guardia evita que vuelva a pasar con tablas nuevas.
+- **Cambio:** **simulacro de restauración** con script (`scripts/restore-drill.sh`). Los pasos para Render (dominio propio, copias, simulacro desde el panel) están en `DEPLOY_RENDER.md`.
+- **Cambio:** revisión ASVS L2, PENTEST y DPIA (módulo de lesiones: §6, R-11 a R-13). Rendimiento con 1 000 clientes también en las páginas nuevas.
+- **Archivos:**
+  - `packages/application/src/{planning,sessions,privacy}.ts`;
+  - `apps/web/src/lib/offline-queue.ts`, `apps/web/src/components/{pwa,logout-button}.tsx`, `apps/web/src/app/me/layout.tsx`;
+  - `scripts/restore-drill.sh`, `apps/web/e2e/perf.spec.ts`;
+  - `docs/{PENTEST,ASVS_L2,DPIA,OPERATIONS,DEPLOY_RENDER,IMPLEMENTATION_ROADMAP,TESTING}.md`, `docs/PRODUCT_ARCHITECTURE.md` A46–A48.
+- **Impacto:** sin migraciones. Quien edite por la API un plan completado o archivado recibe un `409`: debe reabrirlo o duplicarlo.
+
 ## 2026-10-06 — Reestructuración, fase 9: ciencia y referencias
 
 - **Cambio:** cada afirmación científica tiene **tipo de evidencia** y **origen**.

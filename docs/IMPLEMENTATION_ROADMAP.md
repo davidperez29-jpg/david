@@ -190,13 +190,18 @@ Pendiente para fases siguientes: tarjetas por ejercicio en el móvil y sugerenci
 - ✅ cada recomendación muestra artículo, DOI/PMID, población, qué respalda y sus limitaciones: icono «Fuente» (E2E `fuente.spec.ts`).
 - Detalle en `SCIENCE_SYSTEM.md` §7.
 
-## Fase 10 · Endurecimiento final
+## Fase 10 · Endurecimiento final ✅
 
-- Revisión ASVS L2 y PENTEST con la interfaz nueva; copias y restauración probadas en Render.
-- Rendimiento con 1 000 clientes; dominio propio; revisión RGPD (DPIA actualizada con el módulo de lesiones).
-- Bloquear también en el servidor la edición de planes completados o archivados. Hoy solo lo impide la interfaz; las operaciones del editor (también las de la tabla de la fase 2) ya exigen permiso y ámbito del entrenador y quedan auditadas.
+- Revisión ASVS L2 y PENTEST con la interfaz nueva (`PENTEST.md`, hallazgos P-10 a P-13, corregidos o aceptados).
+- Copias y restauración: simulacro con script (`scripts/restore-drill.sh`). Los pasos en Render están en `DEPLOY_RENDER.md`; el simulacro en Render lo hace el responsable desde el panel.
+- Rendimiento con 1 000 clientes, también en las páginas nuevas; pasos para el dominio propio en `DEPLOY_RENDER.md`.
+- Revisión RGPD: DPIA con el módulo de lesiones (§6, R-11 a R-13). Se corrigieron la supresión y la exportación del interesado.
+- El servidor bloquea la edición de planes completados o archivados.
 
 **Criterios**:
-- simulacro de restauración documentado;
-- 0 vulnerabilidades altas;
-- matrices de seguridad en verde.
+- ✅ simulacro de restauración documentado:
+  - en local, con la base en uso, la copia sale idéntica (114 tablas, 211 políticas, 47 migraciones) y la app arranca sobre ella;
+  - registro en `OPERATIONS.md` §6;
+  - en Render: pendiente del responsable (no se puede hacer desde aquí).
+- ✅ 0 vulnerabilidades altas: `pnpm audit --prod` da 1 moderada (aceptada, P-9).
+- ✅ matrices de seguridad en verde (acceso cruzado en todas las rutas, RLS en todas las tablas) y listados p95 < 300 ms con 1 000 clientes (máx. 226 ms).

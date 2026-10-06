@@ -139,6 +139,26 @@ Las copias se cifran en reposo y se guardan en la UE, en otra cuenta o proyecto 
 
 **Simulacro**: al menos cada 6 meses *[Completar]*. Restaura en un entorno aislado, reaplica las supresiones, comprueba unos cuantos clientes y registra la fecha y el tiempo que llevó.
 
+El script `scripts/restore-drill.sh` (fase 10 de la reestructuración) automatiza la parte técnica:
+
+```bash
+DATABASE_URL=postgres://…/origen scripts/restore-drill.sh --app
+```
+
+1. Copia la base con `pg_dump -Fc` desde una **instantánea exportada** (`pg_export_snapshot`), así que sirve con la base en uso.
+2. La restaura en una base **nueva** del mismo servidor (`restore_drill_<fecha>`). No toca la de origen.
+3. Compara origen y copia **en esa misma instantánea**: filas de cada tabla, RLS activada y forzada en cada tabla, número de políticas y migraciones aplicadas. Cualquier diferencia hace fallar el simulacro.
+4. Con `--app`, arranca la build de producción contra la base restaurada (puerto 3170): `/api/ready`, inicio de sesión de un usuario demo y lista de clientes. Comprueba también que la clave de cifrado sigue abriendo los datos.
+5. Borra la base restaurada (`--keep` la conserva) e imprime los tiempos para el registro.
+
+**Registro de simulacros**:
+
+| Fecha | Dónde | Datos | Copia | Restauración | Resultado |
+|---|---|---|---|---|---|
+| 06/10/2026 | Local (PostgreSQL 16), con la suite E2E escribiendo a la vez | Demo: 114 tablas, 16 022 filas, 211 políticas, 47 migraciones | 1,6 MB en 0,5 s | 2,5 s | Idéntica al origen |
+| 06/10/2026 | Local, con `--app` | Demo recién cargada: 16 017 filas | 1,6 MB en 0,5 s | 2,6 s (6,0 s en total, con el arranque de la app) | Idéntica; `/api/ready` → `ready`; login y lista de clientes correctos |
+| *[Completar]* | Render (base de pago, recuperación a un instante) | Producción | | | *Pendiente: lo hace el responsable en el panel; ver `DEPLOY_RENDER.md` → «Copias y restauración»* |
+
 ## 7. Qué se ha probado (Fase 15)
 
 | Prueba | Resultado |

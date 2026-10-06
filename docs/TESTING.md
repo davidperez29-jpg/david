@@ -604,3 +604,25 @@ pnpm --filter @tp/web test:e2e -- e2e/perf.spec.ts e2e/perf.mobile.spec.ts
   - Ciencia → Búsquedas;
   - una referencia no verificable, marcada como tal.
 - **Accesibilidad**: `/app/science/busquedas` en `a11y.spec.ts`.
+
+## Resultado de la reestructuración, fase 10 (endurecimiento final)
+
+- **Bloqueo de planes** (`planning.int.test.ts`, `sessions.int.test.ts`):
+  - completado y archivado: añadir bloques, cambiar semanas y crear revisiones responden `409` (`plan: locked`);
+  - leer, duplicar y reabrir siguen permitidos;
+  - aprobar una sustitución con «añadir como alternativa» sobre un plan archivado también se rechaza; sin añadirla, se puede decidir.
+- **Cola sin conexión** (`apps/web/test/offline-queue.unit.test.ts`):
+  - nada se envía hasta saber quién es el usuario;
+  - al entrar otra cuenta se borran las entradas ajenas;
+  - cerrar sesión vacía la cola.
+- **RGPD** (`privacy.int.test.ts`):
+  - la exportación del propio cliente incluye su caso de lesión (información recibida descifrada), síntomas, avisos y fases;
+  - la supresión borra lesiones, síntomas, avisos, fases, ejecuciones del motor y rasgos;
+  - prueba de guardia: toda tabla con `client_id` se exporta o figura en `SUBJECT_EXPORT_EXCLUDED` con su motivo.
+- **Rendimiento** (`perf.spec.ts`, ahora también con grupos, biblioteca, evaluaciones, fuentes y búsquedas): todo < 300 ms p95 con 1 000 clientes. El máximo es el calendario como ADMIN, con 226 ms.
+- **Seguridad**:
+  - `security-routes.spec.ts`: 229 rutas autenticadas y 597 ataques, sin un solo 2xx;
+  - matriz RLS en verde;
+  - `pnpm audit --prod`: 0 altas.
+- **Restauración**: `scripts/restore-drill.sh --app`. Copia y comparación en la misma instantánea, base nueva y app arrancada sobre ella (`OPERATIONS.md` §6).
+- **Orden de las E2E**: la prueba de límite de operaciones pesadas de `security.spec.ts` agota el presupuesto del minuto de Iker. Si se ejecuta justo antes de `sessions.mobile.spec.ts` (descarga de PDF), esta recibe un 429. En la suite completa las separa más de un minuto. Para un subconjunto, ejecútalas por separado.
