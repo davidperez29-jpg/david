@@ -1,4 +1,4 @@
-import { DERIVED_FORMULAS, MAXIMAL_TESTS } from '@tp/domain';
+import { ALL_DIMENSIONS, DERIVED_FORMULAS, MAXIMAL_TESTS } from '@tp/domain';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { loadAssessmentFiles, POPULATIONS } from '../src';
@@ -41,5 +41,14 @@ describe('assessment seed files', () => {
           true,
         );
     for (const m of MAXIMAL_TESTS) expect(tests.has(m), `maximal ${m}`).toBe(true);
+  });
+
+  it('radar dimensions only use tests of the catalogue or derived formulas', () => {
+    for (const d of ALL_DIMENSIONS)
+      for (const i of d.items)
+        expect(
+          tests.has(i.slug) || DERIVED_FORMULAS.some((f) => f.slug === i.slug),
+          `${d.key} → ${i.slug}`,
+        ).toBe(true);
   });
 });

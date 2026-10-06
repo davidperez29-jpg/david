@@ -428,7 +428,17 @@ async function assessmentsTab(
         )}
       </Card>
       <section className="flex flex-col gap-2">
-        <h2 className="text-lg font-semibold">Progreso</h2>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 className="text-lg font-semibold">Progreso</h2>
+          {progress.series.length ? (
+            <Link
+              href={`/app/clients/${clientId}/assessments/comparativa`}
+              className="inline-flex h-10 items-center rounded-md border border-border bg-bg px-4 text-sm font-medium hover:bg-surface"
+            >
+              Comparativa y radar
+            </Link>
+          ) : null}
+        </div>
         {progress.series.length ? (
           <Card title="Visible para el cliente">
             <VisibleMetricsPicker

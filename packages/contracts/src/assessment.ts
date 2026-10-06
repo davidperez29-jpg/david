@@ -169,3 +169,24 @@ export const groupAssessmentSchema = z.object({
   context: optionalText(500),
 });
 export const groupReportQuerySchema = z.object({ date: isoDate });
+
+/** Comparativa A/B and radar (phase 5). */
+export const comparisonQuerySchema = z.object({
+  a: z.uuid().optional(),
+  b: z.uuid().optional(),
+  scale: z
+    .enum(['auto', 'z_reference', 'z_group', 'percentile', 'percent_reference'])
+    .default('auto'),
+  dims: z
+    .string()
+    .max(500)
+    .optional()
+    .transform((v) =>
+      v
+        ? v
+            .split(',')
+            .map((x) => x.trim())
+            .filter(Boolean)
+        : undefined,
+    ),
+});

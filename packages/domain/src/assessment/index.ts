@@ -5,3 +5,4 @@ export * from './reference';
 export * from './battery';
 export * from './formulas';
 export * from './group';
+export * from './normalize';

@@ -198,3 +198,30 @@ Hallazgos en el libro original, que la plataforma no reproduce:
 - la celda «Mejor» de la talla mezcla nombres de función en español e inglés (`=SI(CONTAR(…)`), así que fuera de un Excel en español da error;
 - algunas celdas de resultado eran valores tecleados y no fórmulas;
 - el DSI aparece como «más es mejor». En la plataforma es un cociente **descriptivo**: orienta el entrenamiento y sus puntos de corte están [REQUIERE VERIFICACIÓN].
+
+## 9. Implementación (reestructuración, fase 5): radar y comparativa
+
+- **Dominio** (`packages/domain/src/assessment/normalize.ts`):
+  - `scoreOf(valor, sentido, base)` da la puntuación en las cuatro escalas con el sentido corregido. Sin dato, sin sentido (descriptivos) o sin base útil da `null`.
+  - `dimensionScore` hace la media ponderada de los tests con dato e informa de los que faltan.
+  - `radius` recorta la puntuación al rango de dibujo: Z a ±3, percentil de 0 a 100, % de 50 a 150.
+  - `DIMENSION_SETS` define dos juegos de dimensiones:
+    - rendimiento: fuerza, potencia, reactividad, aceleración, velocidad, COD, resistencia y composición corporal;
+    - salud: fuerza funcional, potencia, movilidad, equilibrio, resistencia y capacidad funcional.
+- **Comparativa** (`clientComparison`, `GET /clients/{id}/comparison`):
+  - B es, por defecto, la última evaluación con resultados. A es la anterior con más tests en común con B (la más reciente si hay empate).
+  - **A y B se puntúan con la misma base**, la del momento B: la sesión de grupo de B, o la más reciente del cliente, o las referencias aplicables a su edad, sexo, deporte y población. Así el radar muestra el cambio del cliente y no el de la base.
+  - Escala «automática»: Z frente al grupo si el cliente tiene grupo evaluado; si no, Z frente a la referencia.
+  - Si no se eligen dimensiones, se usa el juego con más dimensiones con dato en B.
+  - Los tests unilaterales usan la media de los dos lados; la asimetría sigue en cada evaluación.
+  - Cada test lleva su cambio real frente al MDC, como en la evolución.
+- **Radar** (`components/assessment/radar.tsx`):
+  - SVG generado en el servidor, sin JavaScript.
+  - B es una línea sólida con relleno suave y A una línea discontinua, así que no depende solo del color. Hay leyenda.
+  - El anillo neutro se dibuja algo más grueso y lleva etiqueta.
+  - Donde falta un dato, la línea se corta y el eje dice «sin dato».
+  - Cada punto muestra su valor al pasar el cursor.
+  - Lleva título y descripción para lectores de pantalla y la tabla de dimensiones debajo.
+  - Con menos de 3 dimensiones con dato no hay radar: solo la tabla.
+- **Evolución**: cada test tiene la tabla «evaluación por evaluación» con el cambio absoluto y % respecto a la anterior.
+- Para llegar: ficha del cliente → Evaluación → «Comparativa y radar» (2 clics).

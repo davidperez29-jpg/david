@@ -119,7 +119,7 @@ async function listAssessmentTests_(
 }
 export type AssessmentTestSummary = Awaited<ReturnType<typeof listAssessmentTests_>>[number];
 
-async function reliabilityRows(db: Executor, testIds: string[]) {
+export async function reliabilityRows(db: Executor, testIds: string[]) {
   if (!testIds.length) return [];
   return db
     .select({
@@ -468,7 +468,7 @@ interface ClientContext {
   screening: 'clear' | 'refer' | 'unknown';
 }
 
-async function loadClientContext(
+export async function loadClientContext(
   ctx: RequestContext,
   clientId: string,
   canReadHealth: boolean,
@@ -910,7 +910,7 @@ function similarPopulation(r: RelRow, who: Subject): boolean {
   return true;
 }
 
-function toReliability(rows: RelRow[], who: Subject): ReliabilityRow[] {
+export function toReliability(rows: RelRow[], who: Subject): ReliabilityRow[] {
   return rows
     .filter((r) => similarPopulation(r, who))
     .map((r) => ({
@@ -928,7 +928,7 @@ function toReliability(rows: RelRow[], who: Subject): ReliabilityRow[] {
     }));
 }
 
-function toReference(r: RefRow): ReferenceRow {
+export function toReference(r: RefRow): ReferenceRow {
   return {
     id: r.v.id,
     populationName: r.population,

@@ -21,8 +21,8 @@
 | 2 | Ejercicios + sesiones (tabla tipo Excel) + planificación MES → SEMANA → SESIÓN | Biblioteca, prescripción, planes | ✅ Hecha |
 | 3 | Plantillas + objetivos + niveles (filtros, usar plantilla = copia, desde cero, mis plantillas con versiones, 102 plantillas iniciales) | `plan_templates`, `plan_template_versions` | ✅ Hecha |
 | 4 | Evaluaciones + referencias (hoja de intentos, baterías por perfil, fórmulas, grupos/equipos) | Evaluación actual | ✅ Hecha |
-| 5 | Radares + evolución (normalización, dimensiones, comparativas) | Cambio real, gráficos | Siguiente |
-| 6 | Informes (8 tipos, comparativo, grupal, radar en PDF) | Motor de informes | Pendiente |
+| 5 | Radares + evolución (normalización, dimensiones, comparativas) | Cambio real, gráficos | ✅ Hecha |
+| 6 | Informes (8 tipos, comparativo, grupal, radar en PDF) | Motor de informes | Siguiente |
 | 7 | Lesiones / readaptación / RTP | Seguimiento de dolor, planes | Pendiente |
 | 8 | Cliente móvil + feedback + adherencia + fichaje | PWA, registro, asistencia | Pendiente |
 | 9 | Ciencia + referencias (verificación, tipos de evidencia, búsquedas registradas) | Ciencia actual | Pendiente |
@@ -120,18 +120,20 @@ Pendiente para fases siguientes: tarjetas por ejercicio en el móvil y sugerenci
 **Criterios**:
 - ✅ reproduce el informe del club con datos anonimizados: mismas medianas, mínimos, fórmulas, estadísticos de grupo y Z frente al equipo que la hoja original (test de oro, `club-golden.unit.test.ts`).
 
-## Fase 5 · Radares y evolución (siguiente)
+## Fase 5 · Radares y evolución ✅
 
-- Cadena de normalización del dominio (Z frente a referencia o equipo, percentil, % de referencia), con tests de propiedades (monotonía, dirección, sin dato = hueco).
-- `RadarChart` con dimensiones seleccionables y capas A/B/referencia/equipo.
-- Evolución con cambio absoluto, %, tendencia y cambio real.
+- Cadena de normalización del dominio (`normalize.ts`): Z frente a referencia o grupo, percentil y % de referencia, con el sentido corregido. Tests de propiedades: monotonía, dirección invertida = eje invertido, sin dato = hueco, todo dentro del radar.
+- `RadarChart` (SVG en servidor, sin JavaScript): dimensiones seleccionables, capas A y B, anillo neutro (media del grupo, referencia, P50 o 100 %), huecos sin dato, título y descripción accesibles, y la tabla al lado.
+- **Comparativa y radar** en la pestaña Evaluación del cliente: elegir evaluación A, evaluación B, escala y dimensiones. A y B se comparan con la misma base; tabla test a test con valores reales, cambio absoluto y %, cambio real frente al error de medida y puntuación A → B.
+- Evolución: además de lo que ya había (gráfico, tendencia con ≥ 3 puntos, cambio real), tabla evaluación por evaluación con el cambio absoluto y % respecto a la anterior.
+- Detalle en `EVALUATION_SYSTEM.md` §9.
 
 **Criterios**:
-- ningún radar mezcla unidades (test);
-- invertir la dirección de un test invierte su eje (propiedad);
-- el radar es accesible y lleva tabla.
+- ✅ ningún radar mezcla unidades: cada eje es una dimensión en una sola escala estandarizada; las unidades solo aparecen en la tabla (`normalize.unit.test.ts`, integración);
+- ✅ invertir la dirección de un test invierte su eje (propiedad: Z → −Z, percentil → 100 − P, % → recíproco);
+- ✅ el radar es accesible y lleva tabla (axe WCAG 2.2 AA en escritorio y móvil; E2E `radar.spec.ts`).
 
-## Fase 6 · Informes
+## Fase 6 · Informes (siguiente)
 
 - Los 8 tipos del §16; comparativo con selector; grupal; radar vectorial en el PDF; frases prohibidas validadas.
 

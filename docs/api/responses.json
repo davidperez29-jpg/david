@@ -733,6 +733,92 @@
       "reason": "null"
     }
   ],
+  "GET clients/[clientId]/comparison": {
+    "a": {
+      "assessedOn": "string",
+      "id": "string"
+    },
+    "allDimensions": [
+      {
+        "key": "string",
+        "name": "string"
+      }
+    ],
+    "assessments": [
+      {
+        "assessedOn": "string",
+        "context": "string",
+        "hasResults": "boolean",
+        "id": "string"
+      }
+    ],
+    "b": {
+      "assessedOn": "string",
+      "id": "string"
+    },
+    "basis": {
+      "kind": "string",
+      "label": "string"
+    },
+    "dimensions": [
+      {
+        "items": [
+          {
+            "slug": "string",
+            "weight": "number"
+          }
+        ],
+        "key": "string",
+        "name": "string",
+        "scoreA": "number",
+        "scoreB": "number",
+        "usedA": [
+          "string"
+        ],
+        "usedB": [
+          "string"
+        ]
+      }
+    ],
+    "items": [
+      {
+        "basis": "string",
+        "change": {
+          "delta": "number",
+          "deltaPercent": "number",
+          "error": "null",
+          "label": "string",
+          "post": "number",
+          "pre": "number",
+          "verdict": "string",
+          "warnings": []
+        },
+        "direction": "string",
+        "name": "string",
+        "rawA": "number",
+        "rawB": "number",
+        "scoreA": "number",
+        "scoreB": "number",
+        "slug": "string",
+        "unit": "string"
+      }
+    ],
+    "notes": [],
+    "scale": {
+      "label": "string",
+      "neutral": "number",
+      "range": [
+        "number"
+      ],
+      "value": "string"
+    },
+    "scales": [
+      {
+        "label": "string",
+        "value": "string"
+      }
+    ]
+  },
   "GET clients/[clientId]/consents": {
     "history": [
       {
@@ -1211,7 +1297,7 @@
         "value": "number"
       },
       "skinfold_abdominal": {
-        "change": "null",
+        "change": "string",
         "date": "string",
         "name": "string",
         "reference": "null",
@@ -1220,7 +1306,7 @@
         "value": "number"
       },
       "skinfold_front_thigh": {
-        "change": "null",
+        "change": "string",
         "date": "string",
         "name": "string",
         "reference": "null",
@@ -1229,7 +1315,7 @@
         "value": "number"
       },
       "skinfold_iliac_crest": {
-        "change": "null",
+        "change": "string",
         "date": "string",
         "name": "string",
         "reference": "null",
@@ -1238,7 +1324,7 @@
         "value": "number"
       },
       "skinfold_medial_calf": {
-        "change": "null",
+        "change": "string",
         "date": "string",
         "name": "string",
         "reference": "null",
@@ -1247,7 +1333,7 @@
         "value": "number"
       },
       "skinfold_subscapular": {
-        "change": "null",
+        "change": "string",
         "date": "string",
         "name": "string",
         "reference": "null",
@@ -1256,7 +1342,7 @@
         "value": "number"
       },
       "skinfold_triceps": {
-        "change": "null",
+        "change": "string",
         "date": "string",
         "name": "string",
         "reference": "null",
@@ -1265,7 +1351,7 @@
         "value": "number"
       },
       "sprint_5m": {
-        "change": "null",
+        "change": "string",
         "date": "string",
         "name": "string",
         "reference": "null",

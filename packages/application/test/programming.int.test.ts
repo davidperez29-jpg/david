@@ -242,12 +242,17 @@ describe('the trainer decides (§12.2, §13.9)', () => {
     expect(ov).toEqual([
       expect.objectContaining({ field: 'setsDelta', proposedValue: -1, finalValue: -2 }),
     ]);
-    const t = deload.targets.find((x) => x.sets === 4)!;
+    // Which week is «next» depends on today's weekday, and so does its number of sets: take the
+    // target with most sets (the edit asked for −2, never below 1).
+    const t = deload.targets
+      .filter((x) => x.sets != null)
+      .reduce((a, b) => (b.sets! > a.sets! ? b : a));
+    expect(t.sets).toBeGreaterThanOrEqual(3);
     const [row] = await db()
       .select({ sets: schema.sessionExercises.sets })
       .from(schema.sessionExercises)
       .where(eq(schema.sessionExercises.id, t.sessionExerciseId));
-    expect(row!.sets).toBe(2);
+    expect(row!.sets).toBe(t.sets! - 2);
   });
 
   it('auto-apply (off by default): routine load progressions applied by the system, audited, undoable', async () => {

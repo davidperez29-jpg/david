@@ -20,6 +20,7 @@ export * from './science';
 export * from './assessments';
 export * from './formulas';
 export * from './groups';
+export * from './comparison';
 export * from './planning';
 export * from './templates';
 export * from './plan-pdf';

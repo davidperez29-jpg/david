@@ -2,7 +2,7 @@ import type { AssessmentProgress } from '@tp/application';
 import { PLAIN_VERDICT } from '@tp/domain';
 import { Identifiers } from '@/components/science/evidence';
 import { Badge, Card, EmptyState } from '@/components/ui/card';
-import { formatValue, label } from '@/lib/labels';
+import { formatDate, formatValue, label } from '@/lib/labels';
 import { BeforeAfterBars, SeriesChart } from './charts';
 import { ChangeLine, VerdictBadge } from './verdict';
 
@@ -65,6 +65,9 @@ export function ProgressView({
                     </div>
                   ) : null}
                   {s.note ? <p className="text-xs text-warn">{s.note}</p> : null}
+                  {audience === 'trainer' ? (
+                    <PointsTable points={s.points} unit={s.test.unit} />
+                  ) : null}
                 </>
               ) : (
                 <p className="text-xs text-muted">
@@ -117,6 +120,53 @@ export function ProgressView({
           ))
         : null}
     </div>
+  );
+}
+
+/** Evaluation by evaluation: value, change from the previous one (absolute and %). */
+function PointsTable({ points, unit }: { points: { on: string; value: number }[]; unit: string }) {
+  const signed = (v: number) =>
+    new Intl.NumberFormat('es-ES', { maximumFractionDigits: 2, signDisplay: 'exceptZero' }).format(
+      v,
+    );
+  return (
+    <details className="text-xs">
+      <summary className="cursor-pointer text-muted">Ver evaluación por evaluación</summary>
+      <table className="mt-1 w-full border-collapse">
+        <thead className="text-left text-muted">
+          <tr>
+            <th scope="col" className="py-1 pr-2 font-medium">
+              Fecha
+            </th>
+            <th scope="col" className="py-1 pr-2 font-medium">
+              Valor
+            </th>
+            <th scope="col" className="py-1 font-medium">
+              Respecto a la anterior
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {points.map((p, i) => {
+            const prev = points[i - 1];
+            const d = prev ? p.value - prev.value : null;
+            return (
+              <tr key={`${p.on}-${i}`} className="border-t border-border tabular-nums">
+                <td className="py-1 pr-2">{formatDate(p.on)}</td>
+                <td className="py-1 pr-2">
+                  {formatValue(p.value)} {unit}
+                </td>
+                <td className="py-1">
+                  {d == null
+                    ? '—'
+                    : `${signed(Math.round(d * 1000) / 1000)} ${unit}${prev!.value !== 0 ? ` (${signed(Math.round((d / Math.abs(prev!.value)) * 1000) / 10)} %)` : ''}`}
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </details>
   );
 }
 

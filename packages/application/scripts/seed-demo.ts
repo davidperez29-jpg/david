@@ -972,38 +972,47 @@ console.log('Privacy: 1 pending rights request (Elena).');
     'skinfold_front_thigh',
     'skinfold_medial_calf',
   ];
-  const date = addDays(localDate(new Date()), -7);
-  await createGroupAssessment(lucia, gid, {
-    assessedOn: date,
-    testIds: [
-      'height',
-      'body_mass',
-      ...SKIN,
-      'sprint_5m',
-      'cmj_height',
-      'single_leg_cmj_height',
-    ].map(tid),
-    context: 'Evaluación de grupo',
-  });
-  const report = await groupReport(lucia, gid, { date });
-  for (const [i, m] of report.members.entries()) {
-    const c = members.find((x) => x.id === m.clientId)!;
-    const f = c.sex === 'female' ? 0.88 : 1;
-    const rec = (slug: string, attempts: number[], side: 'both' | 'left' | 'right' = 'both') =>
-      recordAssessmentResult(lucia, m.assessmentId, { testId: tid(slug), attempts, side });
-    const r = (x: number, d = 1) => Number((x * (1 + rnd() * 0.04)).toFixed(d));
-    await rec('height', [r(176 * f + i)]);
-    await rec('body_mass', [r(72 * f + i * 1.5)]);
-    for (const [k, slug] of SKIN.entries()) {
-      const base = (6 + k * 1.5) / f;
-      await rec(slug, [r(base), r(base), r(base)]);
+  // Two sessions five weeks apart (A/B for the radar); each person progresses differently.
+  const dates = [addDays(localDate(new Date()), -42), addDays(localDate(new Date()), -7)];
+  let report: Awaited<ReturnType<typeof groupReport>> | null = null;
+  for (const [k, date] of dates.entries()) {
+    await createGroupAssessment(lucia, gid, {
+      assessedOn: date,
+      testIds: [
+        'height',
+        'body_mass',
+        ...SKIN,
+        'sprint_5m',
+        'cmj_height',
+        'single_leg_cmj_height',
+      ].map(tid),
+      context: k === 0 ? 'Evaluación de grupo inicial' : 'Evaluación de grupo',
+    });
+    report = await groupReport(lucia, gid, { date });
+    for (const m of report.members) {
+      const i = members.findIndex((x) => x.id === m.clientId);
+      const c = members[i]!;
+      const f = c.sex === 'female' ? 0.88 : 1;
+      // Gain between sessions: 0–6 % depending on the person (one stays the same).
+      const g = 1 + k * (i % 4) * 0.02;
+      const rec = (slug: string, attempts: number[], side: 'both' | 'left' | 'right' = 'both') =>
+        recordAssessmentResult(lucia, m.assessmentId, { testId: tid(slug), attempts, side });
+      const r = (x: number, d = 1) => Number((x * (1 + rnd() * 0.04)).toFixed(d));
+      await rec('height', [176 * f + i]);
+      await rec('body_mass', [Number((72 * f + i * 1.5).toFixed(1))]);
+      for (const [j, slug] of SKIN.entries()) {
+        const base = (6 + j * 1.5) / f / g;
+        await rec(slug, [r(base), r(base), r(base)]);
+      }
+      await rec('sprint_5m', [r(1.05 / f / g, 2), r(1.05 / f / g, 2)]);
+      await rec('cmj_height', [r(36 * f * g), r(36 * f * g), r(36 * f * g)]);
+      await rec('single_leg_cmj_height', [r(19 * f * g, 2), r(19 * f * g, 2)], 'right');
+      await rec('single_leg_cmj_height', [r(17.5 * f * g, 2), r(17.5 * f * g, 2)], 'left');
     }
-    await rec('sprint_5m', [r(1.05 / f, 2), r(1.05 / f, 2)]);
-    await rec('cmj_height', [r(36 * f), r(36 * f), r(36 * f)]);
-    await rec('single_leg_cmj_height', [r(19 * f, 2), r(19 * f, 2)], 'right');
-    await rec('single_leg_cmj_height', [r(17.5 * f, 2), r(17.5 * f, 2)], 'left');
   }
-  console.log(`Groups: 1 demo group with ${report.members.length} members assessed on ${date}.`);
+  console.log(
+    `Groups: 1 demo group with ${report!.members.length} members assessed twice (${dates.join(', ')}).`,
+  );
 }
 
 // Exercise library: the user's methodology bank as reviewable drafts (skip with DEMO_SKIP_BANK=1).

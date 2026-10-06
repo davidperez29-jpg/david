@@ -43,6 +43,7 @@
     "clients/[clientId]/audit GET authenticated",
     "clients/[clientId]/auto-apply PUT authenticated",
     "clients/[clientId]/availability PUT authenticated",
+    "clients/[clientId]/comparison GET authenticated",
     "clients/[clientId]/consents/[purpose] DELETE authenticated",
     "clients/[clientId]/consents GET authenticated",
     "clients/[clientId]/consents POST authenticated",
@@ -1421,6 +1422,36 @@
         "ruleKey",
         "enabled"
       ]
+    },
+    "comparisonQuerySchema": {
+      "type": "object",
+      "properties": {
+        "a": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "b": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "scale": {
+          "default": "auto",
+          "type": "string",
+          "enum": [
+            "auto",
+            "z_reference",
+            "z_group",
+            "percentile",
+            "percent_reference"
+          ]
+        },
+        "dims": {
+          "type": "string",
+          "maxLength": 500
+        }
+      }
     },
     "completeSessionSchema": {
       "type": "object",

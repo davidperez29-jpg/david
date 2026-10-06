@@ -2,6 +2,21 @@
 
 Formato: fecha · cambio · motivo · archivos · impacto.
 
+## 2026-10-06 — Reestructuración, fase 5: radar y comparativa
+
+- **Cambio:** **Comparativa y radar** en la pestaña Evaluación del cliente.
+  - Se eligen la evaluación A, la B, la escala (Z frente al grupo, Z frente a la referencia, percentil en el grupo o % de la referencia) y las dimensiones.
+  - El radar dibuja A y B sobre la misma base. Debajo, la tabla por dimensión y la tabla test a test: valores reales, cambio absoluto y %, cambio real frente al error de medida y puntuación A → B.
+  - **Motivo:** ver de un vistazo en qué ha cambiado el cliente sin mezclar unidades (§14 y §17 del encargo).
+- **Cambio:** cadena de normalización en el dominio, con el sentido corregido (hacia fuera siempre es mejor) y sin dato = hueco.
+  - Dimensiones de rendimiento y de salud con pesos.
+- **Cambio:** en Progreso, cada test tiene la tabla «evaluación por evaluación» con el cambio respecto a la anterior.
+- **Cambio:** la demo tiene dos evaluaciones del grupo separadas cinco semanas, para ver A frente a B.
+- **Corrección:** la prueba de contrato de respuestas dependía del orden de las baterías según la base de datos (fallaba en CI). Se trata `testIds` como un mapa abierto.
+- **Tests:** propiedades de la normalización, integración de la comparativa, E2E del radar y axe en las páginas nuevas.
+- **Archivos:** `packages/domain/src/assessment/normalize.ts`, `packages/application/src/comparison.ts`, `apps/web/src/components/assessment/radar.tsx`, `apps/web/src/app/app/clients/[clientId]/assessments/comparativa/page.tsx`, `docs/EVALUATION_SYSTEM.md` §9, `docs/PRODUCT_ARCHITECTURE.md` A29–A31.
+- **Impacto:** sin migraciones. Nada cambia en los datos guardados.
+
 ## 2026-10-05 — Reestructuración, fase 4: evaluaciones y referencias
 
 - **Cambio:** **hoja de intentos** tipo Excel en cada evaluación y en la evaluación de grupo.

@@ -495,3 +495,20 @@ pnpm --filter @tp/web test:e2e -- e2e/perf.spec.ts e2e/perf.mobile.spec.ts
   - se rechazan fórmulas inválidas y circulares; una fórmula propia se calcula.
 - **Seguridad:** la matriz RLS cubre `derived_formulas`, `client_groups` y `client_group_members` con datos de la demo (positivo y negativo).
 - **E2E** (`groups.spec.ts`): Mis clientes → Grupos y equipos → «Último informe» (2 clics); pegar un bloque de Excel en la hoja guarda las filas y aplica la mediana; cambiar y restaurar las constantes de Faulkner.
+
+## Resultado de la reestructuración, fase 5 (radar y comparativa)
+
+- **Propiedades** (`normalize.unit.test.ts`):
+  - un resultado mejor nunca puntúa menos, en ninguna escala;
+  - invertir el sentido invierte el eje;
+  - sin dato = hueco;
+  - toda puntuación cae dentro del radar;
+  - la puntuación de una dimensión queda entre la de sus tests.
+- **Catálogo:** todas las dimensiones usan tests o fórmulas que existen (`assessment-seed.unit.test.ts`).
+- **Integración** (`comparison.int.test.ts`):
+  - A y B por defecto, y la Z de A igual a la del informe grupal;
+  - B se puntúa con la misma base que A;
+  - dimensiones con huecos, percentil y dimensiones elegidas;
+  - acceso de otra organización: no encontrado.
+- **E2E** (`radar.spec.ts`): desde la ficha, el radar accesible con su leyenda y su tabla, la tabla test a test y el cambio de escala.
+- **Accesibilidad:** axe (WCAG 2.2 AA) también en la comparativa, en grupos y en fórmulas.
