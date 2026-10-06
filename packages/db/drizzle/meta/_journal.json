@@ -337,6 +337,20 @@
       "when": 1791290890078,
       "tag": "0047_injury_text_encryption",
       "breakpoints": true
+    },
+    {
+      "idx": 48,
+      "version": "7",
+      "when": 1791296734483,
+      "tag": "0048_exercise_load_increments",
+      "breakpoints": true
+    },
+    {
+      "idx": 49,
+      "version": "7",
+      "when": 1791296736191,
+      "tag": "0049_rls_v18",
+      "breakpoints": true
     }
   ]
 }

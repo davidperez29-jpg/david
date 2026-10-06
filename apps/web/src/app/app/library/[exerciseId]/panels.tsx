@@ -627,3 +627,57 @@ export function MethodsPanel({
     </Card>
   );
 }
+
+/**
+ * The centre's own load increment (restructure phase 13): the smallest jump the programming
+ * engine proposes for this exercise. Also for global exercises (it is the centre's setting).
+ */
+export function LoadIncrementPanel({ exercise }: { exercise: ExerciseDetail }) {
+  const a = useApiAction();
+  const li = exercise.loadIncrement;
+  const [value, setValue] = useState(String(li.kg).replace('.', ','));
+  const save = (incrementKg: number | null) =>
+    a.run(`/exercises/${exercise.id}/load-increment`, 'PUT', { incrementKg });
+  return (
+    <Card title="Incremento de carga">
+      <p className="mb-2 text-sm text-muted">
+        El salto mínimo que propone el motor al subir o bajar la carga de este ejercicio. Por
+        defecto depende del material ({String(li.defaultKg).replace('.', ',')} kg). Cámbialo si en
+        tu centro usáis otro (discos de 1 kg, placas de 5 kg…).{' '}
+        {li.custom ? <Badge tone="accent">Del centro</Badge> : <Badge>Por defecto</Badge>}
+      </p>
+      <form
+        className="flex flex-wrap items-end gap-2"
+        onSubmit={(e) => {
+          e.preventDefault();
+          void save(Number(value.replace(',', '.')));
+        }}
+      >
+        <Field label="Incremento (kg)" htmlFor="load-inc" error={a.fieldError('incrementKg')}>
+          <Input
+            id="load-inc"
+            inputMode="decimal"
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            className="w-28"
+          />
+        </Field>
+        <Button disabled={a.pending}>Guardar</Button>
+        {li.custom ? (
+          <Button
+            type="button"
+            variant="ghost"
+            disabled={a.pending}
+            onClick={() => {
+              setValue(String(li.defaultKg).replace('.', ','));
+              void save(null);
+            }}
+          >
+            Volver al de por defecto
+          </Button>
+        ) : null}
+      </form>
+      <FormError error={a.error} />
+    </Card>
+  );
+}

@@ -791,7 +791,7 @@
     {
       "action": "string",
       "actor": "string",
-      "changes": "[object Object]|object|object|object|object|object",
+      "changes": "[object Object]|object|object|object|object|object|object",
       "entityType": "string",
       "id": "string",
       "occurredAt": "string",
@@ -2896,7 +2896,8 @@
       {
         "equipmentId": "string",
         "name": "string",
-        "optional": "boolean"
+        "optional": "boolean",
+        "slug": "string"
       }
     ],
     "id": "string",
@@ -2906,6 +2907,11 @@
     "isGlobal": "boolean",
     "laterality": "null",
     "level": "null",
+    "loadIncrement": {
+      "custom": "boolean",
+      "defaultKg": "number",
+      "kg": "number"
+    },
     "media": [
       {
         "channel": "string",

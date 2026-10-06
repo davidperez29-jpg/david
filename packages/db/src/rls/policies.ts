@@ -108,6 +108,8 @@ CREATE POLICY tca_delete ON trainer_client_assignments FOR DELETE USING (organiz
 
   // ── Catalogues ──────────────────────────────────────────────────────────────
   goals: { kind: 'catalog' },
+  // Restructure phase 13: per-organization load increment of an exercise (staff write).
+  exercise_load_increments: { kind: 'catalog' },
   programming_profiles: { kind: 'catalog' },
   sports: { kind: 'catalog' },
   equipment: { kind: 'catalog' },

@@ -157,3 +157,8 @@ export const toleranceSchema = z
   .refine((t) => !!t.exerciseId !== !!t.movementPatternId, {
     message: 'Indica un ejercicio o un patrón (solo uno).',
   });
+
+/** The centre's own load increment for an exercise (phase 13); null = back to the default. */
+export const exerciseLoadIncrementSchema = z.object({
+  incrementKg: z.coerce.number().positive().max(50).nullable(),
+});

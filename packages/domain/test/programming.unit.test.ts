@@ -53,6 +53,24 @@ const input = (over: Partial<ProgrammingInput> = {}): ProgrammingInput => ({
 });
 
 describe('week-to-week load (§12.7)', () => {
+  it('uses the centre’s own increment for the exercise when there is one (phase 13)', () => {
+    const top = [
+      { reps: 8, rir: 2 },
+      { reps: 8, rir: 2 },
+      { reps: 8, rir: 1 },
+    ];
+    expect(proposeLoadChange({ ...squatHistory([top]), incrementKg: 1 })).toMatchObject({
+      action: 'increase_load',
+      fromKg: 80,
+      toKg: 81,
+      increment: 1,
+    });
+    // null or 0 falls back to the default by equipment.
+    expect(proposeLoadChange({ ...squatHistory([top]), incrementKg: null })).toMatchObject({
+      toKg: 82.5,
+    });
+  });
+
   it('double progression: all sets at the top of the range with the target RIR → +2.5 kg on a barbell', () => {
     const r = proposeLoadChange(
       squatHistory([

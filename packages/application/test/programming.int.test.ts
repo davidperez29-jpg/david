@@ -370,6 +370,55 @@ describe('plan proposals (§12.2.5)', () => {
   });
 });
 
+describe('a proposal applied as a revision of the active plan (phase 13)', () => {
+  it('replaces only the unrecorded future sessions, as a new revision; the proposal is archived', async () => {
+    const futureOfActive = async () =>
+      (await getPlan(o.admin, planId)).phases
+        .flatMap((p) => p.mesocycles.flatMap((m) => m.weeks.flatMap((w) => w.sessions)))
+        .filter((x) => x.scheduledDate && x.scheduledDate >= today);
+    const before = await futureOfActive();
+    // One future session already has a record: it must stay as it is.
+    const kept = before[0]!;
+    await db().insert(schema.attendance).values({
+      organizationId: o.org.organizationId,
+      clientId: o.clientA,
+      sessionId: kept.id,
+      status: 'completed',
+      performedDate: today,
+    });
+    const tpl = (await listPlanTemplates(o.admin)).find((t) => t.slug === 'hipertrofia-3d')!;
+    const { id } = await generatePlanProposal(o.admin, o.clientA, {
+      templateId: tpl.id,
+      startDate: addDays(thisMonday, 7),
+      weekdays: [2, 4, 6],
+    });
+    const revsBefore = await listPlanRevisions(o.admin, planId);
+    const r = await acceptPlanProposal(o.admin, id, { mode: 'revision', reason: 'Nuevo bloque' });
+    expect(r).toMatchObject({ id: planId });
+    expect((r as { copied: number }).copied).toBeGreaterThan(0);
+    expect((r as { removed: number }).removed).toBe(before.length - 1);
+
+    const after = await futureOfActive();
+    expect(after.some((x) => x.id === kept.id)).toBe(true);
+    // The rest are the proposal's days (Tuesday, Thursday and Saturday).
+    expect(
+      after
+        .filter((x) => x.id !== kept.id)
+        .every((x) => [2, 4, 6].includes(isoWeekday(x.scheduledDate!))),
+    ).toBe(true);
+    const revs = await listPlanRevisions(o.admin, planId);
+    expect(revs.length).toBe(revsBefore.length + 1);
+    expect(revs[0]!.reason).toBe('Propuesta del motor aplicada: Nuevo bloque');
+    expect((await listPlanProposals(o.admin, o.clientA)).find((x) => x.id === id)!.status).toBe(
+      'archived',
+    );
+    // Applied once: the proposal cannot be accepted again.
+    await expect(acceptPlanProposal(o.admin, id, { mode: 'revision' })).rejects.toMatchObject({
+      code: 'conflict',
+    });
+  });
+});
+
 describe('permissions and isolation', () => {
   it('clients, unassigned trainers and other organizations cannot see or decide', async () => {
     const pending = (await listAdjustments(o.admin, o.clientA)).items[0]!;

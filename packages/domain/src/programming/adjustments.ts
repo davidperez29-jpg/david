@@ -33,6 +33,8 @@ export interface ExerciseHistory {
   exerciseName: string;
   /** Equipment slugs, to pick the load increment. */
   equipment: string[];
+  /** The centre's own increment for this exercise (phase 13); null = default by equipment. */
+  incrementKg?: number | null;
   /** Performed sessions of this exercise, oldest first; RIR assumed (not reported) excluded. */
   sessions: {
     date: string;
@@ -96,7 +98,7 @@ export interface ExerciseChange {
 const day = (iso: string) => iso.split('-').reverse().join('/');
 const kg = (n: number) => `${n.toLocaleString('es-ES')} kg`;
 
-/** Smallest practical load jump by equipment (level F, configurable per exercise in the future). */
+/** Smallest practical load jump by equipment (level F); a centre can set its own per exercise. */
 export function loadIncrementFor(equipment: string[]): number {
   if (equipment.some((e) => e.includes('barbell') || e.includes('barra') || e === 'smith_machine'))
     return 2.5;
@@ -113,7 +115,7 @@ export function loadIncrementFor(equipment: string[]): number {
 export function proposeLoadChange(h: ExerciseHistory) {
   const last = h.sessions.at(-1);
   if (!last || last.target.loadKg == null) return null;
-  const inc = loadIncrementFor(h.equipment);
+  const inc = h.incrementKg && h.incrementKg > 0 ? h.incrementKg : loadIncrementFor(h.equipment);
   const rir = h.sessions
     .map((s) => s.sets.map((x) => x.rir).filter((x): x is number => x != null))
     .filter((xs) => xs.length)
@@ -258,7 +260,9 @@ export function proposeAdjustments(input: ProgrammingInput): AdjustmentCandidate
           ? 'progression.rir_adjustment'
           : 'progression.double_progression',
         [
-          'Regla práctica (nivel F) de los cuadernos de entrenamiento; el incremento depende del material.',
+          h.incrementKg
+            ? `Regla práctica (nivel F) de los cuadernos de entrenamiento; incremento del centro para este ejercicio: ${kg(h.incrementKg)}.`
+            : 'Regla práctica (nivel F) de los cuadernos de entrenamiento; el incremento depende del material.',
           'El RIR es autoinformado y menos preciso lejos del fallo.',
           'Se aplica sobre la carga planificada de cada sesión (respeta la progresión ya prevista).',
         ],

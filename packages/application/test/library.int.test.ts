@@ -14,6 +14,7 @@ import {
   markExerciseReviewed,
   removeProgression,
   setClientEquipment,
+  setExerciseLoadIncrement,
   setExerciseStatus,
   setExerciseTolerance,
   suggestExerciseSubstitutes,
@@ -270,6 +271,37 @@ describe('exercise library', () => {
     expect(f.derivedFromId).toBe(g!.id);
     const dup = await duplicateExercise(o.admin, fork.id);
     expect((await getExercise(o.admin, dup.id)).name).toContain('(copia)');
+  });
+
+  it('the centre sets its own load increment, also for a global exercise (phase 13)', async () => {
+    const [g] = await testDb()
+      .db.insert(schema.exercises)
+      .values({
+        organizationId: null,
+        slug: `global-inc-${o.tag}`,
+        name: `Press global ${o.tag}`,
+        status: 'published',
+        level: 'beginner',
+      })
+      .returning();
+    const def = (await getExercise(o.admin, g!.id)).loadIncrement;
+    expect(def).toMatchObject({ custom: false, kg: def.defaultKg });
+    await setExerciseLoadIncrement(o.admin, g!.id, { incrementKg: 1.25 });
+    expect((await getExercise(o.admin, g!.id)).loadIncrement).toMatchObject({
+      kg: 1.25,
+      custom: true,
+    });
+    // Another centre keeps the default; the client role cannot change it; limits are checked.
+    expect((await getExercise(other.admin, g!.id)).loadIncrement.custom).toBe(false);
+    await expect(
+      setExerciseLoadIncrement(o.clientUser, g!.id, { incrementKg: 2 }),
+    ).rejects.toMatchObject({ code: 'forbidden' });
+    for (const bad of [0, 60])
+      await expect(
+        setExerciseLoadIncrement(o.admin, g!.id, { incrementKg: bad }),
+      ).rejects.toMatchObject({ code: 'validation' });
+    await setExerciseLoadIncrement(o.admin, g!.id, { incrementKg: null });
+    expect((await getExercise(o.admin, g!.id)).loadIncrement.custom).toBe(false);
   });
 
   it('suggests substitutes using client equipment and tolerances, with reasons', async () => {

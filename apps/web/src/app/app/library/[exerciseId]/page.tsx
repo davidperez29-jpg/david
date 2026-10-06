@@ -11,6 +11,7 @@ import { requireStaff } from '@/server/session';
 import {
   EditExercise,
   ExerciseActions,
+  LoadIncrementPanel,
   MediaPanel,
   MethodsPanel,
   ProgressionsPanel,
@@ -91,7 +92,12 @@ export default async function ExercisePage({
       </nav>
       {tab === 'ficha' ? <EditExercise exercise={ex} tax={tax} /> : null}
       {tab === 'medios' ? <MediaPanel exercise={ex} /> : null}
-      {tab === 'progresiones' ? <ProgressionsPanel exercise={ex} /> : null}
+      {tab === 'progresiones' ? (
+        <>
+          <ProgressionsPanel exercise={ex} />
+          <LoadIncrementPanel exercise={ex} />
+        </>
+      ) : null}
       {tab === 'sustituciones' ? <SubstitutesPanel exerciseId={ex.id} /> : null}
       {tab === 'metodos' ? <MethodsPanel exercise={ex} methods={await listMethods(ctx)} /> : null}
       {ex.source !== 'manual' ? (

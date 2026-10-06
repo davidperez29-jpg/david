@@ -1,6 +1,7 @@
 import {
   addVideoSchema,
   createExerciseSchema,
+  exerciseLoadIncrementSchema,
   listExercisesSchema,
   progressionSchema,
   reviewSchema,
@@ -16,6 +17,7 @@ import {
   diffFields,
   DomainError,
   findProgressionCycle,
+  loadIncrementFor,
   parseVideoUrl,
   PENDING_VIDEO_TEXT,
   publishProblems,
@@ -36,6 +38,7 @@ import { parse } from './validation';
 
 const {
   exercises,
+  exerciseLoadIncrements,
   exerciseCategoryLinks,
   exerciseTagLinks,
   exerciseMuscles,
@@ -300,6 +303,51 @@ async function loadOwn(ctx: RequestContext, id: string) {
   return row;
 }
 
+/**
+ * Sets (or clears, with null) the centre's own load increment for an exercise, global or its own
+ * (restructure phase 13). The programming engine uses it for load progressions. Audited.
+ */
+async function setExerciseLoadIncrement_(ctx: RequestContext, id: string, input: unknown) {
+  const { incrementKg } = parse(exerciseLoadIncrementSchema, input);
+  requirePermission(ctx, 'library:write');
+  await loadVisible(ctx, id);
+  const key = and(
+    eq(exerciseLoadIncrements.exerciseId, id),
+    eq(exerciseLoadIncrements.organizationId, ctx.actor.organizationId),
+  );
+  const [before] = await ctx.db
+    .select({ kg: exerciseLoadIncrements.incrementKg })
+    .from(exerciseLoadIncrements)
+    .where(key);
+  if (incrementKg == null) await ctx.db.delete(exerciseLoadIncrements).where(key);
+  else
+    await ctx.db
+      .insert(exerciseLoadIncrements)
+      .values({
+        organizationId: ctx.actor.organizationId,
+        exerciseId: id,
+        incrementKg: String(incrementKg),
+        updatedBy: ctx.actor.userId,
+      })
+      .onConflictDoUpdate({
+        target: [exerciseLoadIncrements.organizationId, exerciseLoadIncrements.exerciseId],
+        set: {
+          incrementKg: String(incrementKg),
+          updatedBy: ctx.actor.userId,
+          updatedAt: ctx.now(),
+        },
+      });
+  await writeAudit(ctx.db, ctx, {
+    action: 'update',
+    entityType: 'exercise_load_increment',
+    entityId: id,
+    changes: [
+      { field: 'incrementKg', before: before ? Number(before.kg) : null, after: incrementKg },
+    ],
+  });
+  return { incrementKg };
+}
+
 async function getExercise_(ctx: RequestContext, id: string) {
   requirePermission(ctx, 'library:read');
   const e = await loadVisible(ctx, id);
@@ -338,6 +386,7 @@ async function getExercise_(ctx: RequestContext, id: string) {
       .select({
         equipmentId: equipment.id,
         name: equipment.name,
+        slug: equipment.slug,
         optional: exerciseEquipment.optional,
       })
       .from(exerciseEquipment)
@@ -412,9 +461,25 @@ async function getExercise_(ctx: RequestContext, id: string) {
           .where(eq(prescriptionProfiles.id, e.prescriptionProfileId))
       )[0] ?? null)
     : null;
+  const [own] = await ctx.db
+    .select({ kg: exerciseLoadIncrements.incrementKg })
+    .from(exerciseLoadIncrements)
+    .where(
+      and(
+        eq(exerciseLoadIncrements.exerciseId, id),
+        eq(exerciseLoadIncrements.organizationId, ctx.actor.organizationId),
+      ),
+    );
+  const defaultKg = loadIncrementFor(eq_.map((x) => x.slug));
   return {
     ...e,
     isGlobal: e.organizationId === null,
+    /** Smallest load jump the programming engine proposes for this exercise (phase 13). */
+    loadIncrement: {
+      kg: own ? Number(own.kg) : defaultKg,
+      custom: !!own,
+      defaultKg,
+    },
     pattern: pattern ? { id: pattern.id, name: pattern.name, family: pattern.family } : null,
     profile: profileKeys,
     categories: cats,
@@ -1304,6 +1369,7 @@ async function removeExerciseTolerance_(
 export const listLibraryTaxonomies = secured(listLibraryTaxonomies_);
 export const listExercises = secured(listExercises_);
 export const getExercise = secured(getExercise_);
+export const setExerciseLoadIncrement = secured(setExerciseLoadIncrement_);
 export const createExercise = secured(createExercise_);
 export const updateExercise = secured(updateExercise_);
 export const forkExercise = secured(forkExercise_);

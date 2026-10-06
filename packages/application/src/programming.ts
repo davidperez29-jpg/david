@@ -47,7 +47,13 @@ import { onClientActivity } from './client-events';
 import type { RequestContext } from './context';
 import { runDecision } from './decision';
 import { organizationRules } from './monitoring';
-import { loadPlan, materialize, resolveExercises, writeRevision } from './planning';
+import {
+  loadPlan,
+  materialize,
+  replaceFutureSessions,
+  resolveExercises,
+  writeRevision,
+} from './planning';
 import { secured } from './rls';
 import { parse } from './validation';
 
@@ -59,6 +65,7 @@ const {
   consents,
   decisionRuns,
   equipment,
+  exerciseLoadIncrements,
   exerciseEquipment,
   exerciseFeedback,
   exerciseTolerances,
@@ -322,10 +329,72 @@ async function decideLinkedRecommendation(
     );
 }
 
-/** Accepting turns the proposal into a CLIENT_PLAN draft; the active plan is never touched. */
+async function applyProposalAsRevision(
+  ctx: RequestContext,
+  p: Awaited<ReturnType<typeof proposalPlan>>,
+  reason: string | null,
+) {
+  if (!p.proposalOfPlanId)
+    throw new DomainError(
+      'conflict',
+      'Esta propuesta no se generó sobre un plan activo: acéptala como plan en borrador.',
+      { mode: ['no_active_plan'] },
+    );
+  // The active plan must still be active and editable (loadPlan refuses completed or archived).
+  const active = await loadPlan(ctx, p.proposalOfPlanId, 'plans:write');
+  if (active.status !== 'active')
+    throw new DomainError(
+      'conflict',
+      'El plan para el que se propuso ya no está activo: acéptala como plan en borrador.',
+      { mode: ['no_active_plan'] },
+    );
+  const from = localDate(ctx.now());
+  const result = await ctx.db.transaction(async (tx) => {
+    const r = await replaceFutureSessions(ctx, tx, active, p.id, from);
+    if (!r.copied)
+      throw new DomainError(
+        'validation',
+        'La propuesta no tiene sesiones dentro de las semanas que le quedan al plan activo.',
+        { mode: ['nothing_to_apply'] },
+      );
+    const revision = await writeRevision(
+      ctx,
+      tx,
+      active,
+      reason ? `Propuesta del motor aplicada: ${reason}` : 'Propuesta del motor aplicada',
+    );
+    await tx
+      .update(trainingPlans)
+      .set({ status: 'archived', version: p.version + 1, updatedBy: ctx.actor.userId })
+      .where(eq(trainingPlans.id, p.id));
+    await tx
+      .update(trainingPlans)
+      .set({ version: active.version + 1, updatedBy: ctx.actor.userId })
+      .where(eq(trainingPlans.id, active.id));
+    await writeAudit(tx, ctx, {
+      action: 'update',
+      entityType: 'training_plan',
+      entityId: active.id,
+      clientId: active.clientId,
+      changes: { appliedProposal: p.id, from, revision, ...r },
+      reason: reason ?? 'Propuesta del motor aplicada como revisión',
+    });
+    return { id: active.id, revision, ...r };
+  });
+  await decideLinkedRecommendation(ctx, p.recommendationId, 'accepted', reason);
+  return result;
+}
+
+/**
+ * Accepting a proposal, always by the trainer:
+ * - draft (default): it becomes a CLIENT_PLAN draft; the active plan is not touched;
+ * - revision (phase 13): its sessions from today replace the unrecorded future sessions of the
+ *   active plan it was proposed for, as a new revision of that plan; the proposal is archived.
+ */
 async function acceptPlanProposal_(ctx: RequestContext, planId: string, input: unknown = {}) {
   const d = parse(acceptPlanProposalSchema, input);
   const p = await proposalPlan(ctx, planId);
+  if (d.mode === 'revision') return applyProposalAsRevision(ctx, p, d.reason ?? null);
   const name = d.name ?? p.name.replace(/^Propuesta · /, '');
   await ctx.db
     .update(trainingPlans)
@@ -493,6 +562,21 @@ export async function buildProgrammingInput(app: App, clientId: string, planId: 
         .innerJoin(equipment, eq(equipment.id, exerciseEquipment.equipmentId))
         .where(inArray(exerciseEquipment.exerciseId, exIds))
     : [];
+  // The centre's own load increment per exercise (phase 13), else the default by equipment.
+  const incRows = exIds.length
+    ? await db
+        .select({
+          exerciseId: exerciseLoadIncrements.exerciseId,
+          kg: exerciseLoadIncrements.incrementKg,
+        })
+        .from(exerciseLoadIncrements)
+        .where(
+          and(
+            inArray(exerciseLoadIncrements.exerciseId, exIds),
+            sql`${exerciseLoadIncrements.organizationId} = (SELECT organization_id FROM clients WHERE id = ${clientId})`,
+          ),
+        )
+    : [];
   const history: ExerciseHistory[] = exIds.map((id) => {
     const mine = logs.filter((l) => l.exerciseId === id);
     const bySession = [...new Set(mine.map((l) => l.sessionId))];
@@ -500,6 +584,7 @@ export async function buildProgrammingInput(app: App, clientId: string, planId: 
       exerciseId: id,
       exerciseName: mine[0]!.name,
       equipment: eqRows.filter((r) => r.exerciseId === id).map((r) => r.slug),
+      incrementKg: num(incRows.find((r) => r.exerciseId === id)?.kg),
       sessions: bySession.map((sid) => {
         const ls = mine.filter((l) => l.sessionId === sid);
         const f = ls[0]!;

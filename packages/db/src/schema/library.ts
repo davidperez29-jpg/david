@@ -5,6 +5,7 @@ import {
   index,
   integer,
   jsonb,
+  numeric,
   pgEnum,
   pgTable,
   primaryKey,
@@ -15,7 +16,7 @@ import {
   uuid,
 } from 'drizzle-orm/pg-core';
 import { authorship, id, timestamps, version } from './_common';
-import { orgScoped } from './_org';
+import { orgOwned, orgScoped } from './_org';
 import { methods } from './science';
 import { equipment } from './catalog';
 
@@ -384,4 +385,26 @@ export const exerciseMethodLinks = pgTable(
     extra: jsonb('extra'),
   },
   (t) => [primaryKey({ columns: [t.exerciseId, t.methodId] })],
+);
+
+/**
+ * The smallest load jump an organization uses for an exercise (restructure phase 13), e.g. 1 kg
+ * plates on a barbell or a stack of 5 kg. Without a row the programming engine uses the default
+ * by equipment (`loadIncrementFor`). Works for global exercises too: the row is the centre's own.
+ */
+export const exerciseLoadIncrements = pgTable(
+  'exercise_load_increments',
+  {
+    organizationId: orgOwned(),
+    exerciseId: uuid('exercise_id')
+      .notNull()
+      .references(() => exercises.id, { onDelete: 'cascade' }),
+    incrementKg: numeric('increment_kg').notNull(),
+    updatedBy: uuid('updated_by'),
+    ...timestamps(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.organizationId, t.exerciseId] }),
+    check('exercise_load_increments_kg_ck', sql`${t.incrementKg} > 0 AND ${t.incrementKg} <= 50`),
+  ],
 );

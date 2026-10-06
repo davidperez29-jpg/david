@@ -114,6 +114,7 @@
     "exercise-progressions POST authenticated",
     "exercises/[exerciseId]/duplicate POST authenticated",
     "exercises/[exerciseId]/fork POST authenticated",
+    "exercises/[exerciseId]/load-increment PUT authenticated",
     "exercises/[exerciseId]/media/[mediaId] DELETE authenticated",
     "exercises/[exerciseId]/media/[mediaId]/verify POST authenticated",
     "exercises/[exerciseId]/methods PUT authenticated",
@@ -287,6 +288,14 @@
             {
               "type": "null"
             }
+          ]
+        },
+        "mode": {
+          "default": "draft",
+          "type": "string",
+          "enum": [
+            "draft",
+            "revision"
           ]
         }
       }
@@ -3643,6 +3652,26 @@
       },
       "required": [
         "name"
+      ]
+    },
+    "exerciseLoadIncrementSchema": {
+      "type": "object",
+      "properties": {
+        "incrementKg": {
+          "anyOf": [
+            {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 50
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "incrementKg"
       ]
     },
     "exerciseMethodsSchema": {
