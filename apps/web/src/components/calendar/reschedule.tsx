@@ -156,7 +156,7 @@ export function MoveSessionForm({
           onChange={(e) => setValue(e.target.value)}
           className="h-7 rounded border border-border bg-bg px-1"
         />
-        <button className="h-7 rounded border border-border px-2">Mover</button>
+        <button className="h-7 rounded border border-border px-2">Mover a ese día</button>
       </form>
     </details>
   );

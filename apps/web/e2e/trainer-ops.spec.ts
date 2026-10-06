@@ -51,7 +51,7 @@ test('the calendar moves a pending session to another day: «Mover» and drag an
   // 1) Keyboard-friendly form.
   await movable.first().locator('summary', { hasText: 'Mover' }).click();
   await movable.first().locator('input[type="date"]').fill(target);
-  await movable.first().getByRole('button', { name: 'Mover' }).click();
+  await movable.first().getByRole('button', { name: 'Mover a ese día' }).click();
   await expect(page.getByRole('status')).toHaveText(/Sesión movida al/);
   await expect(session(target)).toBeVisible();
 
