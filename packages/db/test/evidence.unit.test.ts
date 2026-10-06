@@ -15,10 +15,41 @@ describe('evidence seed files', () => {
     const sources = data.topics.flatMap((t) => t.sources);
     expect(sources.length).toBeGreaterThan(100);
     for (const s of sources) {
+      expect(s.title.length, s.key).toBeGreaterThan(5);
+      // Phase 9: a reference cited in a user's document that was not found has no identifier
+      // at all (never a guessed DOI/PMID); every other source is PubMed-identified.
+      if (s.verificationStatus === 'unverifiable' || s.verificationStatus === 'cited_in_document') {
+        expect(s.pmid ?? null, s.key).toBeNull();
+        expect(s.doi ?? null, s.key).toBeNull();
+        expect(s.limitations, s.key).toBeTruthy();
+        continue;
+      }
       expect(s.pmid, s.key).toMatch(/^\d{1,9}$/);
       if (s.doi) expect(s.doi, s.key).toMatch(/^10\.\d{4,9}\/\S+$/);
-      expect(s.title.length, s.key).toBeGreaterThan(5);
     }
+  });
+
+  it('phase 9: unverifiable references are never cited by a finding; searches select known sources', () => {
+    for (const t of data.topics) {
+      const unverifiable = new Set(
+        t.sources
+          .filter((s) => s.verificationStatus && s.verificationStatus !== 'retracted')
+          .map((s) => s.key),
+      );
+      for (const f of t.findings) expect(unverifiable.has(f.source), f.key).toBe(false);
+      const keys = new Set(t.sources.map((s) => s.key));
+      for (const q of t.searches ?? []) {
+        expect(q.query.trim().length, q.key).toBeGreaterThan(3);
+        expect(q.searchedOn, q.key).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+        for (const k of q.selected ?? []) expect(keys.has(k), `${q.key} → ${k}`).toBe(true);
+      }
+    }
+    const club = data.topics.find((t) => t.topic === 'club_references')!;
+    expect(club.sources.filter((s) => !s.verificationStatus).length).toBeGreaterThan(0);
+    expect(
+      club.sources.filter((s) => s.verificationStatus === 'unverifiable').length,
+    ).toBeGreaterThan(0);
+    expect(club.searches!.length).toBeGreaterThan(0);
   });
 
   it('findings use catalogued outcomes/populations, cite their topic sources and carry a quote', () => {

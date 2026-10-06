@@ -28,6 +28,7 @@ import { schema, type Executor } from '@tp/db';
 import {
   BODY_REGIONS,
   canAdvance,
+  canSupport,
   CASE_STATUS_LABELS,
   caseStatus,
   CRITERION_EVIDENCE,
@@ -113,14 +114,18 @@ async function sourcesOf(db: Executor, ids: string[]) {
       title: evidenceSources.title,
       doi: evidenceSources.doi,
       pmid: evidenceSources.pmid,
+      verificationStatus: evidenceSources.verificationStatus,
     })
     .from(evidenceSources)
     .where(inArray(evidenceSources.id, [...new Set(ids)]));
+  // Phase 9: only a verified source is ever shown as support.
   return new Map(
-    rows.map((s) => [
-      s.id,
-      `${citation(s)}. ${s.title}${s.doi ? ` doi:${s.doi}` : ''}${s.pmid ? ` · PMID ${s.pmid}` : ''}`,
-    ]),
+    rows
+      .filter((s) => canSupport(s.verificationStatus))
+      .map((s) => [
+        s.id,
+        `${citation(s)}. ${s.title}${s.doi ? ` doi:${s.doi}` : ''}${s.pmid ? ` · PMID ${s.pmid}` : ''}`,
+      ]),
   );
 }
 
@@ -197,6 +202,7 @@ async function protocolDetail(db: Executor, protocolId: string) {
     painThresholdBasis: p.painThresholdBasis,
     limitations: p.limitations,
     sources: cites(p.sourceIds),
+    sourceIds: p.sourceIds,
     phases: phases.map((ph, i) => ({
       id: ph.id,
       index: i,
@@ -227,6 +233,7 @@ async function protocolDetail(db: Executor, protocolId: string) {
           evidence: c.evidence,
           evidenceLabel: CRITERION_EVIDENCE[c.evidence],
           sources: cites(c.sourceIds),
+          sourceIds: c.sourceIds,
           limitations: c.limitations,
         })),
     })),
@@ -566,6 +573,7 @@ async function getInjury_(ctx: RequestContext, clientId: string, injuryId: strin
           painThresholdBasis: c.protocol.painThresholdBasis,
           limitations: c.protocol.limitations,
           sources: c.protocol.sources,
+          sourceIds: c.protocol.sourceIds,
           phases: c.protocol.phases.map((p) => ({ id: p.id, name: p.name })),
         }
       : null,

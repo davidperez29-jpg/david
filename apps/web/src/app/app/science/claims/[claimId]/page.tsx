@@ -42,6 +42,12 @@ export default async function ClaimPage({ params }: { params: Promise<{ claimId:
           <LevelBadge level={c.evidenceLevel} />
           <StatusBadge status={c.status} />
           <Badge>{label('epistemic', c.epistemicType)}</Badge>
+          <Badge tone={c.evidenceKind === 'incidence_reduction' ? 'ok' : 'neutral'}>
+            {c.evidenceKind
+              ? label('evidenceKind', c.evidenceKind)
+              : 'Tipo de evidencia sin clasificar'}
+          </Badge>
+          <Badge>{label('origin', c.origin)}</Badge>
           <span className="text-muted">
             Confianza {label('confidence', c.confidence).toLowerCase()}
           </span>

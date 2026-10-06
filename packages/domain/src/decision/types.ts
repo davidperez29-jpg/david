@@ -118,7 +118,16 @@ export interface ClaimFact {
   appliesTo: string[];
   notFor: string[];
   /** Verified sources with DOI/PMID, for the "Evidencia" line. */
-  sources: { citation: string; doi: string | null; pmid: string | null }[];
+  sources: {
+    citation: string;
+    doi: string | null;
+    pmid: string | null;
+    /** Restructure phase 9: who was studied (§32). */
+    population?: string | null;
+  }[];
+  /** Restructure phase 9: what the evidence measured and its limitations (§32). */
+  evidenceKind?: string | null;
+  limitations?: string | null;
 }
 
 export interface MethodFact {
@@ -177,6 +186,8 @@ export interface Explanation {
     statement: string;
     confidence: Confidence;
     sources: ClaimFact['sources'];
+    evidenceKind?: string | null;
+    limitations?: string | null;
   }[];
   applicability: string[];
   limitations: string[];

@@ -30,6 +30,8 @@ import {
   type QaIssue,
   type QaSource,
   type StudyDesign,
+  evidenceKindIssue,
+  type EvidenceKind,
 } from '@tp/domain';
 import { and, asc, count, desc, eq, ilike, inArray, isNull, or, sql, type SQL } from 'drizzle-orm';
 import type { AnyPgColumn } from 'drizzle-orm/pg-core';
@@ -587,6 +589,7 @@ function claimQa(
     status: string;
     evidenceLevel: EvidenceLevel;
     applicability: unknown;
+    evidenceKind?: EvidenceKind | null;
   },
   ev: Awaited<ReturnType<typeof claimEvidenceRows>>,
 ): QaIssue[] {
@@ -625,6 +628,7 @@ function claimQa(
       status: c.status,
       level: c.evidenceLevel,
       appliesTo,
+      evidenceKind: c.evidenceKind ?? null,
       findings: ev.map((e) => ({ findingKey: e.findingId, role: e.role })),
     },
     findings,
@@ -676,9 +680,16 @@ async function assertFindingsVisible(ctx: RequestContext, tx: Executor, ids: str
     throw new DomainError('validation', 'Hallazgo desconocido.', { findings: ['unknown'] });
 }
 
+/** «Reduce el riesgo de lesión» needs incidence evidence (SCIENCE_SYSTEM.md §3). */
+function checkEvidenceKind(statement: string, kind: EvidenceKind | null | undefined) {
+  const issue = evidenceKindIssue(statement, kind ?? null);
+  if (issue) throw new DomainError('validation', issue, { evidenceKind: [issue] });
+}
+
 async function createClaim_(ctx: RequestContext, input: unknown): Promise<{ id: string }> {
   const d = parse(claimSchema, input);
   orgWrite(ctx);
+  checkEvidenceKind(d.statement, d.evidenceKind);
   return ctx.db.transaction(async (tx) => {
     await assertFindingsVisible(
       ctx,
@@ -696,6 +707,8 @@ async function createClaim_(ctx: RequestContext, input: unknown): Promise<{ id: 
         confidence: d.confidence,
         limitations: d.limitations ?? null,
         applicability: { appliesTo: d.appliesTo, notFor: d.notFor },
+        evidenceKind: d.evidenceKind ?? null,
+        origin: d.origin ?? (d.findings.length ? 'external_literature' : 'practical_proposal'),
         status: 'draft',
         createdBy: ctx.actor.userId,
       })
@@ -739,6 +752,12 @@ async function updateClaim_(ctx: RequestContext, id: string, input: unknown): Pr
         appliesTo: appliesTo ?? prevApp.appliesTo ?? [],
         notFor: notFor ?? prevApp.notFor ?? [],
       };
+    checkEvidenceKind(
+      (values.statement as string | undefined) ?? c.statement,
+      values.evidenceKind !== undefined
+        ? (values.evidenceKind as EvidenceKind | null)
+        : c.evidenceKind,
+    );
     // Editing a published claim sends it back to draft: it must be reviewed again.
     await tx
       .update(knowledgeClaims)

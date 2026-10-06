@@ -7,6 +7,7 @@ import {
   getMethod,
   getSource,
   listClaims,
+  listSources,
   listMethods,
   scientificQaReport,
   setClaimStatus,
@@ -55,7 +56,10 @@ describe('global scientific library seed', () => {
     const src = await getSource(o.admin, retracted[0]!.target.key);
     expect(src.pmid).toBe('25968227');
     expect(src.findings).toHaveLength(0);
-    expect(r.totals.verifiedSources).toBe(r.totals.sources - 1);
+    // Phase 9: the user's documents' references that could not be found are not verified either.
+    const unverifiable = await listSources(o.admin, { status: 'unverifiable', limit: 100 });
+    expect(unverifiable.total).toBeGreaterThan(0);
+    expect(r.totals.verifiedSources).toBe(r.totals.sources - 1 - unverifiable.total);
   });
 
   it('global content is read-only for organizations, but usable from their exercises', async () => {

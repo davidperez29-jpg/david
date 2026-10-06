@@ -54,6 +54,24 @@ export const verificationStatus = pgEnum('verification_status', [
   'unverified',
   'retracted',
   'non_scientific',
+  // Restructure phase 9: cited in a user's document and not verified yet / not found anywhere.
+  'cited_in_document',
+  'unverifiable',
+]);
+/** What the claim's evidence measured (restructure phase 9, SCIENCE_SYSTEM.md §3). */
+export const claimEvidenceKind = pgEnum('claim_evidence_kind', [
+  'incidence_reduction',
+  'risk_factor_change',
+  'performance',
+  'mechanism',
+  'practical_criterion',
+  'insufficient',
+]);
+/** Where it comes from (§2): the trainer's documents, the literature, or practice. */
+export const evidenceOrigin = pgEnum('evidence_origin', [
+  'user_document',
+  'external_literature',
+  'practical_proposal',
 ]);
 export const sourceAccess = pgEnum('source_access', [
   'full_text',
@@ -165,6 +183,9 @@ export const evidenceSources = pgTable(
     limitations: text('limitations'),
     practicalApplication: text('practical_application'),
     verificationStatus: verificationStatus('verification_status').notNull().default('unverified'),
+    origin: evidenceOrigin('origin').notNull().default('external_literature'),
+    /** The user's document that cites it (anonymized name), when the origin is a document. */
+    citedIn: text('cited_in'),
     access: sourceAccess('access').notNull().default('not_accessed'),
     verifiedAt: timestamp('verified_at', { withTimezone: true }),
     verifiedBy: uuid('verified_by'),
@@ -249,6 +270,8 @@ export const knowledgeClaims = pgTable(
     confidence: confidence('confidence').notNull().default('very_low'),
     limitations: text('limitations'),
     applicability: jsonb('applicability'),
+    evidenceKind: claimEvidenceKind('evidence_kind'),
+    origin: evidenceOrigin('origin').notNull().default('external_literature'),
     status: claimStatus('status').notNull().default('draft'),
     reviewedBy: uuid('reviewed_by'),
     reviewedAt: timestamp('reviewed_at', { withTimezone: true }),
@@ -374,5 +397,43 @@ export const evidenceReviews = pgTable(
       'evidence_reviews_outcome_ck',
       sql`${t.outcome} IN ('approved','changes_requested','rejected')`,
     ),
+  ],
+);
+
+/**
+ * Specific searches (restructure phase 9, SCIENCE_SYSTEM.md §4): what was searched, for which
+ * objective, population, injury, phase, method, test or criterion, and what was selected.
+ */
+export const scienceSearches = pgTable(
+  'science_searches',
+  {
+    id: id(),
+    organizationId: orgScoped(),
+    searchKey: text('search_key'),
+    topic: text('topic').notNull(),
+    objective: text('objective').notNull(),
+    population: text('population'),
+    injury: text('injury'),
+    phase: text('phase'),
+    method: text('method'),
+    test: text('test'),
+    criterion: text('criterion'),
+    query: text('query').notNull(),
+    database: text('database').notNull().default('PubMed'),
+    searchedOn: date('searched_on').notNull(),
+    reviewed: integer('reviewed'),
+    selectedSourceIds: uuid('selected_source_ids')
+      .array()
+      .notNull()
+      .default(sql`'{}'::uuid[]`),
+    reason: text('reason'),
+    ...timestamps(),
+    ...authorship(),
+  },
+  (t) => [
+    uniqueIndex('science_searches_key_uq')
+      .on(orgKey(t.organizationId), t.searchKey)
+      .where(sql`${t.searchKey} IS NOT NULL`),
+    index('science_searches_topic_idx').on(t.topic, t.searchedOn),
   ],
 );

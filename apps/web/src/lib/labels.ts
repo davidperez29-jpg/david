@@ -258,6 +258,21 @@ export const LABELS = {
     unverified: 'Sin verificar',
     retracted: 'Retractada',
     non_scientific: 'No científica',
+    cited_in_document: 'Citada en un documento (pendiente)',
+    unverifiable: 'No verificable',
+  },
+  evidenceKind: {
+    incidence_reduction: 'Reducción de la incidencia',
+    risk_factor_change: 'Cambio en un factor de riesgo',
+    performance: 'Rendimiento',
+    mechanism: 'Mecanismo o plausibilidad',
+    practical_criterion: 'Criterio práctico',
+    insufficient: 'Evidencia insuficiente',
+  },
+  origin: {
+    user_document: 'Documento del entrenador',
+    external_literature: 'Literatura externa',
+    practical_proposal: 'Propuesta práctica',
   },
   sourceAccess: {
     full_text: 'Texto completo',

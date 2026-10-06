@@ -49,8 +49,12 @@ export function Why({ e }: { e: Explanation }) {
                   <li key={ev.claimKey}>
                     {ev.statement}{' '}
                     <span className="text-xs text-muted">
-                      (confianza {label('confidence', ev.confidence).toLowerCase()})
+                      (confianza {label('confidence', ev.confidence).toLowerCase()}
+                      {ev.evidenceKind ? ` · ${ev.evidenceKind.toLowerCase()}` : ''})
                     </span>
+                    {ev.limitations ? (
+                      <p className="text-xs text-muted">Limitaciones: {ev.limitations}</p>
+                    ) : null}
                     {ev.sources.length ? (
                       <ul className="pl-4 text-xs text-muted">
                         {ev.sources.map((s, i) => (
@@ -70,6 +74,7 @@ export function Why({ e }: { e: Explanation }) {
                               </>
                             ) : null}
                             {s.pmid ? ` · PMID ${s.pmid}` : null}
+                            {s.population ? ` · Población: ${s.population}` : null}
                           </li>
                         ))}
                       </ul>

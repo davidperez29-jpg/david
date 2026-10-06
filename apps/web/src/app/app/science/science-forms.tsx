@@ -710,6 +710,8 @@ export function ClaimForm({
     epistemicType: claim?.epistemicType ?? 'inference',
     confidence: claim?.confidence ?? 'moderate',
     limitations: claim?.limitations ?? '',
+    evidenceKind: claim?.evidenceKind ?? '',
+    origin: claim?.origin ?? 'external_literature',
   });
   const [links, setLinks] = useState<{ findingId: string; role: string }[]>(
     claim
@@ -738,6 +740,7 @@ export function ClaimForm({
           ...f,
           scope: nul(f.scope),
           limitations: nul(f.limitations),
+          evidenceKind: f.evidenceKind || null,
           appliesTo,
           findings: links,
         };
@@ -782,6 +785,21 @@ export function ClaimForm({
         </Field>
         <Field label="Confianza" htmlFor="c-confidence">
           <Select {...bind('confidence')} options={opts(LABELS.confidence)} />
+        </Field>
+        <Field
+          label="Tipo de evidencia"
+          htmlFor="c-evidenceKind"
+          error={a.fieldError('evidenceKind')}
+          hint="Solo «Reducción de la incidencia» permite decir que algo reduce lesiones."
+        >
+          <Select
+            {...bind('evidenceKind')}
+            options={opts(LABELS.evidenceKind)}
+            placeholder="Sin clasificar"
+          />
+        </Field>
+        <Field label="Origen" htmlFor="c-origin">
+          <Select {...bind('origin')} options={opts(LABELS.origin)} />
         </Field>
       </div>
       <Field label="Limitaciones" htmlFor="c-limitations">

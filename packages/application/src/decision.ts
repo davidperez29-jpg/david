@@ -22,6 +22,7 @@ import {
   type Explanation,
   type KnowledgeSnapshot,
   type MetricFact,
+  EVIDENCE_KINDS,
 } from '@tp/domain';
 import { and, asc, desc, eq, inArray, isNull, ne, or, sql } from 'drizzle-orm';
 import type { AnyPgColumn } from 'drizzle-orm/pg-core';
@@ -151,10 +152,18 @@ async function knowledgeSnapshot(
         journal: evidenceSources.journal,
         doi: evidenceSources.doi,
         pmid: evidenceSources.pmid,
+        population: evidenceSources.populationSummary,
       })
       .from(claimEvidence)
       .innerJoin(evidenceFindings, eq(evidenceFindings.id, claimEvidence.findingId))
-      .innerJoin(evidenceSources, eq(evidenceSources.id, evidenceFindings.sourceId)),
+      .innerJoin(evidenceSources, eq(evidenceSources.id, evidenceFindings.sourceId))
+      // Phase 9: only verified sources that support the claim are shown as its backing.
+      .where(
+        and(
+          eq(claimEvidence.role, 'supports'),
+          inArray(evidenceSources.verificationStatus, ['verified', 'verified_with_corrections']),
+        ),
+      ),
     db.select({ id: populations.id, slug: populations.slug }).from(populations),
     db.select().from(methods).where(visible(ctx, methods.organizationId)),
     db.select().from(methodVariables),
@@ -205,6 +214,7 @@ async function knowledgeSnapshot(
             `${authors[0] ?? 'Anónimo'}${authors.length > 1 ? ' et al.' : ''} ${s.year ?? ''} · ${s.journal ?? ''}`.trim(),
           doi: s.doi,
           pmid: s.pmid,
+          population: s.population,
         };
       });
     claims[c.key] = {
@@ -214,6 +224,8 @@ async function knowledgeSnapshot(
       appliesTo: (app.appliesTo ?? []).map((x) => popSlug.get(x) ?? x),
       notFor: (app.notFor ?? []).map((x) => popSlug.get(x) ?? x),
       sources: [...new Map(srcs.map((x) => [x.doi ?? x.pmid ?? x.citation, x])).values()],
+      evidenceKind: c.evidenceKind ? EVIDENCE_KINDS[c.evidenceKind] : null,
+      limitations: c.limitations,
     };
   }
   const methodFacts = methodRows.map((m) => {

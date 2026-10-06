@@ -1,5 +1,7 @@
 import Link from 'next/link';
 import { getExercise, listLibraryTaxonomies, listMethods } from '@tp/application';
+import { evidenceCards, type EvidenceCards } from '@tp/application';
+import { SourceButton } from '@/components/science/source-button';
 import { DomainError } from '@tp/domain';
 import { notFound } from 'next/navigation';
 import { BodyMap } from '@/components/library/body-map';
@@ -58,7 +60,11 @@ export default async function ExercisePage({
           <strong>Notas de importación:</strong> {ex.reviewNotes}
         </p>
       ) : null}
-      <ExerciseSummary ex={ex} methods={await listMethods(ctx)} />
+      <ExerciseSummary
+        ex={ex}
+        methods={await listMethods(ctx)}
+        evidence={await evidenceCards(ctx, { methodIds: ex.methodIds })}
+      />
       <ExerciseActions
         exercise={{
           id: ex.id,
@@ -107,7 +113,15 @@ type Method = Awaited<ReturnType<typeof listMethods>>[number];
  * What the trainer looks at first (restructure §11): silhouette, categories, muscles, video,
  * progressions and regressions, and the references (methods with their evidence).
  */
-function ExerciseSummary({ ex, methods }: { ex: Ex; methods: Method[] }) {
+function ExerciseSummary({
+  ex,
+  methods,
+  evidence,
+}: {
+  ex: Ex;
+  methods: Method[];
+  evidence: EvidenceCards;
+}) {
   const silhouette = ex.media.find((m) => m.type === 'silhouette' && m.status !== 'replaced');
   const videos = ex.media.filter((m) => m.type === 'video' && m.status !== 'replaced');
   const verified = videos.find((v) => v.status === 'verified');
@@ -210,6 +224,11 @@ function ExerciseSummary({ ex, methods }: { ex: Ex; methods: Method[] }) {
                 Sin métodos enlazados: la dosis se apoya en el criterio del entrenador.
               </span>
             )}
+            {refs.length ? (
+              <div className="mt-1">
+                <SourceButton evidence={evidence} />
+              </div>
+            ) : null}
           </dd>
           {ex.clientDescription ? (
             <>

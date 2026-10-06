@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { optionalText, paginationSchema } from './common';
+import { isoDate, nonEmpty, optionalText, paginationSchema } from './common';
 
 export const STUDY_DESIGNS = [
   'guideline',
@@ -153,6 +153,19 @@ const claimFields = {
   appliesTo: populationSlugs,
   notFor: populationSlugs,
   findings: claimEvidenceLinks,
+  /** Restructure phase 9: what the evidence measured, and where the claim comes from. */
+  evidenceKind: z
+    .enum([
+      'incidence_reduction',
+      'risk_factor_change',
+      'performance',
+      'mechanism',
+      'practical_criterion',
+      'insufficient',
+    ])
+    .nullable()
+    .optional(),
+  origin: z.enum(['user_document', 'external_literature', 'practical_proposal']).optional(),
 };
 export const claimSchema = z.object({
   ...claimFields,
@@ -233,3 +246,21 @@ export const listScienceSchema = paginationSchema.extend({
 });
 
 export const exerciseMethodsSchema = z.object({ methodIds: z.array(z.uuid()).max(20) });
+
+/** A specific search logged by the centre (restructure phase 9, SCIENCE_SYSTEM.md §4). */
+export const scienceSearchSchema = z.object({
+  topic: nonEmpty(80),
+  objective: nonEmpty(300),
+  population: optionalText(200),
+  injury: optionalText(200),
+  phase: optionalText(200),
+  method: optionalText(200),
+  test: optionalText(200),
+  criterion: optionalText(200),
+  query: nonEmpty(1000),
+  database: z.string().trim().min(1).max(60).default('PubMed'),
+  searchedOn: isoDate,
+  reviewed: z.coerce.number().int().min(0).max(100000).nullable().optional(),
+  selectedSourceIds: z.array(z.uuid()).max(100).default([]),
+  reason: optionalText(1000),
+});

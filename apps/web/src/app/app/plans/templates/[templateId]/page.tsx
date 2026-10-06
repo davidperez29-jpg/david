@@ -1,5 +1,7 @@
 import Link from 'next/link';
 import { getClient, getPlanTemplate, listClients, listProgrammingProfiles } from '@tp/application';
+import { evidenceCards } from '@tp/application';
+import { SourceButton } from '@/components/science/source-button';
 import { DomainError } from '@tp/domain';
 import { notFound } from 'next/navigation';
 import {
@@ -118,6 +120,11 @@ export default async function TemplatePage({
               </li>
             ))}
           </ul>
+          <div className="mt-2">
+            <SourceButton
+              evidence={await evidenceCards(ctx, { methodIds: t.methods.map((m) => m.id) })}
+            />
+          </div>
           <p className="mt-2 text-xs text-muted">
             Las dosis siguen estos métodos; la elección de ejercicios, la ola de RIR y las descargas
             son recomendaciones prácticas (F). Es un punto de partida: adapta el plan al cliente.

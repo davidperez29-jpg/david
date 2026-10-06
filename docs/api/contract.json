@@ -203,6 +203,8 @@
     "science/methods POST authenticated",
     "science/qa GET authenticated",
     "science/reviews POST authenticated",
+    "science/searches GET authenticated",
+    "science/searches POST authenticated",
     "science/sources/[sourceId]/findings POST authenticated",
     "science/sources/[sourceId] GET authenticated",
     "science/sources/[sourceId] PATCH authenticated",
@@ -1197,6 +1199,32 @@
               "role"
             ]
           }
+        },
+        "evidenceKind": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "incidence_reduction",
+                "risk_factor_change",
+                "performance",
+                "mechanism",
+                "practical_criterion",
+                "insufficient"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "origin": {
+          "type": "string",
+          "enum": [
+            "user_document",
+            "external_literature",
+            "practical_proposal"
+          ]
         }
       },
       "required": [
@@ -6046,6 +6074,142 @@
         "name"
       ]
     },
+    "scienceSearchSchema": {
+      "type": "object",
+      "properties": {
+        "topic": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "objective": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "population": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 200
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "injury": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 200
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "phase": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 200
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "method": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 200
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "test": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 200
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "criterion": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 200
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "query": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "database": {
+          "default": "PubMed",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 60
+        },
+        "searchedOn": {
+          "type": "string",
+          "format": "date",
+          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+        },
+        "reviewed": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "selectedSourceIds": {
+          "default": [],
+          "maxItems": 100,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          }
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 1000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "topic",
+        "objective",
+        "query",
+        "searchedOn"
+      ]
+    },
     "screeningSchema": {
       "type": "object",
       "properties": {
@@ -9691,6 +9855,32 @@
               "role"
             ]
           }
+        },
+        "evidenceKind": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "incidence_reduction",
+                "risk_factor_change",
+                "performance",
+                "mechanism",
+                "practical_criterion",
+                "insufficient"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "origin": {
+          "type": "string",
+          "enum": [
+            "user_document",
+            "external_literature",
+            "practical_proposal"
+          ]
         },
         "expectedVersion": {
           "type": "integer",

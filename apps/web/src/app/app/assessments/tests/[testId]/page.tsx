@@ -1,5 +1,7 @@
 import Link from 'next/link';
 import { getAssessmentTest } from '@tp/application';
+import { evidenceCards } from '@tp/application';
+import { SourceButton } from '@/components/science/source-button';
 import { DomainError } from '@tp/domain';
 import { notFound } from 'next/navigation';
 import { Identifiers, PubMedAttribution } from '@/components/science/evidence';
@@ -166,6 +168,12 @@ export default async function TestPage({ params }: { params: Promise<{ testId: s
               </li>
             ))}
           </ul>
+          <div className="mt-2">
+            <SourceButton
+              evidence={await evidenceCards(ctx, { sourceIds: t.sources.map((s) => s.id) })}
+              label="Ficha de las fuentes"
+            />
+          </div>
         </Card>
       ) : null}
     </div>

@@ -12,6 +12,9 @@
 import {
   claimLevel,
   gradeFinding,
+  inferEvidenceKind,
+  type EvidenceKind,
+  type Origin,
   qaClaim,
   type EvidenceLevel,
   type GradingRationale,
@@ -34,6 +37,7 @@ import {
   methodVariables,
   outcomes,
   populations,
+  scienceSearches,
 } from '../schema';
 
 type Role = 'supports' | 'contradicts' | 'context';
@@ -62,7 +66,32 @@ export interface SeedSource {
   limitations?: string | null;
   practicalApplication?: string | null;
   access?: 'abstract_only' | 'full_text';
-  verificationStatus?: 'retracted';
+  /**
+   * Omitted = verified (curated against PubMed). `unverifiable`: cited in a user's document and
+   * not found in PubMed/DOI; `cited_in_document`: not checked yet. Neither ever supports anything.
+   */
+  verificationStatus?: 'retracted' | 'unverifiable' | 'cited_in_document';
+  /** Restructure phase 9: defaults to the topic's origin. */
+  origin?: Origin;
+  citedIn?: string | null;
+}
+/** A specific search (SCIENCE_SYSTEM.md §4). `selected` are source keys of the same file. */
+export interface SeedSearch {
+  key: string;
+  topic?: string;
+  objective: string;
+  population?: string | null;
+  injury?: string | null;
+  phase?: string | null;
+  method?: string | null;
+  test?: string | null;
+  criterion?: string | null;
+  query: string;
+  database?: string;
+  searchedOn: string;
+  reviewed?: number | null;
+  selected?: string[];
+  reason?: string | null;
 }
 export interface SeedFinding {
   key: string;
@@ -91,13 +120,26 @@ export interface SeedClaim {
   limitations?: string | null;
   findings: { finding: string; role: Role }[];
   applicability?: { appliesTo?: string[]; notFor?: string[] };
+  /** Restructure phase 9: set by the curator, or inferred from what the findings measured. */
+  evidenceKind?: EvidenceKind;
+  origin?: Origin;
 }
 export interface SeedTopic {
   topic: string;
   sources: SeedSource[];
   findings: SeedFinding[];
   claims: SeedClaim[];
+  searches?: SeedSearch[];
+  /** Default origin of the file's sources and claims (`user_document` for the user's papers). */
+  origin?: Origin;
 }
+
+/** The user's own documents' references (verified in PubMed) keep that origin (§2). */
+const topicOrigin = (t: SeedTopic): Origin =>
+  t.origin ??
+  (t.topic === 'user_documents' || t.topic === 'club_references'
+    ? 'user_document'
+    : 'external_literature');
 export interface SeedMethod {
   slug: string;
   name: string;
@@ -141,6 +183,9 @@ export interface EvidenceSeedReport {
   methods: { total: number; published: number; draft: string[] };
   levels: Partial<Record<EvidenceLevel, number>>;
   qaErrors: QaIssue[];
+  /** Sources cited in documents that could not be verified (never used as support). */
+  unverifiable: number;
+  searches: number;
 }
 
 export const DEFAULT_EVIDENCE_VERIFICATION: EvidenceSeedOptions = {
@@ -178,11 +223,12 @@ export async function seedEvidence(
       .from(populations)
       .where(isNull(populations.organizationId));
     const outRows = await tx
-      .select({ id: outcomes.id, slug: outcomes.slug })
+      .select({ id: outcomes.id, slug: outcomes.slug, domain: outcomes.domain })
       .from(outcomes)
       .where(isNull(outcomes.organizationId));
     const pop = new Map(popRows.map((r) => [r.slug, r.id]));
     const out = new Map(outRows.map((r) => [r.slug, r.id]));
+    const outDomain = new Map(outRows.map((r) => [r.slug, r.domain]));
     const need = (m: Map<string, string>, slug: string, what: string) => {
       const id = m.get(slug);
       if (!id) throw new Error(`Evidence seed: unknown ${what} «${slug}»`);
@@ -194,7 +240,11 @@ export async function seedEvidence(
     const sourceRow = new Map<string, { status: string; design: StudyDesign; qa: QaSource }>(); // id → info
     for (const t of data.topics) {
       for (const s of t.sources) {
-        const status: 'verified' | 'retracted' = s.verificationStatus ?? 'verified';
+        const status: NonNullable<SeedSource['verificationStatus']> | 'verified' =
+          s.verificationStatus ?? 'verified';
+        const unverifiable = status === 'unverifiable' || status === 'cited_in_document';
+        if (unverifiable && (s.pmid || s.doi))
+          throw new Error(`Evidence seed: ${s.key} is ${status} but has an identifier`);
         const values = {
           title: s.title,
           authors: s.authors ?? [],
@@ -219,8 +269,15 @@ export async function seedEvidence(
           practicalApplication: s.practicalApplication ?? null,
           access: s.access ?? 'abstract_only',
           verificationStatus: status,
-          verificationMethod: opts.verificationMethod,
+          verificationMethod:
+            status === 'unverifiable'
+              ? 'Búsqueda en PubMed sin registro (por cita, título y autores).'
+              : status === 'cited_in_document'
+                ? null
+                : opts.verificationMethod,
           verifiedAt: isVerified(status) ? opts.verifiedAt : null,
+          origin: s.origin ?? topicOrigin(t),
+          citedIn: s.citedIn ?? null,
         };
         const ids = [eq(evidenceSources.sourceKey, s.key)];
         if (s.pmid) ids.push(eq(evidenceSources.pmid, s.pmid));
@@ -265,6 +322,7 @@ export async function seedEvidence(
     const findingId = new Map<string, string>();
     const findingQa = new Map<string, QaFinding>();
     const findingLevel = new Map<string, EvidenceLevel>();
+    const findingOutcome = new Map<string, { slug: string; domain: string }>();
     for (const t of data.topics) {
       for (const f of t.findings) {
         const sid = sourceId.get(`${t.topic}:${f.source}`);
@@ -314,6 +372,7 @@ export async function seedEvidence(
         }
         findingId.set(findingKey, id);
         findingLevel.set(id, g.level);
+        findingOutcome.set(id, { slug: f.outcome, domain: outDomain.get(f.outcome) ?? '' });
         findingQa.set(id, {
           key: id,
           sourceKey: sid,
@@ -335,6 +394,8 @@ export async function seedEvidence(
       methods: { total: 0, published: 0, draft: [] },
       levels: {},
       qaErrors: [],
+      unverifiable: [...sourceRow.values()].filter((x) => !isVerified(x.status)).length,
+      searches: 0,
     };
     for (const t of data.topics) {
       for (const c of t.claims) {
@@ -350,6 +411,15 @@ export async function seedEvidence(
         const appliesTo = c.applicability?.appliesTo ?? [];
         const notFor = c.applicability?.notFor ?? [];
         for (const p of [...appliesTo, ...notFor]) need(pop, p, 'population');
+        const evidenceKind =
+          c.evidenceKind ??
+          inferEvidenceKind({
+            epistemicType: c.epistemicType,
+            level,
+            supportOutcomes: links
+              .filter((l) => l.role === 'supports')
+              .map((l) => findingOutcome.get(l.findingId)!),
+          });
         const qa = qaClaim(
           {
             key: c.key,
@@ -357,6 +427,7 @@ export async function seedEvidence(
             status: 'published',
             level,
             appliesTo,
+            evidenceKind,
             findings: links.map((l) => ({ findingKey: l.findingId, role: l.role })),
           },
           findingQa,
@@ -372,6 +443,8 @@ export async function seedEvidence(
           confidence: c.confidence,
           limitations: c.limitations ?? null,
           applicability: { appliesTo, notFor },
+          evidenceKind,
+          origin: c.origin ?? topicOrigin(t),
           evidenceLevel: level,
           status: status as 'draft' | 'published',
           reviewedAt: status === 'published' ? opts.verifiedAt : null,
@@ -404,6 +477,44 @@ export async function seedEvidence(
       }
     }
     report.claims.published = claimPublished.size;
+
+    // ── Searches (§4): the log of specific searches behind each module ──
+    for (const t of data.topics) {
+      for (const q of t.searches ?? []) {
+        const selected = (q.selected ?? []).map((k) => {
+          const id = sourceId.get(`${t.topic}:${k}`);
+          if (!id) throw new Error(`Evidence seed: search ${q.key} selects unknown source ${k}`);
+          return id;
+        });
+        const values = {
+          topic: q.topic ?? t.topic,
+          objective: q.objective,
+          population: q.population ?? null,
+          injury: q.injury ?? null,
+          phase: q.phase ?? null,
+          method: q.method ?? null,
+          test: q.test ?? null,
+          criterion: q.criterion ?? null,
+          query: q.query,
+          database: q.database ?? 'PubMed',
+          searchedOn: q.searchedOn,
+          reviewed: q.reviewed ?? null,
+          selectedSourceIds: [...new Set(selected)],
+          reason: q.reason ?? null,
+        };
+        const [existing] = await tx
+          .select({ id: scienceSearches.id })
+          .from(scienceSearches)
+          .where(and(isNull(scienceSearches.organizationId), eq(scienceSearches.searchKey, q.key)));
+        if (existing)
+          await tx.update(scienceSearches).set(values).where(eq(scienceSearches.id, existing.id));
+        else
+          await tx
+            .insert(scienceSearches)
+            .values({ ...values, organizationId: null, searchKey: q.key });
+        report.searches++;
+      }
+    }
 
     // ── Methods ──
     for (const m of data.methods) {

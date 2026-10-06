@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { getClient, getInjury, injuryComparison } from '@tp/application';
+import { evidenceCards, getClient, getInjury, injuryComparison } from '@tp/application';
 import { DomainError, localDate } from '@tp/domain';
 import { notFound } from 'next/navigation';
 import {
@@ -11,6 +11,7 @@ import {
   RequestDecisionButton,
   SymptomForm,
 } from '@/components/injury/forms';
+import { SourceButton } from '@/components/science/source-button';
 import { Badge, Card, EmptyState } from '@/components/ui/card';
 import { formatDate, formatDateTime, formatValue } from '@/lib/labels';
 import { requireStaff } from '@/server/session';
@@ -47,6 +48,13 @@ export default async function InjuryPage({
   ]).catch((e) => {
     if (e instanceof DomainError && e.code === 'not_found') notFound();
     throw e;
+  });
+  // One call for every «Fuente» of the page (protocol and criteria of the current phase).
+  const evidence = await evidenceCards(ctx, {
+    sourceIds: [
+      ...(c.protocol?.sourceIds ?? []),
+      ...(c.phase?.criteria.flatMap((k) => k.sourceIds) ?? []),
+    ],
   });
   const today = localDate(new Date());
   const open = c.status !== 'closed';
@@ -180,16 +188,13 @@ export default async function InjuryPage({
                           <p className="mt-1 flex flex-wrap gap-1">
                             <Badge tone={EVIDENCE_TONE[k.evidence]}>{k.evidenceLabel}</Badge>
                           </p>
-                          {k.sources.length || k.limitations ? (
-                            <details className="mt-1 text-xs text-muted">
-                              <summary className="cursor-pointer">Fuentes y limitaciones</summary>
-                              <ul className="list-disc pl-5">
-                                {k.sources.map((s) => (
-                                  <li key={s}>{s}</li>
-                                ))}
-                              </ul>
-                              {k.limitations ? <p>{k.limitations}</p> : null}
-                            </details>
+                          <div className="mt-1">
+                            {k.evidence === 'practical' && !k.sourceIds.length ? null : (
+                              <SourceButton evidence={evidence} ids={k.sourceIds} />
+                            )}
+                          </div>
+                          {k.limitations ? (
+                            <p className="mt-1 text-xs text-muted">{k.limitations}</p>
                           ) : null}
                         </td>
                         <td className="py-2 pr-3 text-muted">{k.roleLabel}</td>
@@ -509,16 +514,11 @@ export default async function InjuryPage({
                 {c.protocol.limitations}
               </p>
             ) : null}
-            {c.protocol.sources.length ? (
-              <details>
-                <summary className="cursor-pointer font-medium">Fuentes</summary>
-                <ul className="list-disc pl-5 text-muted">
-                  {c.protocol.sources.map((s) => (
-                    <li key={s}>{s}</li>
-                  ))}
-                </ul>
-              </details>
-            ) : null}
+            <SourceButton
+              evidence={evidence}
+              ids={c.protocol.sourceIds}
+              label="Fuentes del protocolo"
+            />
           </div>
         </Card>
       ) : null}

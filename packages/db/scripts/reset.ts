@@ -18,7 +18,7 @@ console.log(
   `Global library: ${exercises.exercises} exercises, ${exercises.progressions} progressions, ${templates.templates} plan templates.`,
 );
 console.log(
-  `Scientific library: ${evidence.sources} sources, ${evidence.findings} findings, ${evidence.claims.published}/${evidence.claims.total} claims and ${evidence.methods.published}/${evidence.methods.total} methods published.`,
+  `Scientific library: ${evidence.sources} sources, ${evidence.findings} findings, ${evidence.claims.published}/${evidence.claims.total} claims and ${evidence.methods.published}/${evidence.methods.total} methods published; ${evidence.unverifiable} cited references not verifiable (never used as support), ${evidence.searches} logged searches.`,
 );
 console.log(
   `Assessment catalogue: ${assessment.tests} tests, ${assessment.reliability} reliability rows, ${assessment.references} reference rows, ${assessment.batteries} batteries.`,

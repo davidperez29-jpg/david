@@ -59,10 +59,17 @@ export default async function SourcePage({ params }: { params: Promise<{ sourceI
           {s.issue ? `(${s.issue})` : ''}
           {s.pages ? `:${s.pages}` : ''}
         </p>
+        {s.citedIn ? <p className="mt-1 text-sm text-muted">Citada en: {s.citedIn}</p> : null}
+        {s.verificationStatus === 'unverifiable' || s.verificationStatus === 'cited_in_document' ? (
+          <p className="mt-2 rounded-md border border-warn p-2 text-sm">
+            No se usa como respaldo de ninguna recomendación hasta verificarla en PubMed o por DOI.
+          </p>
+        ) : null}
         <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
           <Badge>{label('studyDesign', s.studyDesign)}</Badge>
           <VerificationBadge status={s.verificationStatus} />
           <Badge>{label('sourceAccess', s.access)}</Badge>
+          <Badge>{label('origin', s.origin)}</Badge>
           {s.isGlobal ? <Badge tone="accent">Global (solo lectura)</Badge> : null}
           <Identifiers doi={s.doi} pmid={s.pmid} />
           {s.url ? (

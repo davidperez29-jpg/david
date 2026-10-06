@@ -153,6 +153,8 @@ export function runDecisionEngine(ctx: ClientContext, k: KnowledgeSnapshot): Dec
         statement: c.statement,
         confidence: c.confidence,
         sources: c.sources,
+        ...(c.evidenceKind !== undefined ? { evidenceKind: c.evidenceKind } : {}),
+        ...(c.limitations !== undefined ? { limitations: c.limitations } : {}),
       }));
   const applicabilityOf = (keys: string[]) =>
     [...new Set(keys)]

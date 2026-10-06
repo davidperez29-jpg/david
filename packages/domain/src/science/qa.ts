@@ -2,6 +2,12 @@
  * Scientific QA validators (MASTER_SPECIFICATION §10.6). Pure checks over sources, findings and
  * claims. `error` blocks publication; `warning` must be reviewed by a person.
  */
+import {
+  canSupport,
+  evidenceKindIssue,
+  type EvidenceKind,
+  type VerificationStatus,
+} from './evidence-kind';
 import type { EvidenceLevel } from './grading';
 
 export type QaSeverity = 'error' | 'warning';
@@ -16,8 +22,7 @@ export interface QaSource {
   key: string;
   doi: string | null;
   pmid: string | null;
-  verificationStatus:
-    'verified' | 'verified_with_corrections' | 'unverified' | 'retracted' | 'non_scientific';
+  verificationStatus: VerificationStatus;
   verifiedAt: Date | string | null;
   verificationMethod: string | null;
   populationSummary: string | null;
@@ -36,6 +41,8 @@ export interface QaClaim {
   findings: { findingKey: string; role: 'supports' | 'contradicts' | 'context' }[];
   appliesTo: string[];
   level: EvidenceLevel;
+  /** Restructure phase 9: what the evidence measured (null = not classified yet). */
+  evidenceKind?: EvidenceKind | null;
 }
 
 const DOI_RE = /^10\.[0-9]{4,9}\/\S+$/;
@@ -142,14 +149,7 @@ export function qaClaim(
       continue;
     }
     const s = sources.get(f.sourceKey);
-    if (
-      l.role === 'supports' &&
-      (!s ||
-        !(
-          s.verificationStatus === 'verified' ||
-          s.verificationStatus === 'verified_with_corrections'
-        ))
-    ) {
+    if (l.role === 'supports' && (!s || !canSupport(s.verificationStatus))) {
       out.push({
         code: 'unverified_support',
         severity: 'error',
@@ -167,6 +167,16 @@ export function qaClaim(
       target: t,
     });
   }
+  const kindIssue = evidenceKindIssue(c.statement, c.evidenceKind ?? null);
+  if (kindIssue)
+    out.push({ code: 'evidence_kind_mismatch', severity: 'error', message: kindIssue, target: t });
+  if (c.status === 'published' && c.evidenceKind === null)
+    out.push({
+      code: 'no_evidence_kind',
+      severity: 'warning',
+      message: 'Falta el tipo de evidencia (incidencia, factor de riesgo, rendimiento…).',
+      target: t,
+    });
   if (NUMBER_RE.test(c.statement) && !supports.some((l) => findings.get(l.findingKey)?.quote)) {
     out.push({
       code: 'number_without_quote',

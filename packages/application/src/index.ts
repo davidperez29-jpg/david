@@ -42,3 +42,5 @@ export * from './daily-jobs';
 export * from './home';
 export * from './program';
 export * from './injuries';
+export * from './evidence-cards';
+export * from './science-searches';

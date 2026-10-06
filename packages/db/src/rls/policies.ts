@@ -129,6 +129,8 @@ CREATE POLICY tca_delete ON trainer_client_assignments FOR DELETE USING (organiz
   populations: { kind: 'catalog' },
   outcomes: { kind: 'catalog' },
   evidence_sources: { kind: 'catalog' },
+  // Restructure phase 9: log of specific searches (global from the seeds, or the centre's own).
+  science_searches: { kind: 'catalog' },
   evidence_findings: { kind: 'catalog' },
   knowledge_claims: { kind: 'catalog' },
   claim_evidence: { kind: 'catalog_child', parent: 'knowledge_claims', fk: 'claim_id' },
