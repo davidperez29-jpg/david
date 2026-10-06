@@ -54,6 +54,7 @@
     "clients/[clientId]/decision/run POST authenticated",
     "clients/[clientId]/equipment PUT authenticated",
     "clients/[clientId]/erase POST authenticated",
+    "clients/[clientId]/estimated-strength GET authenticated",
     "clients/[clientId]/external-measurements GET authenticated",
     "clients/[clientId]/external-measurements POST authenticated",
     "clients/[clientId]/goals PUT authenticated",

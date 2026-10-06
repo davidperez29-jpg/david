@@ -672,3 +672,16 @@ pnpm --filter @tp/web test:e2e -- e2e/perf.spec.ts e2e/perf.mobile.spec.ts
   - propuesta aplicada al plan activo de Javier, con la revisión visible en «Gestión y revisiones».
 - **Seguridad**: la matriz RLS incluye `exercise_load_increments` y la de acceso cruzado la ruta nueva.
 
+## Resultado de la reestructuración, fase 14 (progresión VBT/e1RM)
+
+- **Unitarias** (`vbt.unit.test.ts`):
+  - `velocityAdjustment`: necesita 2 sesiones; sube o baja con las 2 últimas fuera del margen de 0,06 m/s; dentro del margen o con una sola fuera, no cambia;
+  - `estimateOneRm`: 100 kg × 6 @RIR 2 → 126,5 kg; 1 repetición hasta el fallo es la propia carga; ignora series de más de 10 repeticiones hasta el fallo, sin RIR o sin carga;
+  - `proposeLoadChange` elige `velocity_target` antes que el RIR; el «¿Por qué?» muestra «0,70 m/s», el 1RM estimado y sus limitaciones.
+- **Integración** (`programming.int.test.ts`):
+  - `estimatedStrength`: 80 kg × 8 @RIR 2 → 106,5 kg, sin tendencia con una sola sesión;
+  - cliente, entrenador no asignado y otra organización reciben `403`/`404`.
+- **E2E** (`monitoring.spec.ts`): la tarjeta «Fuerza estimada (1RM orientativo)» aparece en Seguimiento con su aviso.
+- **Contratos**: nueva `GET /clients/{id}/estimated-strength` (forma registrada a mano porque el cliente de prueba no tiene series válidas en los datos demo).
+- **Evidencia**: el test del seed valida las 2 fuentes nuevas, sus hallazgos y la afirmación `c_rm_1rm_estimate`.
+

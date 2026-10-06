@@ -30,6 +30,7 @@
 | 11 | Cifrado del texto libre de lesiones (DPIA R-11), elegido por el responsable tras la fase 10 | Cifrado de columna, rotación de claves | ✅ Hecha |
 | 12 | Pendientes del entrenador: ajustes desde Alertas y reprogramar desde el Calendario (elegida por el responsable) | Motor de ajustes, calendario global | ✅ Hecha |
 | 13 | Motor de programación: propuesta aplicada como revisión del plan activo e incremento de carga por ejercicio (elegida por el responsable) | Propuestas, revisiones, progresión de carga | ✅ Hecha |
+| 14 | Progresión por velocidad (VBT) y 1RM estimado orientativo (elegida por el responsable) | Motor de ajustes, registro de series con velocidad y RIR | ✅ Hecha |
 
 ## Por qué el despliegue va primero (decisión A2)
 
@@ -271,3 +272,17 @@ Elegida por el responsable entre los pendientes del motor.
 - ✅ el incremento es del centro: otro centro ve el de por defecto; el cliente no puede cambiarlo; límites validados (`library.int.test.ts`);
 - ✅ la tabla nueva está en la matriz RLS y la ruta nueva en la de acceso cruzado.
 
+## Fase 14 · Progresión VBT/e1RM ✅
+
+Elegida por el responsable entre los pendientes del motor.
+
+- **Velocidad**: con velocidad objetivo y 2 sesiones medidas, la progresión de carga sigue a la velocidad antes que al RIR (A55).
+- **1RM estimado**: orientativo, en el «¿Por qué?» y en Seguimiento; nunca sustituye a un 1RM medido (A56).
+- **Evidencia**: Reynolds 2006 (PMID 16937972) y Claassen 2026 (PMID 42690493), con citas literales del resumen.
+
+**Criterios**:
+- ✅ velocidad por encima o por debajo del margen en 2 sesiones → sube o baja la carga; dentro del margen o con 1 sesión, no (`vbt.unit.test.ts`);
+- ✅ la velocidad va antes que el RIR, y el «¿Por qué?» muestra velocidades, 1RM estimado y limitaciones (`vbt.unit.test.ts`);
+- ✅ el 1RM estimado ignora series de más de 10 repeticiones hasta el fallo, sin RIR o sin carga (`vbt.unit.test.ts`);
+- ✅ cliente, entrenador no asignado y otra organización no ven la fuerza estimada (`programming.int.test.ts`); la ruta nueva está en la matriz de acceso cruzado;
+- ✅ la tarjeta aparece en Seguimiento con su aviso (`monitoring.spec.ts`).

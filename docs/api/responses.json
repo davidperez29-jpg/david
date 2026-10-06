@@ -791,7 +791,7 @@
     {
       "action": "string",
       "actor": "string",
-      "changes": "[object Object]|object|object|object|object|object|object",
+      "changes": "[object Object]|object|object|object|object|object|object|object",
       "entityType": "string",
       "id": "string",
       "occurredAt": "string",
@@ -1475,6 +1475,26 @@
         "string"
       ]
     }
+  },
+  "GET clients/[clientId]/estimated-strength": {
+    "items": [
+      {
+        "changeKg": "number",
+        "earlier": {
+          "date": "string",
+          "kg": "number"
+        },
+        "exerciseId": "string",
+        "latest": {
+          "date": "string",
+          "kg": "number",
+          "loadKg": "number",
+          "repsToFailure": "number"
+        },
+        "name": "string",
+        "sessions": "number"
+      }
+    ]
   },
   "GET clients/[clientId]/external-measurements": [
     {

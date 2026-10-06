@@ -31,6 +31,11 @@ test('trainer sees alerts by severity, reviews a client follow-up and resolves a
   await red.getByRole('link', { name: /Tomás Garrido/ }).click();
   await expect(page.getByRole('heading', { name: 'Adherencia 4 semanas' })).toBeVisible();
   await expect(page.getByRole('heading', { name: /Carga interna semanal/ })).toBeVisible();
+  // Estimated strength (phase 14): informative, always with its limits.
+  await expect(
+    page.getByRole('heading', { name: 'Fuerza estimada (1RM orientativo)' }),
+  ).toBeVisible();
+  await expect(page.getByText(/No sustituye un 1RM medido/)).toBeVisible();
   await expect(page.getByRole('link', { name: 'Haddad 2017' })).toHaveAttribute(
     'href',
     'https://doi.org/10.3389/fnins.2017.00612',

@@ -2,6 +2,25 @@
 
 Formato: fecha · cambio · motivo · archivos · impacto.
 
+## 2026-10-06 — Reestructuración, fase 14: progresión VBT/e1RM
+
+- **Cambio:** **progresión por velocidad**: con velocidad objetivo y 2 sesiones medidas, el motor propone subir o bajar la carga si la velocidad se aleja más de 0,06 m/s del objetivo; va antes que el RIR.
+  - **Motivo:** la velocidad se mide y el RIR se estima (pendiente del motor de programación).
+- **Cambio:** **1RM estimado orientativo**: en el «¿Por qué?» de la progresión de carga y en la tarjeta «Fuerza estimada (1RM orientativo)» de Seguimiento.
+  - Solo series de 10 repeticiones o menos hasta el fallo con RIR informado; nunca sustituye a un 1RM medido.
+- **Evidencia:** Reynolds 2006 (PMID 16937972) y Claassen 2026 (PMID 42690493); afirmación nueva `c_rm_1rm_estimate`.
+- **Archivos:**
+  - `packages/domain/src/planning/progression.ts`, `packages/domain/src/programming/adjustments.ts`;
+  - `packages/application/src/{programming,strength}.ts`;
+  - `apps/web/src/app/api/v1/clients/[clientId]/estimated-strength/route.ts`, `apps/web/src/app/app/clients/[clientId]/page.tsx`;
+  - `seed-data/evidence/strength_hypertrophy.json`;
+  - `packages/domain/test/vbt.unit.test.ts`, `packages/application/test/programming.int.test.ts`, `apps/web/e2e/monitoring.spec.ts`, `docs/api/*.json`;
+  - `docs/{PROGRAMMING_ENGINE,API,IMPLEMENTATION_ROADMAP,TESTING}.md`, `docs/PRODUCT_ARCHITECTURE.md` A55–A56.
+- **Impacto:**
+  - sin migraciones;
+  - una ruta nueva de lectura;
+  - las progresiones de ejercicios sin velocidad objetivo no cambian.
+
 ## 2026-10-06 — Reestructuración, fase 13: motor de programación
 
 - **Cambio:** una propuesta del motor se puede **aplicar al plan activo como nueva revisión**:

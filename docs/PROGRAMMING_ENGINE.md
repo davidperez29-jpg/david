@@ -98,6 +98,38 @@ Cada propuesta lleva su **«¿Por qué?»** con la estructura de §13.6:
   - `PUT /exercises/{id}/load-increment` con `{incrementKg}` (> 0 y ≤ 50 kg; `null` vuelve al de por defecto). Queda auditado.
 - La progresión de carga lo usa, y el «¿Por qué?» lo dice: «incremento del centro para este ejercicio».
 
+### Progresión por velocidad y 1RM estimado (fase 14 de la reestructuración)
+
+**Velocidad (VBT).**
+
+- Se usa cuando el ejercicio tiene una **velocidad objetivo** (m/s) y hay **2 sesiones con velocidad medida**.
+  - En ese caso va **antes** que el RIR y que la doble progresión (A55).
+- Regla `progression.velocity_target`, con la velocidad media de las series de cada sesión:
+  - en las 2 últimas sesiones ≥ objetivo + 0,06 m/s → +carga;
+  - en las 2 últimas ≤ objetivo − 0,06 m/s → −carga;
+  - en otro caso no cambia la carga por velocidad y se aplican las reglas de RIR.
+- El margen de 0,06 m/s es práctico (nivel F).
+- La relación velocidad–carga está verificada en press de banca (González-Badillo 2010, PMID 20180176).
+  - En otros ejercicios y sensores la precisión varía (Claassen 2026, PMID 42690493).
+  - El «¿Por qué?» lo dice.
+
+**1RM estimado (orientativo).**
+
+- `estimateOneRm`: ecuación práctica de Epley, carga × (1 + repeticiones hasta el fallo / 30), redondeada a 0,5 kg.
+  - La ecuación es de uso práctico; su fuente original no está verificada **[REQUIERE VERIFICACIÓN]**.
+- Solo usa series con carga, **RIR informado** (no supuesto) y **10 repeticiones o menos hasta el fallo** (hechas + RIR).
+  - Por encima de 10 repeticiones la estimación pierde precisión (Reynolds 2006, PMID 16937972).
+- Es **solo informativo** (A56):
+  - aparece en los datos del «¿Por qué?» de la progresión de carga;
+  - aparece en **Ficha → Seguimiento → «Fuerza estimada (1RM orientativo)»**: último valor por ejercicio y cambio respecto de uno de al menos 3 semanas antes (últimos 4 meses);
+  - **nunca** sustituye a un 1RM medido: las cargas en %1RM siguen usando la valoración.
+- Caso de uso `estimatedStrength` (`GET /clients/{id}/estimated-strength`), con `plans:read` + `decision:read`.
+
+**Evidencia en el seed.**
+
+- Afirmación `c_rm_1rm_estimate` (confianza baja).
+- `c_lv_1rm_prediction` suma el metaanálisis de Claassen 2026.
+
 ## 4. Interfaz
 
 - **Ficha → Planificación**:
@@ -122,6 +154,6 @@ Ver `API.md` («Motor de programación»).
 
 - ~~Propuesta como **nueva revisión del plan activo**.~~ (hecho en la fase 13 de la reestructuración)
 - ~~Incremento de carga configurable por ejercicio.~~ (hecho en la fase 13 de la reestructuración)
-- Progresión por velocidad (VBT) y e1RM.
+- ~~Progresión por velocidad (VBT) y e1RM.~~ (hecho en la fase 14 de la reestructuración)
 - Ajustes de días o frecuencia por disponibilidad.
 - ~~Aplicar ajustes desde la página de alertas.~~ (hecho en la fase 12 de la reestructuración)
