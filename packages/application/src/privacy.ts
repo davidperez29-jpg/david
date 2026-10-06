@@ -32,6 +32,7 @@ import {
   desc,
   eq,
   getTableColumns,
+  getTableName,
   inArray,
   isNotNull,
   isNull,
@@ -83,7 +84,39 @@ const SECTIONS: [string, PgTable][] = [
   ['solicitudes_de_privacidad', s.privacyRequests],
   // Device data (Phase 15). Connections are not exported: they only hold encrypted tokens.
   ['mediciones_de_dispositivos', s.externalMeasurements],
+  // Restructure phases 4–7 and the decision engine (added in the phase 10 RGPD review).
+  ['series_prescritas', s.exerciseSets],
+  ['grupos', s.clientGroupMembers],
+  ['rasgos_anotados', s.clientTraitFlags],
+  ['reglas_de_aviso_desactivadas', s.clientRuleOverrides],
+  ['cambios_del_entrenador', s.manualOverrides],
+  ['lesiones', s.injuries],
+  ['fases_de_lesion', s.injuryPhaseHistory],
+  ['sintomas_de_lesion', s.injurySymptoms],
+  ['avisos_de_lesion', s.injuryAlerts],
+  ['criterios_de_lesion_comprobados', s.injuryCriterionChecks],
+  ['decisiones_de_vuelta_al_deporte', s.rtpDecisions],
 ];
+
+/**
+ * Tables with a `client_id` that the subject export leaves out, and why. A test checks that
+ * every such table is either exported or listed here, so a new table cannot be forgotten.
+ */
+export const SUBJECT_EXPORT_EXCLUDED: Record<string, string> = {
+  clients: 'Exported as «cliente»',
+  audit_logs: 'Exported as «registro_de_actividad» (roles, not staff identities)',
+  phases: 'Plan structure; its content is in «planes», «sesiones» and «ejercicios_prescritos»',
+  mesocycles: 'Plan structure (as above)',
+  microcycles: 'Plan structure (as above)',
+  session_blocks: 'Plan structure (as above)',
+  plan_revisions: 'Internal snapshots of the plan, already exported',
+  decision_runs: 'Engine input and output; the resulting proposals are «propuestas_del_motor»',
+  trainer_client_assignments: 'Internal staff organization',
+  invitations: 'Account invitation tokens',
+  integration_connections: 'Only encrypted access tokens',
+  files: 'Storage metadata; the files go with a full access request',
+};
+export const SUBJECT_EXPORT_TABLES = SECTIONS.map(([, t]) => getTableName(t));
 const HIDDEN = new Set(['organizationId', 'clientId', 'snapshot', 'codeHash']);
 
 /** Decrypts *Enc columns (renamed without the suffix) and drops internal columns. */
@@ -107,7 +140,13 @@ function safeOpen(keys: AppContext['keys'], v: string): string | null {
   }
 }
 
-async function exportSubjectData_(ctx: RequestContext, clientId: string): Promise<FileOut> {
+type SectionReader = (table: PgTable, clientId: string) => Promise<Record<string, unknown>[]>;
+
+async function exportSubjectData_(
+  ctx: RequestContext,
+  clientId: string,
+  read: SectionReader,
+): Promise<FileOut> {
   await authorizeClient(ctx, 'privacy:export_subject', clientId);
   const [c] = await ctx.db.select().from(s.clients).where(eq(s.clients.id, clientId));
   if (!c) throw new DomainError('not_found', 'Cliente no encontrado.');
@@ -115,11 +154,7 @@ async function exportSubjectData_(ctx: RequestContext, clientId: string): Promis
   for (const [name, table] of SECTIONS) {
     const cols = getTableColumns(table) as Record<string, unknown>;
     if (!('clientId' in cols)) continue;
-    const rows = await ctx.db
-      .select()
-      .from(table)
-      .where(eq((table as unknown as { clientId: Parameters<typeof eq>[0] }).clientId, clientId));
-    data[name] = (rows as Record<string, unknown>[]).map((r) => clean(ctx.keys, r));
+    data[name] = (await read(table, clientId)).map((r) => clean(ctx.keys, r));
   }
   // Who did what with the client's data (roles, not staff identities), when visible to the actor.
   const trail = await ctx.db
@@ -306,8 +341,12 @@ export async function anonymizeClient(
   const byClient = <T extends PgTable>(t: T) =>
     eq((t as unknown as { clientId: Parameters<typeof eq>[0] }).clientId, clientId);
 
-  // Health data and free text about the person.
+  // Health data and free text about the person. Deleting the injury cases removes their phases,
+  // symptoms, alerts, criterion checks and return-to-sport decisions (ON DELETE CASCADE).
   for (const t of [
+    s.injuries,
+    s.decisionRuns,
+    s.clientTraitFlags,
     s.healthDeclarations,
     s.screeningResponses,
     s.painLogs,
@@ -336,6 +375,11 @@ export async function anonymizeClient(
     .set({ comment: null })
     .where(byClient(s.exerciseSubstitutions));
   await db.update(s.clientGoals).set({ notes: null }).where(byClient(s.clientGoals));
+  await db.update(s.manualOverrides).set({ reason: null }).where(byClient(s.manualOverrides));
+  await db
+    .update(s.clientRuleOverrides)
+    .set({ reason: null })
+    .where(byClient(s.clientRuleOverrides));
   await db
     .update(s.clientTrainingProfiles)
     .set({ notes: null })
@@ -599,7 +643,24 @@ export async function rotateEncryptedColumns(app: Pick<AppContext, 'keys'> & { d
   return { rotated, unreadable };
 }
 
-export const exportSubjectData = secured(exportSubjectData_);
+/**
+ * The subject export (arts. 15 and 20). Authorization runs first, in the actor-bound transaction.
+ * The sections are then read with the system connection: the person's own records include
+ * staff-only ones (injury cases, alerts, engine proposals) that row security hides from the
+ * client app but that the right of access covers (phase 10 RGPD review).
+ */
+export const exportSubjectData = (ctx: RequestContext, clientId: string) =>
+  secured(exportSubjectData_)(
+    ctx,
+    clientId,
+    async (table, id) =>
+      (await ctx.db
+        .select()
+        .from(table)
+        .where(
+          eq((table as unknown as { clientId: Parameters<typeof eq>[0] }).clientId, id),
+        )) as Record<string, unknown>[],
+  );
 export const createPrivacyRequest = secured(createPrivacyRequest_);
 export const listClientPrivacyRequests = secured(listClientPrivacyRequests_);
 export const cancelPrivacyRequest = secured(cancelPrivacyRequest_);

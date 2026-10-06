@@ -19,6 +19,11 @@ import {
   getClient,
   getSecurityStatus,
   grantConsent,
+  listInjuryCatalog,
+  openInjury,
+  recordInjurySymptom,
+  SUBJECT_EXPORT_EXCLUDED,
+  SUBJECT_EXPORT_TABLES,
   listClientPrivacyRequests,
   listPrivacyRequests,
   login,
@@ -51,6 +56,20 @@ beforeAll(async () => {
     declaredStatus: 'active',
     description: 'Molestia al bajar escaleras',
   });
+  // An injury case (staff-only health data, restructure phase 7) with a symptom that raises an alert.
+  const acl = (await listInjuryCatalog(o.admin)).conditions.find((x) => x.slug === 'acl')!;
+  const inj = await openInjury(o.admin, o.clientA, {
+    conditionId: acl.id,
+    protocolId: acl.protocols[0]!.id,
+    side: 'right',
+    occurredOn: '2026-05-01',
+    diagnosis: 'Informe recibido: rotura parcial',
+  });
+  await recordInjurySymptom(o.admin, o.clientA, inj.id, {
+    recordedOn: '2026-05-10',
+    pain: 8,
+    note: 'Dolor nocturno',
+  });
 });
 
 describe('access and portability (RGPD arts. 15, 20)', () => {
@@ -66,6 +85,12 @@ describe('access and portability (RGPD arts. 15, 20)', () => {
       description: 'Molestia al bajar escaleras',
     });
     expect(doc.consentimientos.length).toBeGreaterThan(0);
+    // Staff-only records are the person's data too (art. 15): row security hides them from the
+    // client app, not from their own export.
+    expect(doc.lesiones[0]).toMatchObject({ diagnosis: 'Informe recibido: rotura parcial' });
+    expect(doc.sintomas_de_lesion[0]).toMatchObject({ pain: 8, note: 'Dolor nocturno' });
+    expect(doc.avisos_de_lesion.length).toBeGreaterThan(0);
+    expect(doc.fases_de_lesion.length).toBeGreaterThan(0);
     expect(Array.isArray(doc.registro_de_actividad)).toBe(true);
     const reqs = await listClientPrivacyRequests(o.clientUser, o.clientA);
     expect(reqs[0]).toMatchObject({ type: 'portability', status: 'completed' });
@@ -79,6 +104,16 @@ describe('access and portability (RGPD arts. 15, 20)', () => {
         ),
       );
     expect(audits[0]!.action).toBe('export');
+  });
+
+  it('covers every table that holds records of a client (or says why not)', async () => {
+    const rows = await db().execute<{ table_name: string }>(
+      sql`select table_name from information_schema.columns
+           where table_schema = 'public' and column_name = 'client_id' order by 1`,
+    );
+    const covered = new Set([...SUBJECT_EXPORT_TABLES, ...Object.keys(SUBJECT_EXPORT_EXCLUDED)]);
+    const missing = [...rows].map((r) => r.table_name).filter((t) => !covered.has(t));
+    expect(missing).toEqual([]);
   });
 
   it('nobody else exports it: trainers (§14.2), other clients, other organizations', async () => {
@@ -169,6 +204,16 @@ describe('erasure (art. 17): anonymization in place with double confirmation', (
         .from(schema.healthDeclarations)
         .where(eq(schema.healthDeclarations.clientId, o.clientA)),
     ).toEqual([]);
+    // Injury cases go with everything under them (phases, symptoms, alerts, decisions).
+    for (const t of [
+      schema.injuries,
+      schema.injurySymptoms,
+      schema.injuryAlerts,
+      schema.injuryPhaseHistory,
+      schema.decisionRuns,
+      schema.clientTraitFlags,
+    ])
+      expect(await db().select().from(t).where(eq(t.clientId, o.clientA))).toEqual([]);
     // The account is closed: no login, no sessions.
     await expect(
       login(appContext(), { email: `ana-${o.tag}@example.com`, password: PASSWORD }),
