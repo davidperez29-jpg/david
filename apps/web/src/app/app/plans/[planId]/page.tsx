@@ -87,9 +87,15 @@ export default async function PlanPage({
     if (e instanceof DomainError && e.code === 'not_found') notFound();
     throw e;
   });
-  const [client, revisions] = await Promise.all([
+  const [client, revisions, activePlan] = await Promise.all([
     getClient(ctx, p.clientId!),
     listPlanRevisions(ctx, planId),
+    // A proposal made for an active plan can be applied to it as a revision (phase 13).
+    p.kind === 'PROPOSAL' && p.status === 'proposed' && p.proposalOfPlanId
+      ? getPlan(ctx, p.proposalOfPlanId)
+          .then((a) => (a.status === 'active' ? { id: a.id, name: a.name } : null))
+          .catch(() => null)
+      : null,
   ]);
   const allWeeks = p.phases.flatMap((ph) => ph.mesocycles.flatMap((m) => m.weeks));
   const calendar = allWeeks.flatMap((w) =>
@@ -147,7 +153,12 @@ export default async function PlanPage({
           ) : null}
           {p.status === 'proposed' ? (
             <div className="mt-3">
-              <ProposalActions planId={planId} clientId={client.id} name={p.name} />
+              <ProposalActions
+                planId={planId}
+                clientId={client.id}
+                name={p.name}
+                activePlan={activePlan}
+              />
             </div>
           ) : null}
         </Card>

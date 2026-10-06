@@ -1925,6 +1925,79 @@ async function copySessionInto(
   return copy!.id;
 }
 
+/**
+ * Replaces the unrecorded sessions of `target` from `from` on with the sessions of another plan
+ * on the same days (restructure phase 13: a proposal applied as a revision of the active plan).
+ * Each source session goes to the target week that contains its date; days outside the target's
+ * weeks are skipped and counted. Recorded sessions (any attendance) are never touched. Copies
+ * are published when the replaced sessions were. Runs inside the caller's transaction.
+ */
+export async function replaceFutureSessions(
+  ctx: RequestContext,
+  tx: Executor,
+  target: { id: string; organizationId: string; clientId: string | null },
+  sourcePlanId: string,
+  from: string,
+): Promise<{ removed: number; copied: number; skipped: number }> {
+  const sessionsOf = (planId: string) =>
+    tx
+      .select({
+        id: sessions.id,
+        date: sessions.scheduledDate,
+        published: sessions.published,
+        recorded: sql<boolean>`EXISTS (SELECT 1 FROM attendance a WHERE a.session_id = ${sessions.id})`,
+      })
+      .from(sessions)
+      .innerJoin(microcycles, eq(microcycles.id, sessions.microcycleId))
+      .innerJoin(mesocycles, eq(mesocycles.id, microcycles.mesocycleId))
+      .innerJoin(phases, eq(phases.id, mesocycles.phaseId))
+      .where(and(eq(phases.planId, planId), sql`${sessions.scheduledDate} >= ${from}`))
+      .orderBy(asc(sessions.scheduledDate), asc(sessions.position));
+  const [old, incoming, weeks] = await Promise.all([
+    sessionsOf(target.id),
+    sessionsOf(sourcePlanId),
+    tx
+      .select({ id: microcycles.id, start: microcycles.startDate })
+      .from(microcycles)
+      .innerJoin(mesocycles, eq(mesocycles.id, microcycles.mesocycleId))
+      .innerJoin(phases, eq(phases.id, mesocycles.phaseId))
+      .where(and(eq(phases.planId, target.id), isNotNull(microcycles.startDate))),
+  ]);
+  const replaceable = old.filter((s) => !s.recorded);
+  const recordedDays = new Set(old.filter((s) => s.recorded).map((s) => s.date));
+  const published = replaceable.some((s) => s.published);
+  if (replaceable.length)
+    await tx.delete(sessions).where(
+      inArray(
+        sessions.id,
+        replaceable.map((s) => s.id),
+      ),
+    );
+  let copied = 0;
+  let skipped = 0;
+  for (const s of incoming) {
+    const week = weeks.find((w) => w.start! <= s.date! && s.date! <= addDays(w.start!, 6));
+    // Outside the plan's weeks, or a day that already has a recorded session: not copied.
+    if (!week || recordedDays.has(s.date)) {
+      skipped++;
+      continue;
+    }
+    const id = await copySessionInto(ctx, tx, s.id, {
+      microcycleId: week.id,
+      organizationId: target.organizationId,
+      clientId: target.clientId,
+      scheduledDate: s.date,
+    });
+    if (published)
+      await tx
+        .update(sessions)
+        .set({ published: true, publishedAt: ctx.now() })
+        .where(eq(sessions.id, id));
+    copied++;
+  }
+  return { removed: replaceable.length, copied, skipped };
+}
+
 async function duplicateSession_(
   ctx: RequestContext,
   sessionId: string,

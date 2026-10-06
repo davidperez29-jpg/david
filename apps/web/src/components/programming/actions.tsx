@@ -113,10 +113,13 @@ export function ProposalActions({
   planId,
   clientId,
   name,
+  activePlan,
 }: {
   planId: string;
   clientId: string;
   name: string;
+  /** The active plan it was proposed for, when it is still active (phase 13). */
+  activePlan: { id: string; name: string } | null;
 }) {
   const router = useRouter();
   const a = useApiAction();
@@ -146,6 +149,32 @@ export function ProposalActions({
           Aceptar como plan (borrador)
         </Button>
       </div>
+      {activePlan ? (
+        <div className="flex flex-col gap-1 rounded-md border border-border p-2 text-sm">
+          <p>
+            O aplícala a «{activePlan.name}»: sus sesiones desde hoy sustituyen a las sesiones
+            futuras sin registrar del plan activo, como una nueva revisión. Lo ya registrado no se
+            toca.
+          </p>
+          <div>
+            <Button
+              variant="secondary"
+              disabled={a.pending}
+              onClick={async () => {
+                const r = await a.run(
+                  `/plans/${planId}/proposal/accept`,
+                  'POST',
+                  { mode: 'revision', reason: reason.trim() || null },
+                  { refresh: false },
+                );
+                if (r) router.push(`/app/plans/${activePlan.id}`);
+              }}
+            >
+              Aplicar al plan activo (nueva revisión)
+            </Button>
+          </div>
+        </div>
+      ) : null}
       <div className="flex flex-wrap items-center gap-2">
         <input
           aria-label="Motivo para descartar"

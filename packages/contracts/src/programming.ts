@@ -13,6 +13,11 @@ export const planProposalSchema = z.object({
 export const acceptPlanProposalSchema = z.object({
   name: optionalText(120),
   reason: optionalText(500),
+  /**
+   * draft: the proposal becomes a new plan in draft (default). revision: its future sessions
+   * replace the unrecorded future sessions of the active plan, as a new revision (phase 13).
+   */
+  mode: z.enum(['draft', 'revision']).default('draft'),
 });
 
 export const discardPlanProposalSchema = z.object({ reason: optionalText(500) });
