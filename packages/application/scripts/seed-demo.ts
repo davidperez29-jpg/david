@@ -21,6 +21,14 @@ import {
   shareClientReport,
   createImportJob,
   importExternalMeasurements,
+  advanceInjuryPhase,
+  checkInjuryCriterion,
+  getInjury,
+  listInjuryCatalog,
+  openInjury,
+  recordInjurySymptom,
+  recordRtpDecision,
+  reviewInjuryAlert,
   setExerciseTolerance,
   generatePlanProposal,
   getDecision,
@@ -932,6 +940,77 @@ console.log('Reports: 3 client reports (Iker; Elena, the latest shared with her 
     device: 'Reloj (exportación)',
   });
   console.log(`Integrations: ${r.imported} device measurements (Elena).`);
+}
+
+// Injury module (restructure phase 7): Elena's ankle sprain followed with its protocol. Phase 1
+// passed (criteria checked by her trainer, an alert reviewed), phase 2 in progress with an open
+// alert, two lunge tests (LSI computed for the injured side) and a first human decision.
+// Fictitious data.
+{
+  const elena = created[specs.findIndex((s) => s.basics.firstName === 'Elena')]!;
+  const today = localDate(new Date());
+  const cat = await listInjuryCatalog(elena.by);
+  const all = await listAssessmentTests(elena.by);
+  const tid = (slug: string) => all.find((t) => t.slug === slug)!.id;
+  const ankle = cat.conditions.find((c) => c.slug === 'lateral_ankle_sprain')!;
+  const { id: injuryId } = await openInjury(elena.by, elena.id, {
+    conditionId: ankle.id,
+    protocolId: ankle.protocols[0]!.id,
+    side: 'right',
+    occurredOn: addDays(today, -42),
+    mechanism: 'Inversión al bajar un escalón',
+    diagnosis: 'Esguince lateral grado I según el informe del fisioterapeuta (dato de ejemplo).',
+    professional: 'Fisioterapia',
+  });
+  for (const [k, [left, right]] of [
+    [12, 8],
+    [12, 11],
+  ].entries()) {
+    const { id: aid } = await createAssessment(elena.by, elena.id, {
+      assessedOn: addDays(today, k === 0 ? -30 : -2),
+      testIds: [tid('weight_bearing_lunge_distance')],
+    });
+    for (const [side, v] of [
+      ['left', left],
+      ['right', right],
+    ] as const)
+      await recordAssessmentResult(elena.by, aid, {
+        testId: tid('weight_bearing_lunge_distance'),
+        side,
+        attempts: [v],
+      });
+  }
+  let c = await getInjury(elena.by, elena.id, injuryId);
+  for (const k of c.phase!.criteria.filter((x) => !x.auto && x.role !== 'stop'))
+    await checkInjuryCriterion(elena.by, elena.id, injuryId, { criterionId: k.id, met: true });
+  const first = await recordInjurySymptom(elena.by, elena.id, injuryId, {
+    recordedOn: addDays(today, -20),
+    pain: 5,
+    swelling: true,
+  });
+  c = await getInjury(elena.by, elena.id, injuryId);
+  for (const a of c.alerts)
+    await reviewInjuryAlert(elena.by, elena.id, injuryId, a.id, {
+      note: 'Revisado con su fisioterapeuta: se mantiene la fase dos días más.',
+    });
+  await advanceInjuryPhase(elena.by, elena.id, injuryId, { fromPhaseId: c.phase!.id });
+  await recordInjurySymptom(elena.by, elena.id, injuryId, {
+    recordedOn: addDays(today, -1),
+    pain: 2,
+    instability: true,
+    note: 'Sensación de fallo al girar.',
+  });
+  await recordRtpDecision(elena.by, elena.id, injuryId, {
+    stage: 'return_to_participation',
+    outcome: 'not_yet',
+    decidedByName: 'Equipo de fisioterapia (ejemplo)',
+    decidedByRole: 'Fisioterapia',
+    decidedOn: addDays(today, -1),
+    rationale: 'Completar fuerza y control sensoriomotor antes de la carrera.',
+  });
+  console.log(
+    `Injuries: Elena's ankle sprain in phase 2 (${first.alerts.length} reviewed alerts, 1 open).`,
+  );
 }
 
 // Imports (§52): a client list validated but not confirmed yet (shown in Informes → importaciones).

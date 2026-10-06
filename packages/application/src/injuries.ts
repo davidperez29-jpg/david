@@ -474,6 +474,21 @@ async function listClientInjuries_(ctx: RequestContext, clientId: string) {
   return { items };
 }
 
+/**
+ * Whether the client has injury cases (to show the Readaptación tab). Only a count, no health
+ * content: not audited as a sensitive view. Out of scope or the client app → 0.
+ */
+async function injuryCaseCount_(ctx: RequestContext, clientId: string) {
+  const resource = await authorizeClient(ctx, 'health:read', clientId).catch(() => null);
+  if (!resource || requirePermission(ctx, 'health:read', resource) === 'own')
+    return { active: 0, total: 0 };
+  const rows = await ctx.db
+    .select({ status: injuries.status })
+    .from(injuries)
+    .where(eq(injuries.clientId, clientId));
+  return { active: rows.filter((r) => r.status === 'active').length, total: rows.length };
+}
+
 async function getInjury_(ctx: RequestContext, clientId: string, injuryId: string) {
   await staff(ctx, 'health:read', clientId);
   const injury = await loadInjury(ctx.db, clientId, injuryId);
@@ -1202,6 +1217,7 @@ export const listInjuryCatalog = secured(listInjuryCatalog_);
 export const getInjuryProtocol = secured(getInjuryProtocol_);
 export const listClientInjuries = secured(listClientInjuries_);
 export const getInjury = secured(getInjury_);
+export const injuryCaseCount = secured(injuryCaseCount_);
 export const openInjury = secured(openInjury_);
 export const recordInjurySymptom = secured(recordSymptom_);
 export const reviewInjuryAlert = secured(reviewInjuryAlert_);

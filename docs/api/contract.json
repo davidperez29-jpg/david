@@ -61,6 +61,17 @@
     "clients/[clientId]/health POST authenticated",
     "clients/[clientId]/history/[entryId] DELETE authenticated",
     "clients/[clientId]/history POST authenticated",
+    "clients/[clientId]/injuries/[injuryId]/advance POST authenticated",
+    "clients/[clientId]/injuries/[injuryId]/alerts/[injuryAlertId]/review POST authenticated",
+    "clients/[clientId]/injuries/[injuryId]/close POST authenticated",
+    "clients/[clientId]/injuries/[injuryId]/comparison GET authenticated",
+    "clients/[clientId]/injuries/[injuryId]/criteria POST authenticated",
+    "clients/[clientId]/injuries/[injuryId]/decisions POST authenticated",
+    "clients/[clientId]/injuries/[injuryId]/request-decision POST authenticated",
+    "clients/[clientId]/injuries/[injuryId] GET authenticated",
+    "clients/[clientId]/injuries/[injuryId]/symptoms POST authenticated",
+    "clients/[clientId]/injuries GET authenticated",
+    "clients/[clientId]/injuries POST authenticated",
     "clients/[clientId]/monitoring GET authenticated",
     "clients/[clientId]/plan-proposals GET authenticated",
     "clients/[clientId]/plan-proposals POST authenticated",
@@ -132,6 +143,8 @@
     "imports GET authenticated",
     "imports POST authenticated",
     "imports/templates/[entity] GET authenticated",
+    "injury-catalog GET authenticated",
+    "injury-protocols/[protocolId] GET authenticated",
     "invitations/accept POST public",
     "invitations POST authenticated",
     "library/taxonomies GET authenticated",
@@ -644,6 +657,30 @@
           "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
         }
       }
+    },
+    "advancePhaseSchema": {
+      "type": "object",
+      "properties": {
+        "fromPhaseId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 500
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "fromPhaseId"
+      ]
     },
     "agendaQuerySchema": {
       "type": "object",
@@ -1424,6 +1461,22 @@
         "ruleKey",
         "enabled"
       ]
+    },
+    "closeInjurySchema": {
+      "type": "object",
+      "properties": {
+        "note": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 500
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
     },
     "comparisonQuerySchema": {
       "type": "object",
@@ -2753,6 +2806,34 @@
       "required": [
         "name",
         "sessionsPerWeek"
+      ]
+    },
+    "criterionCheckSchema": {
+      "type": "object",
+      "properties": {
+        "criterionId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "met": {
+          "type": "boolean"
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 500
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "criterionId",
+        "met"
       ]
     },
     "decideAdjustmentSchema": {
@@ -4182,6 +4263,21 @@
       "format": "date",
       "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
     },
+    "injuryComparisonQuerySchema": {
+      "type": "object",
+      "properties": {
+        "a": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "b": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        }
+      }
+    },
     "isoDate": {
       "type": "string",
       "format": "date",
@@ -4786,6 +4882,114 @@
       },
       "required": [
         "direction"
+      ]
+    },
+    "openInjurySchema": {
+      "type": "object",
+      "properties": {
+        "conditionId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "protocolId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "side": {
+          "default": "none",
+          "type": "string",
+          "enum": [
+            "left",
+            "right",
+            "both",
+            "none"
+          ]
+        },
+        "occurredOn": {
+          "type": "string",
+          "format": "date",
+          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+        },
+        "mechanism": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 500
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "diagnosis": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 2000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "professional": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 200
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "clinicalClearanceOn": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "restrictions": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 1000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 2000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "conditionId",
+        "occurredOn"
       ]
     },
     "paginationSchema": {
@@ -5675,6 +5879,19 @@
         }
       }
     },
+    "reviewAlertSchema": {
+      "type": "object",
+      "properties": {
+        "note": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        }
+      },
+      "required": [
+        "note"
+      ]
+    },
     "reviewSchema": {
       "type": "object",
       "properties": {
@@ -5702,6 +5919,60 @@
       },
       "required": [
         "reason"
+      ]
+    },
+    "rtpDecisionSchema": {
+      "type": "object",
+      "properties": {
+        "stage": {
+          "type": "string",
+          "enum": [
+            "return_to_participation",
+            "return_to_sport",
+            "return_to_performance"
+          ]
+        },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "authorized",
+            "not_yet",
+            "deferred"
+          ]
+        },
+        "decidedByName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "decidedByRole": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "decidedOn": {
+          "type": "string",
+          "format": "date",
+          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+        },
+        "rationale": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 2000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "stage",
+        "outcome",
+        "decidedByName",
+        "decidedByRole",
+        "decidedOn"
       ]
     },
     "saveTemplateSchema": {
@@ -6893,6 +7164,64 @@
         "clientMutationId",
         "sessionExerciseId",
         "reason"
+      ]
+    },
+    "symptomSchema": {
+      "type": "object",
+      "properties": {
+        "recordedOn": {
+          "type": "string",
+          "format": "date",
+          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+        },
+        "pain": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10
+        },
+        "worseThanBefore": {
+          "default": false,
+          "type": "boolean"
+        },
+        "persistsNextDay": {
+          "default": false,
+          "type": "boolean"
+        },
+        "functionLoss": {
+          "default": false,
+          "type": "boolean"
+        },
+        "neurological": {
+          "default": false,
+          "type": "boolean"
+        },
+        "swelling": {
+          "default": false,
+          "type": "boolean"
+        },
+        "instability": {
+          "default": false,
+          "type": "boolean"
+        },
+        "adverseReaction": {
+          "default": false,
+          "type": "boolean"
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 1000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "recordedOn",
+        "pain"
       ]
     },
     "syncSchema": {

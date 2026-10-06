@@ -786,12 +786,21 @@
         "change": {
           "delta": "number",
           "deltaPercent": "number",
-          "error": "null",
+          "error": {
+            "basis": "string",
+            "label": "string",
+            "mdc95": "number",
+            "origin": "string",
+            "swc": "null",
+            "te": "number"
+          },
           "label": "string",
           "post": "number",
           "pre": "number",
           "verdict": "string",
-          "warnings": []
+          "warnings": [
+            "string"
+          ]
         },
         "direction": "string",
         "name": "string",
@@ -803,7 +812,9 @@
         "unit": "string"
       }
     ],
-    "notes": [],
+    "notes": [
+      "string"
+    ],
     "scale": {
       "label": "string",
       "neutral": "number",
@@ -1434,6 +1445,226 @@
         "questionnaireVersion": "string",
         "result": "string"
       }
+    ]
+  },
+  "GET clients/[clientId]/injuries": {
+    "items": [
+      {
+        "condition": "string",
+        "id": "string",
+        "occurredOn": "string",
+        "openAlerts": "number",
+        "phase": "string",
+        "phaseNumber": "number",
+        "phasesCount": "number",
+        "regionLabel": "string",
+        "side": "string",
+        "sideLabel": "string",
+        "status": "string",
+        "statusLabel": "string"
+      }
+    ]
+  },
+  "GET clients/[clientId]/injuries/[injuryId]": {
+    "alerts": [
+      {
+        "createdAt": "string",
+        "id": "string",
+        "kind": "string",
+        "message": "string",
+        "reviewNote": "string",
+        "reviewedAt": "string",
+        "severity": "string"
+      }
+    ],
+    "canAdvance": {
+      "allowed": "boolean",
+      "reasons": [
+        "string"
+      ]
+    },
+    "checklist": [
+      {
+        "item": "string",
+        "label": "string",
+        "status": "string"
+      }
+    ],
+    "clientId": "string",
+    "clinicalClearanceOn": "null",
+    "closedAt": "null",
+    "condition": "string",
+    "decisionRequested": "boolean",
+    "decisions": [
+      {
+        "decidedByName": "string",
+        "decidedByRole": "string",
+        "decidedOn": "string",
+        "id": "string",
+        "outcome": "string",
+        "outcomeLabel": "string",
+        "rationale": "string",
+        "stage": "string",
+        "stageLabel": "string"
+      }
+    ],
+    "diagnosis": "string",
+    "history": [
+      {
+        "endedOn": "string",
+        "note": "null",
+        "phase": "string",
+        "phaseId": "string",
+        "startedOn": "string"
+      }
+    ],
+    "id": "string",
+    "mechanism": "string",
+    "notes": "null",
+    "occurredOn": "string",
+    "outcomes": [
+      {
+        "label": "string",
+        "value": "string"
+      }
+    ],
+    "phase": {
+      "criteria": [
+        {
+          "auto": "null",
+          "evidence": "string",
+          "evidenceLabel": "string",
+          "id": "string",
+          "limitations": "null",
+          "mandatory": "boolean",
+          "role": "string",
+          "roleLabel": "string",
+          "rtpItem": "string",
+          "sources": [
+            "string"
+          ],
+          "state": {
+            "assessmentId": "null",
+            "checkedOn": "null",
+            "id": "string",
+            "met": "null",
+            "note": "null",
+            "source": "null",
+            "value": "null"
+          },
+          "text": "string"
+        }
+      ],
+      "dosage": "null",
+      "exercises": [
+        "string"
+      ],
+      "goals": [
+        "string"
+      ],
+      "id": "string",
+      "name": "string",
+      "number": "number",
+      "recommendedTests": [
+        "string"
+      ],
+      "restrictions": "null"
+    },
+    "phaseStartedOn": "string",
+    "professional": "string",
+    "protocol": {
+      "id": "string",
+      "limitations": "string",
+      "name": "string",
+      "painThreshold": "number",
+      "painThresholdBasis": "string",
+      "phases": [
+        {
+          "id": "string",
+          "name": "string"
+        }
+      ],
+      "protocolVersion": "number",
+      "sources": [
+        "string"
+      ]
+    },
+    "regionLabel": "string",
+    "restrictions": "null",
+    "side": "string",
+    "sideLabel": "string",
+    "stages": [
+      {
+        "label": "string",
+        "value": "string"
+      }
+    ],
+    "status": "string",
+    "statusLabel": "string",
+    "symptoms": [
+      {
+        "adverseReaction": "boolean",
+        "functionLoss": "boolean",
+        "id": "string",
+        "instability": "boolean",
+        "neurological": "boolean",
+        "note": "string",
+        "pain": "number",
+        "persistsNextDay": "boolean",
+        "recordedOn": "string",
+        "swelling": "boolean",
+        "worseThanBefore": "boolean"
+      }
+    ],
+    "version": "number"
+  },
+  "GET clients/[clientId]/injuries/[injuryId]/comparison": {
+    "a": {
+      "date": "string",
+      "id": "string"
+    },
+    "b": {
+      "date": "string",
+      "id": "string"
+    },
+    "columns": [
+      {
+        "date": "string",
+        "id": "string",
+        "label": "string",
+        "phase": "null"
+      }
+    ],
+    "notes": [
+      "string"
+    ],
+    "rows": [
+      {
+        "a": "number",
+        "b": "number",
+        "better": "string",
+        "cells": [
+          {
+            "assessmentId": "string",
+            "left": "number",
+            "lsi": "number",
+            "right": "number",
+            "value": "number"
+          }
+        ],
+        "delta": "number",
+        "deltaPercent": "number",
+        "errorKnown": "boolean",
+        "lsiB": "number",
+        "name": "string",
+        "reading": "string",
+        "readingLabel": "string",
+        "slug": "string",
+        "unit": "string"
+      }
+    ],
+    "tests": [
+      "string"
     ]
   },
   "GET clients/[clientId]/monitoring": {
@@ -2458,7 +2689,7 @@
   "GET exercises/[exerciseId]": {
     "altNames": [],
     "axialLoad": "null",
-    "bodyRegion": "null",
+    "bodyRegion": "string",
     "categories": [
       {
         "id": "string",
@@ -2508,12 +2739,16 @@
       }
     ],
     "methodIds": [],
-    "movementPatternId": "null",
+    "movementPatternId": "string",
     "muscles": [],
     "name": "string",
     "needsReview": "boolean",
     "organizationId": "string",
-    "pattern": "null",
+    "pattern": {
+      "family": "string",
+      "id": "string",
+      "name": "string"
+    },
     "planes": [],
     "prescriptionProfileId": "string",
     "profile": {
@@ -2620,6 +2855,91 @@
     "valid": "number"
   },
   "GET imports/templates/[entity]": "file:text/csv",
+  "GET injury-catalog": {
+    "conditions": [
+      {
+        "description": "string",
+        "id": "string",
+        "name": "string",
+        "protocols": [
+          {
+            "id": "string",
+            "name": "string",
+            "phases": "number",
+            "protocolVersion": "number"
+          }
+        ],
+        "region": "string",
+        "regionLabel": "string",
+        "slug": "string"
+      }
+    ],
+    "regions": [
+      {
+        "label": "string",
+        "value": "string"
+      }
+    ],
+    "sides": [
+      {
+        "label": "string",
+        "value": "string"
+      }
+    ]
+  },
+  "GET injury-protocols/[protocolId]": {
+    "conditionId": "string",
+    "description": "string",
+    "id": "string",
+    "limitations": "string",
+    "name": "string",
+    "painThreshold": "number",
+    "painThresholdBasis": "string",
+    "phases": [
+      {
+        "criteria": [
+          {
+            "auto": {
+              "metric": "string",
+              "operator": "string",
+              "testSlug": "string",
+              "threshold": "number"
+            },
+            "evidence": "string",
+            "evidenceLabel": "string",
+            "id": "string",
+            "limitations": "string",
+            "mandatory": "boolean",
+            "role": "string",
+            "roleLabel": "string",
+            "rtpItem": "string",
+            "sources": [
+              "string"
+            ],
+            "text": "string"
+          }
+        ],
+        "dosage": "string",
+        "exercises": [
+          "string"
+        ],
+        "goals": [
+          "string"
+        ],
+        "id": "string",
+        "index": "number",
+        "name": "string",
+        "recommendedTests": [
+          "string"
+        ],
+        "restrictions": "string"
+      }
+    ],
+    "protocolVersion": "number",
+    "sources": [
+      "string"
+    ]
+  },
   "GET library/taxonomies": {
     "categories": [
       {

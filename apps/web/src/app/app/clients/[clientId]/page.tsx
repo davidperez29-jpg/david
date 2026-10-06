@@ -29,6 +29,7 @@ import {
   listLibraryTaxonomies,
   listProgrammingProfiles,
   listTrainers,
+  injuryCaseCount,
 } from '@tp/application';
 import { DomainError, REPORT_KINDS } from '@tp/domain';
 import { notFound } from 'next/navigation';
@@ -66,6 +67,7 @@ import {
   TolerancesPanel,
 } from './panels';
 import { DecisionTab } from './decision-tab';
+import { InjuryTab } from './injury-tab';
 import { ExternalImportForm } from '@/components/integrations/external-import';
 import { SubjectRightsPanel } from '@/components/privacy/erase';
 import { PrivacyStatusBadge, rightName, type PrivacyRequestRow } from '@/components/privacy/labels';
@@ -100,8 +102,8 @@ function ClientRequestsCard({ requests }: { requests: PrivacyRequestRow[] }) {
 }
 
 /**
- * Client page (docs/UX_FLOW.md §2.2): five tabs. Readaptación joins them in phase 7 for clients
- * with an injury case. The decision engine («necesidades») and the change history («historial»)
+ * Client page (docs/UX_FLOW.md §2.2): five tabs. Readaptación joins them (restructure phase 7)
+ * when the client has an injury case; Ficha → Salud links to it to open the first one. The decision engine («necesidades») and the change history («historial»)
  * open from links, not tabs. Old tab names still work.
  */
 const TABS = [
@@ -122,7 +124,7 @@ const ALIASES: Record<string, string> = {
   privacidad: 'ficha',
   equipo: 'ficha',
 };
-const LINKED = ['necesidades', 'historial'];
+const LINKED = ['necesidades', 'historial', 'readaptacion'];
 
 export default async function ClientPage({
   params,
@@ -148,6 +150,12 @@ export default async function ClientPage({
     throw e;
   });
   const isAdmin = ctx.actor.roles.includes('ADMIN');
+  // Readaptación appears only when the client has an injury case (or it was asked for).
+  const injuryCases = await injuryCaseCount(ctx, client.id);
+  const tabs: (readonly [string, string])[] =
+    injuryCases.total || tab === 'readaptacion'
+      ? [...TABS.slice(0, 3), ['readaptacion', 'Readaptación'], ...TABS.slice(3)]
+      : [...TABS];
   const primaryGoal = client.goals.find((g) => g.isPrimary) ?? null;
   const facts = [
     client.programmingProfile
@@ -205,7 +213,7 @@ export default async function ClientPage({
         className="flex flex-wrap gap-1 border-b border-border"
         aria-label="Secciones del cliente"
       >
-        {TABS.map(([key, name]) => (
+        {tabs.map(([key, name]) => (
           <Link
             key={key}
             href={`?tab=${key}`}
@@ -234,6 +242,8 @@ export default async function ClientPage({
           </div>
         </div>
       ) : null}
+
+      {tab === 'readaptacion' ? <InjuryTab ctx={ctx} clientId={client.id} /> : null}
 
       {tab === 'informes' ? await reportsTab(ctx, client.id) : null}
 
@@ -326,7 +336,12 @@ async function fichaTab(ctx: Ctx, client: Client, isAdmin: boolean) {
         <ProfilePanel client={client} catalog={catalog} />
       </div>
       <div id="salud" className="flex scroll-mt-4 flex-col gap-4">
-        <h2 className="text-lg font-semibold">Salud</h2>
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <h2 className="text-lg font-semibold">Salud</h2>
+          <Link href="?tab=readaptacion" className="text-sm text-accent underline">
+            Lesiones y readaptación →
+          </Link>
+        </div>
         <HealthPanel clientId={client.id} data={health} consents={consents} />
         <TolerancesPanel
           clientId={client.id}

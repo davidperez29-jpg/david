@@ -45,6 +45,8 @@ export async function a11yIds() {
       claim: await one(`SELECT id FROM knowledge_claims ORDER BY id LIMIT 1`),
       method: await one(`SELECT id FROM methods ORDER BY id LIMIT 1`),
       source: await one(`SELECT id FROM evidence_sources ORDER BY id LIMIT 1`),
+      injury: await one(`SELECT id FROM injuries ORDER BY created_at LIMIT 1`),
+      injuryClient: await one(`SELECT client_id AS id FROM injuries ORDER BY created_at LIMIT 1`),
       importJob: await one(`SELECT id FROM import_jobs ORDER BY created_at DESC LIMIT 1`),
       clientSession: await one(
         `SELECT s.id FROM sessions s JOIN clients c ON c.id = s.client_id

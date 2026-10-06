@@ -66,6 +66,9 @@ export async function loadVictim(): Promise<Victim> {
         logId: await ofClient('set_logs'),
         alertId: await ofClient('alerts'),
         declarationId: await ofClient('health_declarations'),
+        injuryId: await ofClient('injuries'),
+        injuryAlertId: await ofClient('injury_alerts'),
+        protocolId: await ofOrg('injury_protocols'),
         entryId: await ofClient('client_history_entries'),
         toleranceId: await ofClient('exercise_tolerances'),
         substitutionId: await ofClient('exercise_substitutions'),
@@ -107,6 +110,7 @@ export async function loadVictim(): Promise<Victim> {
         testId: await global('assessment_tests'),
         reliabilityId: await global('test_reliability_data'),
         templateId: await global('plan_templates'),
+        protocolId: await global('injury_protocols'),
       },
     };
   } finally {
