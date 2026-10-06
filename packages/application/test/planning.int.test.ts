@@ -287,9 +287,9 @@ describe('client plans', () => {
     for (const status of ['completed', 'archived'] as const) {
       await setPlanStatus(o.admin, m.id, { status });
       const locked = { code: 'conflict', details: { plan: ['locked'] } };
-      await expect(addBlock(o.admin, sid, { type: 'conditioning', label: 'X' })).rejects.toMatchObject(
-        locked,
-      );
+      await expect(
+        addBlock(o.admin, sid, { type: 'conditioning', label: 'X' }),
+      ).rejects.toMatchObject(locked);
       await expect(
         updateMicrocycle(o.admin, week.id, { weekType: 'deload' }),
       ).rejects.toMatchObject(locked);
