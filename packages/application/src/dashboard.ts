@@ -74,6 +74,7 @@ async function calendarEvents_(ctx: RequestContext, query: unknown) {
       title: sessions.title,
       dayLabel: sessions.dayLabel,
       published: sessions.published,
+      version: sessions.version,
       planId: sql<string>`${trainingPlans.id}`.as('plan_id'),
       planStatus: sql<string>`${trainingPlans.status}`.as('plan_status'),
       weekType: microcycles.weekType,

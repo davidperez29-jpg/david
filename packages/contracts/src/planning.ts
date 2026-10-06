@@ -127,6 +127,12 @@ export const planStatusSchema = z.object({
 
 export const revisionSchema = z.object({ reason: z.string().trim().min(3).max(500) });
 
+/** Move a session to another day of its plan (calendar, restructure phase 12). */
+export const rescheduleSessionSchema = z.object({
+  expectedVersion: z.coerce.number().int().min(1),
+  date: isoDate,
+});
+
 export const updateSessionSchema = z.object({
   expectedVersion: z.coerce.number().int().min(1),
   dayLabel: z.string().trim().min(1).max(20).optional(),

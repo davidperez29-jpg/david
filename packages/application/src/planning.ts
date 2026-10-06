@@ -8,6 +8,7 @@ import {
   moveSchema,
   planFromTemplateSchema,
   planStatusSchema,
+  rescheduleSessionSchema,
   resolveExerciseNamesSchema,
   revisionSchema,
   sessionExerciseIdsSchema,
@@ -30,6 +31,7 @@ import {
   fitToDuration,
   hasActiveConsent,
   loadFromPct,
+  localDate,
   prescriptionForClient,
   prescriptionShort,
   slugify,
@@ -47,7 +49,7 @@ import {
   type TemplateSession,
   type WeekType,
 } from '@tp/domain';
-import { and, asc, desc, eq, inArray, isNull, ne, or, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, isNotNull, isNull, ne, or, sql } from 'drizzle-orm';
 import type { AnyPgColumn } from 'drizzle-orm/pg-core';
 import { writeAudit } from './audit';
 import { authorizeClient, requirePermission } from './authz';
@@ -61,6 +63,7 @@ import {
 import { parse } from './validation';
 
 const {
+  attendance,
   exerciseCategories,
   exerciseCategoryLinks,
   trainingPlans,
@@ -1185,6 +1188,74 @@ async function updateSession_(ctx: RequestContext, id: string, input: unknown): 
   });
 }
 
+/**
+ * Moves a session to another day of its plan (calendar, restructure phase 12). Only a session
+ * nobody has started or recorded, to today or later, inside the weeks of its plan; when the day
+ * falls in another week, the session moves to that week (last of its day). The plan must be
+ * editable (not completed or archived). Audited.
+ */
+async function rescheduleSession_(ctx: RequestContext, id: string, input: unknown) {
+  const { expectedVersion, date } = parse(rescheduleSessionSchema, input);
+  const { session, plan } = await planOfSession(ctx, id, 'plans:write');
+  if (session.version !== expectedVersion)
+    throw new DomainError('conflict', 'La sesión ha cambiado. Recarga los datos.');
+  if (session.scheduledDate === date) return { id, date, microcycleId: session.microcycleId };
+  const [done] = await ctx.db
+    .select({ status: attendance.status })
+    .from(attendance)
+    .where(eq(attendance.sessionId, id));
+  if (done)
+    throw new DomainError('conflict', 'Esta sesión ya tiene registro: no se puede mover.', {
+      session: ['recorded'],
+    });
+  if (date < localDate(ctx.now()))
+    throw new DomainError('validation', 'Elige hoy o un día futuro.', { date: ['past'] });
+  const weeks = await ctx.db
+    .select({ id: microcycles.id, start: microcycles.startDate })
+    .from(microcycles)
+    .innerJoin(mesocycles, eq(mesocycles.id, microcycles.mesocycleId))
+    .innerJoin(phases, eq(phases.id, mesocycles.phaseId))
+    .where(and(eq(phases.planId, plan.id), isNotNull(microcycles.startDate)));
+  const week = weeks.find((w) => w.start! <= date && date <= addDays(w.start!, 6));
+  if (!week)
+    throw new DomainError('validation', 'Ese día está fuera de las semanas del plan.', {
+      date: ['outside_plan'],
+    });
+  let position = session.position;
+  if (week.id !== session.microcycleId) {
+    const [last] = await ctx.db
+      .select({ p: sql<number>`coalesce(max(${sessions.position}), -1)::int` })
+      .from(sessions)
+      .where(eq(sessions.microcycleId, week.id));
+    position = (last?.p ?? -1) + 1;
+  }
+  await ctx.db.transaction(async (tx) => {
+    await tx
+      .update(sessions)
+      .set({
+        scheduledDate: date,
+        microcycleId: week.id,
+        position,
+        version: session.version + 1,
+        updatedBy: ctx.actor.userId,
+      })
+      .where(eq(sessions.id, id));
+    await writeAudit(tx, ctx, {
+      action: 'update',
+      entityType: 'session',
+      entityId: id,
+      clientId: plan.clientId,
+      changes: {
+        scheduledDate: { from: session.scheduledDate, to: date },
+        ...(week.id !== session.microcycleId
+          ? { microcycleId: { from: session.microcycleId, to: week.id } }
+          : {}),
+      },
+    });
+  });
+  return { id, date, microcycleId: week.id };
+}
+
 async function addBlock_(
   ctx: RequestContext,
   sessionId: string,
@@ -2183,6 +2254,7 @@ export const createPlanRevision = secured(createPlanRevision_);
 export const listPlanRevisions = secured(listPlanRevisions_);
 export const getSession = secured(getSession_);
 export const updateSession = secured(updateSession_);
+export const rescheduleSession = secured(rescheduleSession_);
 export const addBlock = secured(addBlock_);
 export const updateBlock = secured(updateBlock_);
 export const deleteBlock = secured(deleteBlock_);

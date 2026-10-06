@@ -1,6 +1,12 @@
 import Link from 'next/link';
 import { calendarEvents, calendarTrainers, listClients } from '@tp/application';
 import { addDays, isoWeekday, localDate, monthGrid, shiftMonth } from '@tp/domain';
+import {
+  DraggableSession,
+  DropDay,
+  MoveSessionForm,
+  RescheduleProvider,
+} from '@/components/calendar/reschedule';
 import { Card } from '@/components/ui/card';
 import { label } from '@/lib/labels';
 import { requireStaff } from '@/server/session';
@@ -104,22 +110,30 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
       )),
       ...x.sessions.map((s) => {
         const m = sessionMark(s, data.today);
+        // Only pending sessions of an active plan, from today on, can be moved (phase 12).
+        const movable = s.planStatus === 'active' && !s.attendance && s.date! >= data.today;
+        const who = `${s.firstName} ${s.lastName} · ${s.title}`;
         return (
           <li key={s.id}>
-            <Link
-              href={`/app/clients/${s.clientId}/sessions/${s.id}`}
-              className="flex min-h-6 items-center gap-1 truncate hover:underline"
-              title={`${s.firstName} ${s.lastName} · ${s.title} · ${m.text}`}
-            >
-              <span className={m.cls} aria-hidden>
-                {m.icon}
-              </span>
-              <span className="truncate">
-                {s.time ? `${s.time.slice(0, 5)} ` : ''}
-                {sp.cliente ? s.title : `${s.firstName} ${s.lastName[0]}.`}
-              </span>
-              <span className="sr-only"> · {m.text}</span>
-            </Link>
+            <DraggableSession id={s.id} version={s.version} movable={movable}>
+              <Link
+                href={`/app/clients/${s.clientId}/sessions/${s.id}`}
+                className="flex min-h-6 items-center gap-1 truncate hover:underline"
+                title={`${who} · ${m.text}${movable ? ' · arrastra para cambiar de día' : ''}`}
+              >
+                <span className={m.cls} aria-hidden>
+                  {m.icon}
+                </span>
+                <span className="truncate">
+                  {s.time ? `${s.time.slice(0, 5)} ` : ''}
+                  {sp.cliente ? s.title : `${s.firstName} ${s.lastName[0]}.`}
+                </span>
+                <span className="sr-only"> · {m.text}</span>
+              </Link>
+            </DraggableSession>
+            {movable && !compact ? (
+              <MoveSessionForm id={s.id} version={s.version} date={s.date!} label={who} />
+            ) : null}
           </li>
         );
       }),
@@ -246,59 +260,63 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
         </span>
       </nav>
 
-      <p className="text-xs text-muted">
-        ✓ completada · ◐ parcial · ✗ no realizada · ! sin registrar · • pendiente · ○ no publicada ·
-        📋 evaluación
-        {sp.cliente
-          ? ' · en azul, la fase del plan; ↓ semanas de descarga o transición'
-          : ' · elige un cliente para ver las fases y las descargas'}
-      </p>
+      <RescheduleProvider today={data.today}>
+        <p className="text-xs text-muted">
+          ✓ completada · ◐ parcial · ✗ no realizada · ! sin registrar · • pendiente · ○ no publicada
+          · 📋 evaluación · para cambiar de día una sesión pendiente, arrástrala o usa «Mover» en la
+          vista semana
+          {sp.cliente
+            ? ' · en azul, la fase del plan; ↓ semanas de descarga o transición'
+            : ' · elige un cliente para ver las fases y las descargas'}
+        </p>
 
-      {/* Desktop: grid. Mobile: day-by-day agenda. */}
-      <div className="hidden overflow-hidden rounded-lg border border-border bg-bg md:block">
-        <div className="grid grid-cols-7 border-b border-border text-xs text-muted">
-          {WEEKDAYS.map((w) => (
-            <div key={w} className="px-2 py-1">
-              {w}
+        {/* Desktop: grid. Mobile: day-by-day agenda. */}
+        <div className="hidden overflow-hidden rounded-lg border border-border bg-bg md:block">
+          <div className="grid grid-cols-7 border-b border-border text-xs text-muted">
+            {WEEKDAYS.map((w) => (
+              <div key={w} className="px-2 py-1">
+                {w}
+              </div>
+            ))}
+          </div>
+          {grid.map((row) => (
+            <div key={row[0]} className="grid grid-cols-7 border-b border-border last:border-0">
+              {row.map((d) => {
+                const out = !week && d.slice(0, 7) !== month;
+                return (
+                  <DropDay
+                    key={d}
+                    date={d}
+                    className={`min-h-28 border-r border-border p-1 last:border-0 ${out ? 'bg-surface/60 text-muted' : ''} ${week ? 'min-h-64' : ''}`}
+                  >
+                    <p
+                      className={`mb-1 text-xs ${d === data.today ? 'inline-block rounded-full bg-accent px-1.5 font-semibold text-accent-contrast' : 'text-muted'}`}
+                    >
+                      {Number(d.slice(8))}
+                      {d === data.today ? <span className="sr-only"> (hoy)</span> : null}
+                    </p>
+                    <DayContent d={d} compact={!week} />
+                  </DropDay>
+                );
+              })}
             </div>
           ))}
         </div>
-        {grid.map((row) => (
-          <div key={row[0]} className="grid grid-cols-7 border-b border-border last:border-0">
-            {row.map((d) => {
-              const out = !week && d.slice(0, 7) !== month;
-              return (
-                <div
-                  key={d}
-                  className={`min-h-28 border-r border-border p-1 last:border-0 ${out ? 'bg-surface/60 text-muted' : ''} ${week ? 'min-h-64' : ''}`}
-                >
-                  <p
-                    className={`mb-1 text-xs ${d === data.today ? 'inline-block rounded-full bg-accent px-1.5 font-semibold text-accent-contrast' : 'text-muted'}`}
-                  >
-                    {Number(d.slice(8))}
-                    {d === data.today ? <span className="sr-only"> (hoy)</span> : null}
-                  </p>
-                  <DayContent d={d} compact={!week} />
-                </div>
-              );
-            })}
-          </div>
-        ))}
-      </div>
-      <div className="flex flex-col gap-2 md:hidden">
-        {grid
-          .flat()
-          .filter((d) => week || d.slice(0, 7) === month)
-          .filter((d) => {
-            const x = byDay(d);
-            return x.sessions.length + x.assessments.length > 0 || d === data.today;
-          })
-          .map((d) => (
-            <Card key={d} title={`${DAY(d)}${d === data.today ? ' · hoy' : ''}`}>
-              <DayContent d={d} compact={false} />
-            </Card>
-          ))}
-      </div>
+        <div className="flex flex-col gap-2 md:hidden">
+          {grid
+            .flat()
+            .filter((d) => week || d.slice(0, 7) === month)
+            .filter((d) => {
+              const x = byDay(d);
+              return x.sessions.length + x.assessments.length > 0 || d === data.today;
+            })
+            .map((d) => (
+              <Card key={d} title={`${DAY(d)}${d === data.today ? ' · hoy' : ''}`}>
+                <DayContent d={d} compact={false} />
+              </Card>
+            ))}
+        </div>
+      </RescheduleProvider>
     </div>
   );
 }

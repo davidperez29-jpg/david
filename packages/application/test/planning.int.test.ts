@@ -1,4 +1,5 @@
 import { schema } from '@tp/db';
+import { addDays, isoWeekday, localDate } from '@tp/domain';
 import { eq } from 'drizzle-orm';
 import { beforeAll, describe, expect, it } from 'vitest';
 import {
@@ -23,6 +24,7 @@ import {
   listPlanTemplates,
   moveSessionExercise,
   recordAssessmentResult,
+  rescheduleSession,
   saveAsTemplate,
   setClientEquipment,
   setPlanStatus,
@@ -304,6 +306,74 @@ describe('client plans', () => {
     // Reopening is a status change, allowed on a locked plan; then it can be edited again.
     await setPlanStatus(o.admin, m.id, { status: 'draft' });
     await addBlock(o.admin, sid, { type: 'conditioning', label: 'Reabierto' });
+  });
+
+  it('reschedules a session from the calendar: same week, another week, and every refusal', async () => {
+    const today = localDate(new Date());
+    const monday = addDays(today, 1 - isoWeekday(today));
+    const m = await createPlan(o.admin, o.clientB, {
+      name: 'Reprogramar',
+      durationMonths: 3,
+      weeks: 12,
+      weekdays: [1, 3, 5],
+      startDate: monday,
+    });
+    const weeks = weeksOf(await getPlan(o.admin, m.id));
+    const s = weeks[1]!.sessions[0]!; // Monday of week 2: always in the future
+    const v = (await getSession(o.admin, s.id)).version;
+    // Same week: only the date changes.
+    await rescheduleSession(o.admin, s.id, {
+      expectedVersion: v,
+      date: addDays(s.scheduledDate!, 1),
+    });
+    expect((await getSession(o.admin, s.id)).scheduledDate).toBe(addDays(s.scheduledDate!, 1));
+    // Stale version.
+    await expect(
+      rescheduleSession(o.admin, s.id, { expectedVersion: v, date: addDays(s.scheduledDate!, 2) }),
+    ).rejects.toMatchObject({ code: 'conflict' });
+    // Another week: the session moves to that week.
+    const target = addDays(weeks[2]!.startDate!, 3);
+    const r = await rescheduleSession(o.admin, s.id, { expectedVersion: v + 1, date: target });
+    expect(r.microcycleId).toBe(weeks[2]!.id);
+    const after = weeksOf(await getPlan(o.admin, m.id));
+    expect(after[2]!.sessions.some((x) => x.id === s.id && x.scheduledDate === target)).toBe(true);
+    expect(after[1]!.sessions.some((x) => x.id === s.id)).toBe(false);
+    const v3 = v + 2;
+    // Past day and days outside the plan's weeks.
+    await expect(
+      rescheduleSession(o.admin, s.id, { expectedVersion: v3, date: addDays(today, -1) }),
+    ).rejects.toMatchObject({ code: 'validation', details: { date: ['past'] } });
+    await expect(
+      rescheduleSession(o.admin, s.id, {
+        expectedVersion: v3,
+        date: addDays(weeks.at(-1)!.startDate!, 7),
+      }),
+    ).rejects.toMatchObject({ code: 'validation', details: { date: ['outside_plan'] } });
+    // Out of scope.
+    for (const by of [other.admin, o.clientUser])
+      await expect(
+        rescheduleSession(by, s.id, { expectedVersion: v3, date: target }),
+      ).rejects.toMatchObject({ code: expect.stringMatching(/^(forbidden|not_found)$/) });
+    // A session with a record (here, completed) cannot move.
+    const done = weeks[3]!.sessions[0]!;
+    await testDb().db.insert(schema.attendance).values({
+      organizationId: o.org.organizationId,
+      clientId: o.clientB,
+      sessionId: done.id,
+      status: 'completed',
+      performedDate: today,
+    });
+    await expect(
+      rescheduleSession(o.admin, done.id, {
+        expectedVersion: (await getSession(o.admin, done.id)).version,
+        date: addDays(done.scheduledDate!, 1),
+      }),
+    ).rejects.toMatchObject({ code: 'conflict', details: { session: ['recorded'] } });
+    // An archived plan is locked.
+    await setPlanStatus(o.admin, m.id, { status: 'archived' });
+    await expect(
+      rescheduleSession(o.admin, s.id, { expectedVersion: v3, date: addDays(target, 1) }),
+    ).rejects.toMatchObject({ code: 'conflict', details: { plan: ['locked'] } });
   });
 
   it('enforces scope: other trainer, other organization, clients', async () => {

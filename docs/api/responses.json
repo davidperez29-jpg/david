@@ -1,4 +1,68 @@
 {
+  "GET adjustments": [
+    {
+      "applied": "null",
+      "clientId": "string",
+      "createdAt": "string",
+      "decidedAt": "null",
+      "decidedBy": "null",
+      "decisionReason": "null",
+      "explanation": {
+        "applicability": [],
+        "confidence": "string",
+        "data": [
+          "string"
+        ],
+        "evidence": [],
+        "interpretation": [
+          "string"
+        ],
+        "limitations": [
+          "string"
+        ],
+        "proposal": "string",
+        "rules": [
+          {
+            "key": "string",
+            "version": "number"
+          }
+        ]
+      },
+      "firstName": "string",
+      "id": "string",
+      "kind": "string",
+      "lastName": "string",
+      "options": [],
+      "params": "object",
+      "preview": [
+        {
+          "field": "string",
+          "from": "number",
+          "sessionExerciseId": "string",
+          "to": "number"
+        }
+      ],
+      "status": "string",
+      "targets": [
+        {
+          "date": "string",
+          "exerciseId": "string",
+          "exerciseName": "string",
+          "loadKg": "number",
+          "repsMax": "number",
+          "repsMin": "number",
+          "rirMax": "number",
+          "rirMin": "number",
+          "sessionExerciseId": "string",
+          "sessionId": "string",
+          "sets": "number",
+          "weekIndex": "number"
+        }
+      ],
+      "title": "string",
+      "type": "string"
+    }
+  ],
   "GET alerts": [
     {
       "clientId": "string",
@@ -311,6 +375,7 @@
         "published": "boolean",
         "time": "null",
         "title": "string",
+        "version": "number",
         "weekType": "string"
       }
     ],
@@ -726,7 +791,7 @@
     {
       "action": "string",
       "actor": "string",
-      "changes": "[object Object]|object|object|object|object",
+      "changes": "[object Object]|object|object|object|object|object",
       "entityType": "string",
       "id": "string",
       "occurredAt": "string",
@@ -919,6 +984,8 @@
             {
               "claimKey": "string",
               "confidence": "string",
+              "evidenceKind": "string",
+              "limitations": "string",
               "sources": [
                 "object"
               ],
@@ -1923,6 +1990,20 @@
         "updatedAt": "string"
       }
     ],
+    "avisos_de_lesion": [
+      {
+        "createdAt": "string",
+        "id": "string",
+        "injuryId": "string",
+        "kind": "string",
+        "message": "string",
+        "reviewNote": "string",
+        "reviewedAt": "string",
+        "reviewedBy": "string",
+        "severity": "string",
+        "symptomId": "string"
+      }
+    ],
     "bienestar": [
       {
         "comment": "string",
@@ -1939,6 +2020,7 @@
         "updatedAt": "string"
       }
     ],
+    "cambios_del_entrenador": [],
     "cliente": {
       "anonymizedAt": "null",
       "archivedAt": "null",
@@ -1988,6 +2070,34 @@
         "result": "string",
         "updatedAt": "string",
         "updatedBy": "null"
+      }
+    ],
+    "criterios_de_lesion_comprobados": [
+      {
+        "assessmentId": "string",
+        "checkedAt": "string",
+        "checkedBy": "string",
+        "criterionId": "string",
+        "id": "string",
+        "injuryId": "string",
+        "met": "boolean",
+        "note": "null",
+        "source": "string",
+        "value": "string"
+      }
+    ],
+    "decisiones_de_vuelta_al_deporte": [
+      {
+        "createdAt": "string",
+        "decidedByName": "string",
+        "decidedByRole": "string",
+        "decidedOn": "string",
+        "id": "string",
+        "injuryId": "string",
+        "outcome": "string",
+        "rationale": "string",
+        "recordedBy": "string",
+        "stage": "string"
       }
     ],
     "declaraciones_de_salud": [
@@ -2092,8 +2202,29 @@
         "version": "number"
       }
     ],
+    "fases_de_lesion": [
+      {
+        "advancedBy": "string",
+        "createdAt": "string",
+        "endedOn": "string",
+        "id": "string",
+        "injuryId": "string",
+        "note": "null",
+        "phaseId": "string",
+        "startedOn": "string"
+      }
+    ],
     "formato": "string",
     "generado": "string",
+    "grupos": [
+      {
+        "createdAt": "string",
+        "groupId": "string",
+        "id": "string",
+        "role": "null",
+        "updatedAt": "string"
+      }
+    ],
     "historial": [
       {
         "createdAt": "string",
@@ -2122,6 +2253,32 @@
         "status": "string",
         "type": "string",
         "updatedAt": "string"
+      }
+    ],
+    "lesiones": [
+      {
+        "clinicalClearanceOn": "null",
+        "closedAt": "null",
+        "conditionId": "string",
+        "createdAt": "string",
+        "createdBy": "string",
+        "currentPhaseId": "string",
+        "decisionRequestedAt": "null",
+        "diagnosis": "string",
+        "healthDeclarationId": "null",
+        "id": "string",
+        "mechanism": "string",
+        "notes": "null",
+        "occurredOn": "string",
+        "phaseStartedOn": "string",
+        "professional": "string",
+        "protocolId": "string",
+        "restrictions": "null",
+        "side": "string",
+        "status": "string",
+        "updatedAt": "string",
+        "updatedBy": "string",
+        "version": "number"
       }
     ],
     "material": [
@@ -2272,6 +2429,7 @@
         "updatedAt": "string"
       }
     ],
+    "rasgos_anotados": [],
     "registro_de_actividad": [
       {
         "action": "string",
@@ -2282,6 +2440,7 @@
         "when": "string"
       }
     ],
+    "reglas_de_aviso_desactivadas": [],
     "resultados_de_evaluacion": [
       {
         "assessmentId": "string",
@@ -2308,6 +2467,7 @@
         "valueMean": "string"
       }
     ],
+    "series_prescritas": [],
     "series_registradas": [
       {
         "bandTension": "null",
@@ -2358,6 +2518,25 @@
         "updatedAt": "string",
         "updatedBy": "string",
         "version": "number"
+      }
+    ],
+    "sintomas_de_lesion": [
+      {
+        "adverseReaction": "boolean",
+        "createdAt": "string",
+        "functionLoss": "boolean",
+        "id": "string",
+        "injuryId": "string",
+        "instability": "boolean",
+        "neurological": "boolean",
+        "note": "string",
+        "pain": "number",
+        "persistsNextDay": "boolean",
+        "recordedBy": "string",
+        "recordedOn": "string",
+        "swelling": "boolean",
+        "updatedAt": "string",
+        "worseThanBefore": "boolean"
       }
     ],
     "solicitudes_de_privacidad": [
@@ -4059,7 +4238,7 @@
     "authors": [
       "string"
     ],
-    "citedIn": "null",
+    "citedIn": "string",
     "comparison": "string",
     "corrections": "null",
     "createdAt": "string",
@@ -4133,7 +4312,7 @@
     "reviews": [],
     "sex": "string",
     "sourceKey": "string",
-    "sport": "null",
+    "sport": "string",
     "studyDesign": "string",
     "title": "string",
     "trainingStatus": "string",
