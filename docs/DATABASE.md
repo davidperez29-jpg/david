@@ -24,7 +24,7 @@
 6. **Planificado ≠ realizado**:
    - La prescripción (`session_exercises`, `exercise_sets`) nunca se sobrescribe.
    - Lo realizado va en `set_logs`, `attendance`, `feedback`, `exercise_feedback`.
-7. **Datos de salud** (marcados `[SALUD]`) en tablas separadas: `health_declarations`, `screening_responses`, `pain_logs`, `exercise_tolerances`. El texto libre va cifrado (`*_enc`, AES-256-GCM).
+7. **Datos de salud** (marcados `[SALUD]`) en tablas separadas: `health_declarations`, `screening_responses`, `pain_logs`, `exercise_tolerances` y, desde la reestructuración, los casos de lesión (`injuries` y sus tablas hijas). El texto libre va cifrado (`*_enc`, AES-256-GCM); la lista completa, que también usa la rotación de claves, es `ENCRYPTED_COLUMNS` en `application/privacy.ts`.
 8. **Sin EAV genérico**:
    - Las variables de prescripción habituales son columnas tipadas.
    - Las raras van en `extra jsonb`, validado contra el catálogo `prescription_variables`.

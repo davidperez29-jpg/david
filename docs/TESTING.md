@@ -626,3 +626,15 @@ pnpm --filter @tp/web test:e2e -- e2e/perf.spec.ts e2e/perf.mobile.spec.ts
   - `pnpm audit --prod`: 0 altas.
 - **Restauración**: `scripts/restore-drill.sh --app`. Copia y comparación en la misma instantánea, base nueva y app arrancada sobre ella (`OPERATIONS.md` §6).
 - **Orden de las E2E**: la prueba de límite de operaciones pesadas de `security.spec.ts` agota el presupuesto del minuto de Iker. Si se ejecuta justo antes de `sessions.mobile.spec.ts` (descarga de PDF), esta recibe un 429. En la suite completa las separa más de un minuto. Para un subconjunto, ejecútalas por separado.
+
+## Resultado de la reestructuración, fase 11 (cifrado del texto de lesiones)
+
+- **Integración** (`injuries.int.test.ts`):
+  - leyendo directamente las seis tablas del caso, no aparece ningún texto libre en claro;
+  - la ficha del caso los muestra descifrados;
+  - un caso con texto anterior a la fase 11 (columnas en claro) se lee igual antes y después de `encryptInjuryText`, que deja vacías las columnas en claro.
+- **Integración** (`privacy.int.test.ts`):
+  - toda columna `*_enc` del esquema está en `ENCRYPTED_COLUMNS`;
+  - la exportación del interesado sigue descifrando la información recibida del caso.
+- **E2E**: `injury.spec.ts`, `privacy.spec.ts`, `report-kinds.spec.ts` y `contract-responses.spec.ts` sin cambios. La API mantiene su forma.
+

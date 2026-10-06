@@ -23,10 +23,11 @@
 | 4 | Evaluaciones + referencias (hoja de intentos, baterías por perfil, fórmulas, grupos/equipos) | Evaluación actual | ✅ Hecha |
 | 5 | Radares + evolución (normalización, dimensiones, comparativas) | Cambio real, gráficos | ✅ Hecha |
 | 6 | Informes (8 tipos, comparativo, grupal, radar en PDF) | Motor de informes | ✅ Hecha |
-| 7 | Lesiones / readaptación / RTP | Seguimiento de dolor, planes | Siguiente |
-| 8 | Cliente móvil + feedback + adherencia + fichaje | PWA, registro, asistencia | Pendiente |
-| 9 | Ciencia + referencias (verificación, tipos de evidencia, búsquedas registradas) | Ciencia actual | Pendiente |
-| 10 | Endurecimiento final: seguridad, copias, rendimiento, revisión ASVS/RGPD | Todo lo de seguridad | Pendiente |
+| 7 | Lesiones / readaptación / RTP | Seguimiento de dolor, planes | ✅ Hecha |
+| 8 | Cliente móvil + feedback + adherencia + fichaje | PWA, registro, asistencia | ✅ Hecha |
+| 9 | Ciencia + referencias (verificación, tipos de evidencia, búsquedas registradas) | Ciencia actual | ✅ Hecha |
+| 10 | Endurecimiento final: seguridad, copias, rendimiento, revisión ASVS/RGPD | Todo lo de seguridad | ✅ Hecha |
+| 11 | Cifrado del texto libre de lesiones (DPIA R-11), elegido por el responsable tras la fase 10 | Cifrado de columna, rotación de claves | ✅ Hecha |
 
 ## Por qué el despliegue va primero (decisión A2)
 
@@ -205,3 +206,26 @@ Pendiente para fases siguientes: tarjetas por ejercicio en el móvil y sugerenci
   - en Render: pendiente del responsable (no se puede hacer desde aquí).
 - ✅ 0 vulnerabilidades altas: `pnpm audit --prod` da 1 moderada (aceptada, P-9).
 - ✅ matrices de seguridad en verde (acceso cruzado en todas las rutas, RLS en todas las tablas) y listados p95 < 300 ms con 1 000 clientes (máx. 226 ms).
+
+## Fase 11 · Cifrado del texto libre de lesiones ✅
+
+Elegida por el responsable al cerrar la fase 10, entre los pendientes de la DPIA (R-11).
+
+- Va cifrado con AES-256-GCM todo el texto libre de los casos de lesión:
+  - mecanismo, profesional, restricciones y notas del caso;
+  - notas del historial de fases, de revisión de avisos y de criterios;
+  - motivo de las decisiones de vuelta.
+  - Ya lo estaban la información recibida y las notas de síntomas.
+- **Expandir y después contraer** (A49):
+  - la migración `0047` añade las columnas cifradas;
+  - el código escribe solo cifrado y lee la columna antigua como respaldo;
+  - `injuries:encrypt-text` pasa el texto antiguo a su columna cifrada y la vacía en cada arranque (Render y compose);
+  - borrar las columnas en claro queda para una migración posterior.
+- La rotación de claves cubre ahora **todas** las columnas cifradas. Antes se dejaba la información recibida y las notas de síntomas (A50). Una prueba compara la lista con el esquema.
+
+**Criterios**:
+- ✅ ningún texto libre de un caso aparece en claro en la base (`injuries.int.test.ts`, lectura directa de las seis tablas);
+- ✅ el texto anterior se lee antes de moverlo y sigue igual después; el paso es idempotente;
+- ✅ toda columna `*_enc` está en la lista de rotación (`privacy.int.test.ts`);
+- ✅ sin cambios en la API: el contrato de respuestas pasa.
+

@@ -13,7 +13,7 @@
 | Base de datos | PostgreSQL 16 | Única fuente de verdad: sesiones, límites de peticiones, auditoría, datos |
 | Archivos subidos | Siluetas de ejercicios | **Almacenamiento de objetos S3 compatible** (`S3_*`; bucket privado en la UE) o, sin él, `FILE_STORAGE_DIR` (volumen compartido si hay varias réplicas) |
 | Trabajos diarios | `monitor:daily` (alertas) y `privacy:daily` (retención y depuración) | Un *cron* del proveedor, una vez al día, con la imagen `jobs` |
-| Migraciones y trabajos | Imagen `jobs` (todo el *workspace*, ≈ 1,9 GB): `db:migrate` + catálogos (`db:seed`, idempotente), `monitor:daily`, `privacy:daily`, `keys:rotate`, `privacy:reapply-erasures` | Trabajos puntuales o programados |
+| Migraciones y trabajos | Imagen `jobs` (todo el *workspace*, ≈ 1,9 GB): `db:migrate` + catálogos (`db:seed`, idempotente), `injuries:encrypt-text` (idempotente, tras las migraciones), `monitor:daily`, `privacy:daily`, `keys:rotate`, `privacy:reapply-erasures` | Trabajos puntuales o programados |
 
 ## 2. Variables de entorno
 
@@ -49,9 +49,11 @@ Los secretos van en el gestor de secretos del proveedor, nunca en el repositorio
 ```bash
 docker build --target web  -t training-platform:$VERSION .
 docker build --target jobs -t training-platform-jobs:$VERSION .
-# 1. Migraciones y catálogos (una vez por despliegue; las migraciones solo avanzan)
-docker run --rm -e DATABASE_URL=… training-platform-jobs:$VERSION \
-  sh -c 'node node_modules/tsx/dist/cli.mjs scripts/migrate.ts && node node_modules/tsx/dist/cli.mjs scripts/seed.ts'
+# 1. Migraciones, catálogos y cifrado del texto antiguo de lesiones (una vez por despliegue;
+#    las migraciones solo avanzan; el cifrado es idempotente y necesita la clave)
+docker run --rm -e DATABASE_URL=… -e APP_ENCRYPTION_KEY=… training-platform-jobs:$VERSION \
+  sh -c 'node node_modules/tsx/dist/cli.mjs scripts/migrate.ts && node node_modules/tsx/dist/cli.mjs scripts/seed.ts \
+    && cd /app/packages/application && node node_modules/tsx/dist/cli.mjs scripts/encrypt-injury-text.ts'
 # 2. App (tantas réplicas como haga falta)
 docker run -d -p 3000:3000 -e DATABASE_URL=… -e APP_ENCRYPTION_KEY=… -e APP_BASE_URL=… \
   -v files:/data/files training-platform:$VERSION

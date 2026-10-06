@@ -2,6 +2,26 @@
 
 Formato: fecha · cambio · motivo · archivos · impacto.
 
+## 2026-10-06 — Reestructuración, fase 11: cifrado del texto libre de lesiones
+
+- **Cambio:** todo el texto libre de los casos de lesión se guarda cifrado (AES-256-GCM):
+  - mecanismo, profesional, restricciones y notas;
+  - notas de fases, de revisión de avisos y de criterios;
+  - motivo de las decisiones de vuelta.
+  - **Motivo:** riesgo R-11 de la DPIA; lo eligió el responsable como fase 11.
+- **Cambio:** `pnpm injuries:encrypt-text` cifra el texto guardado antes y vacía las columnas en claro. Es idempotente y se ejecuta en cada arranque (`deploy/start.sh`, servicio `migrate` de compose).
+- **Corrección:** la rotación de claves (`pnpm keys:rotate`) no re-cifraba la información recibida ni las notas de síntomas. Ahora recorre todas las columnas cifradas, y una prueba lo compara con el esquema.
+- **Archivos:**
+  - `packages/db/src/schema/injury.ts`, migración `0047_injury_text_encryption`;
+  - `packages/application/src/{injuries,privacy}.ts`, `packages/application/scripts/encrypt-injury-text.ts`;
+  - `deploy/start.sh`, `docker-compose.yml`;
+  - `docs/{DPIA,SECURITY,INJURY_MODULE,OPERATIONS,IMPLEMENTATION_ROADMAP,TESTING}.md`, `docs/PRODUCT_ARCHITECTURE.md` A49–A50.
+- **Impacto:**
+  - 1 migración, solo añade columnas;
+  - el primer arranque tras actualizar cifra el texto existente. Necesita la misma `APP_ENCRYPTION_KEY`; en Render ya está;
+  - la API no cambia;
+  - las columnas en claro, ya vacías, se borrarán en una versión posterior.
+
 ## 2026-10-06 — Reestructuración, fase 10: endurecimiento final
 
 - **Cambio:** el servidor **bloquea la edición de planes completados o archivados** (`409`, `plan: locked`). También se bloquea añadir una alternativa al aprobar una sustitución. Reabrir, leer, duplicar y guardar como plantilla siguen permitidos.
