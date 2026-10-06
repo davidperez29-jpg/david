@@ -577,3 +577,5 @@ pnpm --filter @tp/web test:e2e -- e2e/perf.spec.ts e2e/perf.mobile.spec.ts
   - Normal y Algo + 3/10 con el mensaje de seguridad, y botones de 48 px como mínimo;
   - cierre con «Difícil» y sincronización al volver la conexión, con una sola serie registrada.
 - La prueba existente de sesión completa sin conexión y sin duplicados (`sessions.mobile.spec.ts`) sigue pasando.
+- **Rendimiento móvil** (`perf.mobile.spec.ts`): TTI de 1,38 a 1,49 s en `/login`, `/me`, `/me/calendario` y `/me/progreso` (objetivo < 2,5 s en 4G).
+- **Suite E2E completa**: 61 pruebas, 60 pasan y 1 se omite; WCAG 2.2 AA sin infracciones en escritorio y móvil.

@@ -165,15 +165,16 @@ Pendiente para fases siguientes: tarjetas por ejercicio en el móvil y sugerenci
 - ✅ la RLS de datos de salud está en la matriz (`rls-matrix.security.test.ts`, 10 tablas nuevas) y en la seguridad por ruta (13 rutas nuevas).
 - Detalle en `INJURY_MODULE.md` §10.
 
-## Fase 8 · Cliente móvil, feedback y adherencia
+## Fase 8 · Cliente móvil, feedback y adherencia ✅
 
 - Hoy: ejercicio → silueta → vídeo → series → reps → carga → RIR → completar → feedback (Fácil · Normal · Difícil · Muy difícil, como en los documentos del usuario).
 - Fichaje automático (planificada, iniciada, completada, incompleta, no realizada); adherencia.
 - RLS «solo publicadas» en `sessions`.
 
 **Criterios**:
-- registrar una sesión entera en el móvil sin conexión, sin duplicados;
-- TTI < 2,5 s en 4G.
+- ✅ registrar una sesión entera en el móvil sin conexión, sin duplicados (`sessions.mobile.spec.ts`, `player.mobile.spec.ts`);
+- ✅ TTI < 2,5 s en 4G: entre 1,38 y 1,49 s en las páginas del cliente (`perf.mobile.spec.ts`, móvil con 4G y CPU ralentizados).
+- Detalle en `SESSIONS.md` §9.
 
 ## Fase 9 · Ciencia y referencias
 
