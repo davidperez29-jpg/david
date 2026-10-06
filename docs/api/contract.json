@@ -1597,6 +1597,22 @@
             }
           ]
         },
+        "feel": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "easy",
+                "normal",
+                "hard",
+                "very_hard"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "fatigue": {
           "anyOf": [
             {
@@ -3206,12 +3222,43 @@
             }
           ]
         },
+        "feel": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "easy",
+                "normal",
+                "hard",
+                "very_hard"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "pain": {
           "anyOf": [
             {
               "type": "integer",
               "minimum": 0,
               "maximum": 10
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "discomfort": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "none",
+                "some",
+                "a_lot"
+              ]
             },
             {
               "type": "null"
