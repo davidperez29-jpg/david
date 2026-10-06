@@ -5,6 +5,11 @@
  * first and then replayed against `/api/v1/sync` in order. The server is idempotent by
  * `clientMutationId`, so replaying after a lost response never duplicates data. Mutations are
  * removed only once the server has answered for them (applied, duplicate, flagged or rejected).
+ *
+ * The queue belongs to the signed-in user (phase 10 security review, PENTEST P-10): each entry
+ * carries its owner, only the owner's entries are sent, entries left by another account on a
+ * shared device are deleted when someone else signs in, and signing out empties the queue (the
+ * button warns first if something is still unsynced).
  */
 
 export type Mutation =
@@ -23,8 +28,13 @@ export interface SyncResult {
 
 const DB = 'tp-offline';
 const STORE = 'mutations';
-let memory: { seq: number; m: Mutation }[] = [];
+type Row = { seq: number; m: Mutation; owner?: string | null };
+let memory: Row[] = [];
 let seq = 0;
+/** The signed-in client; nothing is sent until it is known. */
+let owner: string | null = null;
+/** Entries written before owners were recorded (or before the owner was known) count as theirs. */
+const mine = (r: Row) => r.owner == null || r.owner === owner;
 
 function open(): Promise<IDBDatabase | null> {
   if (typeof indexedDB === 'undefined') return Promise.resolve(null);
@@ -56,17 +66,38 @@ async function tx<T>(mode: IDBTransactionMode, fn: (s: IDBObjectStore) => IDBReq
 }
 
 export async function enqueue(m: Mutation): Promise<void> {
-  const ok = await tx('readwrite', (s) => s.add({ m }));
-  if (ok == null) memory.push({ seq: ++seq, m });
+  const ok = await tx('readwrite', (s) => s.add({ m, owner }));
+  if (ok == null) memory.push({ seq: ++seq, m, owner });
   notify();
 }
 
-export async function pending(): Promise<{ seq: number; m: Mutation }[]> {
-  const rows = await tx(
-    'readonly',
-    (s) => s.getAll() as IDBRequest<{ seq: number; m: Mutation }[]>,
-  );
+async function all(): Promise<Row[]> {
+  const rows = await tx('readonly', (s) => s.getAll() as IDBRequest<Row[]>);
   return [...(rows ?? []), ...memory].sort((a, b) => a.seq - b.seq);
+}
+
+/** The signed-in user's unsynced entries, oldest first. */
+export async function pending(): Promise<Row[]> {
+  return (await all()).filter(mine);
+}
+
+/**
+ * Sets the signed-in client. Entries another account left on this device are deleted: they can
+ * never be sent with this session and they may hold that person's notes.
+ */
+export async function setQueueOwner(userId: string): Promise<void> {
+  owner = userId;
+  const foreign = (await all()).filter((r) => !mine(r)).map((r) => r.seq);
+  if (foreign.length) await remove(foreign);
+  void flush();
+}
+
+/** Empties the queue (sign-out). */
+export async function clearQueue(): Promise<void> {
+  memory = [];
+  await tx('readwrite', (s) => s.clear() as IDBRequest<unknown>);
+  owner = null;
+  notify();
 }
 
 async function remove(seqs: number[]) {
@@ -108,6 +139,7 @@ export function flush(): Promise<void> {
     again = true;
     return flushing;
   }
+  if (!owner) return Promise.resolve();
   flushing = (async () => {
     try {
       const items = await pending();
