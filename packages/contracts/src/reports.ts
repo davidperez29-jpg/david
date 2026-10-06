@@ -4,17 +4,44 @@ import { isoDate, optionalText } from './common';
 
 // ── Reports and exports ───────────────────────────────────────────────────────
 
+/** Kinds of a client's report (phase 6); the group «rendimiento» report has its own schema. */
+export const CLIENT_REPORT_KINDS = [
+  'technical',
+  'client',
+  'initial',
+  'follow_up',
+  'comparative',
+  'final',
+  'rtp',
+] as const;
+
 export const generateReportSchema = z
   .object({
-    from: isoDate,
-    to: isoDate,
+    kind: z.enum(CLIENT_REPORT_KINDS).default('technical'),
+    from: isoDate.optional(),
+    to: isoDate.optional(),
     /** The trainer's own recommendations (section 10); the report never invents them. */
     trainerNotes: optionalText(3000),
+    /** Comparative: assessments A and B (defaults: the two latest with tests in common). */
+    a: z.uuid().optional(),
+    b: z.uuid().optional(),
+    reference: z.enum(['none', 'group', 'normative']).default('group'),
   })
-  .refine((d) => d.from <= d.to, {
+  .refine((d) => !d.from || !d.to || d.from <= d.to, {
     message: 'La fecha inicial debe ser anterior a la final.',
     path: ['to'],
+  })
+  .refine((d) => ['comparative', 'rtp'].includes(d.kind) || (d.from && d.to), {
+    message: 'Indica el periodo del informe.',
+    path: ['from'],
   });
+
+/** Rendimiento: a group assessment, with the people whose individual sheet is included. */
+export const generateGroupReportSchema = z.object({
+  date: isoDate,
+  players: z.array(z.uuid()).max(40).optional(),
+  trainerNotes: optionalText(3000),
+});
 
 /** Shares a report with the client's app (plain-language version) or stops sharing it. */
 export const shareReportSchema = z.object({ shared: z.boolean() });

@@ -6,6 +6,7 @@ import {
   clientAssessmentProgress,
   getClient,
   defaultReportPeriod,
+  clientComparison,
   listClientReports,
   getDecision,
   getSession,
@@ -29,7 +30,7 @@ import {
   listProgrammingProfiles,
   listTrainers,
 } from '@tp/application';
-import { DomainError } from '@tp/domain';
+import { DomainError, REPORT_KINDS } from '@tp/domain';
 import { notFound } from 'next/navigation';
 import { ProgressView } from '@/components/assessment/progress';
 import { VisibleMetricsPicker } from '@/components/assessment/visible-metrics';
@@ -839,12 +840,29 @@ async function plansTab(ctx: Ctx, clientId: string, hasActive: boolean) {
 }
 
 async function reportsTab(ctx: Awaited<ReturnType<typeof requireStaff>>, clientId: string) {
-  const list = await listClientReports(ctx, clientId);
+  const [list, comparison] = await Promise.all([
+    listClientReports(ctx, clientId),
+    clientComparison(ctx, clientId, {}),
+  ]);
   const period = defaultReportPeriod(ctx.now());
+  const kinds = Object.entries(REPORT_KINDS)
+    .filter(([k]) => k !== 'performance')
+    .map(([value, k]) => ({ value, label: k.label, description: k.description }));
   return (
     <div className="flex flex-col gap-4">
       <Card title="Nuevo informe">
-        <GenerateReportForm clientId={clientId} defaultFrom={period.from} defaultTo={period.to} />
+        <GenerateReportForm
+          clientId={clientId}
+          defaultFrom={period.from}
+          defaultTo={period.to}
+          kinds={kinds}
+          assessments={comparison.assessments
+            .filter((x) => x.hasResults)
+            .map((x) => ({
+              id: x.id,
+              label: `${formatDate(x.assessedOn)}${x.context ? ` · ${x.context}` : ''}`,
+            }))}
+        />
       </Card>
       <Card title="Informes generados">
         {list.length === 0 ? (
@@ -857,7 +875,10 @@ async function reportsTab(ctx: Awaited<ReturnType<typeof requireStaff>>, clientI
                   href={`/app/clients/${clientId}/informes/${r.id}`}
                   className="font-medium hover:underline"
                 >
-                  {formatDate(r.parameters.from)} – {formatDate(r.parameters.to)}
+                  {r.kindLabel}
+                  {r.parameters.from
+                    ? ` · ${formatDate(r.parameters.from)} – ${formatDate(r.parameters.to)}`
+                    : ''}
                 </Link>
                 <span className="text-xs text-muted">
                   {formatDateTime(r.createdAt)}

@@ -1,4 +1,33 @@
-import type { ClientReport, ReportBlock } from '@tp/domain';
+import type { ClientReport, ReportBlock, Scale } from '@tp/domain';
+import { RadarChart } from '@/components/assessment/radar';
+
+const fmtScore = (v: number | null) =>
+  v == null ? 'sin dato' : new Intl.NumberFormat('es-ES', { maximumFractionDigits: 2 }).format(v);
+
+function Radar({ b }: { b: Extract<ReportBlock, { kind: 'radar' }> }) {
+  const scale: Scale =
+    b.range[1] === 100 ? 'percentile' : b.range[1] === 150 ? 'percent_reference' : 'z_group';
+  return (
+    <div className="my-2">
+      <p className="text-xs font-medium">
+        {b.title} · <span className="text-muted">{b.scaleLabel}</span>
+      </p>
+      <RadarChart
+        axes={b.axes}
+        layers={b.layers}
+        scale={{ value: scale, neutral: b.neutral, range: b.range }}
+        neutralLabel={b.neutralLabel}
+        title={b.title}
+        description={b.axes
+          .map(
+            (a, i) =>
+              `${a}: ${b.layers.map((l) => `${l.label} ${fmtScore(l.values[i] ?? null)}`).join(', ')}`,
+          )
+          .join('; ')}
+      />
+    </div>
+  );
+}
 
 const fmt = (iso: string) => iso.slice(0, 10).split('-').reverse().join('/');
 
@@ -75,6 +104,7 @@ function Block({ b }: { b: ReportBlock }) {
       </ul>
     );
   if (b.kind === 'chart') return <Chart b={b} />;
+  if (b.kind === 'radar') return <Radar b={b} />;
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm">

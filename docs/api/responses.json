@@ -1615,7 +1615,10 @@
       "createdAt": "string",
       "hash": "string",
       "id": "string",
+      "kind": "string",
+      "kindLabel": "string",
       "parameters": "object",
+      "shareable": "boolean",
       "sharedAt": "string"
     }
   ],
@@ -2570,6 +2573,7 @@
     ],
     "version": "number"
   },
+  "GET groups/[groupId]/reports": [],
   "GET imports": [
     {
       "createdAt": "string",
@@ -3222,9 +3226,12 @@
   "GET reports/[id]": {
     "clientId": "string",
     "createdAt": "string",
+    "groupId": "null",
     "hash": "string",
     "id": "string",
     "intact": "boolean",
+    "kind": "string",
+    "kindLabel": "string",
     "report": {
       "footer": [
         "string"
@@ -3263,6 +3270,7 @@
       "subtitle": "string",
       "title": "string"
     },
+    "shareable": "boolean",
     "sharedAt": "null"
   },
   "GET reports/[id]/client-view": {

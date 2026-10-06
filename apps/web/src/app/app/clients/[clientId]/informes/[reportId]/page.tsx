@@ -31,7 +31,7 @@ export default async function ReportPage({
       >
         ← Informes del cliente
       </Link>
-      <Card>
+      <Card title={`Informe ${r.kindLabel.toLowerCase()}`}>
         <div className="flex flex-wrap items-center gap-2">
           <a className={`${btn} border-accent bg-accent text-accent-contrast`} href={dl('pdf')}>
             Descargar PDF
@@ -47,20 +47,27 @@ export default async function ReportPage({
             {r.intact ? ' · íntegro' : ' · ¡la huella no coincide!'}
           </span>
         </div>
-        <div className="mt-3 flex flex-wrap items-center gap-3 border-t border-border pt-3">
-          <ShareReportToggle reportId={r.id} shared={!!r.sharedAt} />
-          <p className="text-sm">
-            {r.sharedAt
-              ? `Compartido con el cliente el ${formatDateTime(r.sharedAt)}: lo ve en su app, en lenguaje sencillo.`
-              : 'Solo lo ve el equipo. Al compartirlo, el cliente verá una versión en lenguaje sencillo (sin tablas técnicas) y podrá descargarla en PDF; incluye tu mensaje de la sección 10.'}{' '}
-            <Link
-              href={`/app/clients/${clientId}/informes/${r.id}/cliente`}
-              className="text-accent underline"
-            >
-              Ver la versión del cliente
-            </Link>
+        {r.shareable ? (
+          <div className="mt-3 flex flex-wrap items-center gap-3 border-t border-border pt-3">
+            <ShareReportToggle reportId={r.id} shared={!!r.sharedAt} />
+            <p className="text-sm">
+              {r.sharedAt
+                ? `Compartido con el cliente el ${formatDateTime(r.sharedAt)}: lo ve en su app, en lenguaje sencillo.`
+                : 'Solo lo ve el equipo. Al compartirlo, el cliente verá una versión en lenguaje sencillo (sin tablas técnicas) y podrá descargarla en PDF; incluye tus recomendaciones.'}{' '}
+              <Link
+                href={`/app/clients/${clientId}/informes/${r.id}/cliente`}
+                className="text-accent underline"
+              >
+                Ver la versión del cliente
+              </Link>
+            </p>
+          </div>
+        ) : (
+          <p className="mt-3 border-t border-border pt-3 text-sm text-muted">
+            Informe {r.kindLabel.toLowerCase()}: solo para el equipo. El cliente recibe los informes
+            de su periodo (inicial, seguimiento, final) en lenguaje sencillo.
           </p>
-        </div>
+        )}
         <p className="mt-2 text-xs text-muted">
           El informe se congela al generarlo: cualquier formato muestra exactamente los mismos datos
           aunque después cambien. Las descargas quedan registradas.

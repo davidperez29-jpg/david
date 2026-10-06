@@ -1,8 +1,9 @@
 import Link from 'next/link';
-import { groupReport, type GroupReport } from '@tp/application';
+import { groupReport, listGroupReports, type GroupReport } from '@tp/application';
 import { BAND_LABELS, DomainError } from '@tp/domain';
 import { notFound } from 'next/navigation';
 import { AttemptsSheet } from '@/components/assessment/attempts-sheet';
+import { GenerateGroupReportForm } from '@/components/reports/actions';
 import { Badge, Card, EmptyState } from '@/components/ui/card';
 import { formatDate, formatValue } from '@/lib/labels';
 import { requireStaff } from '@/server/session';
@@ -47,6 +48,7 @@ export default async function GroupSessionPage({
     throw e;
   });
   const report = sp.vista === 'informe';
+  const reports = report ? await listGroupReports(ctx, groupId) : [];
   const base = `/app/groups/${groupId}/${date}`;
   const tab = (active: boolean) =>
     `rounded-md px-3 py-1.5 text-sm ${active ? 'bg-accent text-accent-contrast' : 'border border-border hover:bg-surface'}`;
@@ -79,7 +81,7 @@ export default async function GroupSessionPage({
       {r.members.length === 0 ? (
         <EmptyState>No hay evaluaciones del grupo en esta fecha.</EmptyState>
       ) : report ? (
-        <Report r={r} />
+        <Report r={r} reports={reports.filter((x) => x.parameters.date === date)} />
       ) : (
         <Sheet r={r} testId={sp.test} base={base} />
       )}
@@ -141,11 +143,39 @@ function Sheet({ r, testId, base }: { r: GroupReport; testId?: string; base: str
   );
 }
 
-function Report({ r }: { r: GroupReport }) {
+function Report({
+  r,
+  reports,
+}: {
+  r: GroupReport;
+  reports: Awaited<ReturnType<typeof listGroupReports>>;
+}) {
   const name = (i: number | null) => (i == null ? '—' : r.members[i]!.name);
   const compared = r.rows.filter((x) => x.direction !== 'target_range' && x.n > 0);
   return (
     <>
+      <Card title="Informe de rendimiento (PDF, Excel, CSV)">
+        <GenerateGroupReportForm
+          groupId={r.group.id}
+          date={r.date}
+          members={r.members.map((m) => ({ id: m.clientId, name: m.name }))}
+        />
+        {reports.length ? (
+          <ul className="mt-3 flex flex-col gap-1 border-t border-border pt-3 text-sm">
+            {reports.map((x) => (
+              <li key={x.id}>
+                <Link
+                  href={`/app/groups/${r.group.id}/informes/${x.id}`}
+                  className="text-accent hover:underline"
+                >
+                  Informe del {formatDate(x.parameters.date)}
+                </Link>{' '}
+                <span className="text-xs text-muted">{x.by ?? ''}</span>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+      </Card>
       {r.smallGroup ? (
         <p role="note" className="rounded-md border border-warn p-3 text-sm">
           Grupo pequeño ({r.members.length}): la media y la Z cambian mucho con una sola persona.

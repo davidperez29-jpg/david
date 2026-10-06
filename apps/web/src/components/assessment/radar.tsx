@@ -7,6 +7,7 @@
  * - No data is a gap: the outline is broken there and the axis says «sin dato».
  * - Values are clipped to the drawing range; the real ones are in the tooltip and the table.
  */
+import { useId } from 'react';
 import { radius, type Scale } from '@tp/domain';
 
 export interface RadarLayer {
@@ -32,6 +33,7 @@ export function RadarChart({
   title: string;
   description: string;
 }) {
+  const uid = useId();
   const S = 360;
   const C = S / 2;
   const R = 120;
@@ -82,11 +84,11 @@ export function RadarChart({
       <svg
         viewBox={`-80 20 ${S + 160} ${S - 40}`}
         role="img"
-        aria-labelledby="radar-title radar-desc"
+        aria-labelledby={`${uid}-t ${uid}-d`}
         className="h-auto w-full max-w-lg"
       >
-        <title id="radar-title">{title}</title>
-        <desc id="radar-desc">{description}</desc>
+        <title id={`${uid}-t`}>{title}</title>
+        <desc id={`${uid}-d`}>{description}</desc>
         {rings.map((v) => (
           <polygon
             key={v}

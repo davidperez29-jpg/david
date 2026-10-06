@@ -80,7 +80,23 @@ export type ReportBlock =
   | { kind: 'text'; text: string; tone?: 'muted' | 'warn' }
   | { kind: 'list'; items: string[] }
   | { kind: 'table'; columns: string[]; rows: (string | number | null)[][] }
-  | { kind: 'chart'; title: string; unit: string; points: { date: string; value: number }[] };
+  | { kind: 'chart'; title: string; unit: string; points: { date: string; value: number }[] }
+  | RadarBlock;
+
+/**
+ * Radar (phase 6): dimensions on one standardized scale, drawn as vectors in the PDF and as SVG on
+ * screen. Values are scores (already direction-corrected); null = no data (a gap, never zero).
+ */
+export interface RadarBlock {
+  kind: 'radar';
+  title: string;
+  scaleLabel: string;
+  neutral: number;
+  neutralLabel: string;
+  range: [number, number];
+  axes: string[];
+  layers: { label: string; values: (number | null)[]; variant: 'current' | 'previous' }[];
+}
 
 export interface ReportSection {
   number: number;
@@ -88,6 +104,9 @@ export interface ReportSection {
   title: string;
   blocks: ReportBlock[];
 }
+
+/** Any report rendered from a frozen snapshot (every kind shares the block model). */
+export type Report = ClientReport;
 
 export interface ClientReport {
   title: string;
@@ -366,6 +385,19 @@ export function reportRows(r: ClientReport): (string | number | null)[][] {
       if (b.kind === 'chart') {
         out.push(['', `${b.title} (${b.unit})`]);
         for (const p of b.points) out.push(['', reportDate(p.date), p.value]);
+      }
+      if (b.kind === 'radar') {
+        out.push(['', `${b.title} · ${b.scaleLabel}`]);
+        out.push(['', 'Dimensión', ...b.layers.map((l) => l.label)]);
+        b.axes.forEach((a, i) =>
+          out.push([
+            '',
+            a,
+            ...b.layers.map((l) =>
+              l.values[i] == null ? null : Math.round(l.values[i]! * 100) / 100,
+            ),
+          ]),
+        );
       }
     }
     out.push([]);

@@ -2,6 +2,19 @@
 
 Formato: fecha · cambio · motivo · archivos · impacto.
 
+## 2026-10-06 — Reestructuración, fase 6: los 8 tipos de informe
+
+- **Cambio:** en la ficha del cliente, Informes → **Tipo de informe**:
+  - técnico, para el cliente, inicial, seguimiento, comparativo, final y readaptación / vuelta a la competición;
+  - el comparativo se elige con evaluación A, evaluación B y referencia (media del grupo, normativa o ninguna).
+- **Cambio:** **informe de rendimiento** de un grupo, desde el informe grupal de una fecha. Incluye el resumen, la Z con bandas y una ficha con radar por cada persona elegida.
+- **Cambio:** el radar se dibuja **en el PDF** con vectores. Todos los tipos se descargan en PDF, Excel y CSV, y el PDF sale idéntico byte a byte.
+- **Cambio:** **validador de frases prohibidas**. El informe no se genera si el texto del entrenador dice «previene lesiones» sin evidencia de incidencia, «apto», «alta deportiva» o un diagnóstico, y explica el motivo. El motor nunca las escribe.
+- **Cambio:** fortalezas y aspectos a mejorar generados de la banda de cada resultado, así que el texto no puede contradecir el número.
+- **Cambio:** al cliente solo se comparten los informes de periodo, en lenguaje sencillo. El comparativo, el de rendimiento y el de readaptación son del equipo.
+- **Archivos:** `packages/domain/src/reports/{kinds,language,report}.ts`, `packages/application/src/{reports.ts,render/pdf.ts}`, `apps/web/src/components/reports/*`, `apps/web/src/app/app/groups/[groupId]/informes/[reportId]/page.tsx`, `docs/REPORT_SYSTEM.md` §6, `docs/PRODUCT_ARCHITECTURE.md` A32–A34.
+- **Impacto:** sin migraciones. Los informes ya generados se siguen abriendo igual.
+
 ## 2026-10-06 — Reestructuración, fase 5: radar y comparativa
 
 - **Cambio:** **Comparativa y radar** en la pestaña Evaluación del cliente.

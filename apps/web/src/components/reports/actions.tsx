@@ -10,17 +10,28 @@ export function GenerateReportForm({
   clientId,
   defaultFrom,
   defaultTo,
+  kinds,
+  assessments,
 }: {
   clientId: string;
   defaultFrom: string;
   defaultTo: string;
+  kinds: { value: string; label: string; description: string }[];
+  assessments: { id: string; label: string }[];
 }) {
   const router = useRouter();
   const a = useApiAction();
+  const [kind, setKind] = useState(kinds[0]?.value ?? 'technical');
   const [from, setFrom] = useState(defaultFrom);
   const [to, setTo] = useState(defaultTo);
   const [notes, setNotes] = useState('');
+  const [A, setA] = useState('');
+  const [B, setB] = useState('');
+  const [reference, setReference] = useState('group');
   const field = 'h-10 rounded-md border border-border bg-bg px-2';
+  const comparative = kind === 'comparative';
+  const periodic = !comparative && kind !== 'rtp';
+  const current = kinds.find((k) => k.value === kind);
   return (
     <form
       className="flex flex-col gap-3"
@@ -29,35 +40,104 @@ export function GenerateReportForm({
         const r = await a.run<{ id: string }>(
           `/clients/${clientId}/reports`,
           'POST',
-          { from, to, trainerNotes: notes.trim() || null },
+          {
+            kind,
+            ...(periodic ? { from, to } : {}),
+            ...(comparative ? { a: A || undefined, b: B || undefined, reference } : {}),
+            trainerNotes: notes.trim() || null,
+          },
           { refresh: false },
         );
         if (r) router.push(`/app/clients/${clientId}/informes/${r.id}`);
       }}
     >
-      <div className="flex flex-wrap gap-3">
-        <label className="flex flex-col gap-1 text-sm">
-          Desde
-          <input
-            type="date"
-            value={from}
-            onChange={(e) => setFrom(e.target.value)}
-            className={field}
-          />
-        </label>
-        <label className="flex flex-col gap-1 text-sm">
-          Hasta
-          <input type="date" value={to} onChange={(e) => setTo(e.target.value)} className={field} />
-        </label>
+      <div className="flex flex-col gap-1 text-sm">
+        <label htmlFor="report-kind">Tipo de informe</label>
+        <select
+          id="report-kind"
+          value={kind}
+          onChange={(e) => setKind(e.target.value)}
+          aria-describedby="report-kind-help"
+          className={`${field} max-w-md`}
+        >
+          {kinds.map((k) => (
+            <option key={k.value} value={k.value}>
+              {k.label}
+            </option>
+          ))}
+        </select>
+        <span id="report-kind-help" className="text-xs text-muted">
+          {current?.description}
+        </span>
       </div>
+      {periodic ? (
+        <div className="flex flex-wrap gap-3">
+          <label className="flex flex-col gap-1 text-sm">
+            Desde
+            <input
+              type="date"
+              value={from}
+              onChange={(e) => setFrom(e.target.value)}
+              className={field}
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-sm">
+            Hasta
+            <input
+              type="date"
+              value={to}
+              onChange={(e) => setTo(e.target.value)}
+              className={field}
+            />
+          </label>
+        </div>
+      ) : null}
+      {comparative ? (
+        <div className="flex flex-wrap gap-3">
+          <label className="flex flex-col gap-1 text-sm">
+            Evaluación A
+            <select value={A} onChange={(e) => setA(e.target.value)} className={field}>
+              <option value="">Automática (anterior)</option>
+              {assessments.map((x) => (
+                <option key={x.id} value={x.id}>
+                  {x.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="flex flex-col gap-1 text-sm">
+            Evaluación B
+            <select value={B} onChange={(e) => setB(e.target.value)} className={field}>
+              <option value="">Automática (última)</option>
+              {assessments.map((x) => (
+                <option key={x.id} value={x.id}>
+                  {x.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="flex flex-col gap-1 text-sm">
+            Referencia
+            <select
+              value={reference}
+              onChange={(e) => setReference(e.target.value)}
+              className={field}
+            >
+              <option value="group">Media del grupo</option>
+              <option value="normative">Referencia normativa</option>
+              <option value="none">Ninguna</option>
+            </select>
+          </label>
+        </div>
+      ) : null}
       <label className="flex flex-col gap-1 text-sm">
-        Tus recomendaciones (sección 10)
+        {comparative || kind === 'rtp' ? 'Observaciones' : 'Tus recomendaciones'}
         <textarea
           value={notes}
           maxLength={3000}
           rows={3}
           onChange={(e) => setNotes(e.target.value)}
-          placeholder="Lo que quieres que el cliente se lleve del informe. El informe no inventa recomendaciones: añade las tuyas y las propuestas que hayas aceptado."
+          placeholder="El informe no inventa recomendaciones: añade las tuyas. No uses «previene lesiones», «apto» ni diagnósticos: el informe lo rechazará y te dirá por qué."
           className="rounded-md border border-border bg-bg p-2"
         />
       </label>
@@ -316,5 +396,75 @@ export function ImportDecision({ jobId, valid }: { jobId: string; valid: number 
       ) : null}
       <FormError error={a.error} />
     </div>
+  );
+}
+
+/** Rendimiento: the report of a group assessment, with the people whose sheet is included. */
+export function GenerateGroupReportForm({
+  groupId,
+  date,
+  members,
+}: {
+  groupId: string;
+  date: string;
+  members: { id: string; name: string }[];
+}) {
+  const router = useRouter();
+  const a = useApiAction();
+  const [picked, setPicked] = useState<Set<string>>(new Set(members.map((m) => m.id)));
+  const [notes, setNotes] = useState('');
+  return (
+    <form
+      className="flex flex-col gap-3"
+      onSubmit={async (e) => {
+        e.preventDefault();
+        const r = await a.run<{ id: string }>(
+          `/groups/${groupId}/reports`,
+          'POST',
+          { date, players: [...picked], trainerNotes: notes.trim() || null },
+          { refresh: false },
+        );
+        if (r) router.push(`/app/groups/${groupId}/informes/${r.id}`);
+      }}
+    >
+      <fieldset className="flex flex-col gap-1 text-sm">
+        <legend className="mb-1 font-medium">Ficha individual con radar de</legend>
+        <ul className="grid gap-1 sm:grid-cols-2 lg:grid-cols-3">
+          {members.map((m) => (
+            <li key={m.id}>
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={picked.has(m.id)}
+                  onChange={(e) => {
+                    const next = new Set(picked);
+                    if (e.target.checked) next.add(m.id);
+                    else next.delete(m.id);
+                    setPicked(next);
+                  }}
+                />
+                {m.name}
+              </label>
+            </li>
+          ))}
+        </ul>
+      </fieldset>
+      <label className="flex flex-col gap-1 text-sm">
+        Notas para el informe
+        <textarea
+          value={notes}
+          maxLength={3000}
+          rows={2}
+          onChange={(e) => setNotes(e.target.value)}
+          className="rounded-md border border-border bg-bg p-2"
+        />
+      </label>
+      <div>
+        <Button disabled={a.pending}>
+          {a.pending ? 'Generando…' : 'Generar informe de rendimiento'}
+        </Button>
+      </div>
+      <FormError error={a.error} />
+    </form>
   );
 }

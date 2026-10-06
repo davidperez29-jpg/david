@@ -22,8 +22,8 @@
 | 3 | Plantillas + objetivos + niveles (filtros, usar plantilla = copia, desde cero, mis plantillas con versiones, 102 plantillas iniciales) | `plan_templates`, `plan_template_versions` | ✅ Hecha |
 | 4 | Evaluaciones + referencias (hoja de intentos, baterías por perfil, fórmulas, grupos/equipos) | Evaluación actual | ✅ Hecha |
 | 5 | Radares + evolución (normalización, dimensiones, comparativas) | Cambio real, gráficos | ✅ Hecha |
-| 6 | Informes (8 tipos, comparativo, grupal, radar en PDF) | Motor de informes | Siguiente |
-| 7 | Lesiones / readaptación / RTP | Seguimiento de dolor, planes | Pendiente |
+| 6 | Informes (8 tipos, comparativo, grupal, radar en PDF) | Motor de informes | ✅ Hecha |
+| 7 | Lesiones / readaptación / RTP | Seguimiento de dolor, planes | Siguiente |
 | 8 | Cliente móvil + feedback + adherencia + fichaje | PWA, registro, asistencia | Pendiente |
 | 9 | Ciencia + referencias (verificación, tipos de evidencia, búsquedas registradas) | Ciencia actual | Pendiente |
 | 10 | Endurecimiento final: seguridad, copias, rendimiento, revisión ASVS/RGPD | Todo lo de seguridad | Pendiente |
@@ -133,16 +133,23 @@ Pendiente para fases siguientes: tarjetas por ejercicio en el móvil y sugerenci
 - ✅ invertir la dirección de un test invierte su eje (propiedad: Z → −Z, percentil → 100 − P, % → recíproco);
 - ✅ el radar es accesible y lleva tabla (axe WCAG 2.2 AA en escritorio y móvil; E2E `radar.spec.ts`).
 
-## Fase 6 · Informes (siguiente)
+## Fase 6 · Informes ✅
 
-- Los 8 tipos del §16; comparativo con selector; grupal; radar vectorial en el PDF; frases prohibidas validadas.
+- Los 8 tipos del §16:
+  - técnico, para el cliente, inicial, seguimiento, comparativo y final;
+  - rendimiento (grupo), con una ficha y un radar por persona elegida;
+  - readaptación / vuelta a la competición.
+- El comparativo tiene selector de evaluación A, evaluación B y referencia (grupo, normativa o ninguna).
+- El radar va dibujado con vectores en el PDF.
+- Hay un validador de frases prohibidas.
+- Detalle en `REPORT_SYSTEM.md` §6.
 
 **Criterios**:
-- cada tipo se genera en PDF/XLSX/CSV;
-- el PDF es reproducible;
-- el validador rechaza «previene» sin evidencia de incidencia.
+- ✅ cada tipo se genera en PDF, XLSX y CSV (integración `report-kinds.int.test.ts`, los 8 tipos);
+- ✅ el PDF es reproducible: idéntico byte a byte en cada descarga y aunque después cambien los datos;
+- ✅ el validador rechaza «previene lesiones» sin evidencia de incidencia, y también «apto» y los diagnósticos, en el texto del entrenador. El motor no los escribe en ningún tipo (test).
 
-## Fase 7 · Lesiones, readaptación y RTP
+## Fase 7 · Lesiones, readaptación y RTP (siguiente)
 
 - Catálogos de regiones y condiciones; protocolos versionados con fases y criterios.
 - Ficha de lesión; registro de síntomas con alertas de seguridad.

@@ -158,6 +158,7 @@ function block(
     doc.x = M;
     doc.moveDown(0.2);
   }
+  if (b.kind === 'radar') radarPdf(doc, b, width, ensure);
   if (b.kind === 'table') {
     const n = b.columns.length;
     // First column a bit wider when it holds labels (2-column key/value tables).
@@ -274,4 +275,126 @@ function chart(
         lineBreak: false,
       });
   });
+}
+
+/**
+ * Radar as vectors (phase 6): same rules as the screen. Rings on the scale, the neutral ring
+ * thicker, A dashed grey and B solid accent with a light fill, gaps where a dimension has no
+ * data, axis labels and a legend. Values outside the range are clipped (real ones in the table).
+ */
+function radarPdf(
+  doc: PDFKit.PDFDocument,
+  b: Extract<ReportBlock, { kind: 'radar' }>,
+  width: number,
+  ensure: (h: number) => void,
+) {
+  const size = 230;
+  const R = 78;
+  ensure(size + 40);
+  doc
+    .font('Helvetica-Bold')
+    .fontSize(10)
+    .fillColor(C.text)
+    .text(pdfText(b.title), M, doc.y, { width });
+  doc
+    .font('Helvetica')
+    .fontSize(8)
+    .fillColor(C.muted)
+    .text(pdfText(b.scaleLabel), M, doc.y, { width });
+  const top = doc.y + 4;
+  const cx = M + width / 2;
+  const cy = top + size / 2;
+  const n = b.axes.length;
+  const [lo, hi] = b.range;
+  const rad = (v: number) => (Math.max(lo, Math.min(hi, v)) - lo) / (hi - lo);
+  const ang = (i: number) => -Math.PI / 2 + (2 * Math.PI * i) / n;
+  const pt = (i: number, r: number): [number, number] => [
+    cx + Math.cos(ang(i)) * r * R,
+    cy + Math.sin(ang(i)) * r * R,
+  ];
+  const step = hi - lo > 10 ? 25 : 1;
+  for (let v = lo; v <= hi + 1e-9; v += step) {
+    const neutral = Math.abs(v - b.neutral) < 1e-9;
+    b.axes.forEach((_, i) => {
+      const [x, y] = pt(i, rad(v));
+      if (i === 0) doc.moveTo(x, y);
+      else doc.lineTo(x, y);
+    });
+    doc
+      .closePath()
+      .lineWidth(neutral ? 1.2 : 0.4)
+      .strokeColor(neutral ? C.muted : C.line)
+      .stroke();
+  }
+  b.axes.forEach((a, i) => {
+    const [x, y] = pt(i, 1);
+    doc.moveTo(cx, cy).lineTo(x, y).lineWidth(0.4).strokeColor(C.line).stroke();
+    const [lx, ly] = pt(i, 1.22);
+    const w = 90;
+    const align = Math.abs(lx - cx) < 6 ? 'center' : lx > cx ? 'left' : 'right';
+    const x0 = align === 'center' ? lx - w / 2 : align === 'left' ? lx : lx - w;
+    doc
+      .font('Helvetica')
+      .fontSize(7)
+      .fillColor(C.text)
+      .text(pdfText(a), x0, ly - 4, { width: w, align });
+  });
+  for (const l of b.layers) {
+    const color = l.variant === 'current' ? C.accent : C.muted;
+    const all = l.values.every((v) => v != null);
+    if (all && l.variant === 'current') {
+      l.values.forEach((v, i) => {
+        const [x, y] = pt(i, rad(v!));
+        if (i === 0) doc.moveTo(x, y);
+        else doc.lineTo(x, y);
+      });
+      doc.closePath().fillOpacity(0.15).fillColor(color).fill().fillOpacity(1);
+    }
+    // Outline segments only between consecutive axes that both have a value.
+    for (let i = 0; i < n; i++) {
+      const j = (i + 1) % n;
+      if (n < 3 && j === 0) continue;
+      const a = l.values[i];
+      const c = l.values[j];
+      if (a == null || c == null) continue;
+      const [x1, y1] = pt(i, rad(a));
+      const [x2, y2] = pt(j, rad(c));
+      doc.moveTo(x1, y1).lineTo(x2, y2);
+      if (l.variant === 'previous') doc.dash(4, { space: 3 });
+      doc.lineWidth(1.5).strokeColor(color).stroke().undash();
+    }
+    l.values.forEach((v, i) => {
+      if (v == null) return;
+      const [x, y] = pt(i, rad(v));
+      doc.circle(x, y, 2.5).fillColor(color).fill();
+    });
+  }
+  // Legend.
+  let lx = M;
+  const ly = top + size + 4;
+  for (const [label, color, dashed, w] of [
+    ...b.layers.map(
+      (l) =>
+        [
+          l.label,
+          l.variant === 'current' ? C.accent : C.muted,
+          l.variant === 'previous',
+          1.5,
+        ] as const,
+    ),
+    [b.neutralLabel, C.muted, false, 1.2] as const,
+  ]) {
+    doc.moveTo(lx, ly + 4).lineTo(lx + 18, ly + 4);
+    if (dashed) doc.dash(4, { space: 3 });
+    doc.lineWidth(w).strokeColor(color).stroke().undash();
+    const t = pdfText(label);
+    doc
+      .font('Helvetica')
+      .fontSize(8)
+      .fillColor(C.muted)
+      .text(t, lx + 22, ly, { lineBreak: false });
+    lx += 22 + doc.widthOfString(t) + 14;
+  }
+  doc.x = M;
+  doc.y = ly + 16;
 }

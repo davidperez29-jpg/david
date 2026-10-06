@@ -512,3 +512,23 @@ pnpm --filter @tp/web test:e2e -- e2e/perf.spec.ts e2e/perf.mobile.spec.ts
   - acceso de otra organización: no encontrado.
 - **E2E** (`radar.spec.ts`): desde la ficha, el radar accesible con su leyenda y su tabla, la tabla test a test y el cambio de escala.
 - **Accesibilidad:** axe (WCAG 2.2 AA) también en la comparativa, en grupos y en fórmulas.
+
+## Resultado de la reestructuración, fase 6 (informes)
+
+- **Unitarias** (`report-kinds.unit.test.ts`):
+  - los 8 tipos se construyen de forma determinista y sin frases prohibidas;
+  - el validador de lenguaje rechaza lo prohibido y no da falsos positivos («No es un diagnóstico», «adaptado», «Procura»);
+  - radar y filas de Excel/CSV del comparativo y del final;
+  - fortalezas según la banda, con test de propiedades;
+  - el informe de readaptación nunca dice «apto» y, sin consentimiento, no muestra datos de salud.
+- **Integración** (`report-kinds.int.test.ts`):
+  - cada tipo se descarga en PDF, XLSX y CSV, y el PDF sale idéntico en cada descarga y tras cambiar los datos;
+  - comparativo con y sin referencia;
+  - readaptación con lesión, molestias y tests antes y después;
+  - se rechaza el texto «previene lesiones» o «apto»;
+  - solo se comparten los tipos de periodo;
+  - informe de rendimiento solo para el equipo de la organización.
+- **E2E** (`report-kinds.spec.ts`):
+  - comparativo desde la ficha, con radar y PDF;
+  - rechazo de «previene lesiones» con su motivo;
+  - informe de rendimiento con fichas y descargas.
