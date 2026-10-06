@@ -39,7 +39,15 @@ Lo comprueba un test de integración. El registro de series, la evaluación tras
 Después:
 
 - **Editar**: como cualquier plan, con el editor de la Fase 6.
-- **Aceptar** (`POST /plans/{id}/proposal/accept`): pasa a `CLIENT_PLAN` en borrador. La recomendación queda `accepted`. El plan activo no cambia: activar el nuevo es una decisión aparte.
+- **Aceptar** (`POST /plans/{id}/proposal/accept`), siempre por decisión del entrenador:
+  - `mode: draft` (por defecto): pasa a `CLIENT_PLAN` en borrador. La recomendación queda `accepted`. El plan activo no cambia: activar el nuevo es una decisión aparte.
+  - `mode: revision` (fase 13 de la reestructuración): se aplica al plan activo para el que se propuso.
+    - Sus sesiones desde hoy sustituyen a las sesiones futuras **sin registrar** del plan activo; lo ya registrado no se toca.
+    - Cada sesión va a la semana del plan activo que contiene su fecha. Las fechas fuera de esas semanas, o en un día con una sesión ya registrada, no se copian y se cuentan.
+    - Las copias se publican si las sesiones sustituidas lo estaban.
+    - Queda una nueva **revisión** del plan activo («Propuesta del motor aplicada…»), auditada.
+    - La propuesta se archiva y la recomendación queda `accepted`.
+    - `409` si la propuesta no se generó sobre un plan activo o ese plan ya no está activo; `422` si no hay nada que aplicar.
 - **Descartar**: queda `archived` y la recomendación `rejected`.
 - Una propuesta **no se puede activar** (`409`); como solo se publican sesiones de planes activos, tampoco llega al cliente.
 - Con **cribado positivo** no se genera un plan completo: «Requiere valoración por profesional sanitario».
@@ -82,6 +90,14 @@ Cada propuesta lleva su **«¿Por qué?»** con la estructura de §13.6:
 - **EVIDENCIA**: ninguna verificada. Se dice explícitamente: recomendación práctica configurable, nivel F.
 - **LIMITACIONES** y **CONFIANZA** (baja).
 
+### Incremento de carga por ejercicio (fase 13 de la reestructuración)
+
+- El salto mínimo de carga sale por defecto del material (`loadIncrementFor`: barra y máquina 2,5 kg, mancuernas 2 kg, resto 1 kg).
+- Cada centro puede fijar el suyo por ejercicio, también para los ejercicios globales: Ejercicio → Progresiones → «Incremento de carga».
+  - Tabla `exercise_load_increments`, por organización, con RLS de catálogo.
+  - `PUT /exercises/{id}/load-increment` con `{incrementKg}` (> 0 y ≤ 50 kg; `null` vuelve al de por defecto). Queda auditado.
+- La progresión de carga lo usa, y el «¿Por qué?» lo dice: «incremento del centro para este ejercicio».
+
 ## 4. Interfaz
 
 - **Ficha → Planificación**:
@@ -104,8 +120,8 @@ Ver `API.md` («Motor de programación»).
 
 ## 6. Pendiente
 
-- Propuesta como **nueva revisión del plan activo** (hoy se acepta como plan en borrador).
-- Incremento de carga configurable por ejercicio.
+- ~~Propuesta como **nueva revisión del plan activo**.~~ (hecho en la fase 13 de la reestructuración)
+- ~~Incremento de carga configurable por ejercicio.~~ (hecho en la fase 13 de la reestructuración)
 - Progresión por velocidad (VBT) y e1RM.
 - Ajustes de días o frecuencia por disponibilidad.
 - ~~Aplicar ajustes desde la página de alertas.~~ (hecho en la fase 12 de la reestructuración)

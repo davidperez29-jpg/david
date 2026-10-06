@@ -653,3 +653,22 @@ pnpm --filter @tp/web test:e2e -- e2e/perf.spec.ts e2e/perf.mobile.spec.ts
   - Calendario: una sesión se mueve con «Mover» y vuelve a su día arrastrándola; el servidor rechaza un día pasado.
 - **Contratos**: nuevas `GET /adjustments` y `POST /plan-sessions/{id}/reschedule`; el calendario añade `version` a cada sesión. La matriz de acceso cruzado recoge las dos rutas automáticamente.
 
+## Resultado de la reestructuración, fase 13 (motor de programación)
+
+- **Unitarias** (`programming.unit.test.ts`): con un incremento de 1 kg, la doble progresión sube de 80 a 81 kg; `null` vuelve al de por defecto (2,5 kg en barra).
+- **Integración**:
+  - `programming.int.test.ts`, propuesta aplicada como revisión:
+    - una sesión futura con registro sigue intacta;
+    - las demás pasan a los días de la propuesta (martes, jueves y sábado);
+    - hay una revisión nueva con su motivo y la propuesta queda archivada;
+    - no se puede aplicar dos veces.
+  - `library.int.test.ts`, incremento:
+    - se fija en un ejercicio global y vuelve al de por defecto;
+    - otro centro no lo ve;
+    - el cliente recibe `403`;
+    - 0 y 60 kg se rechazan.
+- **E2E** (`engine.spec.ts`):
+  - incremento desde la ficha del ejercicio (Progresiones), con vuelta al de por defecto;
+  - propuesta aplicada al plan activo de Javier, con la revisión visible en «Gestión y revisiones».
+- **Seguridad**: la matriz RLS incluye `exercise_load_increments` y la de acceso cruzado la ruta nueva.
+

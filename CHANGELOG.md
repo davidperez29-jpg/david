@@ -2,6 +2,28 @@
 
 Formato: fecha · cambio · motivo · archivos · impacto.
 
+## 2026-10-06 — Reestructuración, fase 13: motor de programación
+
+- **Cambio:** una propuesta del motor se puede **aplicar al plan activo como nueva revisión**:
+  - sus sesiones desde hoy sustituyen a las futuras sin registrar;
+  - lo registrado no se toca;
+  - la propuesta se archiva.
+  - Botón «Aplicar al plan activo (nueva revisión)» en la propuesta; `mode: revision` en la API.
+- **Cambio:** **incremento de carga por ejercicio**:
+  - cada centro fija su salto mínimo, también en los ejercicios globales (Ejercicio → Progresiones);
+  - el motor lo usa para las progresiones de carga y lo explica en el «¿Por qué?».
+- **Archivos:**
+  - `packages/db/src/schema/library.ts`, migraciones `0048_exercise_load_increments` y `0049_rls_v18`;
+  - `packages/domain/src/programming/adjustments.ts`;
+  - `packages/application/src/{planning,programming,library}.ts`, `packages/contracts/src/{programming,library}.ts`;
+  - `apps/web/src/components/programming/actions.tsx`, `apps/web/src/app/app/plans/[planId]/page.tsx`, `apps/web/src/app/app/library/[exerciseId]/*`;
+  - `apps/web/src/app/api/v1/exercises/[exerciseId]/load-increment/route.ts`, `apps/web/e2e/engine.spec.ts`, `docs/api/*.json`;
+  - `docs/{PROGRAMMING_ENGINE,API,IMPLEMENTATION_ROADMAP,TESTING}.md`, `docs/PRODUCT_ARCHITECTURE.md` A53–A54.
+- **Impacto:**
+  - 2 migraciones (tabla nueva y su RLS);
+  - una ruta nueva;
+  - `mode` es opcional y por defecto sigue siendo «borrador».
+
 ## 2026-10-06 — Reestructuración, fase 12: pendientes del entrenador
 
 - **Cambio:** **Alertas** muestra los **ajustes propuestos** de todos los clientes del entrenador, agrupados por cliente, con Aceptar · Editar · Rechazar · Posponer.

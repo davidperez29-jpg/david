@@ -29,6 +29,7 @@
 | 10 | Endurecimiento final: seguridad, copias, rendimiento, revisión ASVS/RGPD | Todo lo de seguridad | ✅ Hecha |
 | 11 | Cifrado del texto libre de lesiones (DPIA R-11), elegido por el responsable tras la fase 10 | Cifrado de columna, rotación de claves | ✅ Hecha |
 | 12 | Pendientes del entrenador: ajustes desde Alertas y reprogramar desde el Calendario (elegida por el responsable) | Motor de ajustes, calendario global | ✅ Hecha |
+| 13 | Motor de programación: propuesta aplicada como revisión del plan activo e incremento de carga por ejercicio (elegida por el responsable) | Propuestas, revisiones, progresión de carga | ✅ Hecha |
 
 ## Por qué el despliegue va primero (decisión A2)
 
@@ -252,4 +253,21 @@ Elegida por el responsable entre los pendientes registrados en fases anteriores.
   - un plan archivado;
   - cualquier acceso fuera de ámbito (`planning.int.test.ts`).
 - ✅ un entrenador no asignado y otra organización no ven los ajustes de un cliente (`programming.int.test.ts`); las rutas nuevas están en la matriz de acceso cruzado.
+
+## Fase 13 · Motor de programación ✅
+
+Elegida por el responsable entre los pendientes del motor.
+
+- **Propuesta como revisión del plan activo**:
+  - además de aceptarla como plan en borrador, el entrenador puede aplicarla al plan activo para el que se propuso;
+  - sus sesiones desde hoy sustituyen a las futuras sin registrar, como una nueva revisión (A53).
+- **Incremento de carga por ejercicio**:
+  - cada centro fija el salto mínimo de un ejercicio, también global;
+  - la progresión de carga lo usa y lo explica (A54).
+
+**Criterios**:
+- ✅ lo ya registrado no se toca; las demás sesiones futuras pasan a los días de la propuesta; se crea una revisión y la propuesta se archiva (`programming.int.test.ts`, `engine.spec.ts`);
+- ✅ con incremento propio, la progresión sube exactamente ese salto (`programming.unit.test.ts`);
+- ✅ el incremento es del centro: otro centro ve el de por defecto; el cliente no puede cambiarlo; límites validados (`library.int.test.ts`);
+- ✅ la tabla nueva está en la matriz RLS y la ruta nueva en la de acceso cruzado.
 

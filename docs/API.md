@@ -156,6 +156,7 @@ Detalle en `PLANNING.md`. Lo que queda fuera de ámbito devuelve 404. Las edicio
 | `PATCH /microcycles/{id}` · `POST /microcycles/{id}/duplicate` | `plans:write` | `{weekType}` · `{targetMicrocycleId}` | Tipo de semana · copiar semana (reemplaza). |
 | `GET /plan-sessions/{id}` · `PATCH` | `plans:read` / `plans:write` | `updateSessionSchema` | Sesión con bloques, ejercicios, texto para el cliente y validación. |
 | `POST /plan-sessions/{id}/blocks` · `POST /plan-sessions/{id}/duplicate` | `plans:write` | `blockSchema` · `{targetMicrocycleId}` | |
+| `PUT /exercises/{id}/load-increment` | `library:write` | `{incrementKg: number \| null}` | Incremento de carga propio del centro para el ejercicio (> 0 y ≤ 50 kg; `null` = por defecto según el material). Reestructuración, fase 13. |
 | `POST /plan-sessions/{id}/reschedule` | `plans:write` | `{expectedVersion, date}` | Mueve una sesión a otro día de su plan (calendario). Solo sin registro, a hoy o después y dentro de las semanas del plan; si cambia de semana, pasa a esa semana. `409` si tiene registro, la versión no coincide o el plan está completado o archivado; `422` si el día es pasado (`date: past`) o está fuera del plan (`date: outside_plan`). Reestructuración, fase 12. |
 | `PATCH/DELETE /session-blocks/{id}` · `POST …/move` · `POST …/exercises` | `plans:write` | `updateBlockSchema` · `{direction}` · `sessionExerciseSchema` | |
 | `PATCH/DELETE /session-exercises/{id}` · `POST …/move` | `plans:write` | `updateSessionExerciseSchema` (`expectedVersion`, `overrideReason?`) | Un override de plantilla o progresión se audita con su motivo. |
@@ -241,7 +242,7 @@ Detalle en `PROGRAMMING_ENGINE.md`. Solo personal (ADMIN de la organización o e
 |---|---|---|---|
 | `GET /clients/{id}/plan-proposals` | `plans:read` + `decision:read` | — | Propuestas de plan (`PROPOSAL`) con sus notas de generación. |
 | `POST /clients/{id}/plan-proposals` | `plans:write` + `decision:run` | `{startDate, weekdays, templateId?}` | Genera una propuesta desde la última ejecución del motor de decisiones (la ejecuta si no hay). `409` con cribado positivo; `422` si los días no coinciden con la plantilla. |
-| `POST /plans/{id}/proposal/accept` | `plans:write` | `{name?, reason?}` | La propuesta pasa a `CLIENT_PLAN` en borrador. `409` si ya se decidió. |
+| `POST /plans/{id}/proposal/accept` | `plans:write` | `{name?, reason?}` | La propuesta pasa a `CLIENT_PLAN` en borrador. `409` si ya se decidió. Con `mode: revision` (fase 13), sus sesiones desde hoy sustituyen a las futuras sin registrar del plan activo, como nueva revisión. |
 | `POST /plans/{id}/proposal/discard` | `plans:write` | `{reason?}` | La propuesta queda archivada. |
 | `GET /clients/{id}/adjustments` | `plans:read` + `decision:read` | — | Ajustes pendientes y decididos (con cambios previstos o aplicados) y la opción de aplicación automática. |
 | `GET /adjustments` | `decision:read` | — | Ajustes pendientes (propuestos o pospuestos) de todos los clientes que sigue el entrenador, con nombre del cliente (página de Alertas). Reestructuración, fase 12. |
