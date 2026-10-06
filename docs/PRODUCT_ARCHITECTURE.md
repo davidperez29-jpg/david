@@ -53,7 +53,7 @@
 | Pantallas enormes (`clients/[clientId]/page.tsx` con 13 pestañas; editor de sesión por formularios) | Difícil de cambiar sin romper | Se sustituyen por pantallas nuevas, más pequeñas |
 | `planning.ts` (≈ 2 000 líneas en un archivo) | Mantenimiento | Se divide al tocarlo (plantillas, editor, copia) |
 | Datos del cliente repartidos en `clients`, `client_training_profiles`, `client_goals` y `client_equipment` | El alta de cliente necesita 4 escrituras | Un caso de uso «alta rápida» que escribe todo en una transacción |
-| El filtro «solo publicadas» de `sessions` está en la aplicación, no en la RLS | Segunda barrera incompleta | Se añade a la RLS en la fase 8 |
+| ~~El filtro «solo publicadas» de `sessions` está en la aplicación, no en la RLS~~ | — | ✅ Hecho en la fase 8: RLS en `sessions`, `session_blocks`, `session_exercises` y `exercise_sets` |
 | E2E acoplados a la interfaz antigua | Cada cambio de pantalla rompe tests | Se reescriben por flujo, no por pantalla |
 | Motor de decisiones y reglas muy elaborados para el valor que aportan hoy | Complejidad visible | Se conserva el código y se oculta; solo aflora como sugerencias |
 | Despliegue solo con Docker | El usuario no puede usarlo | Despliegue online gestionado (§5) |
@@ -213,3 +213,6 @@ Un cliente **nunca** accede a otros clientes, referencias privadas, notas intern
 | A37 | El **índice de simetría** usa el lado afectado declarado en el caso; si no hay lado, el peor frente al mejor | Es lo que sigue la readaptación. Sin lado, la comparación más prudente es la del lado más débil |
 | A38 | La pestaña Readaptación **solo aparece si hay un caso**; se abre el primero desde Ficha → Salud. Contarlos no se audita como lectura sensible (no muestra contenido) | Sencillo por fuera: la mayoría de clientes no tiene lesiones. Ver un caso sí queda auditado |
 | A39 | El **diagnóstico recibido** se guarda cifrado y no entra en el informe de readaptación | Es información sanitaria de terceros que el entrenador solo custodia; el informe recoge lo que hace el equipo (fases, criterios, decisiones) |
+| A40 | «No realizada» automática es el estado `missed` con `automatic = true`, no un estado nuevo; solo se añade `started` («iniciada») | La adherencia, las alertas y los informes ya entienden `missed`. Un estado aparte habría obligado a tratarlo igual en cada sitio; el indicador basta para distinguir quién lo decidió |
+| A41 | El trabajo diario solo cierra sesiones de los **últimos 30 días** y una «iniciada» se juzga por el día en que se empezó | Al desplegar no reescribe el pasado lejano. Si el cliente entrena otro día distinto del planificado, no se le marca incompleta mientras entrena |
+| A42 | «¿Molestias?» se guarda como categoría (No · Algo · Mucho) y la intensidad 0–10 es opcional; las alertas usan solo el número | No se inventa una equivalencia entre «Algo» y un número. Quien quiere precisar lo hace con un toque más |

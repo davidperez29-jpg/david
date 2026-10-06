@@ -108,7 +108,7 @@ Plan completo y criterios de aceptación: `MASTER_SPECIFICATION.md` §16.
 | Tests | ✅ 238 unitarios, 100 de integración y 20 E2E. |
 | Documentación | ✅ `SESSIONS.md`, `API.md`, `TESTING.md` y `DATABASE.md`. |
 | Datos | ✅ Los tres clientes demo con app tienen su plan activo, publicado y con las sesiones pasadas registradas por sincronización: una parcial y una sustitución pendiente. |
-| Pendiente conocido | Llevar el filtro «solo publicadas» también a la RLS de `sessions`. Carga interna, adherencia y alertas (Fase 8). Notificaciones push y por correo. |
+| Pendiente conocido | ~~Llevar el filtro «solo publicadas» también a la RLS de `sessions`~~ (hecho en la reestructuración, fase 8). Carga interna, adherencia y alertas (Fase 8). Notificaciones push y por correo. |
 
 ## Criterios de cierre de la Fase 8
 

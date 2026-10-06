@@ -96,7 +96,36 @@ Las tablas de seguimiento son de tipo `client_owned`, con escritura del cliente.
 
 **Limitación conocida:** la RLS de `sessions` permite al cliente leer filas de sus sesiones no publicadas. El filtro «solo publicadas» se aplica en la aplicación y está cubierto por tests de integración y E2E. Llevarlo también a la RLS es una mejora pendiente.
 
-## 9. Pendiente
+## 9. Reestructuración, fase 8: Hoy en el móvil, fichaje y feedback
+
+**Tarjeta de cada ejercicio** (UX_FLOW §2.6), en este orden:
+1. silueta con los músculos que trabaja (dibujada en el móvil, funciona sin conexión);
+2. **▶ Ver vídeo**, solo si hay un vídeo verificado. No se contacta con el proveedor hasta que se pulsa;
+3. series con reps, carga y RIR, y ✓ para registrar cada una;
+4. **¿Cómo fue?** Fácil · Normal · Difícil · Muy difícil (la escala de los documentos del usuario);
+5. **¿Molestias?** No · Algo · Mucho.
+   - Con «Algo» o «Mucho» se puede añadir cuánto (0–10). Ese número es el que usan las alertas de dolor.
+   - Es dato de salud: solo se guarda con consentimiento y siempre muestra el mensaje de consultar con un profesional.
+
+Todos los botones miden al menos 48 px de alto. Al terminar, **¿Cómo fue?** de la sesión entera, además del RPE de sesión (0–10) que usa la carga interna.
+
+**Fichaje automático** (§41):
+
+| Estado | Cuándo |
+|---|---|
+| Planificada | Publicada y sin registro |
+| Iniciada | Al registrar la primera serie |
+| Completada / Incompleta | Al cerrarla el cliente o el entrenador |
+| Incompleta (automática) | Se inició y no se cerró. El trabajo diario la cierra al pasar el día en que se empezó |
+| No realizada (automática) | Pasó el día sin ningún registro. Mira los últimos 30 días |
+
+- Lo automático queda marcado (`attendance.automatic`, sin `recorded_by`).
+- El cliente o el entrenador pueden cerrarla después y su registro lo sustituye.
+- Una sesión «Iniciada» cuenta como realizada para la adherencia.
+
+**RLS «solo publicadas»**: la base de datos ya no deja al cliente leer sesiones sin publicar. Tampoco sus bloques, ejercicios ni series, aunque un caso de uso olvidara el filtro.
+
+## 10. Pendiente
 
 | Elemento | Fase |
 |---|---|

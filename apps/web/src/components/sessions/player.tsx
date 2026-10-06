@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { PlayerSession } from '@tp/application';
+import { BodyMap } from '@/components/library/body-map';
 import { Button } from '@/components/ui/button';
 import { LABELS } from '@/lib/labels';
 import {
@@ -37,6 +38,20 @@ const SRPE: { value: number; label: string }[] = [
   { value: 10, label: 'Máximo' },
 ];
 const RIR_CHIPS = [0, 1, 2, 3, 4];
+/** «¿Cómo fue?» as in the user's own documents (restructure phase 8). */
+const FEEL = [
+  ['easy', 'Fácil'],
+  ['normal', 'Normal'],
+  ['hard', 'Difícil'],
+  ['very_hard', 'Muy difícil'],
+] as const;
+const DISCOMFORT = [
+  ['none', 'No'],
+  ['some', 'Algo'],
+  ['a_lot', 'Mucho'],
+] as const;
+type Feel = (typeof FEEL)[number][0];
+type Discomfort = (typeof DISCOMFORT)[number][0];
 
 type Exercise = PlayerSession['blocks'][number]['exercises'][number];
 type Sync = 'synced' | 'pending' | 'flagged' | 'error';
@@ -282,7 +297,10 @@ export function Player({
         {session.notesForClient ? (
           <p className="rounded-md border border-border p-3 text-sm">{session.notesForClient}</p>
         ) : null}
-        <p className="text-sm text-muted" aria-live="polite">
+        <p className="flex items-center gap-2 text-sm text-muted" aria-live="polite">
+          <span className="rounded-full border border-border px-2 py-0.5 text-xs">
+            {session.attendance ? session.tracking : doneRows ? 'Iniciada' : session.tracking}
+          </span>
           {doneRows} de {totalRows} series
         </p>
       </header>
@@ -301,30 +319,47 @@ export function Player({
                 aria-label={perf.name}
                 className="flex flex-col gap-3 rounded-xl border border-border p-4"
               >
-                <div>
-                  <h3 className="text-lg font-semibold">
-                    {e.pairingLabel ? `${e.pairingLabel} · ` : ''}
-                    {perf.name}
-                  </h3>
-                  {swapped ? <p className="text-xs text-muted">En lugar de {e.name}</p> : null}
-                  <p className="mt-1 text-sm">{e.clientText}</p>
-                  {e.notesForClient ? (
-                    <p className="mt-1 text-sm text-accent">{e.notesForClient}</p>
+                <div className="flex gap-3">
+                  {e.muscles.length ? (
+                    <div className="shrink-0">
+                      <BodyMap muscles={e.muscles} size="xs" />
+                    </div>
                   ) : null}
-                  {e.last ? (
-                    <p className="mt-1 text-xs text-muted">
-                      Última vez ({e.last.date}):{' '}
-                      {e.last.sets
-                        .map((x) =>
-                          x.reps == null && x.durationS != null
-                            ? `${x.durationS} s`
-                            : `${x.loadKg != null ? `${x.loadKg} kg × ` : ''}${x.reps ?? '—'}`,
-                        )
-                        .join(' · ')}
-                    </p>
-                  ) : null}
+                  <div className="min-w-0">
+                    <h3 className="text-lg font-semibold">
+                      {e.pairingLabel ? `${e.pairingLabel} · ` : ''}
+                      {perf.name}
+                    </h3>
+                    {swapped ? <p className="text-xs text-muted">En lugar de {e.name}</p> : null}
+                    <p className="mt-1 text-sm">{e.clientText}</p>
+                    {e.notesForClient ? (
+                      <p className="mt-1 text-sm text-accent">{e.notesForClient}</p>
+                    ) : null}
+                    {e.muscles.length ? (
+                      <p className="mt-1 text-xs text-muted">
+                        Trabaja:{' '}
+                        {e.muscles
+                          .filter((m) => m.role === 'primary')
+                          .map((m) => m.name)
+                          .join(', ') || e.muscles.map((m) => m.name).join(', ')}
+                      </p>
+                    ) : null}
+                    {e.last ? (
+                      <p className="mt-1 text-xs text-muted">
+                        Última vez ({e.last.date}):{' '}
+                        {e.last.sets
+                          .map((x) =>
+                            x.reps == null && x.durationS != null
+                              ? `${x.durationS} s`
+                              : `${x.loadKg != null ? `${x.loadKg} kg × ` : ''}${x.reps ?? '—'}`,
+                          )
+                          .join(' · ')}
+                      </p>
+                    ) : null}
+                  </div>
                 </div>
-                {e.cues.length || e.video?.embedUrl || e.description ? (
+                {e.video?.embedUrl ? <VideoToggle title={e.name} url={e.video.embedUrl} /> : null}
+                {e.cues.length || e.description ? (
                   <details>
                     <summary className="cursor-pointer text-sm text-muted">Cómo hacerlo</summary>
                     {e.description ? <p className="mt-2 text-sm">{e.description}</p> : null}
@@ -335,17 +370,6 @@ export function Player({
                         </li>
                       ))}
                     </ul>
-                    {e.video?.embedUrl ? (
-                      <iframe
-                        title={`Vídeo de ${e.name}`}
-                        src={e.video.embedUrl}
-                        className="mt-2 aspect-video w-full rounded"
-                        allow="encrypted-media; picture-in-picture"
-                        referrerPolicy="strict-origin-when-cross-origin"
-                        sandbox="allow-scripts allow-same-origin allow-presentation"
-                        loading="lazy"
-                      />
-                    ) : null}
                   </details>
                 ) : null}
 
@@ -439,6 +463,7 @@ export function Player({
                 </button>
                 <ExerciseFeedback
                   name={perf.name}
+                  initial={e.feedback}
                   onSend={async (fb) => {
                     await enqueue({
                       type: 'exercise_feedback',
@@ -447,7 +472,7 @@ export function Player({
                       ...fb,
                     });
                     void flush();
-                    if (fb.pain != null && fb.pain > 0)
+                    if ((fb.discomfort && fb.discomfort !== 'none') || (fb.pain ?? 0) > 0)
                       setNotices((n) => ({ ...n, [e.id]: PAIN_MESSAGE }));
                   }}
                 />
@@ -705,6 +730,7 @@ function CloseSheet({
   onClose: () => void;
   onSubmit: (data: {
     status?: 'completed' | 'partial' | 'missed';
+    feel?: Feel | null;
     reasonCode?: string | null;
     sessionRpe?: number | null;
     fatigue?: number | null;
@@ -713,6 +739,7 @@ function CloseSheet({
     pain?: { intensity: number; bodyRegion: string } | null;
   }) => Promise<void>;
 }) {
+  const [feel, setFeel] = useState<Feel | null>(null);
   const [srpe, setSrpe] = useState<number | null>(null);
   const [fatigue, setFatigue] = useState<number | null>(null);
   const [motivation, setMotivation] = useState<number | null>(null);
@@ -745,6 +772,24 @@ function CloseSheet({
             ))}
           </select>
         </label>
+      ) : null}
+      {!none ? (
+        <fieldset>
+          <legend className="mb-1 text-sm font-medium">¿Cómo fue?</legend>
+          <div className="flex gap-1">
+            {FEEL.map(([k, l]) => (
+              <button
+                key={k}
+                type="button"
+                aria-pressed={feel === k}
+                onClick={() => setFeel(feel === k ? null : k)}
+                className={`h-12 flex-1 rounded-md border px-2 text-sm ${feel === k ? 'border-accent bg-accent text-accent-contrast' : 'border-border'}`}
+              >
+                {l}
+              </button>
+            ))}
+          </div>
+        </fieldset>
       ) : null}
       {!none ? (
         <Scale
@@ -800,6 +845,7 @@ function CloseSheet({
             return setErr('Indica la intensidad y la zona del dolor.');
           void onSubmit({
             status,
+            feel: none ? null : feel,
             reasonCode: status === 'completed' ? null : reason,
             sessionRpe: none ? null : srpe,
             fatigue,
@@ -815,40 +861,129 @@ function CloseSheet({
   );
 }
 
-/** Optional per-exercise feedback: difficulty and discomfort (stored only with consent). */
+/** A verified video, opened on demand (no third-party request until the client asks). */
+function VideoToggle({ title, url }: { title: string; url: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div>
+      <button
+        type="button"
+        aria-expanded={open}
+        onClick={() => setOpen(!open)}
+        className="flex h-12 items-center gap-2 text-sm font-medium text-accent"
+      >
+        {open ? '■ Ocultar vídeo' : '▶ Ver vídeo'}
+      </button>
+      {open ? (
+        <iframe
+          title={`Vídeo de ${title}`}
+          src={url}
+          className="mt-1 aspect-video w-full rounded"
+          allow="encrypted-media; picture-in-picture"
+          referrerPolicy="strict-origin-when-cross-origin"
+          sandbox="allow-scripts allow-same-origin allow-presentation"
+          loading="lazy"
+        />
+      ) : null}
+    </div>
+  );
+}
+
+/**
+ * «¿Cómo fue?» and «¿Molestias?» per exercise (restructure phase 8): one tap each, saved through
+ * the offline queue on every change. With «Algo» or «Mucho» the client may add how much (0–10),
+ * which is what the pain alerts use. Discomfort is health data: stored only with consent.
+ */
 function ExerciseFeedback({
   name,
+  initial,
   onSend,
 }: {
   name: string;
-  onSend: (fb: { difficulty: number | null; pain: number | null }) => Promise<void>;
+  initial: { feel: string | null; discomfort: string | null } | null;
+  onSend: (fb: {
+    feel: Feel | null;
+    discomfort: Discomfort | null;
+    pain: number | null;
+  }) => Promise<void>;
 }) {
-  const [difficulty, setDifficulty] = useState<number | null>(null);
+  const [feel, setFeel] = useState<Feel | null>((initial?.feel as Feel) ?? null);
+  const [discomfort, setDiscomfort] = useState<Discomfort | null>(
+    (initial?.discomfort as Discomfort) ?? null,
+  );
   const [pain, setPain] = useState<number | null>(null);
-  const [sent, setSent] = useState(false);
-  if (sent) return <p className="text-xs text-muted">Valoración guardada. ¡Gracias!</p>;
+  const send = (next: {
+    feel?: Feel | null;
+    discomfort?: Discomfort | null;
+    pain?: number | null;
+  }) => {
+    const v = {
+      feel: next.feel !== undefined ? next.feel : feel,
+      discomfort: next.discomfort !== undefined ? next.discomfort : discomfort,
+      pain: next.pain !== undefined ? next.pain : pain,
+    };
+    if (v.discomfort === 'none') v.pain = 0;
+    void onSend(v);
+  };
+  const chip = (on: boolean) =>
+    `h-12 min-w-12 flex-1 rounded-md border px-2 text-sm ${on ? 'border-accent bg-accent text-accent-contrast' : 'border-border'}`;
   return (
-    <details>
-      <summary className="cursor-pointer text-sm text-muted">¿Qué tal {name}?</summary>
-      <div className="mt-2 flex flex-col gap-2">
-        <Scale legend="Dificultad (0–10)" value={difficulty} onChange={setDifficulty} />
-        <Scale legend="Molestias en este ejercicio (0–10)" value={pain} onChange={setPain} />
-        <p className="text-xs text-muted">
-          Las molestias solo se guardan si has dado tu consentimiento para datos de salud.
-        </p>
-        <Button
-          size="sm"
-          variant="secondary"
-          disabled={difficulty == null && pain == null}
-          onClick={() => {
-            setSent(true);
-            void onSend({ difficulty, pain });
+    <div className="flex flex-col gap-2 border-t border-border pt-3">
+      <fieldset>
+        <legend className="mb-1 text-sm font-medium">¿Cómo fue {name}?</legend>
+        <div className="flex gap-1">
+          {FEEL.map(([k, l]) => (
+            <button
+              key={k}
+              type="button"
+              aria-pressed={feel === k}
+              className={chip(feel === k)}
+              onClick={() => {
+                const v = feel === k ? null : k;
+                setFeel(v);
+                send({ feel: v });
+              }}
+            >
+              {l}
+            </button>
+          ))}
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend className="mb-1 text-sm font-medium">¿Molestias?</legend>
+        <div className="flex gap-1">
+          {DISCOMFORT.map(([k, l]) => (
+            <button
+              key={k}
+              type="button"
+              aria-pressed={discomfort === k}
+              className={chip(discomfort === k)}
+              onClick={() => {
+                const v = discomfort === k ? null : k;
+                setDiscomfort(v);
+                if (v === 'none' || v == null) setPain(null);
+                send({ discomfort: v, pain: v === 'none' || v == null ? null : pain });
+              }}
+            >
+              {l}
+            </button>
+          ))}
+        </div>
+      </fieldset>
+      {discomfort === 'some' || discomfort === 'a_lot' ? (
+        <Scale
+          legend="¿Cuánto? (0–10, opcional)"
+          value={pain}
+          onChange={(x) => {
+            setPain(x);
+            send({ pain: x });
           }}
-        >
-          Enviar valoración
-        </Button>
-      </div>
-    </details>
+        />
+      ) : null}
+      <p className="text-xs text-muted">
+        Las molestias solo se guardan si has dado tu consentimiento para datos de salud.
+      </p>
+    </div>
   );
 }
 

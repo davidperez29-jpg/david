@@ -558,3 +558,22 @@ pnpm --filter @tp/web test:e2e -- e2e/perf.spec.ts e2e/perf.mobile.spec.ts
   - decisión con «apta» rechazada y luego registrada con nombre y rol;
   - abrir un caso desde Ficha → Salud, marcar criterios y avanzar a mano.
 - **Accesibilidad**: pestaña Readaptación y página del caso en `a11y.spec.ts` (claro y oscuro), sin infracciones.
+
+## Resultado de la reestructuración, fase 8 (cliente móvil, fichaje y feedback)
+
+- **Unitarias** (`sessions.unit.test.ts`):
+  - fichaje automático: una sesión iniciada y pasada queda incompleta; una pasada sin registro, no realizada;
+  - nunca toca hoy, el futuro, las no publicadas ni las ya cerradas;
+  - los cinco estados que ve el cliente;
+  - una sesión iniciada cuenta como realizada en la adherencia.
+- **Integración** (`fichaje.int.test.ts`):
+  - RLS «solo publicadas» con SQL directo como cliente: no lee sesiones sin publicar, ni sus bloques ni sus ejercicios; el equipo sí;
+  - la primera serie marca «Iniciada» y el cierre la sustituye;
+  - el trabajo diario cierra lo pasado como incompleta o no realizada (automática), es idempotente y el cliente puede cerrarla después;
+  - «¿Cómo fue?» se guarda siempre; «¿Molestias?» solo con consentimiento.
+- **E2E móvil** (`player.mobile.spec.ts`, Pixel 7):
+  - silueta accesible en la tarjeta;
+  - sin conexión: primera serie → «Iniciada»;
+  - Normal y Algo + 3/10 con el mensaje de seguridad, y botones de 48 px como mínimo;
+  - cierre con «Difícil» y sincronización al volver la conexión, con una sola serie registrada.
+- La prueba existente de sesión completa sin conexión y sin duplicados (`sessions.mobile.spec.ts`) sigue pasando.

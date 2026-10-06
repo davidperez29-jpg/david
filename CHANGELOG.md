@@ -2,6 +2,28 @@
 
 Formato: fecha · cambio · motivo · archivos · impacto.
 
+## 2026-10-06 — Reestructuración, fase 8: Hoy en el móvil, fichaje y feedback
+
+- **Cambio:** cada ejercicio de la sesión del cliente muestra:
+  - la **silueta** con los músculos que trabaja;
+  - **▶ Ver vídeo** (solo vídeos verificados, que se cargan al pulsar);
+  - las series con reps, carga y RIR;
+  - **¿Cómo fue?** Fácil · Normal · Difícil · Muy difícil;
+  - **¿Molestias?** No · Algo · Mucho, con una intensidad 0–10 opcional.
+
+  Al terminar, «¿Cómo fue?» de la sesión entera.
+  - **Motivo:** el recorrido de los documentos del usuario (UX_FLOW §2.6), con botones grandes y funcionando sin conexión.
+
+- **Cambio:** **fichaje automático**: Planificada → Iniciada (primera serie) → Completada o Incompleta. El trabajo diario cierra lo que se quedó a medias (Incompleta) y lo que no se hizo (No realizada), marcado como automático. El cliente o el entrenador pueden corregirlo después.
+- **Seguridad:** la base de datos ya no deja al cliente leer sesiones sin publicar (RLS en sesiones, bloques, ejercicios y series).
+- **Archivos:**
+  - `packages/db/src/schema/tracking.ts`, migraciones 0043–0044, `packages/db/src/rls/*`;
+  - `packages/domain/src/{sessions,monitoring}`;
+  - `packages/application/src/{sessions,monitoring,daily-jobs}.ts`;
+  - `apps/web/src/components/sessions/player.tsx`, `apps/web/src/components/library/body-map.tsx`;
+  - `docs/SESSIONS.md` §9, `docs/PRODUCT_ARCHITECTURE.md` A40–A42.
+- **Impacto:** 2 migraciones (estado `started`, columnas `automatic`, `feel` y `discomfort`; nueva RLS). Tras desplegar, el primer trabajo diario marca como no realizadas las sesiones publicadas de los últimos 30 días que no tienen registro.
+
 ## 2026-10-06 — Reestructuración, fase 7: lesiones, readaptación y vuelta al deporte
 
 - **Cambio:** pestaña **Readaptación** en la ficha del cliente cuando tiene un caso de lesión. El primero se abre desde Ficha → Salud.

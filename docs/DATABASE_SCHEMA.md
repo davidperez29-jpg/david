@@ -184,8 +184,9 @@ Kinds de criterio (`kind`): `clinico_recibido`, `sintomas`, `rom`, `fuerza`, `fu
 
 ### Fase 8 · Cliente móvil, feedback y adherencia
 
-- **`attendance`**: nuevos estados `iniciada` y `no_realizada_automatica` (fichaje del §41). Una sesión publicada cuya fecha pasa sin registro se marca no realizada al día siguiente, en el trabajo diario.
-- **RLS de `sessions`**: el cliente solo lee las sesiones con `published = true`.
+- **`attendance`**: nuevo estado `started` («iniciada») y columna `automatic`; «no realizada» automática es `missed` con `automatic = true` (decisión A40). Una sesión publicada cuya fecha pasa sin registro se marca no realizada al día siguiente, en el trabajo diario. ✅ Migraciones 0043–0044.
+- **`feedback.feel`** y **`exercise_feedback.feel`** (Fácil · Normal · Difícil · Muy difícil) y **`exercise_feedback.discomfort`** (No · Algo · Mucho, con consentimiento).
+- **RLS de `sessions`**: el cliente solo lee las sesiones con `published = true`, y los bloques, ejercicios y series de esas sesiones. ✅
 
 ### Fase 9 · Ciencia y referencias
 

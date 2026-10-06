@@ -95,7 +95,8 @@ export function BodyMap({
   size = 'md',
 }: {
   muscles: { name: string; groupSlug: string; role: string }[];
-  size?: 'sm' | 'md';
+  /** xs: a thumbnail for the session player's exercise card (no legend). */
+  size?: 'xs' | 'sm' | 'md';
 }) {
   const roles = new Map<string, Role>();
   for (const m of muscles)
@@ -106,7 +107,20 @@ export function BodyMap({
   const description = muscles.length
     ? `Músculos principales: ${primary.join(', ') || 'ninguno'}. Secundarios: ${secondary.join(', ') || 'ninguno'}.`
     : 'Sin músculos asignados.';
-  const h = size === 'sm' ? 'h-40' : 'h-56';
+  const h = size === 'xs' ? 'h-24' : size === 'sm' ? 'h-40' : 'h-56';
+  if (size === 'xs')
+    return (
+      <svg viewBox="0 0 250 250" role="img" aria-label={description} className={`${h} w-auto`}>
+        <g transform="translate(0 2)">
+          <Body />
+          <Regions map={FRONT} roles={roles} />
+        </g>
+        <g transform="translate(130 2)">
+          <Body />
+          <Regions map={BACK} roles={roles} />
+        </g>
+      </svg>
+    );
   return (
     <figure className="flex flex-col items-center gap-1">
       <svg viewBox="0 0 250 250" role="img" aria-label={description} className={`${h} w-auto`}>
