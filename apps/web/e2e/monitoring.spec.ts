@@ -20,7 +20,8 @@ test('trainer sees alerts by severity, reviews a client follow-up and resolves a
   await expect(page.getByText('🟢 Propuesta').first()).toBeVisible();
   // Tomás has red alerts in the demo (adherence; the pain one is resolved by the UX review).
   const red = page
-    .locator('main li')
+    .getByRole('list', { name: 'Lista de alertas' })
+    .locator(':scope > li')
     .filter({ hasText: '🔴 Roja' })
     .filter({ hasText: 'Tomás Garrido' })
     .first();
@@ -37,7 +38,11 @@ test('trainer sees alerts by severity, reviews a client follow-up and resolves a
 
   // Resolve the green proposal of another client from the alerts page (audited, idempotent).
   await page.goto('/app/alerts?gravedad=green');
-  const items = page.locator('main li').filter({ hasText: 'Propuesta' });
+  // The alerts list (the pending adjustments card above also has «Propuesta» badges).
+  const items = page
+    .getByRole('list', { name: 'Lista de alertas' })
+    .locator(':scope > li')
+    .filter({ hasText: 'Propuesta' });
   const before = await items.count();
   if (before) {
     const item = items.first();

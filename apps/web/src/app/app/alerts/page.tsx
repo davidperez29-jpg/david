@@ -125,7 +125,7 @@ export default async function AlertsPage({ searchParams }: { searchParams: Promi
             {estado === 'resueltas' ? 'No hay alertas resueltas.' : 'No hay alertas activas.'}
           </EmptyState>
         ) : (
-          <ul className="divide-y divide-border">
+          <ul aria-label="Lista de alertas" className="divide-y divide-border">
             {rows.map((a) => (
               <li key={a.id} className="flex flex-col gap-1 py-3">
                 <div className="flex flex-wrap items-center gap-2">

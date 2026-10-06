@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { createContext, useContext, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { api } from '@/lib/api-client';
 
 /**
@@ -131,7 +131,10 @@ export function MoveSessionForm({
 }) {
   const c = useContext(Ctx);
   const [value, setValue] = useState(date);
-  if (!c) return null;
+  // Shown once hydrated: before that, «Mover» would submit the form natively and reload the page.
+  const [ready, setReady] = useState(false);
+  useEffect(() => setReady(true), []);
+  if (!c || !ready) return null;
   return (
     <details className="text-[11px]">
       <summary className="cursor-pointer text-accent">Mover</summary>
