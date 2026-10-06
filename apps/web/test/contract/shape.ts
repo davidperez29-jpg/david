@@ -18,6 +18,9 @@ const OPEN_MAPS = new Set([
   'details',
   'inputs',
   'metadata',
+  // Battery → test ids keyed by test slug: the keys are catalogue data, and which batteries are
+  // sampled depends on the database's sort order (collation).
+  'testIds',
 ]);
 
 /** Keys that are data, not fields: dates and ids (e.g. totals per day). */
