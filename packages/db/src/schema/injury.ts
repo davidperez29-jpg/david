@@ -178,16 +178,25 @@ export const injuries = pgTable(
     protocolId: uuid('protocol_id').references(() => injuryProtocols.id),
     side: injurySide('side').notNull().default('none'),
     occurredOn: date('occurred_on').notNull(),
-    mechanism: text('mechanism'),
+    /** Free text about the case, AES-256-GCM encrypted (restructure phase 11). */
+    mechanismEnc: text('mechanism_enc'),
+    /** @deprecated Legacy plaintext, emptied by `encryptInjuryText` (restructure phase 11); dropped later. */
+    mechanismPlain: text('mechanism'),
     /** Diagnosis / information received from the health professional, AES-256-GCM encrypted. */
     diagnosisEnc: text('diagnosis_enc'),
-    professional: text('professional'),
+    professionalEnc: text('professional_enc'),
+    /** @deprecated Legacy plaintext, emptied by `encryptInjuryText` (restructure phase 11); dropped later. */
+    professionalPlain: text('professional'),
     clinicalClearanceOn: date('clinical_clearance_on'),
     currentPhaseId: uuid('current_phase_id').references(() => injuryProtocolPhases.id),
     phaseStartedOn: date('phase_started_on'),
     status: injuryStatus('status').notNull().default('active'),
-    restrictions: text('restrictions'),
-    notes: text('notes'),
+    restrictionsEnc: text('restrictions_enc'),
+    /** @deprecated Legacy plaintext, emptied by `encryptInjuryText` (restructure phase 11); dropped later. */
+    restrictionsPlain: text('restrictions'),
+    notesEnc: text('notes_enc'),
+    /** @deprecated Legacy plaintext, emptied by `encryptInjuryText` (restructure phase 11); dropped later. */
+    notesPlain: text('notes'),
     decisionRequestedAt: timestamp('decision_requested_at', { withTimezone: true }),
     healthDeclarationId: uuid('health_declaration_id').references(() => healthDeclarations.id, {
       onDelete: 'set null',
@@ -221,7 +230,9 @@ export const injuryPhaseHistory = pgTable(
     startedOn: date('started_on').notNull(),
     endedOn: date('ended_on'),
     advancedBy: uuid('advanced_by'),
-    note: text('note'),
+    noteEnc: text('note_enc'),
+    /** @deprecated Legacy plaintext, emptied by `encryptInjuryText` (restructure phase 11); dropped later. */
+    notePlain: text('note'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [index('injury_phase_history_injury_idx').on(t.injuryId)],
@@ -261,7 +272,9 @@ export const injuryAlerts = pgTable(
     message: text('message').notNull(),
     reviewedAt: timestamp('reviewed_at', { withTimezone: true }),
     reviewedBy: uuid('reviewed_by'),
-    reviewNote: text('review_note'),
+    reviewNoteEnc: text('review_note_enc'),
+    /** @deprecated Legacy plaintext, emptied by `encryptInjuryText` (restructure phase 11); dropped later. */
+    reviewNotePlain: text('review_note'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [index('injury_alerts_injury_idx').on(t.injuryId, t.reviewedAt)],
@@ -280,7 +293,9 @@ export const injuryCriterionChecks = pgTable(
     source: text('source').notNull(),
     assessmentId: uuid('assessment_id'),
     checkedBy: uuid('checked_by'),
-    note: text('note'),
+    noteEnc: text('note_enc'),
+    /** @deprecated Legacy plaintext, emptied by `encryptInjuryText` (restructure phase 11); dropped later. */
+    notePlain: text('note'),
     checkedAt: timestamp('checked_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
@@ -299,7 +314,9 @@ export const rtpDecisions = pgTable(
     decidedByName: text('decided_by_name').notNull(),
     decidedByRole: text('decided_by_role').notNull(),
     decidedOn: date('decided_on').notNull(),
-    rationale: text('rationale'),
+    rationaleEnc: text('rationale_enc'),
+    /** @deprecated Legacy plaintext, emptied by `encryptInjuryText` (restructure phase 11); dropped later. */
+    rationalePlain: text('rationale'),
     recordedBy: uuid('recorded_by'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },

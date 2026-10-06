@@ -1,10 +1,11 @@
 import { schema } from '@tp/db';
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import { beforeAll, describe, expect, it } from 'vitest';
 import {
   advanceInjuryPhase,
   checkInjuryCriterion,
   closeInjury,
+  encryptInjuryText,
   generateClientReport,
   getClientReport,
   createAssessment,
@@ -22,7 +23,7 @@ import {
   reviewInjuryAlert,
   type AssessmentTestSummary,
 } from '../src';
-import { buildOrg, testDb } from './fixtures';
+import { appContext, buildOrg, testDb } from './fixtures';
 
 type Org = Awaited<ReturnType<typeof buildOrg>>;
 let o: Org;
@@ -233,5 +234,64 @@ describe('injury module (restructure phase 7)', () => {
     await expect(
       recordInjurySymptom(o.admin, o.clientA, injuryId, { recordedOn: '2026-08-01', pain: 1 }),
     ).rejects.toMatchObject({ code: 'conflict' });
+  });
+});
+
+describe('free text encrypted at rest (restructure phase 11, DPIA R-11)', () => {
+  it('stores no injury free text in clear; the case still reads it', async () => {
+    const db = testDb().db;
+    const raw = JSON.stringify(
+      await Promise.all(
+        [
+          schema.injuries,
+          schema.injuryPhaseHistory,
+          schema.injuryAlerts,
+          schema.injuryCriterionChecks,
+          schema.rtpDecisions,
+          schema.injurySymptoms,
+        ].map((t) => db.select().from(t).where(eq(t.clientId, o.clientA))),
+      ),
+    );
+    for (const text of ['plastia', 'Traumatología', 'fisioterapia', 'fase de fuerza'])
+      expect(raw).not.toContain(text);
+    const c = await getInjury(o.admin, o.clientA, injuryId);
+    expect(c.professional).toBe('Traumatología');
+    expect(c.alerts.some((a) => a.reviewNote?.includes('fisioterapia'))).toBe(true);
+    expect(c.decisions.some((d) => d.rationale === 'Continuar con la fase de fuerza.')).toBe(true);
+  });
+
+  it('moves text written before encryption into the encrypted columns (idempotent)', async () => {
+    const db = testDb().db;
+    // A case as it was stored before phase 11: plaintext columns, no encrypted value.
+    await db.execute(sql`update injuries
+      set mechanism = 'Caída en el entrenamiento', mechanism_enc = null,
+          notes = 'Nota antigua', notes_enc = null
+      where id = ${injuryId}`);
+    await db.execute(sql`update rtp_decisions set rationale = 'Motivo antiguo', rationale_enc = null
+      where injury_id = ${injuryId}`);
+    // Readable before the move (fallback to the legacy column).
+    let c = await getInjury(o.admin, o.clientA, injuryId);
+    expect(c.mechanism).toBe('Caída en el entrenamiento');
+    const app = appContext();
+    expect((await encryptInjuryText(app)).moved).toBeGreaterThanOrEqual(3);
+    const [row] = await db.select().from(schema.injuries).where(eq(schema.injuries.id, injuryId));
+    expect(row!.mechanismPlain).toBeNull();
+    expect(row!.notesPlain).toBeNull();
+    expect(row!.mechanismEnc).not.toContain('Caída');
+    c = await getInjury(o.admin, o.clientA, injuryId);
+    expect(c.mechanism).toBe('Caída en el entrenamiento');
+    expect(c.notes).toBe('Nota antigua');
+    expect(c.decisions.every((d) => d.rationale === 'Motivo antiguo')).toBe(true);
+    const [left] = await db
+      .select({ n: sql<number>`count(*)::int` })
+      .from(schema.injuries)
+      .where(eq(schema.injuries.id, injuryId));
+    expect(left!.n).toBe(1);
+    // Nothing left to move for this case.
+    const again = await db.execute<{ n: number }>(
+      sql`select count(*)::int as n from injuries where id = ${injuryId}
+            and (mechanism is not null or notes is not null)`,
+    );
+    expect([...again][0]!.n).toBe(0);
   });
 });

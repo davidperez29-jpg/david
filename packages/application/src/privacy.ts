@@ -41,7 +41,7 @@ import {
   or,
   sql,
 } from 'drizzle-orm';
-import type { PgTable } from 'drizzle-orm/pg-core';
+import type { AnyPgColumn, PgTable } from 'drizzle-orm/pg-core';
 import { writeAudit } from './audit';
 import { authorizeClient, requirePermission } from './authz';
 import type { AppContext, RequestContext } from './context';
@@ -119,7 +119,11 @@ export const SUBJECT_EXPORT_EXCLUDED: Record<string, string> = {
 export const SUBJECT_EXPORT_TABLES = SECTIONS.map(([, t]) => getTableName(t));
 const HIDDEN = new Set(['organizationId', 'clientId', 'snapshot', 'codeHash']);
 
-/** Decrypts *Enc columns (renamed without the suffix) and drops internal columns. */
+/**
+ * Decrypts *Enc columns (renamed without the suffix) and drops internal columns. A legacy
+ * *Plain column (not yet moved by `encryptInjuryText`) fills the same name only when its
+ * encrypted twin is empty.
+ */
 function clean(keys: AppContext['keys'], row: Record<string, unknown>) {
   const out: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(row)) {
@@ -128,8 +132,12 @@ function clean(keys: AppContext['keys'], row: Record<string, unknown>) {
       out[k.slice(0, -3)] = typeof v === 'string' ? safeOpen(keys, v) : null;
       continue;
     }
+    if (k.endsWith('Plain')) continue;
     out[k] = v;
   }
+  for (const [k, v] of Object.entries(row))
+    if (k.endsWith('Plain') && v != null && row[`${k.slice(0, -5)}Enc`] == null)
+      out[k.slice(0, -5)] = v;
   return out;
 }
 function safeOpen(keys: AppContext['keys'], v: string): string | null {
@@ -598,28 +606,81 @@ export async function applyRetention(app: Pick<AppContext, 'storage' | 'now'> & 
 
 // ── Key rotation (system script) ──────────────────────────────────────────────
 
+type Col = AnyPgColumn;
+const enc = (table: PgTable, key: string): [PgTable, Col, Col, string] => {
+  const cols = getTableColumns(table) as Record<string, Col>;
+  return [table, cols.id!, cols[key]!, key];
+};
+
+/**
+ * Every AES-256-GCM encrypted column. A test checks that each `*_enc` column of the schema is
+ * here: one left out would become unreadable when the old key is retired after a rotation (the
+ * injury columns were missing until restructure phase 11).
+ */
+export const ENCRYPTED_COLUMNS = [
+  enc(s.clients, 'phoneEnc'),
+  enc(s.healthDeclarations, 'descriptionEnc'),
+  enc(s.users, 'totpSecretEnc'),
+  enc(s.painLogs, 'commentEnc'),
+  enc(s.integrationConnections, 'credentialsEnc'),
+  enc(s.injuries, 'diagnosisEnc'),
+  enc(s.injuries, 'mechanismEnc'),
+  enc(s.injuries, 'professionalEnc'),
+  enc(s.injuries, 'restrictionsEnc'),
+  enc(s.injuries, 'notesEnc'),
+  enc(s.injurySymptoms, 'noteEnc'),
+  enc(s.injuryPhaseHistory, 'noteEnc'),
+  enc(s.injuryAlerts, 'reviewNoteEnc'),
+  enc(s.injuryCriterionChecks, 'noteEnc'),
+  enc(s.rtpDecisions, 'rationaleEnc'),
+];
+
+/** Legacy plaintext columns of the injury module and the encrypted column that replaces each. */
+const INJURY_PLAINTEXT: [PgTable, string][] = [
+  [s.injuries, 'mechanism'],
+  [s.injuries, 'professional'],
+  [s.injuries, 'restrictions'],
+  [s.injuries, 'notes'],
+  [s.injuryPhaseHistory, 'note'],
+  [s.injuryAlerts, 'reviewNote'],
+  [s.injuryCriterionChecks, 'note'],
+  [s.rtpDecisions, 'rationale'],
+];
+
+/**
+ * Moves the injury free text written before restructure phase 11 into its encrypted column and
+ * empties the plaintext one (system script, idempotent; run on every start after the
+ * migrations, deploy/start.sh). An encrypted value already present is kept.
+ */
+export async function encryptInjuryText(app: Pick<AppContext, 'keys'> & { db: Database }) {
+  let moved = 0;
+  for (const [table, base] of INJURY_PLAINTEXT) {
+    const cols = getTableColumns(table) as Record<string, Col>;
+    const plain = cols[`${base}Plain`]!;
+    const encrypted = cols[`${base}Enc`]!;
+    const rows = (await app.db
+      .select({ id: cols.id!, plain, encrypted })
+      .from(table)
+      .where(isNotNull(plain))) as { id: string; plain: string; encrypted: string | null }[];
+    for (const r of rows) {
+      await app.db
+        .update(table)
+        .set({
+          [`${base}Enc`]: r.encrypted ?? encrypt(app.keys.encryptionKey, r.plain),
+          [`${base}Plain`]: null,
+        } as never)
+        .where(eq(cols.id!, r.id));
+      moved++;
+    }
+  }
+  return { moved };
+}
+
 /** Re-encrypts every encrypted column with the current key (after APP_ENCRYPTION_KEY changes). */
 export async function rotateEncryptedColumns(app: Pick<AppContext, 'keys'> & { db: Database }) {
-  const targets = [
-    [s.clients, s.clients.id, s.clients.phoneEnc, 'phoneEnc'],
-    [
-      s.healthDeclarations,
-      s.healthDeclarations.id,
-      s.healthDeclarations.descriptionEnc,
-      'descriptionEnc',
-    ],
-    [s.users, s.users.id, s.users.totpSecretEnc, 'totpSecretEnc'],
-    [s.painLogs, s.painLogs.id, s.painLogs.commentEnc, 'commentEnc'],
-    [
-      s.integrationConnections,
-      s.integrationConnections.id,
-      s.integrationConnections.credentialsEnc,
-      'credentialsEnc',
-    ],
-  ] as const;
   let rotated = 0;
   let unreadable = 0;
-  for (const [table, idCol, col, key] of targets) {
+  for (const [table, idCol, col, key] of ENCRYPTED_COLUMNS) {
     const rows = (await app.db
       .select({ id: idCol, v: col })
       .from(table as PgTable)

@@ -13,7 +13,7 @@
  *   Without data an automatic criterion can be checked manually (e.g. measured elsewhere).
  * - An open safety alert blocks [Avanzar de fase] until it is reviewed with a note.
  */
-import { encrypt, openSecret } from '@tp/auth';
+import { encrypt, openSecret, type KeyRing } from '@tp/auth';
 import {
   advancePhaseSchema,
   closeInjurySchema,
@@ -76,6 +76,15 @@ const {
   assessmentResults,
   assessmentTests,
 } = schema;
+
+/**
+ * Free text of the case is stored AES-256-GCM encrypted (restructure phase 11, DPIA R-11). Rows
+ * written before then keep their legacy plaintext column until `encryptInjuryText` moves it.
+ */
+const seal = (keys: KeyRing, v: string | null | undefined) =>
+  v ? encrypt(keys.encryptionKey, v) : null;
+const unseal = (keys: KeyRing, enc: string | null, plain?: string | null) =>
+  enc ? openSecret(keys, enc) : (plain ?? null);
 
 const visible = (ctx: RequestContext, col: AnyPgColumn) =>
   or(isNull(col), eq(col, ctx.actor.organizationId));
@@ -318,6 +327,7 @@ interface CriterionState {
 /** State of each criterion of a phase: live automatic value, else the latest manual check. */
 async function criteriaState(
   db: Executor,
+  keys: KeyRing,
   injury: InjuryRow,
   criteria: InjuryProtocolDetail['phases'][number]['criteria'],
 ): Promise<Map<string, CriterionState>> {
@@ -373,7 +383,7 @@ async function criteriaState(
       source: last ? 'manual' : null,
       assessmentId: null,
       checkedOn: last ? last.checkedAt.toISOString().slice(0, 10) : null,
-      note: last?.note ?? null,
+      note: last ? unseal(keys, last.noteEnc, last.notePlain) : null,
     });
   }
   return out;
@@ -392,7 +402,7 @@ async function caseOf(ctx: RequestContext, injury: InjuryRow) {
       .from(rtpDecisions)
       .where(eq(rtpDecisions.injuryId, injury.id)),
   ]);
-  const states = phase ? await criteriaState(ctx.db, injury, phase.criteria) : new Map();
+  const states = phase ? await criteriaState(ctx.db, ctx.keys, injury, phase.criteria) : new Map();
   const st = (id: string) => states.get(id) as CriterionState | undefined;
   const state: PhaseState = {
     phaseIndex: phase ? phase.index : null,
@@ -425,7 +435,7 @@ async function checklistOf(
   decisionAuthorized: boolean,
 ) {
   const tagged = (protocol?.phases ?? []).flatMap((p) => p.criteria.filter((c) => c.rtpItem));
-  const states = await criteriaState(ctx.db, injury, tagged);
+  const states = await criteriaState(ctx.db, ctx.keys, injury, tagged);
   return rtpChecklist(
     tagged.map((c) => ({ item: c.rtpItem, met: states.get(c.id)?.met ?? null })),
     decisionAuthorized,
@@ -510,7 +520,8 @@ async function getInjury_(ctx: RequestContext, clientId: string, injuryId: strin
         phaseId: injuryPhaseHistory.phaseId,
         startedOn: injuryPhaseHistory.startedOn,
         endedOn: injuryPhaseHistory.endedOn,
-        note: injuryPhaseHistory.note,
+        noteEnc: injuryPhaseHistory.noteEnc,
+        notePlain: injuryPhaseHistory.notePlain,
       })
       .from(injuryPhaseHistory)
       .where(eq(injuryPhaseHistory.injuryId, injury.id))
@@ -551,12 +562,12 @@ async function getInjury_(ctx: RequestContext, clientId: string, injuryId: strin
     side: injury.side,
     sideLabel: SIDES[injury.side],
     occurredOn: injury.occurredOn,
-    mechanism: injury.mechanism,
+    mechanism: unseal(ctx.keys, injury.mechanismEnc, injury.mechanismPlain),
     diagnosis: injury.diagnosisEnc ? openSecret(ctx.keys, injury.diagnosisEnc) : null,
-    professional: injury.professional,
+    professional: unseal(ctx.keys, injury.professionalEnc, injury.professionalPlain),
     clinicalClearanceOn: injury.clinicalClearanceOn,
-    restrictions: injury.restrictions,
-    notes: injury.notes,
+    restrictions: unseal(ctx.keys, injury.restrictionsEnc, injury.restrictionsPlain),
+    notes: unseal(ctx.keys, injury.notesEnc, injury.notesPlain),
     phaseStartedOn: injury.phaseStartedOn,
     closedAt: injury.closedAt,
     version: injury.version,
@@ -590,7 +601,11 @@ async function getInjury_(ctx: RequestContext, clientId: string, injuryId: strin
           criteria: c.phase.criteria.map((k) => ({ ...k, state: c.states.get(k.id) ?? null })),
         }
       : null,
-    history: history.map((h) => ({ ...h, phase: phaseName(h.phaseId) })),
+    history: history.map(({ noteEnc, notePlain, ...h }) => ({
+      ...h,
+      note: unseal(ctx.keys, noteEnc, notePlain),
+      phase: phaseName(h.phaseId),
+    })),
     symptoms: symptoms.map((s) => ({
       id: s.id,
       recordedOn: s.recordedOn,
@@ -611,7 +626,7 @@ async function getInjury_(ctx: RequestContext, clientId: string, injuryId: strin
       message: a.message,
       createdAt: a.createdAt,
       reviewedAt: a.reviewedAt,
-      reviewNote: a.reviewNote,
+      reviewNote: unseal(ctx.keys, a.reviewNoteEnc, a.reviewNotePlain),
     })),
     checklist,
     decisions: decisions.map((d) => ({
@@ -623,7 +638,7 @@ async function getInjury_(ctx: RequestContext, clientId: string, injuryId: strin
       decidedByName: d.decidedByName,
       decidedByRole: d.decidedByRole,
       decidedOn: d.decidedOn,
-      rationale: d.rationale,
+      rationale: unseal(ctx.keys, d.rationaleEnc, d.rationalePlain),
     })),
     stages: Object.entries(RTP_STAGES).map(([value, label]) => ({ value, label })),
     outcomes: Object.entries(RTP_OUTCOMES).map(([value, label]) => ({ value, label })),
@@ -663,12 +678,12 @@ async function openInjury_(ctx: RequestContext, clientId: string, input: unknown
       protocolId: d.protocolId ?? null,
       side: d.side,
       occurredOn: d.occurredOn,
-      mechanism: d.mechanism ?? null,
-      diagnosisEnc: d.diagnosis ? encrypt(ctx.keys.encryptionKey, d.diagnosis) : null,
-      professional: d.professional ?? null,
+      mechanismEnc: seal(ctx.keys, d.mechanism),
+      diagnosisEnc: seal(ctx.keys, d.diagnosis),
+      professionalEnc: seal(ctx.keys, d.professional),
       clinicalClearanceOn: d.clinicalClearanceOn ?? null,
-      restrictions: d.restrictions ?? null,
-      notes: d.notes ?? null,
+      restrictionsEnc: seal(ctx.keys, d.restrictions),
+      notesEnc: seal(ctx.keys, d.notes),
       currentPhaseId: firstPhase,
       phaseStartedOn: firstPhase ? on : null,
       createdBy: ctx.actor.userId,
@@ -741,7 +756,7 @@ async function recordSymptom_(
       swelling: d.swelling,
       instability: d.instability,
       adverseReaction: d.adverseReaction,
-      noteEnc: d.note ? encrypt(ctx.keys.encryptionKey, d.note) : null,
+      noteEnc: seal(ctx.keys, d.note),
       recordedBy: ctx.actor.userId,
     })
     .returning({ id: injurySymptoms.id });
@@ -780,7 +795,11 @@ async function reviewInjuryAlert_(
   const injury = await loadInjury(ctx.db, clientId, injuryId);
   const updated = await ctx.db
     .update(injuryAlerts)
-    .set({ reviewedAt: ctx.now(), reviewedBy: ctx.actor.userId, reviewNote: d.note })
+    .set({
+      reviewedAt: ctx.now(),
+      reviewedBy: ctx.actor.userId,
+      reviewNoteEnc: seal(ctx.keys, d.note),
+    })
     .where(
       and(
         eq(injuryAlerts.id, alertId),
@@ -831,7 +850,7 @@ async function checkInjuryCriterion_(
       met: d.met,
       source: 'manual',
       checkedBy: ctx.actor.userId,
-      note: d.note ?? null,
+      noteEnc: seal(ctx.keys, d.note),
     })
     .returning({ id: injuryCriterionChecks.id });
   await writeAudit(ctx.db, ctx, {
@@ -885,7 +904,7 @@ async function advanceInjuryPhase_(
     );
   await ctx.db
     .update(injuryPhaseHistory)
-    .set({ endedOn: on, note: d.note ?? null })
+    .set({ endedOn: on, noteEnc: seal(ctx.keys, d.note) })
     .where(and(eq(injuryPhaseHistory.injuryId, injury.id), isNull(injuryPhaseHistory.endedOn)));
   await ctx.db.insert(injuryPhaseHistory).values({
     organizationId: ctx.actor.organizationId,
@@ -963,7 +982,7 @@ async function recordRtpDecision_(
       decidedByName: d.decidedByName,
       decidedByRole: d.decidedByRole,
       decidedOn: d.decidedOn,
-      rationale: d.rationale ?? null,
+      rationaleEnc: seal(ctx.keys, d.rationale),
       recordedBy: ctx.actor.userId,
     })
     .returning({ id: rtpDecisions.id });
@@ -994,7 +1013,7 @@ async function closeInjury_(
   if (injury.status === 'closed') return { ok: true };
   await ctx.db
     .update(injuryPhaseHistory)
-    .set({ endedOn: today(ctx), note: d.note ?? null })
+    .set({ endedOn: today(ctx), noteEnc: seal(ctx.keys, d.note) })
     .where(and(eq(injuryPhaseHistory.injuryId, injury.id), isNull(injuryPhaseHistory.endedOn)));
   await ctx.db
     .update(injuries)

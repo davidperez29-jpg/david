@@ -2,7 +2,7 @@ import { currentTotp, encrypt, keyRingFromBase64, openSecret, totpAt } from '@tp
 import { schema } from '@tp/db';
 import { addDays, localDate } from '@tp/domain';
 import { createHash, randomBytes } from 'node:crypto';
-import { and, eq, sql } from 'drizzle-orm';
+import { and, eq, getTableName, sql } from 'drizzle-orm';
 import { beforeAll, describe, expect, it } from 'vitest';
 import {
   addHealthDeclaration,
@@ -22,6 +22,7 @@ import {
   listInjuryCatalog,
   openInjury,
   recordInjurySymptom,
+  ENCRYPTED_COLUMNS,
   SUBJECT_EXPORT_EXCLUDED,
   SUBJECT_EXPORT_TABLES,
   listClientPrivacyRequests,
@@ -282,6 +283,15 @@ describe('retention (controller decides; anonymization when it ends) and minimiz
 });
 
 describe('key rotation', () => {
+  it('rotates every encrypted column of the schema (none left behind)', async () => {
+    const rows = await db().execute<{ c: string }>(
+      sql`select table_name || '.' || column_name as c from information_schema.columns
+           where table_schema = 'public' and column_name like '%\\_enc' order by 1`,
+    );
+    const listed = ENCRYPTED_COLUMNS.map(([t, , col]) => `${getTableName(t)}.${col.name}`).sort();
+    expect([...rows].map((r) => r.c)).toEqual(listed);
+  });
+
   it('re-encrypts values written with the old key; afterwards the old key is not needed', async () => {
     const oldMaster = randomBytes(32).toString('base64');
     const newMaster = randomBytes(32).toString('base64');
