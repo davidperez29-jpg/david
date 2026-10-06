@@ -95,10 +95,19 @@ export function onResults(l: Listener) {
 }
 
 let flushing: Promise<void> | null = null;
+/** A flush was asked for while one was running (e.g. «online» during a failing attempt). */
+let again = false;
 
-/** Sends the queue. Network failures keep everything for the next attempt. */
+/**
+ * Sends the queue. Network failures keep everything for the next attempt. A request that
+ * arrives while a flush is running is not lost: another flush runs right after it, so the
+ * reconnection that happens during a failing (offline) attempt still syncs the queue.
+ */
 export function flush(): Promise<void> {
-  if (flushing) return flushing;
+  if (flushing) {
+    again = true;
+    return flushing;
+  }
   flushing = (async () => {
     try {
       const items = await pending();
@@ -129,6 +138,10 @@ export function flush(): Promise<void> {
       }
     } finally {
       flushing = null;
+      if (again) {
+        again = false;
+        void flush();
+      }
     }
   })();
   return flushing;
