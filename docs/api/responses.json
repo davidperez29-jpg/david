@@ -726,7 +726,7 @@
     {
       "action": "string",
       "actor": "string",
-      "changes": "object",
+      "changes": "[object Object]|object|object|object|object",
       "entityType": "string",
       "id": "string",
       "occurredAt": "string",
@@ -1098,6 +1098,8 @@
               {
                 "claimKey": "string",
                 "confidence": "string",
+                "evidenceKind": "string",
+                "limitations": "string",
                 "sources": [
                   "object"
                 ],
@@ -1540,6 +1542,9 @@
           "role": "string",
           "roleLabel": "string",
           "rtpItem": "string",
+          "sourceIds": [
+            "string"
+          ],
           "sources": [
             "string"
           ],
@@ -1585,6 +1590,9 @@
         }
       ],
       "protocolVersion": "number",
+      "sourceIds": [
+        "string"
+      ],
       "sources": [
         "string"
       ]
@@ -1775,9 +1783,9 @@
       "id": "string",
       "organizationId": "string",
       "requestedBy": "string",
-      "resolvedAt": "null",
-      "resolvedBy": "null",
-      "response": "null",
+      "resolvedAt": "string",
+      "resolvedBy": "string",
+      "response": "string",
       "status": "string",
       "type": "string",
       "updatedAt": "string"
@@ -1901,6 +1909,7 @@
     ],
     "asistencia": [
       {
+        "automatic": "boolean",
         "createdAt": "string",
         "durationMin": "number",
         "id": "string",
@@ -2358,9 +2367,9 @@
         "dueOn": "string",
         "id": "string",
         "requestedBy": "string",
-        "resolvedAt": "null",
-        "resolvedBy": "null",
-        "response": "null",
+        "resolvedAt": "string",
+        "resolvedBy": "string",
+        "response": "string",
         "status": "string",
         "type": "string",
         "updatedAt": "string"
@@ -2403,6 +2412,7 @@
         "comment": "string",
         "createdAt": "string",
         "fatigue": "number",
+        "feel": "null",
         "feeling": "null",
         "id": "string",
         "motivation": "number",
@@ -2808,7 +2818,15 @@
     ],
     "version": "number"
   },
-  "GET groups/[groupId]/reports": [],
+  "GET groups/[groupId]/reports": [
+    {
+      "by": "string",
+      "createdAt": "string",
+      "hash": "string",
+      "id": "string",
+      "parameters": "object"
+    }
+  ],
   "GET imports": [
     {
       "createdAt": "string",
@@ -2913,6 +2931,9 @@
             "role": "string",
             "roleLabel": "string",
             "rtpItem": "string",
+            "sourceIds": [
+              "string"
+            ],
             "sources": [
               "string"
             ],
@@ -2936,6 +2957,9 @@
       }
     ],
     "protocolVersion": "number",
+    "sourceIds": [
+      "string"
+    ],
     "sources": [
       "string"
     ]
@@ -3501,9 +3525,9 @@
       "organizationId": "string",
       "overdue": "boolean",
       "requestedBy": "string",
-      "resolvedAt": "null",
-      "resolvedBy": "null",
-      "response": "null",
+      "resolvedAt": "string",
+      "resolvedBy": "string",
+      "response": "string",
       "status": "string",
       "type": "string",
       "updatedAt": "string"
@@ -3673,6 +3697,7 @@
         "createdAt": "string",
         "createdBy": "null",
         "epistemicType": "string",
+        "evidenceKind": "string",
         "evidenceLevel": "string",
         "id": "string",
         "isGlobal": "boolean",
@@ -3680,6 +3705,7 @@
         "levelLabel": "string",
         "limitations": "string",
         "organizationId": "null",
+        "origin": "string",
         "reviewedAt": "string",
         "reviewedBy": "null",
         "scope": "string",
@@ -3737,6 +3763,7 @@
         "verifiedAt": "string"
       }
     ],
+    "evidenceKind": "string",
     "evidenceLevel": "string",
     "id": "string",
     "isGlobal": "boolean",
@@ -3744,6 +3771,7 @@
     "levelLabel": "string",
     "limitations": "string",
     "organizationId": "null",
+    "origin": "string",
     "qa": [
       {
         "code": "string",
@@ -3973,6 +4001,36 @@
       }
     ]
   },
+  "GET science/searches": {
+    "items": [
+      {
+        "criterion": "null",
+        "database": "string",
+        "id": "string",
+        "injury": "null",
+        "isGlobal": "boolean",
+        "method": "null",
+        "objective": "string",
+        "phase": "null",
+        "population": "null",
+        "query": "string",
+        "reason": "string",
+        "reviewed": "number",
+        "searchedOn": "string",
+        "selected": [
+          {
+            "citation": "string",
+            "id": "string"
+          }
+        ],
+        "test": "string",
+        "topic": "string"
+      }
+    ],
+    "topics": [
+      "string"
+    ]
+  },
   "GET science/sources": {
     "items": [
       {
@@ -4001,10 +4059,11 @@
     "authors": [
       "string"
     ],
+    "citedIn": "null",
     "comparison": "string",
     "corrections": "null",
     "createdAt": "string",
-    "createdBy": "null",
+    "createdBy": "string",
     "doi": "string",
     "findings": [
       {
@@ -4051,14 +4110,25 @@
     "issue": "string",
     "journal": "string",
     "limitations": "string",
-    "organizationId": "null",
+    "organizationId": "string",
+    "origin": "string",
     "outcomesMeasured": "string",
     "pages": "string",
     "pmcid": "null",
     "pmid": "string",
     "populationSummary": "string",
     "practicalApplication": "string",
-    "qa": [],
+    "qa": [
+      {
+        "code": "string",
+        "message": "string",
+        "severity": "string",
+        "target": {
+          "key": "string",
+          "type": "string"
+        }
+      }
+    ],
     "resultsSummary": "string",
     "reviews": [],
     "sex": "string",
@@ -4069,11 +4139,11 @@
     "trainingStatus": "string",
     "updatedAt": "string",
     "updatedBy": "null",
-    "url": "null",
+    "url": "string",
     "verificationMethod": "string",
     "verificationStatus": "string",
     "verifiedAt": "string",
-    "verifiedBy": "null",
+    "verifiedBy": "string",
     "version": "number",
     "volume": "string",
     "year": "number"
@@ -4111,6 +4181,7 @@
   },
   "GET sessions/[sessionId]": {
     "attendance": {
+      "automatic": "boolean",
       "durationMin": "number",
       "performedDate": "string",
       "reasonCode": "string",
@@ -4138,6 +4209,7 @@
             ],
             "description": "string",
             "exerciseId": "string",
+            "feedback": "null",
             "id": "string",
             "last": {
               "date": "string",
@@ -4162,6 +4234,13 @@
                 "rpe": "null",
                 "setIndex": "number",
                 "side": "string"
+              }
+            ],
+            "muscles": [
+              {
+                "groupSlug": "string",
+                "name": "string",
+                "role": "string"
               }
             ],
             "name": "string",
@@ -4238,6 +4317,7 @@
     "feedback": {
       "comment": "string",
       "fatigue": "number",
+      "feel": "null",
       "feeling": "null",
       "motivation": "number",
       "pain": "null",
@@ -4255,7 +4335,8 @@
     },
     "published": "boolean",
     "scheduledDate": "string",
-    "title": "string"
+    "title": "string",
+    "tracking": "string"
   },
   "GET trainers": [
     {
