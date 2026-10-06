@@ -121,7 +121,7 @@ Plan completo y criterios de aceptación: `MASTER_SPECIFICATION.md` §16.
 | Tests | ✅ 261 unitarios, 107 de integración y 23 E2E. |
 | Documentación | ✅ `MONITORING.md`, `API.md`, `TESTING.md`, `DATABASE.md` y `SCIENTIFIC_FRAMEWORK.md`. |
 | Datos | ✅ Demo con adherencias del 45 % al 100 % y alertas de cada color (adherencia, dolor, RPE alto, bienestar, RIR y sesión sin valoración). 4 fuentes nuevas verificadas en PubMed. |
-| Pendiente conocido | Dashboards completos (Fase 9). Aplicar las propuestas de ajuste desde la alerta (Fase 11). Notificaciones push y por correo. |
+| Pendiente conocido | Dashboards completos (Fase 9). ~~Aplicar las propuestas de ajuste desde la alerta.~~ (hecho en la fase 12 de la reestructuración) Notificaciones push y por correo. |
 
 ## Criterios de cierre de la Fase 9
 
@@ -134,7 +134,7 @@ Plan completo y criterios de aceptación: `MASTER_SPECIFICATION.md` §16.
 | Tests | ✅ 270 unitarios, 110 de integración y 27 E2E. |
 | Documentación | ✅ `DASHBOARD.md`, `UX_REVIEW.md`, `API.md`, `TESTING.md` y `DATABASE.md`. |
 | Datos | ✅ Evaluaciones próximas y vencidas en la demo; Iker con 2 tests visibles. |
-| Pendiente conocido | Prueba UX con personas. Hitos configurables por el entrenador. Arrastrar y soltar en el calendario para reprogramar. |
+| Pendiente conocido | Prueba UX con personas. Hitos configurables por el entrenador. ~~Arrastrar y soltar en el calendario para reprogramar.~~ (hecho en la fase 12 de la reestructuración) |
 
 ## Criterios de cierre de la Fase 10
 
@@ -160,7 +160,7 @@ Plan completo y criterios de aceptación: `MASTER_SPECIFICATION.md` §16.
 | Tests | ✅ 310 unitarios, 126 de integración y 29 E2E. |
 | Documentación | ✅ `PROGRAMMING_ENGINE.md`, `API.md`, `TESTING.md`, `DATABASE.md` y `MONITORING.md`. |
 | Datos | ✅ La demo tiene progresiones de carga de Iker pendientes, una propuesta de plan para Iker y ajustes por respuesta: descarga (Elena, Javier) y menos volumen (Tomás). |
-| Pendiente conocido | Propuesta como nueva revisión del plan activo. Incremento configurable por ejercicio. Progresión VBT/e1RM. Aplicar ajustes desde la página de alertas. |
+| Pendiente conocido | Propuesta como nueva revisión del plan activo. Incremento configurable por ejercicio. Progresión VBT/e1RM. ~~Aplicar ajustes desde la página de alertas.~~ (fase 12 de la reestructuración) |
 
 ## Criterios de cierre de la Fase 12
 

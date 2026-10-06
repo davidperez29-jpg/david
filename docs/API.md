@@ -156,6 +156,7 @@ Detalle en `PLANNING.md`. Lo que queda fuera de ámbito devuelve 404. Las edicio
 | `PATCH /microcycles/{id}` · `POST /microcycles/{id}/duplicate` | `plans:write` | `{weekType}` · `{targetMicrocycleId}` | Tipo de semana · copiar semana (reemplaza). |
 | `GET /plan-sessions/{id}` · `PATCH` | `plans:read` / `plans:write` | `updateSessionSchema` | Sesión con bloques, ejercicios, texto para el cliente y validación. |
 | `POST /plan-sessions/{id}/blocks` · `POST /plan-sessions/{id}/duplicate` | `plans:write` | `blockSchema` · `{targetMicrocycleId}` | |
+| `POST /plan-sessions/{id}/reschedule` | `plans:write` | `{expectedVersion, date}` | Mueve una sesión a otro día de su plan (calendario). Solo sin registro, a hoy o después y dentro de las semanas del plan; si cambia de semana, pasa a esa semana. `409` si tiene registro, la versión no coincide o el plan está completado o archivado; `422` si el día es pasado (`date: past`) o está fuera del plan (`date: outside_plan`). Reestructuración, fase 12. |
 | `PATCH/DELETE /session-blocks/{id}` · `POST …/move` · `POST …/exercises` | `plans:write` | `updateBlockSchema` · `{direction}` · `sessionExerciseSchema` | |
 | `PATCH/DELETE /session-exercises/{id}` · `POST …/move` | `plans:write` | `updateSessionExerciseSchema` (`expectedVersion`, `overrideReason?`) | Un override de plantilla o progresión se audita con su motivo. |
 | `POST /plan-sessions/{id}/exercises` | `plans:write` | `addSessionExercisesSchema` (`blockId?`, `rows[]` de 1 a 200: `exerciseId`, `prescription`, `notesForClient?`) | Filas de la tabla de sesión (pegadas de Excel o escritas) en una transacción: si una fila no es válida no se añade ninguna y el error indica fila y campo (`rows.3.sets`). Sin `blockId`, al último bloque (crea uno principal si no hay). Reestructuración, fase 2. |
@@ -243,6 +244,7 @@ Detalle en `PROGRAMMING_ENGINE.md`. Solo personal (ADMIN de la organización o e
 | `POST /plans/{id}/proposal/accept` | `plans:write` | `{name?, reason?}` | La propuesta pasa a `CLIENT_PLAN` en borrador. `409` si ya se decidió. |
 | `POST /plans/{id}/proposal/discard` | `plans:write` | `{reason?}` | La propuesta queda archivada. |
 | `GET /clients/{id}/adjustments` | `plans:read` + `decision:read` | — | Ajustes pendientes y decididos (con cambios previstos o aplicados) y la opción de aplicación automática. |
+| `GET /adjustments` | `decision:read` | — | Ajustes pendientes (propuestos o pospuestos) de todos los clientes que sigue el entrenador, con nombre del cliente (página de Alertas). Reestructuración, fase 12. |
 | `POST /clients/{id}/adjustments/refresh` | `plans:write` | — | Recalcula ahora los ajustes. |
 | `POST /adjustments/{id}/decision` | `plans:write` + `decision:decide` | `{action: accept\|accept_with_changes\|reject\|postpone, params?: {toKg?, setsDelta?, rirDelta?, toExerciseId?}, reason?}` | Al aceptar, aplica a sesiones futuras sin registrar, con revisión del plan y auditoría. `409` si ya está decidida o si nada es aplicable. |
 | `POST /clients/{id}/adjustments/accept` | `plans:write` + `decision:decide` | `{ids, reason?}` | Aceptar en bloque; devuelve `{applied, failed}`. |

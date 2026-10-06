@@ -28,6 +28,7 @@
 | 9 | Ciencia + referencias (verificación, tipos de evidencia, búsquedas registradas) | Ciencia actual | ✅ Hecha |
 | 10 | Endurecimiento final: seguridad, copias, rendimiento, revisión ASVS/RGPD | Todo lo de seguridad | ✅ Hecha |
 | 11 | Cifrado del texto libre de lesiones (DPIA R-11), elegido por el responsable tras la fase 10 | Cifrado de columna, rotación de claves | ✅ Hecha |
+| 12 | Pendientes del entrenador: ajustes desde Alertas y reprogramar desde el Calendario (elegida por el responsable) | Motor de ajustes, calendario global | ✅ Hecha |
 
 ## Por qué el despliegue va primero (decisión A2)
 
@@ -228,4 +229,27 @@ Elegida por el responsable al cerrar la fase 10, entre los pendientes de la DPIA
 - ✅ el texto anterior se lee antes de moverlo y sigue igual después; el paso es idempotente;
 - ✅ toda columna `*_enc` está en la lista de rotación (`privacy.int.test.ts`);
 - ✅ sin cambios en la API: el contrato de respuestas pasa.
+
+## Fase 12 · Pendientes del entrenador ✅
+
+Elegida por el responsable entre los pendientes registrados en fases anteriores.
+
+- **Ajustes desde Alertas**:
+  - los ajustes pendientes de todos los clientes del entrenador aparecen en la página de Alertas, agrupados por cliente, con las mismas acciones que en la ficha;
+  - caso de uso `listPendingAdjustments` (`GET /adjustments`).
+- **Reprogramar desde el Calendario**:
+  - arrastrar y soltar una sesión pendiente a otro día;
+  - «Mover» con fecha como alternativa para teclado y móvil;
+  - caso de uso `rescheduleSession` (`POST /plan-sessions/{id}/reschedule`), con todas las reglas en el servidor (A51).
+
+**Criterios**:
+- ✅ el entrenador decide un ajuste desde Alertas y queda reflejado (`trainer-ops.spec.ts`);
+- ✅ una sesión se mueve con «Mover» y vuelve a su día arrastrándola (`trainer-ops.spec.ts`);
+- ✅ el servidor rechaza:
+  - un día pasado o fuera del plan;
+  - una sesión con registro;
+  - una versión desfasada;
+  - un plan archivado;
+  - cualquier acceso fuera de ámbito (`planning.int.test.ts`).
+- ✅ un entrenador no asignado y otra organización no ven los ajustes de un cliente (`programming.int.test.ts`); las rutas nuevas están en la matriz de acceso cruzado.
 

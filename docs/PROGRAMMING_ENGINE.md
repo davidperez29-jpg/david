@@ -93,6 +93,10 @@ Cada propuesta lleva su **«¿Por qué?»** con la estructura de §13.6:
   - «Propuesta de plan del motor»: propuestas abiertas y formulario con la plantilla propuesta preseleccionada, la fecha de inicio y los días.
 - **Página del plan** (si es propuesta): aviso con las notas de generación, «Aceptar como plan (borrador)» y «Descartar propuesta». En «Gestión» no se ofrece activarla.
 - **Ficha → Seguimiento**: aviso «Hay N propuestas de ajuste del plan» con el enlace «Ver propuesta de ajuste».
+- **Alertas** (fase 12 de la reestructuración): tarjeta «Ajustes propuestos» con los pendientes (propuestos o pospuestos) de todos los clientes que sigue el entrenador, agrupados por cliente.
+  - Cada uno tiene lo mismo que en la ficha: qué cambiaría, el «¿Por qué?» y Aceptar · Editar · Rechazar · Posponer.
+  - Así se decide junto a las alertas que lo motivaron, sin abrir cliente por cliente.
+  - Caso de uso `listPendingAdjustments` (`GET /adjustments`). La RLS limita a cada entrenador a sus clientes asignados.
 
 ## 5. API
 
@@ -104,4 +108,4 @@ Ver `API.md` («Motor de programación»).
 - Incremento de carga configurable por ejercicio.
 - Progresión por velocidad (VBT) y e1RM.
 - Ajustes de días o frecuencia por disponibilidad.
-- Aplicar ajustes desde la página de alertas.
+- ~~Aplicar ajustes desde la página de alertas.~~ (hecho en la fase 12 de la reestructuración)

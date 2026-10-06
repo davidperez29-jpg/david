@@ -2,6 +2,25 @@
 
 Formato: fecha · cambio · motivo · archivos · impacto.
 
+## 2026-10-06 — Reestructuración, fase 12: pendientes del entrenador
+
+- **Cambio:** **Alertas** muestra los **ajustes propuestos** de todos los clientes del entrenador, agrupados por cliente, con Aceptar · Editar · Rechazar · Posponer.
+  - **Motivo:** decidirlos junto a las alertas que los motivan sin abrir cliente por cliente (pendiente de las fases 8 y 11).
+- **Cambio:** el **Calendario** permite **reprogramar** una sesión pendiente:
+  - arrastrándola a otro día;
+  - o con «Mover» y una fecha (teclado, móvil).
+  - El servidor solo lo permite con sesiones sin registro, a hoy o después, dentro de las semanas de un plan editable. Si cambia de semana, la sesión pasa a la nueva.
+- **Archivos:**
+  - `packages/application/src/{programming,planning,dashboard}.ts`, `packages/contracts/src/planning.ts`;
+  - `apps/web/src/app/api/v1/adjustments/route.ts`, `apps/web/src/app/api/v1/plan-sessions/[sessionId]/reschedule/route.ts`;
+  - `apps/web/src/app/app/{alerts,calendar}/page.tsx`, `apps/web/src/components/calendar/reschedule.tsx`, `apps/web/src/components/programming/adjustments-card.tsx`;
+  - `apps/web/e2e/trainer-ops.spec.ts`, `docs/api/*.json`;
+  - `docs/{DASHBOARD,PROGRAMMING_ENGINE,IMPLEMENTATION_ROADMAP,ROADMAP,TESTING}.md`, `docs/PRODUCT_ARCHITECTURE.md` A51–A52.
+- **Impacto:**
+  - sin migraciones;
+  - dos rutas nuevas;
+  - `GET /calendar` añade `version` a cada sesión (compatible).
+
 ## 2026-10-06 — Reestructuración, fase 11: cifrado del texto libre de lesiones
 
 - **Cambio:** todo el texto libre de los casos de lesión se guarda cifrado (AES-256-GCM):

@@ -638,3 +638,18 @@ pnpm --filter @tp/web test:e2e -- e2e/perf.spec.ts e2e/perf.mobile.spec.ts
   - la exportación del interesado sigue descifrando la información recibida del caso.
 - **E2E**: `injury.spec.ts`, `privacy.spec.ts`, `report-kinds.spec.ts` y `contract-responses.spec.ts` sin cambios. La API mantiene su forma.
 
+## Resultado de la reestructuración, fase 12 (pendientes del entrenador)
+
+- **Integración**:
+  - `programming.int.test.ts`:
+    - `listPendingAdjustments` lista el mismo ajuste pendiente con el nombre del cliente;
+    - un entrenador no asignado y otra organización no lo ven;
+    - el cliente recibe `403`.
+  - `planning.int.test.ts`, reprogramar:
+    - en la misma semana cambia la fecha; en otra semana, la sesión pasa a esa semana;
+    - se rechazan una versión desfasada, un día pasado, un día fuera del plan, una sesión con registro, un plan archivado, otra organización y el cliente.
+- **E2E** (`trainer-ops.spec.ts`):
+  - Alertas: se pospone un ajuste de Javier desde la tarjeta «Ajustes propuestos»;
+  - Calendario: una sesión se mueve con «Mover» y vuelve a su día arrastrándola; el servidor rechaza un día pasado.
+- **Contratos**: nuevas `GET /adjustments` y `POST /plan-sessions/{id}/reschedule`; el calendario añade `version` a cada sesión. La matriz de acceso cruzado recoge las dos rutas automáticamente.
+
