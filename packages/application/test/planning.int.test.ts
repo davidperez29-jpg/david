@@ -274,6 +274,38 @@ describe('client plans', () => {
     ]);
   });
 
+  it('locks completed and archived plans on the server; status changes and copies still work', async () => {
+    const m = await createPlan(o.admin, o.clientB, {
+      name: 'Bloqueo',
+      durationMonths: 3,
+      weeks: 12,
+      weekdays: [1],
+      startDate: '2026-10-05',
+    });
+    const week = weeksOf(await getPlan(o.admin, m.id))[0]!;
+    const sid = week.sessions[0]!.id;
+    for (const status of ['completed', 'archived'] as const) {
+      await setPlanStatus(o.admin, m.id, { status });
+      const locked = { code: 'conflict', details: { plan: ['locked'] } };
+      await expect(addBlock(o.admin, sid, { type: 'conditioning', label: 'X' })).rejects.toMatchObject(
+        locked,
+      );
+      await expect(
+        updateMicrocycle(o.admin, week.id, { weekType: 'deload' }),
+      ).rejects.toMatchObject(locked);
+      await expect(
+        createPlanRevision(o.admin, m.id, { reason: 'No debería poder' }),
+      ).rejects.toMatchObject(locked);
+      // Reading, copying and saving as a template stay allowed.
+      expect((await getSession(o.admin, sid)).id).toBe(sid);
+      const copy = await duplicatePlan(o.admin, m.id, { name: `Copia ${status}` });
+      expect((await getPlan(o.admin, copy.id)).status).toBe('draft');
+    }
+    // Reopening is a status change, allowed on a locked plan; then it can be edited again.
+    await setPlanStatus(o.admin, m.id, { status: 'draft' });
+    await addBlock(o.admin, sid, { type: 'conditioning', label: 'Reabierto' });
+  });
+
   it('enforces scope: other trainer, other organization, clients', async () => {
     await expect(getPlan(o.trainer2, planId)).rejects.toMatchObject({ code: 'not_found' });
     await expect(getPlan(other.admin, planId)).rejects.toMatchObject({ code: 'not_found' });

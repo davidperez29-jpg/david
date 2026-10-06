@@ -151,10 +151,15 @@ function toColumns(p: Prescription) {
 
 // ── Loading helpers ───────────────────────────────────────────────────────────
 
+/** A completed or archived plan is history: its content is read-only (restructure phase 10). */
+export const LOCKED_PLAN_STATUSES = ['completed', 'archived'] as const;
+
 export async function loadPlan(
   ctx: RequestContext,
   id: string,
   permission: 'plans:read' | 'plans:write',
+  /** Only the status change itself may touch a locked plan (e.g. reactivating it). */
+  opts: { allowLocked?: boolean } = {},
 ) {
   const [p] = await ctx.db.select().from(trainingPlans).where(eq(trainingPlans.id, id));
   if (!p || p.organizationId !== ctx.actor.organizationId || !p.clientId)
@@ -166,6 +171,16 @@ export async function loadPlan(
       throw new DomainError('not_found', 'Plan no encontrado.');
     throw e;
   }
+  if (
+    permission === 'plans:write' &&
+    !opts.allowLocked &&
+    (LOCKED_PLAN_STATUSES as readonly string[]).includes(p.status)
+  )
+    throw new DomainError(
+      'conflict',
+      `El plan está ${p.status === 'completed' ? 'completado' : 'archivado'}: no se puede editar. Duplícalo para seguir trabajando sobre él.`,
+      { plan: ['locked'] },
+    );
   return p;
 }
 
@@ -990,7 +1005,7 @@ async function listPlanRevisions_(ctx: RequestContext, planId: string) {
 /** Activating snapshots revision 1; only one active plan per client. */
 async function setPlanStatus_(ctx: RequestContext, id: string, input: unknown): Promise<void> {
   const { status, reason } = parse(planStatusSchema, input);
-  const p = await loadPlan(ctx, id, 'plans:write');
+  const p = await loadPlan(ctx, id, 'plans:write', { allowLocked: true });
   if (status === p.status) return;
   if (p.kind === 'PROPOSAL')
     throw new DomainError(

@@ -51,6 +51,7 @@ import { authorizeClient, requirePermission } from './authz';
 import type { RequestContext } from './context';
 import { applyExerciseFeedback, scheduleMonitoring } from './monitoring';
 import { secured, withSavepoint } from './rls';
+import { loadPlan } from './planning';
 import { parse } from './validation';
 
 const {
@@ -1314,6 +1315,20 @@ async function decideSubstitution_(ctx: RequestContext, id: string, input: unkno
       chosenExerciseId: ['required'],
     });
   if (chosen) await visibleExercise(ctx, chosen);
+  // Adding the alternative changes the plan: not allowed on a completed or archived plan
+  // (restructure phase 10); checked before anything is written.
+  if (d.approve && d.addAsAlternative && chosen && sub.sessionExerciseId) {
+    const [owner] = await ctx.db
+      .select({ planId: phases.planId })
+      .from(sessionExercises)
+      .innerJoin(sessionBlocks, eq(sessionBlocks.id, sessionExercises.blockId))
+      .innerJoin(sessions, eq(sessions.id, sessionBlocks.sessionId))
+      .innerJoin(microcycles, eq(microcycles.id, sessions.microcycleId))
+      .innerJoin(mesocycles, eq(mesocycles.id, microcycles.mesocycleId))
+      .innerJoin(phases, eq(phases.id, mesocycles.phaseId))
+      .where(eq(sessionExercises.id, sub.sessionExerciseId));
+    if (owner) await loadPlan(ctx, owner.planId, 'plans:write');
+  }
   await ctx.db
     .update(exerciseSubstitutions)
     .set({

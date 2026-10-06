@@ -354,3 +354,35 @@ describe('completion, feedback and readiness', () => {
     ).rejects.toMatchObject({ code: 'not_found' });
   });
 });
+
+describe('locked plans', () => {
+  it('an approved substitution cannot add an alternative to an archived plan', async () => {
+    const se = (await getSession(o.admin, secondSessionId)).blocks.flatMap((b) => b.exercises)[0]!;
+    const alt = (await getSession(o.admin, firstSessionId)).blocks
+      .flatMap((b) => b.exercises)
+      .find((x) => x.exerciseId !== se.exerciseId)!.exerciseId;
+    const req = async () =>
+      requestSubstitution(o.clientUser, {
+        clientMutationId: mid(),
+        sessionExerciseId: se.id,
+        reason: 'pain',
+        chosenExerciseId: null,
+      });
+    const a = await req();
+    const b = await req();
+    await setPlanStatus(o.admin, planId, { status: 'archived' });
+    try {
+      await expect(
+        decideSubstitution(o.admin, a.id, {
+          approve: true,
+          chosenExerciseId: alt,
+          addAsAlternative: true,
+        }),
+      ).rejects.toMatchObject({ code: 'conflict', details: { plan: ['locked'] } });
+      // Deciding without touching the plan is still possible.
+      await decideSubstitution(o.admin, b.id, { approve: true, chosenExerciseId: alt });
+    } finally {
+      await setPlanStatus(o.admin, planId, { status: 'active' });
+    }
+  });
+});
