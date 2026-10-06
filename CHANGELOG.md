@@ -2,6 +2,30 @@
 
 Formato: fecha · cambio · motivo · archivos · impacto.
 
+## 2026-10-06 — Reestructuración, fase 9: ciencia y referencias
+
+- **Cambio:** cada afirmación científica tiene **tipo de evidencia** y **origen**.
+  - Tipos: reducción de incidencia, factor de riesgo, rendimiento, mecanismo, criterio práctico o insuficiente.
+  - Orígenes: documento del entrenador, literatura externa o propuesta práctica.
+  - «Reduce el riesgo de lesiones» solo se acepta si la evidencia midió la incidencia.
+  - **Motivo:** distinguir un factor de riesgo de una reducción real de lesiones (SCIENCE_SYSTEM §3).
+- **Cambio:** **referencias del documento del club** verificadas en PubMed:
+  - 6 verificadas (dos de ellas como correspondencia probable, indicado en sus limitaciones);
+  - 2 ya estaban en el catálogo;
+  - 6 no verificables (manuales, libros o citas ambiguas). Se guardan como tales y nunca respaldan nada.
+- **Cambio:** **Ciencia → Búsquedas**: registro de cada búsqueda con su consulta, fecha, resultados revisados y fuentes elegidas (31 de la verificación del club).
+- **Cambio:** **icono «Fuente»** junto a los criterios y el protocolo de readaptación, las referencias de los ejercicios, la evidencia de las plantillas y las fuentes de los tests.
+  - Muestra artículo, DOI/PMID, población, qué respalda, tipo de evidencia, limitaciones y origen.
+  - El «¿Por qué?» de las recomendaciones añade el tipo de evidencia, la población y las limitaciones.
+- **Archivos:**
+  - `packages/domain/src/science/{evidence-kind,qa}.ts`;
+  - `packages/db/src/schema/science.ts`, migraciones 0045–0046, `packages/db/src/seed/evidence.ts`;
+  - `seed-data/evidence/club_references.json`;
+  - `packages/application/src/{evidence-cards,science-searches,science,decision,injuries}.ts`;
+  - `apps/web/src/components/science/source-button.tsx`, `apps/web/src/app/app/science/busquedas/*`;
+  - `docs/SCIENCE_SYSTEM.md` §5 y §7, `docs/PRODUCT_ARCHITECTURE.md` A43–A45.
+- **Impacto:** 2 migraciones (tipos y columnas nuevos, tabla `science_searches`). Las afirmaciones ya importadas reciben su tipo al volver a cargar el catálogo.
+
 ## 2026-10-06 — Reestructuración, fase 8: Hoy en el móvil, fichaje y feedback
 
 - **Cambio:** cada ejercicio de la sesión del cliente muestra:

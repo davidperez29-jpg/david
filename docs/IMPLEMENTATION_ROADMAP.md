@@ -176,15 +176,19 @@ Pendiente para fases siguientes: tarjetas por ejercicio en el móvil y sugerenci
 - ✅ TTI < 2,5 s en 4G: entre 1,38 y 1,49 s en las páginas del cliente (`perf.mobile.spec.ts`, móvil con 4G y CPU ralentizados).
 - Detalle en `SESSIONS.md` §9.
 
-## Fase 9 · Ciencia y referencias
+## Fase 9 · Ciencia y referencias ✅
 
 - `evidence_kind`, `origin`, estado de verificación y registro de búsquedas.
 - Verificación de las referencias de los documentos del usuario.
 - Icono «Fuente» en contexto; validador de frases.
 
 **Criterios**:
-- ninguna referencia sin verificar aparece como respaldo;
-- cada recomendación muestra artículo, DOI/PMID, población, qué respalda y sus limitaciones.
+- ✅ ninguna referencia sin verificar aparece como respaldo:
+  - las fichas, el «¿Por qué?» y los criterios filtran por verificación;
+  - control de calidad: `unverified_support`;
+  - prueba de integración sobre todo el catálogo publicado.
+- ✅ cada recomendación muestra artículo, DOI/PMID, población, qué respalda y sus limitaciones: icono «Fuente» (E2E `fuente.spec.ts`).
+- Detalle en `SCIENCE_SYSTEM.md` §7.
 
 ## Fase 10 · Endurecimiento final
 

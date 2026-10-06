@@ -90,7 +90,27 @@ Las búsquedas se hacen con la herramienta de PubMed. **Solo entra lo que tiene 
 | `citada_en_documento` | Aparece en un documento del usuario; pendiente de verificar |
 | `no_verificable` | No se encontró registro; no se usa como respaldo |
 
-**Referencias del documento del club, por verificar en la fase 9**:
+**Referencias del documento del club** (verificadas en PubMed el 06/10/2026, `seed-data/evidence/club_references.json`):
+
+| Cita del documento | Resultado |
+|---|---|
+| Reilly 2009 | Verificada · PMID 19301213 · [10.1055/s-0029-1202353](https://doi.org/10.1055/s-0029-1202353) |
+| Bernal-Orozco (sin año) | Verificada como **correspondencia probable** (su único artículo de antropometría deportiva indexado, 2020) · PMID 32058363 · [10.1519/JSC.0000000000003416](https://doi.org/10.1519/JSC.0000000000003416) |
+| Haugen 2013 | Verificada (coincide por tema; publicada en línea en 2012) · PMID 22868347 · [10.1123/ijspp.8.2.148](https://doi.org/10.1123/ijspp.8.2.148) |
+| Haugen & Buchheit 2016 | Ya estaba en el catálogo (PMID 26660758) |
+| Buchheit 2008 | Ya estaba en el catálogo (PMID 18550949) |
+| Buchheit & Rabbani 2014 | Verificada · PMID 23475226 · [10.1123/ijspp.2012-0335](https://doi.org/10.1123/ijspp.2012-0335). PubMed la clasifica como ensayo aleatorizado, pero el resumen describe un solo grupo pre-post: se registra como no aleatorizado |
+| Badby 2025 | Verificada · PMID 40643226 · [10.1080/02640414.2025.2523671](https://doi.org/10.1080/02640414.2025.2523671) (CMJ, salto con rebote e IMTP) |
+| McMahon 2022 | Verificada como correspondencia probable (bandas T con semáforo, rugby league) · PMID 36433265 · [10.3390/s22228669](https://doi.org/10.3390/s22228669) |
+| Garrido-Chamorro 2012 | **No verificable**: no hay registro de 2012 en PubMed |
+| Marfell-Jones 2006 (ISAK) | **No verificable**: manual, no indexado |
+| Faulkner 1968 y Yuhasz 1974 | **No verificables**: capítulo de libro y tesis, no indexados |
+| Nikolaidis 2016 | **No verificable**: dos candidatos posibles en PubMed y la cita no permite elegir |
+| Flanagan & Comyns 2008 | **No verificable**: Strength Cond J no está indexada de forma sistemática |
+
+Las no verificables se guardan con `verificationStatus = unverifiable`, sin DOI ni PMID inventados, con el documento que las cita, y **nunca respaldan nada**. Las 31 búsquedas hechas para verificarlas están en Ciencia → Búsquedas.
+
+**Referencias del documento del club, por verificar en la fase 9** (lista original):
 - Garrido-Chamorro 2012, Bernal-Orozco, Reilly 2009, Marfell-Jones 2006 (ISAK), Faulkner 1968 y Yuhasz 1974 (ecuaciones);
 - Haugen 2013, Haugen & Buchheit 2016 (sprint);
 - Nikolaidis 2016, Badby 2025 (CMJ e IMTP);
@@ -107,3 +127,12 @@ Ya verificadas el 05/10/2026: Bishop 2018 y Read 2021 (`INJURY_MODULE.md` §9).
 
 - **La ciencia aparece donde se usa**: un icono «Fuente» junto al ejercicio, el test, la referencia, el criterio de fase o la recomendación. Abre la ficha con los campos del §1.
 - **«Ciencia»** (menú de usuario) es una **consulta**: buscar fuentes y afirmaciones, ver qué respalda cada una. El control de calidad y la importación quedan en Ajustes (ADMIN).
+
+## 7. Implementación (reestructuración, fase 9)
+
+- **Tipo de evidencia** (`knowledge_claims.evidence_kind`) y **origen** (`origin`).
+  - El seed lo toma del curador o lo deduce de lo que midieron los hallazgos que la respaldan: si midieron incidencia (lesiones, relesiones, caídas), es reducción de incidencia; si midieron rendimiento, rendimiento; si midieron biomecánica, asimetría o movilidad, factor de riesgo.
+  - Una afirmación que diga «reduce el riesgo / la incidencia de lesiones» sin evidencia de incidencia se rechaza al crearla o editarla, y es un error del control de calidad.
+- **Verificación**: `citada en documento` y `no verificable` se suman a `verificada`. Solo una fuente verificada aparece como respaldo, en las fichas, en el «¿Por qué?» de las recomendaciones y en los criterios de readaptación.
+- **Búsquedas** (`science_searches`): Ciencia → **Búsquedas**, con la consulta exacta, la fecha, los resultados revisados, las fuentes elegidas y el motivo. El centro puede registrar las suyas. El registro empieza en esta fase; las búsquedas anteriores están descritas en el §4.
+- **Icono «Fuente»** (ⓘ): junto a los criterios y el protocolo de readaptación, las referencias de un ejercicio, la evidencia de las dosis de una plantilla y las fuentes de un test. Abre la ficha del §1. En el «¿Por qué?» de las recomendaciones se añaden el tipo de evidencia, la población y las limitaciones.

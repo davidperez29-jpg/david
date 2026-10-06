@@ -579,3 +579,28 @@ pnpm --filter @tp/web test:e2e -- e2e/perf.spec.ts e2e/perf.mobile.spec.ts
 - La prueba existente de sesión completa sin conexión y sin duplicados (`sessions.mobile.spec.ts`) sigue pasando.
 - **Rendimiento móvil** (`perf.mobile.spec.ts`): TTI de 1,38 a 1,49 s en `/login`, `/me`, `/me/calendario` y `/me/progreso` (objetivo < 2,5 s en 4G).
 - **Suite E2E completa**: 61 pruebas, 60 pasan y 1 se omite; WCAG 2.2 AA sin infracciones en escritorio y móvil.
+
+## Resultado de la reestructuración, fase 9 (ciencia y referencias)
+
+- **Unitarias**:
+  - `evidence-kind.unit.test.ts`:
+    - deducción del tipo de evidencia;
+    - «reduce el riesgo de lesiones» solo con evidencia de incidencia;
+    - solo las fuentes verificadas respaldan;
+    - el control de calidad detecta tanto el tipo incorrecto como el respaldo no verificado.
+  - `evidence.unit.test.ts`:
+    - las referencias no verificables no tienen DOI ni PMID y nunca las cita un hallazgo;
+    - las búsquedas seleccionan fuentes existentes.
+- **Integración** (`science-traceability.int.test.ts`):
+  - ficha con DOI, PMID, población, qué respalda y limitaciones;
+  - la referencia no verificable del documento del club no aparece como respaldo;
+  - fichas a partir de los métodos;
+  - el cliente no accede;
+  - todas las afirmaciones publicadas tienen tipo y solo fuentes verificadas;
+  - se rechaza «reduce el riesgo de lesiones» sin incidencia;
+  - registro de búsquedas, también las del centro.
+- **E2E** (`fuente.spec.ts`):
+  - «Fuente» junto a un criterio de readaptación y en el protocolo;
+  - Ciencia → Búsquedas;
+  - una referencia no verificable, marcada como tal.
+- **Accesibilidad**: `/app/science/busquedas` en `a11y.spec.ts`.

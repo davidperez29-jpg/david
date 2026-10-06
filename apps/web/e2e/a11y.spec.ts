@@ -44,6 +44,7 @@ test('trainer pages meet WCAG 2.2 AA (axe, light and dark)', async ({ page }) =>
     '/app/science/sources',
     `/app/science/sources/${i.source}`,
     '/app/science/sources/new',
+    '/app/science/busquedas',
     '/app/informes',
     '/app/informes/importar',
     `/app/informes/importar/${i.importJob}`,
