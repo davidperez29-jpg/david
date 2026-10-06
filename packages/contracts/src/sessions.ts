@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { isoDate, optionalText } from './common';
 import { SUBSTITUTION_REASONS } from './library';
-import { exerciseFeedbackSchema } from './monitoring';
+import { EFFORT_FEEL, exerciseFeedbackSchema } from './monitoring';
 
 /** Offline idempotency key generated on the device (§4.5). */
 const mutationId = z
@@ -81,6 +81,8 @@ export const completeSessionSchema = z.object({
   /** Session RPE, CR-10 (0–10). */
   sessionRpe: num(0, 10).nullable().optional(),
   feeling: scale(0, 10).nullable().optional(),
+  /** «¿Cómo fue?» Fácil · Normal · Difícil · Muy difícil (restructure phase 8). */
+  feel: z.enum(EFFORT_FEEL).nullable().optional(),
   fatigue: scale(0, 10).nullable().optional(),
   motivation: scale(0, 10).nullable().optional(),
   comment: optionalText(1000),

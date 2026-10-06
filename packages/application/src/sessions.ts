@@ -21,12 +21,15 @@ import {
   syncSchema,
   agendaQuerySchema,
 } from '@tp/contracts';
-import { schema } from '@tp/db';
+import { schema, type Database } from '@tp/db';
 import {
   addDays,
   DomainError,
   hasActiveConsent,
+  autoAttendance,
   localDate,
+  SESSION_TRACKING_LABELS,
+  trackingState,
   parseVideoUrl,
   PAIN_ALERT_THRESHOLD,
   PAIN_MESSAGE,
@@ -67,6 +70,9 @@ const {
   painLogs,
   readiness,
   exerciseSubstitutions,
+  exerciseFeedback,
+  exerciseMuscles,
+  muscles,
   consents,
   clients,
   assessments,
@@ -365,7 +371,7 @@ async function getPlayerSession_(ctx: RequestContext, sessionId: string) {
   const exIds = [
     ...new Set(rows.flatMap((r) => [r.se.exerciseId, ...r.se.alternativeExerciseIds])),
   ];
-  const [names, cues, media, logs, history, subs, [att], [fb]] = await Promise.all([
+  const [names, cues, media, logs, history, subs, [att], [fb], worked, exFb] = await Promise.all([
     exIds.length
       ? ctx.db
           .select({ id: exercises.id, name: exercises.name })
@@ -433,6 +439,20 @@ async function getPlayerSession_(ctx: RequestContext, sessionId: string) {
       .orderBy(asc(exerciseSubstitutions.createdAt)),
     ctx.db.select().from(attendance).where(eq(attendance.sessionId, sessionId)),
     ctx.db.select().from(feedback).where(eq(feedback.sessionId, sessionId)),
+    // Muscles worked, for the silhouette on each exercise card (phase 8; works offline).
+    exIds.length
+      ? ctx.db
+          .select({
+            exerciseId: exerciseMuscles.exerciseId,
+            name: muscles.name,
+            groupSlug: muscles.groupSlug,
+            role: exerciseMuscles.role,
+          })
+          .from(exerciseMuscles)
+          .innerJoin(muscles, eq(muscles.id, exerciseMuscles.muscleId))
+          .where(inArray(exerciseMuscles.exerciseId, exIds))
+      : [],
+    ctx.db.select().from(exerciseFeedback).where(eq(exerciseFeedback.sessionId, sessionId)),
   ]);
   const nameOf = new Map(names.map((x) => [x.id, x.name]));
   const extra = [
@@ -530,6 +550,13 @@ async function getPlayerSession_(ctx: RequestContext, sessionId: string) {
             short: prescriptionShort(p),
             notesForClient: r.se.notesForClient,
             coachNotes: own ? null : r.se.coachNotes,
+            muscles: worked
+              .filter((w) => w.exerciseId === (approved?.chosenExerciseId ?? r.se.exerciseId))
+              .map((w) => ({ name: w.name, groupSlug: w.groupSlug, role: w.role })),
+            feedback: (() => {
+              const f = exFb.find((x) => x.sessionExerciseId === r.se.id);
+              return f ? { feel: f.feel, discomfort: f.discomfort } : null;
+            })(),
             cues: cues
               .filter((c) => c.exerciseId === r.se.exerciseId)
               .map((c) => ({ kind: c.kind, text: c.text })),
@@ -603,9 +630,12 @@ async function getPlayerSession_(ctx: RequestContext, sessionId: string) {
         needsReview: l.needsReview,
         reviewReason: l.reviewReason,
       })),
+    /** Planificada · Iniciada · Completada · Incompleta · No realizada (fichaje, phase 8). */
+    tracking: SESSION_TRACKING_LABELS[trackingState(att?.status)],
     attendance: att
       ? {
           status: att.status,
+          automatic: att.automatic,
           performedDate: att.performedDate,
           durationMin: att.durationMin,
           reasonCode: att.reasonCode,
@@ -616,6 +646,7 @@ async function getPlayerSession_(ctx: RequestContext, sessionId: string) {
       ? {
           sessionRpe: n(fb.sessionRpe),
           feeling: fb.feeling,
+          feel: fb.feel,
           fatigue: fb.fatigue,
           motivation: fb.motivation,
           pain: fb.pain,
@@ -749,7 +780,31 @@ async function applySetLog(
     .onConflictDoNothing({ target: setLogs.clientMutationId })
     .returning({ id: setLogs.id });
   if (!row) return { id: '', status: 'duplicate', reviewReason: null };
+  if (d.completed) await markStarted(ctx, session.organizationId, clientId, session.id);
   return { id: row.id, status: conflict ? 'flagged' : 'applied', reviewReason: conflict };
+}
+
+/**
+ * Fichaje automático (restructure phase 8, §41): the first logged set marks the session
+ * «iniciada». A closing record (completed, incomplete, not done) is never overwritten.
+ */
+async function markStarted(
+  ctx: RequestContext,
+  organizationId: string,
+  clientId: string,
+  sessionId: string,
+) {
+  await ctx.db
+    .insert(attendance)
+    .values({
+      organizationId,
+      clientId,
+      sessionId,
+      status: 'started',
+      performedDate: localDate(ctx.now()),
+      recordedBy: ctx.actor.userId,
+    })
+    .onConflictDoNothing({ target: attendance.sessionId });
 }
 
 async function logSet_(ctx: RequestContext, input: unknown) {
@@ -918,6 +973,7 @@ async function applyComplete(
     reasonCode: status === 'completed' ? null : (d.reasonCode ?? null),
     reasonText: status === 'completed' ? null : (d.reasonText ?? null),
     recordedBy: ctx.actor.userId,
+    automatic: false,
   };
   await ctx.db
     .insert(attendance)
@@ -926,6 +982,7 @@ async function applyComplete(
   const fbValues = {
     sessionRpe: s(d.sessionRpe),
     feeling: d.feeling ?? null,
+    feel: d.feel ?? null,
     fatigue: d.fatigue ?? null,
     motivation: d.motivation ?? null,
     comment: d.comment ?? null,
@@ -1329,6 +1386,82 @@ async function resolveSetLogReview_(
 }
 
 // Use cases run under Row Level Security (see rls.ts).
+// ── Fichaje automático (daily job) ────────────────────────────────────────────
+
+/** How far back the daily job looks: older sessions keep whatever was (not) recorded. */
+export const AUTO_ATTENDANCE_WINDOW_DAYS = 30;
+
+/**
+ * Restructure phase 8 (§41), run once a day as the system: a published session whose day has
+ * passed becomes «no realizada» when nothing was recorded, and «incompleta» when it was started
+ * and never closed. Marked `automatic`; the client or the trainer can still close it themselves
+ * (their record replaces it).
+ */
+export async function autoCloseSessions(app: { db: Database; now: () => Date }) {
+  const today = localDate(app.now());
+  const from = addDays(today, -AUTO_ATTENDANCE_WINDOW_DAYS);
+  const rows = await app.db
+    .select({
+      id: sessions.id,
+      organizationId: sessions.organizationId,
+      clientId: sessions.clientId,
+      date: sessions.scheduledDate,
+      published: sessions.published,
+      status: attendance.status,
+      performedDate: attendance.performedDate,
+    })
+    .from(sessions)
+    .leftJoin(attendance, eq(attendance.sessionId, sessions.id))
+    .where(
+      and(
+        eq(sessions.published, true),
+        isNotNull(sessions.clientId),
+        or(
+          and(
+            isNull(attendance.id),
+            gte(sessions.scheduledDate, from),
+            sql`${sessions.scheduledDate} < ${today}`,
+          ),
+          eq(attendance.status, 'started'),
+        ),
+      ),
+    );
+  let missed = 0;
+  let partial = 0;
+  for (const r of rows) {
+    // A started session is judged by the day it was started (the client may train another day).
+    const decision = autoAttendance({
+      date: r.status === 'started' ? (r.performedDate ?? r.date) : r.date,
+      published: r.published,
+      status: r.status,
+      today,
+    });
+    if (decision === 'missed') {
+      const [ins] = await app.db
+        .insert(attendance)
+        .values({
+          organizationId: r.organizationId,
+          clientId: r.clientId!,
+          sessionId: r.id,
+          status: 'missed',
+          automatic: true,
+          recordedBy: null,
+        })
+        .onConflictDoNothing({ target: attendance.sessionId })
+        .returning({ id: attendance.id });
+      if (ins) missed++;
+    } else if (decision === 'partial') {
+      const upd = await app.db
+        .update(attendance)
+        .set({ status: 'partial', automatic: true, updatedAt: app.now() })
+        .where(and(eq(attendance.sessionId, r.id), eq(attendance.status, 'started')))
+        .returning({ id: attendance.id });
+      partial += upd.length;
+    }
+  }
+  return { missed, partial };
+}
+
 export const publishSessions = secured(publishSessions_);
 export const clientAgenda = secured(clientAgenda_);
 export const getPlayerSession = secured(getPlayerSession_);

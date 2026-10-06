@@ -45,7 +45,12 @@ describe('daily jobs inside the app (deployment without a paid cron)', () => {
       retention: { anonymized: 0 },
     });
     // Production runs the same work as the daily scripts.
-    expect(Object.keys(DAILY_STEPS)).toEqual(['monitoring', 'adjustments', 'retention']);
+    expect(Object.keys(DAILY_STEPS)).toEqual([
+      'attendance',
+      'monitoring',
+      'adjustments',
+      'retention',
+    ]);
     // The next day runs again.
     expect(
       await runDailyJobsIfDue(

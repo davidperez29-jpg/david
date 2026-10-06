@@ -226,7 +226,11 @@ END $$;`);
           p.kind === 'client_owned'
             ? byRole
             : `(CASE WHEN client_id IS NULL THEN app_is_staff() ELSE ${byRole} END)`;
-        const read = p.clientRead ? access : `${access} AND app_is_staff()`;
+        const clientWhere =
+          p.kind === 'client_optional' && p.clientReadWhere
+            ? ` AND (app_is_staff() OR (${p.clientReadWhere}))`
+            : '';
+        const read = p.clientRead ? `${access}${clientWhere}` : `${access} AND app_is_staff()`;
         const write = p.clientWrite ? access : `${access} AND app_is_staff()`;
         stmt(
           `CREATE POLICY ${table}_select ON ${table} FOR SELECT USING (organization_id = app_org_id() AND ${read});`,

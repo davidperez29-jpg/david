@@ -22,7 +22,13 @@ export type PolicyKind =
   /** organization_id + client_id NOT NULL. */
   | { kind: 'client_owned'; clientWrite: boolean; clientRead: boolean }
   /** organization_id + client_id NULL-able (NULL = template/org-level, staff only). */
-  | { kind: 'client_optional'; clientWrite: boolean; clientRead: boolean }
+  | {
+      kind: 'client_optional';
+      clientWrite: boolean;
+      clientRead: boolean;
+      /** Extra condition for the client's reads (staff read every row they can access). */
+      clientReadWhere?: string;
+    }
   /** Custom SQL policies (written verbatim). */
   | { kind: 'custom'; sql: string };
 
@@ -181,10 +187,34 @@ CREATE POLICY tca_delete ON trainer_client_assignments FOR DELETE USING (organiz
   phases: { kind: 'client_optional', clientWrite: false, clientRead: true },
   mesocycles: { kind: 'client_optional', clientWrite: false, clientRead: true },
   microcycles: { kind: 'client_optional', clientWrite: false, clientRead: true },
-  sessions: { kind: 'client_optional', clientWrite: false, clientRead: true },
-  session_blocks: { kind: 'client_optional', clientWrite: false, clientRead: true },
-  session_exercises: { kind: 'client_optional', clientWrite: false, clientRead: true },
-  exercise_sets: { kind: 'client_optional', clientWrite: false, clientRead: true },
+  // Restructure phase 8: the client reads only published sessions, and the blocks, exercises
+  // and sets of a session they can read (the subquery runs under the sessions policy).
+  sessions: {
+    kind: 'client_optional',
+    clientWrite: false,
+    clientRead: true,
+    clientReadWhere: 'published',
+  },
+  session_blocks: {
+    kind: 'client_optional',
+    clientWrite: false,
+    clientRead: true,
+    clientReadWhere: 'EXISTS (SELECT 1 FROM sessions s WHERE s.id = session_blocks.session_id)',
+  },
+  session_exercises: {
+    kind: 'client_optional',
+    clientWrite: false,
+    clientRead: true,
+    clientReadWhere:
+      'EXISTS (SELECT 1 FROM session_blocks b WHERE b.id = session_exercises.block_id)',
+  },
+  exercise_sets: {
+    kind: 'client_optional',
+    clientWrite: false,
+    clientRead: true,
+    clientReadWhere:
+      'EXISTS (SELECT 1 FROM session_exercises e WHERE e.id = exercise_sets.session_exercise_id)',
+  },
 
   // ── Tracking ────────────────────────────────────────────────────────────────
   attendance: { kind: 'client_owned', clientWrite: true, clientRead: true },

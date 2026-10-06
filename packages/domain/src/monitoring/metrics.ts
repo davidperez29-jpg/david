@@ -2,7 +2,7 @@
  * Monitoring metrics (Fase 8, MASTER_SPECIFICATION §13.7). Pure and descriptive: they never
  * diagnose and never predict injury.
  *
- * - Adherence = sessions done (completed or partial) / sessions planned, over a window.
+ * - Adherence = sessions done (completed, partial or started) / sessions planned, over a window.
  * - Internal load (sRPE method): session RPE (CR-10) × duration in minutes, in arbitrary units
  *   (claim `c_srpe_valido`, Foster 2001; Haddad 2017).
  * - Weekly monotony and strain are shown as descriptors without universal thresholds
@@ -12,7 +12,7 @@
 import { addDays, isoWeekday } from '../planning/structure';
 
 export type AttendanceStatus =
-  'completed' | 'partial' | 'missed' | 'rescheduled' | 'cancelled_by_trainer';
+  'started' | 'completed' | 'partial' | 'missed' | 'rescheduled' | 'cancelled_by_trainer';
 
 export interface PlannedSession {
   id: string;
@@ -61,7 +61,8 @@ export function adherence(sessions: PlannedSession[], from: string, to: string):
   );
   const count = (st: AttendanceStatus | null) => inWindow.filter((s) => s.status === st).length;
   const completed = count('completed');
-  const partial = count('partial');
+  // A session started and not closed yet counts as done (incomplete) until the day closes it.
+  const partial = count('partial') + count('started');
   const missed = count('missed');
   const unrecorded = count(null);
   const planned = inWindow.length;

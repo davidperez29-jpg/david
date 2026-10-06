@@ -26,7 +26,8 @@ function sessionMark(
   today: string,
 ) {
   if (s.attendance === 'completed') return { icon: '✓', text: 'Completada', cls: 'text-ok' };
-  if (s.attendance === 'partial') return { icon: '◐', text: 'Parcial', cls: 'text-warn' };
+  if (s.attendance === 'partial') return { icon: '◐', text: 'Incompleta', cls: 'text-warn' };
+  if (s.attendance === 'started') return { icon: '▶', text: 'Iniciada', cls: 'text-accent' };
   if (s.attendance)
     return { icon: '✗', text: label('attendance', s.attendance), cls: 'text-danger' };
   if (!s.published) return { icon: '○', text: 'No publicada', cls: 'text-muted' };

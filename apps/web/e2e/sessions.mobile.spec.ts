@@ -87,7 +87,7 @@ test('client calendar lists published sessions and staff APIs stay closed', asyn
   await login(page, 'iker.arrieta@example.com');
   await page.getByRole('link', { name: 'Calendario' }).click();
   await expect(page.getByRole('heading', { name: 'Calendario' })).toBeVisible();
-  await expect(page.getByText(/Completada|Parcial/).first()).toBeVisible();
+  await expect(page.getByText(/Completada|Incompleta/).first()).toBeVisible();
   // Their plan as a PDF (published sessions, plain language).
   const dl = page.waitForEvent('download');
   await page

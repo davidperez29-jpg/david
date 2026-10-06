@@ -160,3 +160,47 @@ export function localDate(now: Date, timeZone = 'Europe/Madrid'): string {
 
 /** Pain at or above this intensity (0–10) alerts the trainer. Practical default (F), configurable. */
 export const PAIN_ALERT_THRESHOLD = 4;
+
+// ── Fichaje automático (restructure phase 8, §41) ─────────────────────────────
+
+/** What the client sees for a published session: planificada → iniciada → completada/incompleta, or no realizada. */
+export type SessionTrackingState = 'planned' | 'started' | 'completed' | 'incomplete' | 'not_done';
+export const SESSION_TRACKING_LABELS: Record<SessionTrackingState, string> = {
+  planned: 'Planificada',
+  started: 'Iniciada',
+  completed: 'Completada',
+  incomplete: 'Incompleta',
+  not_done: 'No realizada',
+};
+
+export function trackingState(status: string | null | undefined): SessionTrackingState {
+  switch (status) {
+    case 'started':
+      return 'started';
+    case 'completed':
+      return 'completed';
+    case 'partial':
+      return 'incomplete';
+    case 'missed':
+      return 'not_done';
+    default:
+      return 'planned';
+  }
+}
+
+/**
+ * The daily job's decision for a published session once its day has passed: started and never
+ * closed → «incompleta»; nothing recorded → «no realizada». Never touches a session of today or
+ * later, an unpublished one, or one with a closing record (the client or the trainer decided).
+ */
+export function autoAttendance(s: {
+  date: string | null;
+  published: boolean;
+  status: string | null;
+  today: string;
+}): 'partial' | 'missed' | null {
+  if (!s.published || !s.date || s.date >= s.today) return null;
+  if (s.status === 'started') return 'partial';
+  if (s.status == null) return 'missed';
+  return null;
+}

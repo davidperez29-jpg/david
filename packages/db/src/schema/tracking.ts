@@ -27,6 +27,8 @@ import { sessionExercises, sessions } from './planning';
  * Session-bound rows inherit organization_id/client_id from `sessions` via trigger.
  */
 export const attendanceStatus = pgEnum('attendance_status', [
+  // Restructure phase 8 (fichaje, §41): the first logged set marks the session «iniciada».
+  'started',
   'completed',
   'partial',
   'missed',
@@ -43,6 +45,10 @@ export const absenceReason = pgEnum('absence_reason', [
   'schedule',
   'other',
 ]);
+/** «¿Cómo fue?» (restructure phase 8): the four levels of the user's own documents. */
+export const effortFeel = pgEnum('effort_feel', ['easy', 'normal', 'hard', 'very_hard']);
+/** «¿Molestias?» No · Algo · Mucho (health data: stored only with consent). */
+export const discomfortLevel = pgEnum('discomfort_level', ['none', 'some', 'a_lot']);
 export const logSource = pgEnum('log_source', ['manual', 'device', 'import']);
 export const loggedByRole = pgEnum('logged_by_role', ['client', 'trainer']);
 export const painContext = pgEnum('pain_context', ['during', 'after', 'next_day', 'at_rest']);
@@ -83,7 +89,10 @@ export const attendance = pgTable(
     durationMin: smallint('duration_min'),
     reasonCode: absenceReason('reason_code'),
     reasonText: text('reason_text'),
-    recordedBy: uuid('recorded_by').notNull(),
+    /** Null when recorded by the daily job (automatic fichaje). */
+    recordedBy: uuid('recorded_by'),
+    /** Set by the daily job: «no realizada» or «incompleta» when the day passed (phase 8). */
+    automatic: boolean('automatic').notNull().default(false),
     ...timestamps(),
   },
   (t) => [index('attendance_client_idx').on(t.clientId, t.performedDate)],
@@ -148,6 +157,7 @@ export const feedback = pgTable(
       .unique()
       .references(() => sessions.id, { onDelete: 'cascade' }),
     feeling: smallint('feeling'),
+    feel: effortFeel('feel'),
     sessionRpe: numeric('session_rpe', { precision: 3, scale: 1 }),
     fatigue: smallint('fatigue'),
     pain: smallint('pain'),
@@ -178,7 +188,9 @@ export const exerciseFeedback = pgTable(
       .notNull()
       .references(() => sessionExercises.id, { onDelete: 'cascade' }),
     difficulty: smallint('difficulty'),
+    feel: effortFeel('feel'),
     pain: smallint('pain'),
+    discomfort: discomfortLevel('discomfort'),
     comment: text('comment'),
     ...timestamps(),
   },

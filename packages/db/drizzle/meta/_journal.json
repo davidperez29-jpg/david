@@ -302,6 +302,20 @@
       "when": 1791280100605,
       "tag": "0042_rls_v15",
       "breakpoints": true
+    },
+    {
+      "idx": 43,
+      "version": "7",
+      "when": 1791282133425,
+      "tag": "0043_fichaje_feedback",
+      "breakpoints": true
+    },
+    {
+      "idx": 44,
+      "version": "7",
+      "when": 1791282134915,
+      "tag": "0044_rls_v16",
+      "breakpoints": true
     }
   ]
 }

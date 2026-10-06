@@ -166,12 +166,20 @@ export const LABELS = {
     fatigue: 'Fatiga',
   },
   attendance: {
+    started: 'Iniciada',
     completed: 'Completada',
-    partial: 'Parcial',
+    partial: 'Incompleta',
     missed: 'No realizada',
     rescheduled: 'Reprogramada',
     cancelled_by_trainer: 'Cancelada por el entrenador',
   },
+  effortFeel: {
+    easy: 'Fácil',
+    normal: 'Normal',
+    hard: 'Difícil',
+    very_hard: 'Muy difícil',
+  },
+  discomfort: { none: 'No', some: 'Algo', a_lot: 'Mucho' },
   absenceReason: {
     illness: 'Enfermedad',
     injury_or_pain: 'Lesión o dolor',

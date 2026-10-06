@@ -6,13 +6,16 @@
  */
 import 'dotenv/config';
 import { createDb } from '@tp/db';
-import { evaluateAllAdjustments, monitorAllClients } from '../src';
+import { autoCloseSessions, evaluateAllAdjustments, monitorAllClients } from '../src';
 
 const { db, close } = createDb(process.env.DATABASE_URL!);
 const app = { db, now: () => new Date() };
+// Fichaje first (restructure phase 8): yesterday's sessions closed before the rules run.
+const f = await autoCloseSessions(app);
 const r = await monitorAllClients(app);
 const a = await evaluateAllAdjustments(app);
 await close();
+console.log(`Attendance: ${f.missed} sessions not done, ${f.partial} left incomplete (automatic).`);
 console.log(
   `Monitoring: ${r.clients} clients evaluated, ${r.created} alerts created, ${r.resolved} resolved.`,
 );

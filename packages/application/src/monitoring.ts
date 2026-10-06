@@ -902,10 +902,13 @@ export async function applyExerciseFeedback(
   ) => Promise<{ sessionId: string; organizationId: string; clientId: string; own: boolean }>,
 ) {
   const se = await loadSessionExercise(ctx, d.sessionExerciseId);
-  const consented = d.pain != null ? await healthConsent(ctx.db as Database, se.clientId) : false;
+  const health = d.pain != null || d.discomfort != null;
+  const consented = health ? await healthConsent(ctx.db as Database, se.clientId) : false;
   const values = {
     difficulty: d.difficulty ?? null,
+    feel: d.feel ?? null,
     pain: d.pain != null && consented ? d.pain : null,
+    discomfort: d.discomfort != null && consented ? d.discomfort : null,
     comment: d.comment ?? null,
   };
   await ctx.db
@@ -919,7 +922,7 @@ export async function applyExerciseFeedback(
     })
     .onConflictDoUpdate({ target: exerciseFeedback.sessionExerciseId, set: values });
   scheduleMonitoring(ctx, se.clientId);
-  return { painStored: d.pain != null && consented };
+  return { painStored: health && consented };
 }
 
 // Use cases run under Row Level Security (see rls.ts).

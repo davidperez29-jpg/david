@@ -34,6 +34,9 @@ export const clientRuleOverrideSchema = z.object({
 });
 
 /** Per-exercise feedback from the player (pain stored only with health-data consent). */
+export const EFFORT_FEEL = ['easy', 'normal', 'hard', 'very_hard'] as const;
+export const DISCOMFORT = ['none', 'some', 'a_lot'] as const;
+
 export const exerciseFeedbackSchema = z.object({
   clientMutationId: z
     .string()
@@ -44,6 +47,10 @@ export const exerciseFeedbackSchema = z.object({
     .optional(),
   sessionExerciseId: z.uuid(),
   difficulty: z.coerce.number().int().min(0).max(10).nullable().optional(),
+  /** «¿Cómo fue?» Fácil · Normal · Difícil · Muy difícil (restructure phase 8). */
+  feel: z.enum(EFFORT_FEEL).nullable().optional(),
   pain: z.coerce.number().int().min(0).max(10).nullable().optional(),
+  /** «¿Molestias?» No · Algo · Mucho: health data, stored only with consent. */
+  discomfort: z.enum(DISCOMFORT).nullable().optional(),
   comment: optionalText(500),
 });

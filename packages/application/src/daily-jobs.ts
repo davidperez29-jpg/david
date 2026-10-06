@@ -13,6 +13,7 @@ import { monitorAllClients } from './monitoring';
 import { evaluateAllAdjustments } from './programming';
 import { log, reportError } from './observability';
 import { applyRetention } from './privacy';
+import { autoCloseSessions } from './sessions';
 
 const { scheduledJobRuns } = schema;
 
@@ -26,6 +27,8 @@ type Step = (ctx: DailyJobsContext) => Promise<unknown>;
 
 /** The daily work, in order: the same as `pnpm monitor:daily` and `pnpm privacy:daily`. */
 export const DAILY_STEPS: Record<string, Step> = {
+  // Fichaje first, so the monitoring rules see yesterday's sessions closed (phase 8).
+  attendance: (ctx) => autoCloseSessions(ctx),
   monitoring: (ctx) => monitorAllClients(ctx),
   adjustments: (ctx) => evaluateAllAdjustments(ctx),
   retention: (ctx) => applyRetention(ctx),
