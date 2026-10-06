@@ -823,6 +823,64 @@
       "trainingStatus": "mixed",
       "sport": "varios",
       "access": "abstract_only"
+    },
+    {
+      "key": "reynolds2006_rm_1rm",
+      "pmid": "16937972",
+      "doi": "10.1519/R-15304.1",
+      "title": "Prediction of one repetition maximum strength from multiple repetition maximum testing and anthropometry.",
+      "journal": "Journal of strength and conditioning research",
+      "volume": "20",
+      "issue": "3",
+      "pages": "584-92",
+      "authors": ["Reynolds JM", "Gordon TJ", "Robergs RA"],
+      "year": 2006,
+      "studyDesign": "cross_sectional",
+      "populationSummary": "70 personas (34 hombres, 36 mujeres) de 18 a 69 años.",
+      "ageRange": "18-69 años",
+      "intervention": "Tests de 1, 5, 10 y 20RM en press de banca y prensa de piernas.",
+      "comparison": "1RM medido.",
+      "outcomesMeasured": "Precisión de la predicción del 1RM a partir de tests de repeticiones máximas.",
+      "resultsSummary": "La carga desciende de forma no lineal con el número de repeticiones; las 5RM dieron la mejor predicción (R² 0,974 prensa, 0,993 banca); no conviene usar más de 10 repeticiones en ecuaciones lineales.",
+      "limitations": "Solo press de banca y prensa de piernas; ecuaciones propias del estudio (no la de Epley); series hasta el fallo real, no estimado con RIR.",
+      "practicalApplication": "Si se estima el 1RM a partir de repeticiones, usar series de 10 repeticiones o menos hasta el fallo.",
+      "sex": "mixed",
+      "trainingStatus": "mixed",
+      "sport": null,
+      "access": "abstract_only"
+    },
+    {
+      "key": "claassen2026_lv_meta",
+      "pmid": "42690493",
+      "doi": "10.1186/s40798-026-01102-0",
+      "title": "Reliability, Device Agreement and Validity of Load-Velocity Profiles: A Systematic Review with Meta-analysis.",
+      "journal": "Sports medicine - open",
+      "volume": "12",
+      "issue": "1",
+      "pages": null,
+      "authors": [
+        "Claassen N",
+        "Siegel SD",
+        "Sproll M",
+        "Lebelt N",
+        "Bargende AV",
+        "Fasold AM",
+        "Warneke K"
+      ],
+      "year": 2026,
+      "studyDesign": "meta_analysis",
+      "populationSummary": "63 estudios sobre sensores de velocidad y 38 sobre modelos de predicción del 1RM.",
+      "ageRange": "adultos",
+      "intervention": "Sensores comerciales de velocidad y predicción del 1RM por perfil carga-velocidad.",
+      "comparison": "Sistemas de referencia y 1RM medido.",
+      "outcomesMeasured": "Validez, concordancia entre dispositivos y fiabilidad (ICC, CCC, r).",
+      "resultsSummary": "Sensores con validez y fiabilidad relativa buenas a excelentes (ICC 0,90-0,92); predicción del 1RM con ICC 0,90 (fiabilidad) y 0,91 [0,72-0,98] (validez), con gran heterogeneidad en ejercicios de tren inferior.",
+      "limitations": "Gran heterogeneidad; escasos análisis de error de medida y concordancia absoluta; resultados dependientes del ejercicio, la intensidad, el sensor y el modelo.",
+      "practicalApplication": "Usar la velocidad y el 1RM predicho con cautela, sobre todo en ejercicios de tren inferior y con sensores inerciales.",
+      "sex": "mixed",
+      "trainingStatus": "mixed",
+      "sport": null,
+      "access": "abstract_only"
     }
   ],
   "findings": [
@@ -2175,6 +2233,56 @@
         "publicationBias": "no"
       },
       "epistemicType": "fact"
+    },
+    {
+      "key": "f_reynolds_max10",
+      "source": "reynolds2006_rm_1rm",
+      "outcome": "max_strength_1rm",
+      "population": "adults_recreational",
+      "intervention": "1RM predicho a partir de tests de 5, 10 y 20RM",
+      "comparator": "1RM medido",
+      "effectMetric": "R2_5RM_bench",
+      "effectValue": 0.993,
+      "ciLow": null,
+      "ciHigh": null,
+      "nStudies": null,
+      "nParticipants": 70,
+      "heterogeneityI2": null,
+      "quote": "Dynamic muscular strength (1RM) can be accurately estimated from multiple repetition testing. Data reveal that no more than 10 repetitions should be used in linear equations to estimate 1RM for the LP and CP actions.",
+      "grading": {
+        "design": "cross_sectional",
+        "riskOfBias": "serious",
+        "inconsistency": "no",
+        "indirectness": "serious",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
+    },
+    {
+      "key": "f_claassen_lv_validity",
+      "source": "claassen2026_lv_meta",
+      "outcome": "lv_1rm_prediction_validity",
+      "population": "adults_resistance_trained",
+      "intervention": "1RM predicho por perfil carga-velocidad",
+      "comparator": "1RM medido",
+      "effectMetric": "ICC",
+      "effectValue": 0.91,
+      "ciLow": 0.72,
+      "ciHigh": 0.98,
+      "nStudies": 38,
+      "nParticipants": null,
+      "heterogeneityI2": null,
+      "quote": "While velocity-based 1RM prediction demonstrated high average validity, large heterogeneity in lower body exercises significantly biased the results.",
+      "grading": {
+        "design": "meta_analysis",
+        "riskOfBias": "serious",
+        "inconsistency": "serious",
+        "indirectness": "no",
+        "imprecision": "serious",
+        "publicationBias": "no"
+      },
+      "epistemicType": "fact"
     }
   ],
   "claims": [
@@ -2441,6 +2549,10 @@
         {
           "finding": "f_greig_overestimate",
           "role": "supports"
+        },
+        {
+          "finding": "f_claassen_lv_validity",
+          "role": "supports"
         }
       ],
       "confidence": "moderate",
@@ -2629,6 +2741,24 @@
       "limitations": "Basado en un overview de revisiones en adultos sanos; transferencia a deportistas de élite no evaluada directamente.",
       "applicability": {
         "appliesTo": ["adults_recreational", "adults_resistance_trained", "team_sport_athletes"],
+        "notFor": []
+      }
+    },
+    {
+      "key": "c_rm_1rm_estimate",
+      "statement": "El 1RM puede estimarse de forma aproximada a partir de series de 10 repeticiones o menos hasta el fallo; con más repeticiones la estimación pierde precisión. Es una orientación y no sustituye a la medición directa.",
+      "scope": "estimación del 1RM por repeticiones",
+      "epistemicType": "fact",
+      "findings": [
+        {
+          "finding": "f_reynolds_max10",
+          "role": "supports"
+        }
+      ],
+      "confidence": "low",
+      "limitations": "Un solo estudio transversal en press de banca y prensa de piernas, con ecuaciones propias; la ecuación de Epley que usa la plataforma es una ecuación práctica sin verificar [REQUIERE VERIFICACIÓN] y el RIR informado añade error al número de repeticiones hasta el fallo.",
+      "applicability": {
+        "appliesTo": ["adults_recreational", "adults_resistance_trained"],
         "notFor": []
       }
     }

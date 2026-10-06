@@ -531,11 +531,13 @@ export async function buildProgrammingInput(app: App, clientId: string, planId: 
       loadKg: setLogs.loadKg,
       rir: setLogs.rir,
       rirAssumed: setLogs.rirAssumed,
+      velocity: setLogs.meanVelocityMps,
       tRepsMin: sessionExercises.repsMin,
       tRepsMax: sessionExercises.repsMax,
       tRirMin: sessionExercises.rirMin,
       tRirMax: sessionExercises.rirMax,
       tLoad: sessionExercises.loadKg,
+      tVelocity: sessionExercises.velocityTargetMps,
     })
     .from(setLogs)
     .innerJoin(sessionExercises, eq(sessionExercises.id, setLogs.sessionExerciseId))
@@ -596,11 +598,13 @@ export async function buildProgrammingInput(app: App, clientId: string, planId: 
             rirMin: f.tRirMin,
             rirMax: f.tRirMax,
             loadKg: num(f.tLoad),
+            velocityTargetMps: num(f.tVelocity),
           },
           sets: ls.map((l) => ({
             reps: l.reps ?? 0,
             loadKg: num(l.loadKg),
             rir: l.rirAssumed ? null : l.rir,
+            meanVelocityMps: num(l.velocity),
           })),
         };
       }),

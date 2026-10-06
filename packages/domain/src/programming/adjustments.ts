@@ -7,7 +7,14 @@
 import type { Explanation } from '../decision/types';
 import { roundLoad } from '../planning/prescription';
 import { addDays, DEFAULT_DELOAD, type DeloadPolicy } from '../planning/structure';
-import { doubleProgression, rirAdjustment, type LoggedSet } from '../planning/progression';
+import {
+  doubleProgression,
+  estimateOneRm,
+  rirAdjustment,
+  velocityAdjustment,
+  VELOCITY_MARGIN_MPS,
+  type LoggedSet,
+} from '../planning/progression';
 
 export type AdjustmentKind =
   'load_progression' | 'deload_week' | 'volume_reduction' | 'substitution';
@@ -44,6 +51,8 @@ export interface ExerciseHistory {
       rirMin: number | null;
       rirMax: number | null;
       loadKg: number | null;
+      /** Prescribed mean velocity (m/s), for velocity-based progression (phase 14). */
+      velocityTargetMps?: number | null;
     };
     sets: LoggedSet[];
   }[];
@@ -97,6 +106,7 @@ export interface ExerciseChange {
 
 const day = (iso: string) => iso.split('-').reverse().join('/');
 const kg = (n: number) => `${n.toLocaleString('es-ES')} kg`;
+const mps = (n: number) => `${n.toFixed(2).replace('.', ',')} m/s`;
 
 /** Smallest practical load jump by equipment (level F); a centre can set its own per exercise. */
 export function loadIncrementFor(equipment: string[]): number {
@@ -116,6 +126,23 @@ export function proposeLoadChange(h: ExerciseHistory) {
   const last = h.sessions.at(-1);
   if (!last || last.target.loadKg == null) return null;
   const inc = h.incrementKg && h.incrementKg > 0 ? h.incrementKg : loadIncrementFor(h.equipment);
+  // Velocity first (phase 14): when a target velocity is prescribed and velocity was measured,
+  // it is the most direct sign of how heavy the load was for the person on the day.
+  const vTarget = last.target.velocityTargetMps;
+  if (vTarget != null) {
+    const vel = h.sessions
+      .map((s) => s.sets.map((x) => x.meanVelocityMps).filter((x): x is number => x != null))
+      .filter((xs) => xs.length)
+      .map((xs) => xs.reduce((a, b) => a + b, 0) / xs.length);
+    if (vel.length >= 2) {
+      const r = velocityAdjustment(
+        { velocityTargetMps: vTarget, loadKg: last.target.loadKg },
+        vel,
+        inc,
+      );
+      if (r.action !== 'hold') return { ...r, rule: 'velocity_target' as const, increment: inc };
+    }
+  }
   const rir = h.sessions
     .map((s) => s.sets.map((x) => x.rir).filter((x): x is number => x != null))
     .filter((xs) => xs.length)
@@ -241,6 +268,7 @@ export function proposeAdjustments(input: ProgrammingInput): AdjustmentCandidate
     );
     if (!targets.length) continue;
     const last = h.sessions.at(-1)!;
+    const e1rm = estimateOneRm(last.sets);
     const up = r.action === 'increase_load';
     out.push({
       key: `load:${h.exerciseId}:${last.date}`,
@@ -251,15 +279,33 @@ export function proposeAdjustments(input: ProgrammingInput): AdjustmentCandidate
       explanation: practical(
         `${up ? 'Subir' : 'Bajar'} ${kg(Math.abs(r.toKg - r.fromKg))} en ${h.exerciseName} en las próximas ${targets.length} sesiones.`,
         [
-          `Última sesión (${day(last.date)}): ${last.sets.map((s) => `${s.reps}${s.loadKg != null ? ` × ${kg(s.loadKg)}` : ''}${s.rir != null ? ` @RIR ${s.rir}` : ''}`).join(', ')}.`,
-          `Objetivo: ${last.target.repsMin ?? '?'}–${last.target.repsMax ?? '?'} repeticiones${last.target.rirMin != null ? ` @RIR ${last.target.rirMin}–${last.target.rirMax}` : ''} con ${kg(last.target.loadKg!)}.`,
+          `Última sesión (${day(last.date)}): ${last.sets.map((s) => `${s.reps}${s.loadKg != null ? ` × ${kg(s.loadKg)}` : ''}${s.rir != null ? ` @RIR ${s.rir}` : ''}${s.meanVelocityMps != null ? ` a ${mps(s.meanVelocityMps)}` : ''}`).join(', ')}.`,
+          `Objetivo: ${last.target.repsMin ?? '?'}–${last.target.repsMax ?? '?'} repeticiones${last.target.rirMin != null ? ` @RIR ${last.target.rirMin}–${last.target.rirMax}` : ''}${last.target.velocityTargetMps != null ? ` a ${mps(last.target.velocityTargetMps)}` : ''} con ${kg(last.target.loadKg!)}.`,
           `Sesiones registradas de este ejercicio: ${h.sessions.length}.`,
+          ...(e1rm
+            ? [
+                `1RM estimado (orientativo): ${kg(e1rm.kg)}, de ${kg(e1rm.loadKg)} con ${e1rm.repsToFailure} repeticiones hasta el fallo (hechas + RIR).`,
+              ]
+            : []),
         ],
         [r.reason],
-        r.rule === 'rir_adjustment'
-          ? 'progression.rir_adjustment'
-          : 'progression.double_progression',
+        r.rule === 'velocity_target'
+          ? 'progression.velocity_target'
+          : r.rule === 'rir_adjustment'
+            ? 'progression.rir_adjustment'
+            : 'progression.double_progression',
         [
+          ...(r.rule === 'velocity_target'
+            ? [
+                'La velocidad refleja bien la carga relativa en press de banca; en otros ejercicios y con otros sensores la precisión varía: revisa que el sensor y la técnica sean los de siempre.',
+                `Margen práctico (nivel F): se cambia la carga solo si la velocidad se aleja más de ${mps(VELOCITY_MARGIN_MPS)} del objetivo en 2 sesiones seguidas.`,
+              ]
+            : []),
+          ...(e1rm
+            ? [
+                'El 1RM estimado es orientativo: ecuación práctica (nivel F), solo con series de hasta 10 repeticiones hasta el fallo y RIR informado; no sustituye a un 1RM medido.',
+              ]
+            : []),
           h.incrementKg
             ? `Regla práctica (nivel F) de los cuadernos de entrenamiento; incremento del centro para este ejercicio: ${kg(h.incrementKg)}.`
             : 'Regla práctica (nivel F) de los cuadernos de entrenamiento; el incremento depende del material.',

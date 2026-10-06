@@ -10,6 +10,7 @@ import {
   createPlanFromTemplate,
   decideAdjustment,
   discardPlanProposal,
+  estimatedStrength,
   evaluateAdjustments,
   generatePlanProposal,
   getPlan,
@@ -158,6 +159,18 @@ describe('hard rule: no automatic process changes an active plan (§12.2)', () =
     expect(all.find((a) => a.id === load[0]!.id)).toMatchObject({
       clientId: o.clientA,
       status: 'proposed',
+    });
+  });
+});
+
+describe('estimated strength (phase 14, informative)', () => {
+  it('best estimated 1RM per exercise from sets with reported RIR, ≤ 10 reps to failure', async () => {
+    const { items } = await estimatedStrength(o.admin, o.clientA);
+    // 80 kg × 8 @RIR 2 → 10 reps to failure → 80 × (1 + 10/30) = 106.7 → 106.5 kg.
+    expect(items.find((i) => i.exerciseId === squatId)).toMatchObject({
+      latest: { kg: 106.5, loadKg: 80, repsToFailure: 10 },
+      earlier: null,
+      changeKg: null,
     });
   });
 });
@@ -440,5 +453,9 @@ describe('permissions and isolation', () => {
     await expect(setAutoApply(o.clientUser, o.clientA, { enabled: true })).rejects.toMatchObject({
       code: expect.stringMatching(/^(forbidden|not_found)$/),
     });
+    for (const by of [o.clientUser, o.trainer2, other.admin])
+      await expect(estimatedStrength(by, o.clientA)).rejects.toMatchObject({
+        code: expect.stringMatching(/^(forbidden|not_found)$/),
+      });
   });
 });

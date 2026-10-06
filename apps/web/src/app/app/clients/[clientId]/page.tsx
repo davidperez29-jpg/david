@@ -30,6 +30,7 @@ import {
   listProgrammingProfiles,
   listTrainers,
   injuryCaseCount,
+  estimatedStrength,
 } from '@tp/application';
 import { DomainError, REPORT_KINDS } from '@tp/domain';
 import { notFound } from 'next/navigation';
@@ -965,12 +966,16 @@ async function sessionsTab(ctx: Awaited<ReturnType<typeof requireStaff>>, client
 const pct = (v: number | null) =>
   v == null ? '—' : `${v.toLocaleString('es-ES', { maximumFractionDigits: 1 })} %`;
 
+const kg = (v: number) => `${v.toLocaleString('es-ES', { maximumFractionDigits: 1 })} kg`;
+
 async function monitoringTab(ctx: Awaited<ReturnType<typeof requireStaff>>, clientId: string) {
-  const [m, rules, adj, ext] = await Promise.all([
+  const [m, rules, adj, ext, strength] = await Promise.all([
     clientMonitoring(ctx, clientId),
     getMonitoringRules(ctx),
     listAdjustments(ctx, clientId),
     listExternalMeasurements(ctx, clientId, {}),
+    // Roles without decision:read simply do not see the card.
+    estimatedStrength(ctx, clientId).catch(() => null),
   ]);
   const pendingAdj = adj.items.filter((i) => i.status === 'proposed' || i.status === 'postponed');
   return (
@@ -1031,6 +1036,46 @@ async function monitoringTab(ctx: Awaited<ReturnType<typeof requireStaff>>, clie
           </ul>
         )}
       </Card>
+
+      {strength ? (
+        <Card title="Fuerza estimada (1RM orientativo)">
+          {strength.items.length === 0 ? (
+            <EmptyState>
+              Sin series con RIR informado y 10 repeticiones o menos hasta el fallo en los últimos 4
+              meses.
+            </EmptyState>
+          ) : (
+            <table className="w-full text-sm" aria-label="Fuerza estimada por ejercicio">
+              <thead>
+                <tr className="text-left text-xs text-muted">
+                  <th className="py-1">Ejercicio</th>
+                  <th className="py-1">1RM estimado</th>
+                  <th className="py-1">Cambio (≥ 3 semanas)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {strength.items.map((e) => (
+                  <tr key={e.exerciseId} className="border-t border-border">
+                    <td className="py-1">{e.name}</td>
+                    <td className="py-1 tabular-nums">
+                      {kg(e.latest.kg)}{' '}
+                      <span className="text-xs text-muted">({formatDate(e.latest.date)})</span>
+                    </td>
+                    <td className="py-1 tabular-nums">
+                      {e.changeKg == null ? '—' : `${e.changeKg > 0 ? '+' : ''}${kg(e.changeKg)}`}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+          <p className="mt-2 text-xs text-muted">
+            Orientativo: ecuación práctica con series de 10 repeticiones o menos hasta el fallo y
+            RIR informado. No sustituye un 1RM medido; las cargas en %1RM siguen usando la
+            valoración.
+          </p>
+        </Card>
+      ) : null}
 
       <Card title="Carga interna semanal (RPE de la sesión × minutos, UA)">
         <div className="grid gap-4 lg:grid-cols-2">
