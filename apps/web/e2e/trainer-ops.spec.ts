@@ -31,8 +31,11 @@ test('the calendar moves a pending session to another day: «Mover» and drag an
   await page.getByRole('button', { name: 'Filtrar' }).click();
   await page.getByRole('link', { name: 'Semana', exact: true }).click();
   await expect(page).toHaveURL(/vista=semana/);
+  // Wait for next week to be on screen (the heading of this week is there before the click).
+  const heading = page.getByRole('heading', { name: /^Semana del/ });
+  const thisWeek = (await heading.textContent())!;
   await page.getByRole('link', { name: 'Siguiente →' }).click();
-  await expect(page.getByRole('heading', { name: /^Semana del/ })).toBeVisible();
+  await expect(heading).not.toHaveText(thisWeek);
   const grid = page.locator('.md\\:block');
   const movable = grid.locator('li').filter({ has: page.locator('[draggable="true"]') });
   await expect(movable.first()).toBeVisible();

@@ -10,7 +10,11 @@ import { api } from '@/lib/api-client';
  * has recorded, to today or later, inside the weeks of an editable plan.
  */
 type Move = (id: string, version: number, date: string) => Promise<void>;
-const Ctx = createContext<{ move: Move; today: string } | null>(null);
+const Ctx = createContext<{
+  move: Move;
+  today: string;
+  say: (text: string, ok?: boolean) => void;
+} | null>(null);
 const TYPE = 'application/x-tp-session';
 
 const DAY = (d: string) =>
@@ -38,7 +42,7 @@ export function RescheduleProvider({ today, children }: { today: string; childre
     router.refresh();
   };
   return (
-    <Ctx.Provider value={{ move, today }}>
+    <Ctx.Provider value={{ move, today, say: (text, ok = false) => setStatus({ ok, text }) }}>
       <p
         role="status"
         aria-live="polite"
@@ -130,7 +134,6 @@ export function MoveSessionForm({
   label: string;
 }) {
   const c = useContext(Ctx);
-  const [value, setValue] = useState(date);
   // Shown once hydrated: before that, «Mover» would submit the form natively and reload the page.
   const [ready, setReady] = useState(false);
   useEffect(() => setReady(true), []);
@@ -142,7 +145,10 @@ export function MoveSessionForm({
         className="mt-1 flex flex-wrap items-center gap-1"
         onSubmit={(e) => {
           e.preventDefault();
-          if (value && value !== date) void c.move(id, version, value);
+          // Read from the form (uncontrolled): the date picker's value is what is submitted.
+          const value = String(new FormData(e.currentTarget).get('date') ?? '');
+          if (!value || value === date) c.say('Elige otro día para moverla.');
+          else void c.move(id, version, value);
         }}
       >
         <label className="sr-only" htmlFor={`mv-${id}`}>
@@ -151,9 +157,9 @@ export function MoveSessionForm({
         <input
           id={`mv-${id}`}
           type="date"
+          name="date"
           min={c.today}
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
+          defaultValue={date}
           className="h-7 rounded border border-border bg-bg px-1"
         />
         <button className="h-7 rounded border border-border px-2">Mover a ese día</button>
