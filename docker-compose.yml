@@ -17,13 +17,20 @@ services:
     image: training-platform-jobs:${APP_VERSION:-local}
     build: { context: ., target: jobs }
     working_dir: /app/packages/db
-    # Migrations, then the reference catalogues (idempotent: safe on every deploy).
+    # Migrations, the reference catalogues and the legacy text encryption (idempotent: safe on
+    # every deploy).
     command:
       - sh
       - -c
-      - node node_modules/tsx/dist/cli.mjs scripts/migrate.ts && node node_modules/tsx/dist/cli.mjs scripts/seed.ts
+      - >-
+        node node_modules/tsx/dist/cli.mjs scripts/migrate.ts &&
+        node node_modules/tsx/dist/cli.mjs scripts/seed.ts &&
+        cd /app/packages/application &&
+        node node_modules/tsx/dist/cli.mjs scripts/encrypt-injury-text.ts
     environment:
       DATABASE_URL: postgres://app:${POSTGRES_PASSWORD}@db:5432/app
+      # Encrypts the injury free text written before restructure phase 11 (idempotent).
+      APP_ENCRYPTION_KEY: ${APP_ENCRYPTION_KEY:?set APP_ENCRYPTION_KEY}
     depends_on:
       db: { condition: service_healthy }
 

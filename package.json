@@ -31,6 +31,7 @@
     "db:reset": "pnpm --filter @tp/db reset",
     "privacy:daily": "pnpm --filter @tp/application privacy:daily",
     "keys:rotate": "pnpm --filter @tp/application keys:rotate",
+    "injuries:encrypt-text": "pnpm --filter @tp/application injuries:encrypt-text",
     "privacy:reapply-erasures": "pnpm --filter @tp/application privacy:reapply-erasures"
   },
   "devDependencies": {
