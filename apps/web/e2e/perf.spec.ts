@@ -17,6 +17,12 @@ const PAGES = [
   '/app/calendar',
   '/app/plans',
   '/app/informes',
+  // Restructure phase 10: pages added since phase 14.
+  '/app/groups',
+  '/app/library',
+  '/app/assessments',
+  '/app/science/sources',
+  '/app/science/busquedas',
 ];
 // Listings that need query parameters to be meaningful (calendar: the 6 weeks of a month view).
 const monday = new Date();
