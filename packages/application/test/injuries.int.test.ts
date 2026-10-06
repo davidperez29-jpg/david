@@ -5,6 +5,8 @@ import {
   advanceInjuryPhase,
   checkInjuryCriterion,
   closeInjury,
+  generateClientReport,
+  getClientReport,
   createAssessment,
   getInjury,
   grantConsent,
@@ -207,6 +209,20 @@ describe('injury module (restructure phase 7)', () => {
       .from(schema.auditLogs)
       .where(eq(schema.auditLogs.entityId, injuryId));
     expect(audits.some((a) => a.action === 'view_sensitive')).toBe(true);
+  });
+
+  it('the RTP report freezes the case: phase, criteria, protocol variables, decisions', async () => {
+    const r = await generateClientReport(o.admin, o.clientA, { kind: 'rtp' });
+    const rep = (await getClientReport(o.admin, r.id)).report;
+    expect(rep.sections.map((x) => x.key)).toContain('criterios');
+    const text = JSON.stringify(rep);
+    expect(text).toContain('Ligamento cruzado anterior');
+    expect(text).toContain('Fuerza básica y control');
+    expect(text).toContain('80 %');
+    expect(text).toContain('Vuelta a la participación: todavía no');
+    expect(text).toContain('Listo para valoración');
+    expect(text).not.toMatch(/\bapt[oa]\b/iu);
+    expect(text).not.toContain('plastia'); // the diagnosis received stays out of the report
   });
 
   it('closes the case', async () => {

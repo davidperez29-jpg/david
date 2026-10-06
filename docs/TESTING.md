@@ -532,3 +532,29 @@ pnpm --filter @tp/web test:e2e -- e2e/perf.spec.ts e2e/perf.mobile.spec.ts
   - comparativo desde la ficha, con radar y PDF;
   - rechazo de «previene lesiones» con su motivo;
   - informe de rendimiento con fichas y descargas.
+
+## Resultado de la reestructuración, fase 7 (lesiones y readaptación)
+
+- **Unitarias**:
+  - `injury.unit.test.ts`: alertas por síntomas, criterio por valor y por simetría del lado afectado (sin dato no se cumple), estados sin «apto», [Avanzar de fase] con motivos, checklist de vuelta y lectura del cambio frente al error de medida;
+  - `injury-seed.unit.test.ts`: las 6 lesiones iniciales con protocolo, tests existentes, criterios con evidencia o consenso siempre con fuente verificada del seed, simetría solo en tests por lados y decisión del equipo al final de cada protocolo;
+  - `report-kinds.unit.test.ts`: informe de readaptación con el caso (fase, criterios, variables, decisiones), sin frases prohibidas y sin datos de salud sin consentimiento.
+- **Integración** (`injuries.int.test.ts`):
+  - consentimiento obligatorio y diagnóstico cifrado en reposo;
+  - el avance exige los criterios obligatorios y lo pulsa el entrenador;
+  - una alerta bloquea hasta revisarla y una página antigua no puede avanzar dos veces;
+  - simetría automática desde evaluaciones;
+  - comparativa solo con las variables del protocolo, con línea base y fase;
+  - la decisión con «apto» se rechaza;
+  - otro entrenador y la app del cliente no ven nada, y la lectura queda auditada;
+  - informe de readaptación congelado sin el diagnóstico;
+  - cierre del caso.
+- **Seguridad**:
+  - la matriz RLS cubre las 10 tablas nuevas (catálogo y datos de salud);
+  - las 13 rutas nuevas pasan la matriz por ruta (otra organización, otro cliente, entrenador no asignado).
+- **E2E** (`injury.spec.ts`):
+  - la alerta abierta bloquea [Avanzar de fase] y se revisa;
+  - un registro de dolor sobre el umbral genera alerta;
+  - decisión con «apta» rechazada y luego registrada con nombre y rol;
+  - abrir un caso desde Ficha → Salud, marcar criterios y avanzar a mano.
+- **Accesibilidad**: pestaña Readaptación y página del caso en `a11y.spec.ts` (claro y oscuro), sin infracciones.

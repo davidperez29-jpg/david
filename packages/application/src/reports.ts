@@ -31,11 +31,14 @@ import {
   type ReportInput,
   type ReportKind,
   type RtpSnapshot,
+  type RtpCase,
+  decisionText,
 } from '@tp/domain';
 import { and, asc, desc, eq, gte, inArray, isNull, lte, sql } from 'drizzle-orm';
 import { clientAssessmentProgress, listClientAssessments } from './assessments';
 import { writeAudit } from './audit';
 import { clientComparison, type ClientComparison } from './comparison';
+import { getInjury, injuryComparison, listClientInjuries } from './injuries';
 import { getGroup, groupReport } from './groups';
 import { authorizeClient, requirePermission } from './authz';
 import { getClient } from './clients';
@@ -432,6 +435,71 @@ async function reportInput(
   };
 }
 
+/**
+ * The injury case of the readaptation module for the RTP report (phase 7): the active case, else
+ * the latest one. Frozen with the module's own labels; never «apto».
+ */
+async function rtpCase(ctx: RequestContext, clientId: string): Promise<RtpCase | null> {
+  const list = await listClientInjuries(ctx, clientId);
+  const pick = list.items.find((i) => i.status !== 'closed') ?? list.items[0];
+  if (!pick) return null;
+  const [c, cmp] = await Promise.all([
+    getInjury(ctx, clientId, pick.id),
+    injuryComparison(ctx, clientId, pick.id, {}),
+  ]);
+  const stateText = (st: (typeof c.phase & {})['criteria'][number]['state']) =>
+    st?.met == null
+      ? 'Sin dato'
+      : `${st.met ? 'Cumplido' : 'No cumplido'}${st.value != null ? ` (${st.value})` : ''}`;
+  return {
+    condition: c.condition,
+    side: c.side === 'none' ? null : c.sideLabel,
+    occurredOn: c.occurredOn,
+    protocol: c.protocol ? `${c.protocol.name} · v${c.protocol.protocolVersion}` : null,
+    phase: c.phase
+      ? {
+          number: c.phase.number,
+          total: c.protocol!.phases.length,
+          name: c.phase.name,
+          since: c.phaseStartedOn,
+        }
+      : null,
+    statusLabel: c.statusLabel,
+    criteria: (c.phase?.criteria ?? []).map((k) => ({
+      text: k.text,
+      role: k.roleLabel,
+      evidence: k.evidenceLabel,
+      state: stateText(k.state),
+    })),
+    checklist: c.checklist.map((i) => ({
+      label: i.label,
+      status: i.status === 'met' ? 'Cumplido' : i.status === 'pending' ? 'Pendiente' : 'No aplica',
+    })),
+    decisions: c.decisions.map((d) =>
+      decisionText({
+        stage: d.stage,
+        outcome: d.outcome,
+        decidedBy: d.decidedByName,
+        role: d.decidedByRole,
+        decidedOn: d.decidedOn,
+      }),
+    ),
+    symptoms: [...c.symptoms].reverse().map((x) => ({ date: x.recordedOn, pain: x.pain })),
+    openAlerts: c.alerts.filter((a) => !a.reviewedAt).length,
+    tests: cmp.rows.map((r) => ({
+      name: r.name,
+      unit: r.unit,
+      a: r.a,
+      b: r.b,
+      lsi: r.lsiB,
+      reading:
+        r.readingLabel +
+        (r.errorKnown || r.reading === 'no_data' ? '' : ' (error de medida desconocido)'),
+    })),
+    testDates: { a: cmp.a?.date ?? null, b: cmp.b?.date ?? null },
+  };
+}
+
 const isStaff = (ctx: RequestContext) =>
   ctx.actor.roles.includes('ADMIN') || ctx.actor.roles.includes('TRAINER');
 
@@ -684,6 +752,7 @@ async function snapshotFor(
         pain,
         comparison,
         trainerNotes: notes,
+        case: consent ? await rtpCase(ctx, clientId) : null,
       };
       return { type: 'rtp', snapshot, parameters };
     }

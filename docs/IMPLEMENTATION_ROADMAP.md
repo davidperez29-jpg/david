@@ -61,7 +61,7 @@ Se comprueba en CI con la imagen de despliegue sobre una base vacía, arrancada 
 - Alta rápida en un formulario: nombre, fecha de nacimiento (edad), sexo, perfil principal, nivel, experiencia, objetivo, deporte, días por semana, lugar, material, observaciones y email.
 - **Navegación nueva**: Clientes · Plantillas · Ejercicios · Tests, más el menú de usuario.
 - **Inicio = Mis clientes + Entrenamientos de hoy**, con el motivo de atención en la fila del cliente.
-- Ficha de cliente con 5 pestañas: Programa, Evaluación, Seguimiento, Informes y Ficha. Readaptación se añade en la fase 7. Las pestañas sin rediseñar todavía muestran el contenido actual.
+- Ficha de cliente con 5 pestañas: Programa, Evaluación, Seguimiento, Informes y Ficha. Readaptación se añade en la fase 7 (✅, solo si hay un caso). Las pestañas sin rediseñar todavía muestran el contenido actual.
 
 **Criterios**:
 - ✅ crear un cliente con perfil en 2 clics (Nuevo cliente → Guardar) rellenando 3 campos (E2E `trainer.spec.ts`);
@@ -149,7 +149,7 @@ Pendiente para fases siguientes: tarjetas por ejercicio en el móvil y sugerenci
 - ✅ el PDF es reproducible: idéntico byte a byte en cada descarga y aunque después cambien los datos;
 - ✅ el validador rechaza «previene lesiones» sin evidencia de incidencia, y también «apto» y los diagnósticos, en el texto del entrenador. El motor no los escribe en ningún tipo (test).
 
-## Fase 7 · Lesiones, readaptación y RTP (siguiente)
+## Fase 7 · Lesiones, readaptación y RTP ✅
 
 - Catálogos de regiones y condiciones; protocolos versionados con fases y criterios.
 - Ficha de lesión; registro de síntomas con alertas de seguridad.
@@ -159,10 +159,11 @@ Pendiente para fases siguientes: tarjetas por ejercicio en el móvil y sugerenci
 - Contenido inicial con búsquedas específicas por condición y fase (`INJURY_MODULE.md` §8).
 
 **Criterios**:
-- el software nunca muestra «apto»;
-- una alerta bloquea el avance hasta revisarla;
-- la comparativa solo muestra las variables del protocolo;
-- la RLS de datos de salud está en la matriz.
+- ✅ el software nunca muestra «apto» (dominio, informe, integración y E2E lo comprueban);
+- ✅ una alerta bloquea el avance hasta revisarla (`injuries.int.test.ts`, `injury.spec.ts`);
+- ✅ la comparativa solo muestra las variables del protocolo (integración);
+- ✅ la RLS de datos de salud está en la matriz (`rls-matrix.security.test.ts`, 10 tablas nuevas) y en la seguridad por ruta (13 rutas nuevas).
+- Detalle en `INJURY_MODULE.md` §10.
 
 ## Fase 8 · Cliente móvil, feedback y adherencia
 

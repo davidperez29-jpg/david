@@ -175,7 +175,7 @@ En la fase 7 se buscará la evidencia **específica de cada condición y fase** 
 - **Rutinas de aductores y de cuádriceps**: estructura en bloques (movilidad dinámica, reeducación postural, fortalecimiento isométrico/excéntrico, integración específica), con dosis y errores a evitar. Pasan a ser plantillas de tipo `risk_reduction`, etiquetadas según su evidencia: solo el componente Copenhagen tiene respaldo de reducción de prevalencia (Harøy et al., 2019).
 - **Hoja de prevención individual**: sesiones por zona según las molestias del jugador y tres niveles por ejercicio (N1/N2/N3). Inspira el plan individual de reducción de factores de riesgo y la progresión por niveles dentro de un ejercicio.
 
-## 9. Referencias verificadas (PubMed, 05/10/2026)
+## 9. Referencias verificadas (PubMed, 05–06/10/2026)
 
 | Referencia | DOI | PMID |
 |---|---|---|
@@ -193,3 +193,71 @@ En la fase 7 se buscará la evidencia **específica de cada condición y fase** 
 | Holden S et al. Isometric exercise and pain in patellar tendinopathy: a randomized crossover trial. *J Sci Med Sport* 2020;23(3):208-14 | [10.1016/j.jsams.2019.09.015](https://doi.org/10.1016/j.jsams.2019.09.015) | 31735531 |
 | Bishop C et al. Effects of inter-limb asymmetries on physical and sports performance: a systematic review. *J Sports Sci* 2018;36(10):1135-44 | [10.1080/02640414.2017.1361894](https://doi.org/10.1080/02640414.2017.1361894) | 28767317 |
 | Read PJ et al. Asymmetry thresholds for common screening tests and their effects on jump performance in professional soccer players. *J Athl Train* 2021;56(1):46-53 | [10.4085/1062-6050-0013.20](https://doi.org/10.4085/1062-6050-0013.20) | 33264407 |
+| Serner A et al. Return to Sport After Criteria-Based Rehabilitation of Acute Adductor Injuries in Male Athletes: A Prospective Cohort Study. *Orthopaedic journal of sports medicine* 2020;8(1):2325967119897247 | [10.1177/2325967119897247](https://doi.org/10.1177/2325967119897247) | 32064292 |
+| Serner A et al. Progression of Strength, Flexibility, and Palpation Pain During Rehabilitation of Athletes With Acute Adductor Injuries: A Prospective Cohort Study. *The Journal of orthopaedic and sports physical therapy* 2021;51(3):126-134 | [10.2519/jospt.2021.9951](https://doi.org/10.2519/jospt.2021.9951) | 33115342 |
+| Doherty C et al. Treatment and prevention of acute and recurrent ankle sprain: an overview of systematic reviews with meta-analysis. *British journal of sports medicine* 2017;51(2):113-125 | [10.1136/bjsports-2016-096178](https://doi.org/10.1136/bjsports-2016-096178) | 28053200 |
+| Kongsgaard M et al. Corticosteroid injections, eccentric decline squat training and heavy slow resistance training in patellar tendinopathy. *Scandinavian journal of medicine & science in sports* 2009;19(6):790-802 | [10.1111/j.1600-0838.2009.00949.x](https://doi.org/10.1111/j.1600-0838.2009.00949.x) | 19793213 |
+| Askling CM et al. Acute hamstring injuries in Swedish elite football: a prospective randomised controlled clinical trial comparing two rehabilitation protocols. *British journal of sports medicine* 2013;47(15):953-9 | [10.1136/bjsports-2013-092165](https://doi.org/10.1136/bjsports-2013-092165) | 23536466 |
+| Askling CM et al. Acute hamstring injuries in Swedish elite sprinters and jumpers: a prospective randomised controlled clinical trial comparing two rehabilitation protocols. *British journal of sports medicine* 2014;48(7):532-9 | [10.1136/bjsports-2013-093214](https://doi.org/10.1136/bjsports-2013-093214) | 24620041 |
+| van Melick N et al. Evidence-based clinical practice update: practice guidelines for anterior cruciate ligament rehabilitation based on a systematic review and multidisciplinary consensus. *British journal of sports medicine* 2016;50(24):1506-1515 | [10.1136/bjsports-2015-095898](https://doi.org/10.1136/bjsports-2015-095898) | 27539507 |
+| Knapik DM et al. Isolated, Full-Thickness Proximal Rectus Femoris Injury in Competitive Athletes: A Systematic Review of Injury Characteristics and Return to Play. *Orthopaedic journal of sports medicine* 2023;11(1):23259671221144984 | [10.1177/23259671221144984](https://doi.org/10.1177/23259671221144984) | 36743725 |
+
+## 10. Implementación (reestructuración, fase 7)
+
+**Dónde está.**
+- Ficha del cliente → pestaña **Readaptación**. Aparece cuando el cliente tiene algún caso; para abrir el primero, Ficha → Salud → «Lesiones y readaptación →».
+- Página del caso: `/app/clients/[id]/lesiones/[injuryId]`. Se llega en dos clics desde la ficha.
+- Orden de la página:
+  1. alertas sin revisar, porque bloquean el avance;
+  2. fase actual con sus criterios y [Avanzar de fase];
+  3. vuelta al deporte (checklist y decisiones);
+  4. síntomas;
+  5. comparativa de readaptación;
+  6. información del caso y protocolo con sus fuentes.
+
+**Modelo de datos** (`packages/db/src/schema/injury.ts`, migraciones 0041–0042).
+
+Catálogo, global o del centro:
+- `injury_conditions` → `injury_protocols`, versionados. Un caso abierto conserva la versión con la que empezó.
+- Cada protocolo tiene `injury_protocol_phases` y `injury_protocol_criteria`, con rol, obligatorio, test y umbral si es automático, nivel de evidencia, fuentes y limitaciones.
+
+Datos del cliente:
+- `injuries` lleva el diagnóstico recibido cifrado.
+- Tablas hijas: `injury_phase_history`, `injury_symptoms` (nota cifrada), `injury_alerts`, `injury_criterion_checks` y `rtp_decisions`.
+- RLS: solo el equipo, nunca la app del cliente. Los hijos heredan organización y cliente del caso. Todo está en la matriz de seguridad.
+
+**Reglas** (`packages/domain/src/injury/index.ts`):
+- **Alertas** (§3):
+  - dolor ≥ umbral del protocolo (5/10 por defecto, práctico);
+  - empeoramiento o síntomas que persisten al día siguiente;
+  - inflamación, inestabilidad, pérdida de función o reacción adversa → «Revisar antes de progresar»;
+  - síntomas neurológicos → «Detener la progresión · Requiere valoración por profesional sanitario».
+- **Criterios automáticos**:
+  - valor de un test, o su **índice de simetría** (lado afectado / sano × 100), de la última evaluación posterior a la lesión;
+  - sin dato no se cumplen; se pueden marcar a mano si se midieron fuera.
+- **[Avanzar de fase]** lo pulsa el entrenador. Solo se activa con todos los criterios obligatorios cumplidos, sin alertas abiertas y sin criterio de parada; si no, la página dice por qué. Al avanzar se guarda el estado que lo permitió.
+- **Estados**: No iniciado · En progreso · Criterios parciales · Listo para valoración · Decisión pendiente · Cerrado. **No existe «apto».**
+- **Decisión de vuelta** (participación, deporte, rendimiento): la registra una persona con nombre, rol y fecha. El texto pasa el validador de lenguaje.
+- **Comparativa**:
+  - solo las variables del protocolo, con la línea base previa a la lesión y la fase en que cayó cada evaluación;
+  - lectura «mejora / empeora» solo si el cambio supera el error de medida conocido.
+- **Informe de readaptación**: congela fase, criterios, variables del protocolo, checklist y decisiones. El diagnóstico recibido no se incluye.
+
+**Contenido inicial** (`seed-data/injury/protocols.json`, fuentes en `seed-data/evidence/injury.json`). Seis protocolos:
+- LCA;
+- isquiosurales;
+- aductores;
+- esguince lateral de tobillo;
+- tendinopatía rotuliana;
+- tendinopatía aquílea.
+
+Cada criterio dice si es **con evidencia**, **consenso** o **criterio práctico**.
+
+Umbrales con evidencia: solo los de los estudios de LCA (simetría > 90 % en Grindem 2016, con su limitación, p = 0,075) y los ≥ 9 meses tras la reconstrucción. El resto de umbrales numéricos son prácticos y así se muestran.
+
+Tests nuevos (sin error de medida verificado, lo dicen sus limitaciones):
+- salto unipodal a distancia;
+- fuerza isométrica de extensores y de flexores de rodilla;
+- elevaciones de talón unipodales.
+
+**No encontrado** (queda como criterio práctico): revisión sistemática de vuelta tras lesión de cuádriceps no completa; metaanálisis específico ejercicio/recidiva de tobillo (se usa la revisión de revisiones de Doherty 2017). El valor exacto 5/10 del modelo de Silbernagel figura como [REQUIERE VERIFICACIÓN] en el texto completo.

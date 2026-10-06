@@ -625,11 +625,155 @@ export interface RtpSnapshot {
   pain: { date: string; intensity: number; region: string }[];
   comparison: ComparisonData | null;
   trainerNotes: string | null;
+  /** The injury case of the readaptation module (phase 7); absent in older snapshots. */
+  case?: RtpCase | null;
+}
+
+/** Frozen state of an injury case (restructure phase 7). Labels come from the module. */
+export interface RtpCase {
+  condition: string;
+  side: string | null;
+  occurredOn: string;
+  protocol: string | null;
+  phase: { number: number; total: number; name: string; since: string | null } | null;
+  statusLabel: string;
+  criteria: { text: string; role: string; evidence: string; state: string }[];
+  checklist: { label: string; status: string }[];
+  decisions: string[];
+  symptoms: { date: string; pain: number }[];
+  openAlerts: number;
+  tests: {
+    name: string;
+    unit: string;
+    a: number | null;
+    b: number | null;
+    lsi: number | null;
+    reading: string;
+  }[];
+  testDates: { a: string | null; b: string | null };
 }
 
 export const RTP_MAX_STATUS = 'Listo para valoración';
 
+function rtpCaseSections(s: RtpSnapshot, k: RtpCase): [string, string, ReportBlock[]][] {
+  return [
+    [
+      'lesion',
+      'Lesión y fase',
+      [
+        {
+          kind: 'table',
+          columns: ['Campo', 'Valor'],
+          rows: [
+            ['Lesión', k.condition + (k.side ? ` · ${k.side.toLowerCase()}` : '')],
+            ['Fecha', reportDate(k.occurredOn)],
+            ['Protocolo', k.protocol ?? 'Sin protocolo'],
+            [
+              'Fase actual',
+              k.phase
+                ? `${k.phase.number}/${k.phase.total} · ${k.phase.name}${k.phase.since ? ` (desde ${reportDate(k.phase.since)})` : ''}`
+                : '—',
+            ],
+            ['Estado', k.statusLabel],
+            ['Alertas de seguridad sin revisar', String(k.openAlerts)],
+          ],
+        },
+      ],
+    ],
+    [
+      'criterios',
+      'Criterios de la fase actual',
+      k.criteria.length
+        ? [
+            {
+              kind: 'table',
+              columns: ['Criterio', 'Tipo', 'Evidencia', 'Estado'],
+              rows: k.criteria.map((c) => [c.text, c.role, c.evidence, c.state]),
+            },
+          ]
+        : [muted('Sin criterios (caso sin protocolo).')],
+    ],
+    [
+      'sintomas',
+      'Síntomas',
+      k.symptoms.length
+        ? [
+            {
+              kind: 'chart',
+              title: 'Dolor registrado (0–10)',
+              unit: '/10',
+              points: k.symptoms.map((p) => ({ date: p.date, value: p.pain })),
+            },
+          ]
+        : [muted('Sin registros de síntomas.')],
+    ],
+    [
+      'tests',
+      'Variables del protocolo',
+      k.tests.length
+        ? [
+            {
+              kind: 'table',
+              columns: [
+                'Test',
+                k.testDates.a ? `A · ${reportDate(k.testDates.a)}` : 'A',
+                k.testDates.b ? `B · ${reportDate(k.testDates.b)}` : 'B',
+                'Simetría (B)',
+                'Lectura',
+              ],
+              rows: k.tests.map((t) => [
+                `${t.name} (${t.unit})`,
+                num(t.a),
+                num(t.b),
+                t.lsi == null ? '—' : `${num(t.lsi, 1)} %`,
+                t.reading,
+              ]),
+            },
+            muted(
+              'En los tests por lados se muestra el lado afectado; la simetría es afectado / sano. Ningún umbral de asimetría es válido para todos los tests.',
+            ),
+          ]
+        : [muted('Sin evaluaciones con los tests del protocolo.')],
+    ],
+    [
+      'vuelta',
+      'Vuelta al deporte',
+      [
+        {
+          kind: 'table',
+          columns: ['Elemento', 'Estado'],
+          rows: k.checklist.map((c) => [c.label, c.status]),
+        },
+        ...(k.decisions.length
+          ? [{ kind: 'list', items: k.decisions } as ReportBlock]
+          : [muted('Sin decisiones registradas.')]),
+        {
+          kind: 'text',
+          text: `El estado máximo que emite la plataforma es «${RTP_MAX_STATUS}». La decisión de volver a entrenar sin restricciones o a competir la toma y registra el equipo responsable.`,
+        },
+      ],
+    ],
+    [
+      'observaciones',
+      'Observaciones',
+      s.trainerNotes ? [{ kind: 'text', text: s.trainerNotes }] : [],
+    ],
+  ];
+}
+
 export function buildRtpReport(s: RtpSnapshot): Report {
+  const footer = [
+    `Generado el ${reportDate(s.generatedAt)}. Datos de salud solo con consentimiento.`,
+    'No es un diagnóstico ni una autorización para competir.',
+  ];
+  if (s.consent && s.case)
+    return {
+      title: `Informe de readaptación de ${s.client.name}`,
+      subtitle: `${s.organization} · ${reportDate(s.generatedAt)}`,
+      generatedAt: s.generatedAt,
+      sections: numbered(rtpCaseSections(s, s.case)),
+      footer,
+    };
   const injury: ReportBlock[] = !s.consent
     ? [
         {
@@ -702,10 +846,7 @@ export function buildRtpReport(s: RtpSnapshot): Report {
         s.trainerNotes ? [{ kind: 'text', text: s.trainerNotes }] : [],
       ],
     ]),
-    footer: [
-      `Generado el ${reportDate(s.generatedAt)}. Datos de salud solo con consentimiento.`,
-      'No es un diagnóstico ni una autorización para competir.',
-    ],
+    footer,
   };
 }
 

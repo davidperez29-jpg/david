@@ -2,6 +2,30 @@
 
 Formato: fecha · cambio · motivo · archivos · impacto.
 
+## 2026-10-06 — Reestructuración, fase 7: lesiones, readaptación y vuelta al deporte
+
+- **Cambio:** pestaña **Readaptación** en la ficha del cliente cuando tiene un caso de lesión. El primero se abre desde Ficha → Salud.
+- **Cambio:** **página del caso**:
+  - alertas de seguridad sin revisar;
+  - fase actual con objetivos, ejercicios, dosis y criterios (automáticos por valor o por simetría del lado afectado, o marcados a mano);
+  - [Avanzar de fase] manual, con los motivos si no se puede;
+  - vuelta al deporte (checklist y decisiones del equipo responsable con nombre y rol);
+  - síntomas, comparativa con solo las variables del protocolo, y protocolo con fuentes y limitaciones.
+  - **Motivo:** LESIÓN → FASE → CRITERIOS → PROGRESIÓN → RETURN TO SPORT del encargo, sin diagnosticar ni decir nunca «apto».
+- **Cambio:** catálogo inicial de **6 protocolos** (LCA, isquiosurales, aductores, esguince de tobillo, tendinopatía rotuliana y aquílea):
+  - 18 fuentes verificadas en PubMed;
+  - cada criterio dice si tiene evidencia, es consenso o es criterio práctico.
+  - 4 tests nuevos por lados: salto unipodal, fuerza de extensores y flexores de rodilla, elevaciones de talón.
+- **Cambio:** el **informe de readaptación** incluye el caso: fase, criterios, variables del protocolo, checklist y decisiones. No incluye el diagnóstico recibido.
+- **Cambio:** la demo tiene el esguince de tobillo de Elena en la fase 2, con una alerta abierta y una decisión registrada.
+- **Seguridad:**
+  - datos de salud solo para el equipo y con consentimiento explícito;
+  - diagnóstico y notas cifrados;
+  - lecturas auditadas;
+  - RLS de las 10 tablas en la matriz.
+- **Archivos:** `packages/domain/src/injury/`, `packages/db/src/schema/injury.ts`, migraciones 0041–0042, `packages/db/src/seed/injury.ts`, `seed-data/injury/protocols.json`, `seed-data/evidence/injury.json`, `packages/application/src/injuries.ts`, `apps/web/src/components/injury/forms.tsx`, `apps/web/src/app/app/clients/[clientId]/{injury-tab.tsx,lesiones/[injuryId]/page.tsx}`, 13 rutas de API, `docs/INJURY_MODULE.md` §9–§10, `docs/PRODUCT_ARCHITECTURE.md` A35–A39.
+- **Impacto:** 2 migraciones nuevas (tablas y RLS). Sin cambios en los datos existentes. Los informes de readaptación ya generados se siguen abriendo igual.
+
 ## 2026-10-06 — Reestructuración, fase 6: los 8 tipos de informe
 
 - **Cambio:** en la ficha del cliente, Informes → **Tipo de informe**:

@@ -244,6 +244,54 @@ describe('report kinds', () => {
     expect(noConsent).not.toContain('Isquiosurales');
   });
 
+  it('RTP with an injury case: phase, criteria, protocol variables and human decisions', () => {
+    const withCase: RtpSnapshot = {
+      ...rtp,
+      case: {
+        condition: 'Lesión muscular de isquiosurales',
+        side: 'Izquierdo',
+        occurredOn: '2026-08-01',
+        protocol: 'Isquiosurales · progresión basada en criterios · v1',
+        phase: { number: 2, total: 5, name: 'Fuerza en elongación', since: '2026-08-20' },
+        statusLabel: 'Criterios parciales',
+        criteria: [
+          {
+            text: 'Sin dolor',
+            role: 'Progresión',
+            evidence: 'Consenso de expertos',
+            state: 'Cumplido',
+          },
+        ],
+        checklist: [{ label: 'Fuerza', status: 'Pendiente' }],
+        decisions: ['Vuelta a la participación: todavía no (Equipo, Medicina, 01/09/2026).'],
+        symptoms: [{ date: '2026-08-05', pain: 4 }],
+        openAlerts: 0,
+        tests: [{ name: 'Flexores', unit: 'N', a: 300, b: 280, lsi: 85, reading: 'Se mantiene' }],
+        testDates: { a: '2026-07-01', b: '2026-09-01' },
+      },
+    };
+    const r = buildReport('rtp', withCase);
+    expect(r.sections.map((x) => x.title)).toEqual([
+      'Lesión y fase',
+      'Criterios de la fase actual',
+      'Síntomas',
+      'Variables del protocolo',
+      'Vuelta al deporte',
+      'Observaciones',
+    ]);
+    const all = reportRows(r).flat().join('\n');
+    expect(all).toContain('2/5 · Fuerza en elongación');
+    expect(all).toContain('85 %');
+    expect(all).toContain(RTP_MAX_STATUS);
+    expect(all).not.toMatch(/\bapt[oa]\b/i);
+    expect(reportLanguageIssues(r)).toEqual([]);
+    // Without consent the case is not shown either.
+    const noConsent = reportRows(buildReport('rtp', { ...withCase, consent: false }))
+      .flat()
+      .join('\n');
+    expect(noConsent).not.toContain('isquiosurales');
+  });
+
   it('performance: group summary, Z with bands and a radar per selected person', () => {
     const r = buildReport('performance', performance);
     expect(r.sections.map((s) => s.title)).toEqual([
