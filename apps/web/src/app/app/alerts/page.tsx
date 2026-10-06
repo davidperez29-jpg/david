@@ -1,8 +1,9 @@
 import Link from 'next/link';
-import { listAlerts } from '@tp/application';
+import { listAlerts, listPendingAdjustments, type PendingAdjustment } from '@tp/application';
 import { AlertActions } from '@/components/monitoring/actions';
 import { SeverityBadge } from '@/components/monitoring/severity';
-import { Card, EmptyState } from '@/components/ui/card';
+import { PendingAdjustmentItem } from '@/components/programming/adjustments-card';
+import { Badge, Card, EmptyState } from '@/components/ui/card';
 import { formatDateTime } from '@/lib/labels';
 import { requireStaff } from '@/server/session';
 
@@ -14,10 +15,16 @@ export default async function AlertsPage({ searchParams }: { searchParams: Promi
   const { estado = 'activas', gravedad } = await searchParams;
   const severity =
     gravedad === 'red' || gravedad === 'yellow' || gravedad === 'green' ? gravedad : undefined;
-  const rows = await listAlerts(ctx, {
-    status: estado === 'resueltas' ? 'resolved' : 'live',
-    severity,
-  });
+  const [rows, adjustments] = await Promise.all([
+    listAlerts(ctx, {
+      status: estado === 'resueltas' ? 'resolved' : 'live',
+      severity,
+    }),
+    estado === 'resueltas' ? [] : listPendingAdjustments(ctx),
+  ]);
+  // Pending adjustments grouped by client (restructure phase 12): decided here, next to the alerts.
+  const byClient = new Map<string, PendingAdjustment[]>();
+  for (const a of adjustments) byClient.set(a.clientId, [...(byClient.get(a.clientId) ?? []), a]);
   const link = (p: SP) => {
     const q = new URLSearchParams({ estado, ...(gravedad ? { gravedad } : {}), ...p } as Record<
       string,
@@ -69,6 +76,49 @@ export default async function AlertsPage({ searchParams }: { searchParams: Promi
           </Link>
         ))}
       </nav>
+      {byClient.size ? (
+        <Card
+          title={
+            <span id="ajustes">
+              Ajustes propuestos <Badge tone="accent">{adjustments.length}</Badge>
+            </span>
+          }
+        >
+          <p className="mb-2 text-xs text-muted">
+            Propuestas del motor a partir de lo registrado y de estas alertas. Nada cambia hasta que
+            decides: al aceptar se aplican solo a las sesiones futuras sin registrar, con una
+            revisión del plan, y se pueden deshacer.
+          </p>
+          <div className="flex flex-col gap-2">
+            {[...byClient.values()].map((list) => (
+              <details
+                key={list[0]!.clientId}
+                className="rounded-md border border-border px-3 py-2"
+              >
+                <summary className="cursor-pointer">
+                  <span className="font-medium">
+                    {list[0]!.firstName} {list[0]!.lastName}
+                  </span>{' '}
+                  <span className="text-sm text-muted">
+                    · {list.length} {list.length === 1 ? 'ajuste' : 'ajustes'}
+                  </span>
+                </summary>
+                <ul className="divide-y divide-border">
+                  {list.map((a) => (
+                    <PendingAdjustmentItem key={a.id} a={a} />
+                  ))}
+                </ul>
+                <Link
+                  href={`/app/clients/${list[0]!.clientId}?tab=programa#ajustes`}
+                  className="text-xs text-accent underline"
+                >
+                  Ver el plan de {list[0]!.firstName}
+                </Link>
+              </details>
+            ))}
+          </div>
+        </Card>
+      ) : null}
       <Card>
         {rows.length === 0 ? (
           <EmptyState>

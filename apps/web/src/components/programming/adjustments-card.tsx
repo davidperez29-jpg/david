@@ -77,6 +77,23 @@ function Changes({ a }: { a: AdjustmentView }) {
   );
 }
 
+/** A pending adjustment with what it would change, why, and its decision buttons. */
+export function PendingAdjustmentItem({ a }: { a: AdjustmentView }) {
+  return (
+    <li className="flex flex-col gap-2 py-3">
+      <div className="flex flex-wrap items-center gap-2">
+        <Badge>{KIND[a.kind] ?? a.kind}</Badge>
+        <span className="font-medium">{a.title}</span>
+        <Badge tone={TONE[a.status] ?? 'neutral'}>{label('recommendationStatus', a.status)}</Badge>
+      </div>
+      <p className="text-sm text-muted">{a.explanation.proposal}</p>
+      <Changes a={a} />
+      <Why e={a.explanation} />
+      <AdjustmentActions adj={a} />
+    </li>
+  );
+}
+
 export function AdjustmentsCard({
   clientId,
   items,
@@ -112,19 +129,7 @@ export function AdjustmentsCard({
           </div>
           <ul className="divide-y divide-border">
             {pending.map((a) => (
-              <li key={a.id} className="flex flex-col gap-2 py-3">
-                <div className="flex flex-wrap items-center gap-2">
-                  <Badge>{KIND[a.kind] ?? a.kind}</Badge>
-                  <span className="font-medium">{a.title}</span>
-                  <Badge tone={TONE[a.status] ?? 'neutral'}>
-                    {label('recommendationStatus', a.status)}
-                  </Badge>
-                </div>
-                <p className="text-sm text-muted">{a.explanation.proposal}</p>
-                <Changes a={a} />
-                <Why e={a.explanation} />
-                <AdjustmentActions adj={a} />
-              </li>
+              <PendingAdjustmentItem key={a.id} a={a} />
             ))}
           </ul>
         </>

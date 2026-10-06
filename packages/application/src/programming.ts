@@ -913,29 +913,61 @@ async function listAdjustments_(ctx: RequestContext, clientId: string) {
     .where(eq(clients.id, clientId));
   return {
     autoApplyLoadProgressions: c?.auto ?? false,
-    items: rows.map((r) => {
-      const p = r.payload as AdjustmentPayload;
-      return {
-        id: r.id,
-        type: r.type,
-        kind: p.kind,
-        title: p.title,
-        status: r.status,
-        params: p.params,
-        options: p.options ?? [],
-        targets: p.targets,
-        preview: changesFor(p.kind, p.params, p.targets),
-        applied: (r.applied as ExerciseChange[] | null) ?? null,
-        explanation: r.explanation as Explanation,
-        createdAt: r.createdAt,
-        decidedAt: r.decidedAt,
-        decidedBy: r.decidedBy,
-        decisionReason: r.decisionReason,
-      };
-    }),
+    items: rows.map(adjustmentView),
   };
 }
-export type AdjustmentView = Awaited<ReturnType<typeof listAdjustments_>>['items'][number];
+
+function adjustmentView(r: typeof recommendations.$inferSelect) {
+  const p = r.payload as AdjustmentPayload;
+  return {
+    id: r.id,
+    type: r.type,
+    kind: p.kind,
+    title: p.title,
+    status: r.status,
+    params: p.params,
+    options: p.options ?? [],
+    targets: p.targets,
+    preview: changesFor(p.kind, p.params, p.targets),
+    applied: (r.applied as ExerciseChange[] | null) ?? null,
+    explanation: r.explanation as Explanation,
+    createdAt: r.createdAt,
+    decidedAt: r.decidedAt,
+    decidedBy: r.decidedBy,
+    decisionReason: r.decisionReason,
+  };
+}
+export type AdjustmentView = ReturnType<typeof adjustmentView>;
+
+/**
+ * Pending adjustments (proposed or postponed) of every client the actor follows, for the Alertas
+ * page (restructure phase 12): the trainer decides them where the alerts that raised them are,
+ * without opening each client. RLS keeps a trainer to the clients assigned to them.
+ */
+async function listPendingAdjustments_(ctx: RequestContext) {
+  requirePermission(ctx, 'decision:read');
+  const rows = await ctx.db
+    .select({ r: recommendations, firstName: clients.firstName, lastName: clients.lastName })
+    .from(recommendations)
+    .innerJoin(clients, eq(clients.id, recommendations.clientId))
+    .where(
+      and(
+        inArray(recommendations.type, [...ADJUSTMENT_TYPES]),
+        sql`${recommendations.key} IS NOT NULL`,
+        inArray(recommendations.status, ['proposed', 'postponed']),
+        isNull(clients.anonymizedAt),
+      ),
+    )
+    .orderBy(asc(clients.lastName), asc(clients.firstName), desc(recommendations.createdAt))
+    .limit(200);
+  return rows.map(({ r, firstName, lastName }) => ({
+    ...adjustmentView(r),
+    clientId: r.clientId,
+    firstName,
+    lastName,
+  }));
+}
+export type PendingAdjustment = Awaited<ReturnType<typeof listPendingAdjustments_>>[number];
 
 async function refreshAdjustments_(ctx: RequestContext, clientId: string) {
   await authorizeClient(ctx, 'plans:write', clientId);
@@ -1145,6 +1177,7 @@ export const listPlanProposals = secured(listPlanProposals_);
 export const acceptPlanProposal = secured(acceptPlanProposal_);
 export const discardPlanProposal = secured(discardPlanProposal_);
 export const listAdjustments = secured(listAdjustments_);
+export const listPendingAdjustments = secured(listPendingAdjustments_);
 export const refreshAdjustments = secured(refreshAdjustments_);
 export const decideAdjustment = secured(decideAdjustment_);
 export const acceptAdjustments = secured(acceptAdjustments_);

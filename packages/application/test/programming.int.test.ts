@@ -16,6 +16,7 @@ import {
   getPlayerSession,
   grantConsent,
   listAdjustments,
+  listPendingAdjustments,
   listClientPlans,
   listPlanProposals,
   listPlanRevisions,
@@ -152,6 +153,12 @@ describe('hard rule: no automatic process changes an active plan (§12.2)', () =
     expect(load[0]!.params.toKg!).toBeGreaterThan(80);
     expect(load[0]!.targets.every((t) => t.date >= today)).toBe(true);
     expect(load[0]!.explanation.data.join(' ')).toMatch(/Última sesión/);
+    // The Alertas page lists the same pending proposal, with the client's name (phase 12).
+    const all = await listPendingAdjustments(o.admin);
+    expect(all.find((a) => a.id === load[0]!.id)).toMatchObject({
+      clientId: o.clientA,
+      status: 'proposed',
+    });
   });
 });
 
@@ -370,6 +377,12 @@ describe('permissions and isolation', () => {
       await expect(listAdjustments(by, o.clientA)).rejects.toMatchObject({
         code: expect.stringMatching(/^(forbidden|not_found)$/),
       });
+    // The cross-client list: an unassigned trainer and another organization see none of them.
+    for (const by of [o.trainer2, other.admin])
+      expect((await listPendingAdjustments(by)).some((a) => a.clientId === o.clientA)).toBe(false);
+    await expect(listPendingAdjustments(o.clientUser)).rejects.toMatchObject({
+      code: 'forbidden',
+    });
     await expect(
       decideAdjustment(other.admin, pending.id, { action: 'reject' }),
     ).rejects.toMatchObject({
