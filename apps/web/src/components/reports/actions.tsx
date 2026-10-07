@@ -278,13 +278,14 @@ const IMPORT_ENTITIES = [
   ['exercises', 'Ejercicios'],
   ['assessments', 'Evaluaciones'],
   ['references', 'Referencias bibliográficas'],
+  ['reference_values', 'Valores de referencia (normas)'],
 ] as const;
 
 /** Upload → validation preview (nothing is written until confirmed). */
-export function ImportUploadForm() {
+export function ImportUploadForm({ initial = 'clients' }: { initial?: string }) {
   const router = useRouter();
   const a = useApiAction();
-  const [entity, setEntity] = useState('clients');
+  const [entity, setEntity] = useState(initial);
   const [file, setFile] = useState<File | null>(null);
   const field = 'h-10 rounded-md border border-border bg-bg px-2';
   return (

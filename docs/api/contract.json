@@ -7,6 +7,7 @@
     "alerts GET authenticated",
     "assessment-batteries GET authenticated",
     "assessment-batteries POST authenticated",
+    "assessment-references/[referenceId] DELETE authenticated",
     "assessment-reliability/[reliabilityId] DELETE authenticated",
     "assessment-results/[resultId] DELETE authenticated",
     "assessment-tests/[testId]/reliability POST authenticated",
@@ -2601,7 +2602,8 @@
             "clients",
             "exercises",
             "assessments",
-            "references"
+            "references",
+            "reference_values"
           ]
         },
         "fileName": {

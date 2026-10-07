@@ -8,7 +8,7 @@ import { Identifiers, PubMedAttribution } from '@/components/science/evidence';
 import { Badge, Card, EmptyState } from '@/components/ui/card';
 import { label } from '@/lib/labels';
 import { requireStaff } from '@/server/session';
-import { DeleteReliabilityButton, LocalReliabilityForm } from '../../forms';
+import { DeleteReferenceButton, DeleteReliabilityButton, LocalReliabilityForm } from '../../forms';
 
 const fmtValues = (v: Record<string, unknown>) =>
   Object.entries(v)
@@ -122,7 +122,17 @@ export default async function TestPage({ params }: { params: Promise<{ testId: s
         </div>
       </Card>
 
-      <Card title="Valores de referencia">
+      <Card
+        title="Valores de referencia"
+        actions={
+          <Link
+            href="/app/informes/importar?que=reference_values"
+            className="text-sm text-accent underline"
+          >
+            Importar normas del centro
+          </Link>
+        }
+      >
         {t.references.length === 0 ? (
           <EmptyState>Referencia insuficiente: no se compara con normas.</EmptyState>
         ) : (
@@ -130,6 +140,7 @@ export default async function TestPage({ params }: { params: Promise<{ testId: s
             {t.references.map((r) => (
               <li key={r.id} className="flex flex-col gap-1">
                 <p>
+                  {r.organizationId ? <Badge tone="accent">Del centro</Badge> : null}{' '}
                   <span className="font-medium">{r.population}</span>
                   {r.ageMin != null || r.ageMax != null
                     ? ` · ${r.ageMin ?? '…'}–${r.ageMax ?? '…'} años`
@@ -149,6 +160,10 @@ export default async function TestPage({ params }: { params: Promise<{ testId: s
                   {r.source.label} — {r.source.title}{' '}
                   <Identifiers doi={r.source.doi} pmid={r.source.pmid} />
                 </p>
+                {r.limitations ? (
+                  <p className="text-xs text-muted">Limitaciones: {r.limitations}</p>
+                ) : null}
+                {r.organizationId ? <DeleteReferenceButton id={r.id} /> : null}
               </li>
             ))}
           </ul>

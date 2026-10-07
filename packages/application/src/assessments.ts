@@ -351,6 +351,82 @@ async function deleteLocalReliability_(ctx: RequestContext, id: string): Promise
   });
 }
 
+// ── Normative reference values of the centre (restructure phase 16) ─────────────
+
+/**
+ * One validated row of a reference-values import (the import validates format, test, population,
+ * sport, source and duplicates first). Owned by the centre. A cut-off imported by a centre is
+ * descriptive: it never raises the health-professional referral (A60), which only the platform's
+ * reviewed clinical screening references do.
+ */
+export async function insertReferenceValue(ctx: RequestContext, d: Record<string, unknown>) {
+  requirePermission(ctx, 'science:write');
+  const stat = d.estadistico as 'mean_sd' | 'median_iqr' | 'percentiles' | 'cutoff';
+  const values =
+    stat === 'mean_sd'
+      ? { mean: d.media, sd: d.de }
+      : stat === 'median_iqr'
+        ? {
+            median: d.mediana,
+            ...(d.q1 != null ? { q1: d.q1 } : {}),
+            ...(d.q3 != null ? { q3: d.q3 } : {}),
+          }
+        : stat === 'percentiles'
+          ? (d.percentiles as Record<string, number>)
+          : { cutoff: d.corte, direction: d.direccion, meaning: d.significado, referral: false };
+  return ctx.db.transaction(async (tx) => {
+    const [r] = await tx
+      .insert(referenceValues)
+      .values({
+        organizationId: ctx.actor.organizationId,
+        testId: d.testId as string,
+        variable: d.variable as string,
+        unit: d.unidad as string,
+        populationId: d.populationId as string,
+        ageMin: (d.edad_min as number | undefined) ?? null,
+        ageMax: (d.edad_max as number | undefined) ?? null,
+        sex: (d.sexo as string | undefined) ?? 'mixed',
+        level: (d.nivel as string | undefined) ?? null,
+        sport: (d.sportSlug as string | undefined) ?? null,
+        sampleSize: (d.n as number | undefined) ?? null,
+        statisticType: stat,
+        values,
+        measurementMethod: (d.metodo as string | undefined) ?? null,
+        sourceId: d.sourceId as string,
+        condition: (d.condicion as string | undefined) ?? null,
+        limitations: (d.limitaciones as string | undefined) ?? null,
+        applicabilityNotes: (d.notas as string | undefined) ?? null,
+        createdBy: ctx.actor.userId,
+        updatedBy: ctx.actor.userId,
+      })
+      .returning({ id: referenceValues.id });
+    await writeAudit(tx, ctx, {
+      action: 'create',
+      entityType: 'reference_value',
+      entityId: r!.id,
+      changes: { test: d.testId, variable: d.variable, statistic: stat },
+    });
+    return r!.id;
+  });
+}
+
+/** Only the centre's own reference values can be removed; the platform's are read-only. */
+async function deleteReferenceValue_(ctx: RequestContext, id: string): Promise<void> {
+  requirePermission(ctx, 'science:write');
+  const [r] = await ctx.db.select().from(referenceValues).where(eq(referenceValues.id, id));
+  if (!r || r.organizationId !== ctx.actor.organizationId)
+    throw new DomainError('not_found', 'Valor de referencia no encontrado.');
+  await ctx.db.transaction(async (tx) => {
+    await tx.delete(referenceValues).where(eq(referenceValues.id, id));
+    await writeAudit(tx, ctx, {
+      action: 'delete',
+      entityType: 'reference_value',
+      entityId: id,
+      changes: { variable: r.variable },
+    });
+  });
+}
+
 // ── Batteries ─────────────────────────────────────────────────────────────────
 
 async function batteryTemplates(ctx: RequestContext): Promise<
@@ -1269,6 +1345,7 @@ export const createAssessmentTest = secured(createAssessmentTest_);
 export const updateAssessmentTest = secured(updateAssessmentTest_);
 export const addLocalReliability = secured(addLocalReliability_);
 export const deleteLocalReliability = secured(deleteLocalReliability_);
+export const deleteReferenceValue = secured(deleteReferenceValue_);
 export const listBatteries = secured(listBatteries_);
 export const createBattery = secured(createBattery_);
 export const proposeAssessmentBattery = secured(proposeAssessmentBattery_);

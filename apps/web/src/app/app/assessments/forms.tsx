@@ -172,6 +172,24 @@ export function DeleteReliabilityButton({ id }: { id: string }) {
   );
 }
 
+/** The centre's own reference values (imported) can be removed; the platform's cannot. */
+export function DeleteReferenceButton({ id }: { id: string }) {
+  const a = useApiAction();
+  return (
+    <span className="inline-flex items-center gap-2">
+      <Button
+        variant="ghost"
+        size="sm"
+        disabled={a.pending}
+        onClick={() => void a.run(`/assessment-references/${id}`, 'DELETE')}
+      >
+        Eliminar
+      </Button>
+      <FormError error={a.error} />
+    </span>
+  );
+}
+
 // ── Client assessments ───────────────────────────────────────────────────────
 
 export function NewAssessmentForm({

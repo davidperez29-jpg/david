@@ -61,7 +61,13 @@ export const exportQuerySchema = z.object({
 
 // ── Imports (validated row by row before anything is written) ─────────────────
 
-export const IMPORT_ENTITIES = ['clients', 'exercises', 'assessments', 'references'] as const;
+export const IMPORT_ENTITIES = [
+  'clients',
+  'exercises',
+  'assessments',
+  'references',
+  'reference_values',
+] as const;
 export type ImportEntity = (typeof IMPORT_ENTITIES)[number];
 
 export const createImportSchema = z.object({
@@ -280,6 +286,123 @@ export const IMPORT_COLUMNS: Record<ImportEntity, ImportColumn[]> = {
       help: 'Tipo de estudio; vacío = opinión de experto',
     },
   ],
+  // Normative reference values of the centre (restructure phase 16): one row per group.
+  reference_values: [
+    {
+      key: 'test',
+      header: 'Test',
+      required: true,
+      example: 'handgrip_strength',
+      help: 'Nombre o clave del test del catálogo',
+    },
+    {
+      key: 'variable',
+      header: 'Variable',
+      required: true,
+      example: 'Fuerza de prensión (mano dominante)',
+      help: 'Qué mide la referencia',
+    },
+    { key: 'unidad', header: 'Unidad', required: true, example: 'kg', help: 'kg, s, cm, W…' },
+    {
+      key: 'poblacion',
+      header: 'Población',
+      required: true,
+      example: 'adults_general',
+      help: 'Clave o nombre de la población del catálogo',
+      aliases: ['population'],
+    },
+    { key: 'edad_min', header: 'Edad mín.', required: false, example: '30', help: 'Años' },
+    { key: 'edad_max', header: 'Edad máx.', required: false, example: '39', help: 'Años' },
+    {
+      key: 'sexo',
+      header: 'Sexo',
+      required: false,
+      example: 'mujer',
+      help: 'mujer, hombre o mixto (vacío = mixto)',
+    },
+    { key: 'nivel', header: 'Nivel', required: false, example: '', help: 'p. ej. amateur, élite' },
+    {
+      key: 'deporte',
+      header: 'Deporte',
+      required: false,
+      example: '',
+      help: 'Clave del deporte; vacío = cualquiera',
+    },
+    { key: 'n', header: 'N', required: false, example: '250', help: 'Tamaño de la muestra' },
+    {
+      key: 'estadistico',
+      header: 'Estadístico',
+      required: true,
+      example: 'media y DE',
+      help: 'media y DE, mediana, percentiles o punto de corte',
+      aliases: ['estadistica', 'tipo'],
+    },
+    { key: 'media', header: 'Media', required: false, example: '29,4', help: 'Con media y DE' },
+    { key: 'de', header: 'DE', required: false, example: '5,1', help: 'Con media y DE' },
+    { key: 'mediana', header: 'Mediana', required: false, example: '', help: 'Con mediana' },
+    { key: 'q1', header: 'Q1', required: false, example: '', help: 'Percentil 25 (opcional)' },
+    { key: 'q3', header: 'Q3', required: false, example: '', help: 'Percentil 75 (opcional)' },
+    {
+      key: 'percentiles',
+      header: 'Percentiles',
+      required: false,
+      example: '',
+      help: 'P10=21|P50=29|P90=37',
+    },
+    { key: 'corte', header: 'Corte', required: false, example: '', help: 'Con punto de corte' },
+    {
+      key: 'direccion',
+      header: 'Dirección',
+      required: false,
+      example: '',
+      help: 'por debajo o por encima (del corte)',
+    },
+    {
+      key: 'significado',
+      header: 'Significado',
+      required: false,
+      example: '',
+      help: 'Qué indica superar el corte (descriptivo, nunca un diagnóstico)',
+    },
+    {
+      key: 'metodo',
+      header: 'Método',
+      required: false,
+      example: 'Dinamómetro Jamar, sentado, codo a 90°',
+      help: 'Método o dispositivo de medida',
+    },
+    {
+      key: 'fuente_doi',
+      header: 'Fuente DOI',
+      required: false,
+      example: '10.1371/journal.pone.0113637',
+      help: 'DOI de una fuente ya registrada (Ciencia o importación de referencias)',
+      aliases: ['doi'],
+    },
+    {
+      key: 'fuente_pmid',
+      header: 'Fuente PMID',
+      required: false,
+      example: '',
+      help: 'PMID de una fuente ya registrada (DOI o PMID obligatorio)',
+      aliases: ['pmid'],
+    },
+    {
+      key: 'condicion',
+      header: 'Condición',
+      required: false,
+      example: '',
+      help: 'Condiciones de medida (superficie, momento de la temporada…)',
+    },
+    {
+      key: 'limitaciones',
+      header: 'Limitaciones',
+      required: false,
+      example: '',
+      help: 'Por qué puede no aplicar',
+    },
+    { key: 'notas', header: 'Notas', required: false, example: '', help: 'Aplicabilidad' },
+  ],
 };
 
 // Value parsers shared by the row schemas (Spanish input → canonical values).
@@ -385,6 +508,59 @@ const DESIGN_MAP: Record<string, (typeof STUDY_DESIGNS)[number]> = {
   web: 'website',
 };
 
+const STATISTIC_MAP = {
+  'media y de': 'mean_sd',
+  'media de': 'mean_sd',
+  media_de: 'mean_sd',
+  mean_sd: 'mean_sd',
+  media: 'mean_sd',
+  mediana: 'median_iqr',
+  'mediana y ric': 'median_iqr',
+  median_iqr: 'median_iqr',
+  percentiles: 'percentiles',
+  'punto de corte': 'cutoff',
+  corte: 'cutoff',
+  cutoff: 'cutoff',
+} as const;
+const REF_SEX_MAP = {
+  mujer: 'female',
+  mujeres: 'female',
+  femenino: 'female',
+  hombre: 'male',
+  hombres: 'male',
+  masculino: 'male',
+  mixto: 'mixed',
+  ambos: 'mixed',
+  todos: 'mixed',
+} as const;
+const DIRECTION_MAP = {
+  'por debajo': 'below',
+  debajo: 'below',
+  menor: 'below',
+  below: 'below',
+  'por encima': 'above',
+  encima: 'above',
+  mayor: 'above',
+  above: 'above',
+} as const;
+/** «P10=21|P50=29|P90=37» → { p10: 21, p50: 29, p90: 37 }. */
+const percentileList = z.preprocess(
+  (v) => {
+    if (typeof v !== 'string') return v;
+    const out: Record<string, number> = {};
+    for (const part of v.split('|').filter((x) => x.trim() !== '')) {
+      const m = /^\s*p?\s*(\d{1,2})\s*[=:]\s*(-?[\d.,]+)\s*$/i.exec(part);
+      if (!m) return null;
+      out[`p${Number(m[1])}`] = Number(m[2]!.replace(',', '.'));
+    }
+    return out;
+  },
+  z
+    .record(z.string(), z.number().finite(), { error: 'Formato: P10=21|P50=29|P90=37' })
+    .refine((r) => Object.keys(r).length >= 2, 'Al menos 2 percentiles'),
+);
+const ageNum = z.coerce.number().int('Número entero').min(0).max(120);
+
 export const importRowSchemas = {
   clients: z.object({
     nombre: z.string().trim().min(1, 'Obligatorio').max(80),
@@ -443,6 +619,62 @@ export const importRowSchemas = {
     url: opt(z.url('URL no válida').max(500)),
     diseno: opt(mapped(DESIGN_MAP, 'Diseño')),
   }),
+  reference_values: z
+    .object({
+      test: z.string().trim().min(1, 'Obligatorio').max(120),
+      variable: z.string().trim().min(2, 'Obligatorio').max(200),
+      unidad: z.string().trim().min(1, 'Obligatorio').max(30),
+      poblacion: z.string().trim().min(1, 'Obligatorio').max(120),
+      edad_min: opt(ageNum),
+      edad_max: opt(ageNum),
+      sexo: opt(mapped(REF_SEX_MAP, 'Sexo')),
+      nivel: opt(z.string().max(80)),
+      deporte: opt(z.string().max(120)),
+      n: opt(z.coerce.number().int('Número entero').min(1).max(10_000_000)),
+      estadistico: mapped(STATISTIC_MAP, 'Estadístico'),
+      media: opt(decimal),
+      de: opt(decimal),
+      mediana: opt(decimal),
+      q1: opt(decimal),
+      q3: opt(decimal),
+      percentiles: opt(percentileList),
+      corte: opt(decimal),
+      direccion: opt(mapped(DIRECTION_MAP, 'Dirección')),
+      significado: opt(z.string().max(300)),
+      metodo: opt(z.string().max(300)),
+      fuente_doi: opt(
+        z
+          .string()
+          .regex(/^10\.[0-9]{4,9}\/\S+$/, 'DOI no válido (debe empezar por 10.)')
+          .transform((d) => d.toLowerCase()),
+      ),
+      fuente_pmid: opt(z.string().regex(/^[0-9]{1,9}$/, 'PMID no válido')),
+      condicion: opt(z.string().max(500)),
+      limitaciones: opt(z.string().max(1000)),
+      notas: opt(z.string().max(1000)),
+    })
+    .superRefine((d, c) => {
+      const need = (path: string, message: string) =>
+        c.addIssue({ code: 'custom', path: [path], message });
+      if (d.edad_min != null && d.edad_max != null && d.edad_min > d.edad_max)
+        need('edad_max', 'Debe ser mayor o igual que la edad mínima');
+      if (!d.fuente_doi && !d.fuente_pmid)
+        need('fuente_doi', 'Indica el DOI o el PMID de la fuente');
+      if (d.estadistico === 'mean_sd') {
+        if (d.media == null) need('media', 'Obligatoria con media y DE');
+        if (d.de == null) need('de', 'Obligatoria con media y DE');
+        else if (d.de <= 0) need('de', 'Debe ser mayor que 0');
+      }
+      if (d.estadistico === 'median_iqr' && d.mediana == null)
+        need('mediana', 'Obligatoria con mediana');
+      if (d.estadistico === 'percentiles' && !d.percentiles)
+        need('percentiles', 'Obligatorios con percentiles');
+      if (d.estadistico === 'cutoff') {
+        if (d.corte == null) need('corte', 'Obligatorio con punto de corte');
+        if (!d.direccion) need('direccion', 'Indica por debajo o por encima');
+        if (!d.significado) need('significado', 'Indica qué significa superarlo');
+      }
+    }),
 } as const;
 
 export type ImportRow<E extends ImportEntity> = z.infer<(typeof importRowSchemas)[E]>;

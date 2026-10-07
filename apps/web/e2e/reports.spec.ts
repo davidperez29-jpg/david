@@ -69,3 +69,46 @@ test('client report with 11 sections and PDF; validated import; export', async (
   await page.getByRole('link', { name: 'Descargar' }).click();
   expect((await xlsx).suggestedFilename()).toMatch(/^clientes-\d{4}-\d{2}-\d{2}\.xlsx$/);
 });
+
+/**
+ * Restructure phase 16: the centre imports its own normative reference values from the test's
+ * page, sees them marked «Del centro» next to the platform's, and can remove them.
+ */
+test('the centre imports its own reference values for a test and removes them', async ({
+  page,
+}) => {
+  await login(page, 'lucia.moreno@example.com');
+  await page.goto('/app/assessments');
+  await page
+    .locator('main')
+    .getByRole('link', { name: 'Dinamometría de prensión manual' })
+    .first()
+    .click();
+  await expect(page).toHaveURL(/\/app\/assessments\/tests\//);
+  const testUrl = page.url();
+  await page.getByRole('link', { name: 'Importar normas del centro' }).click();
+  await expect(page.getByLabel('Qué importar')).toHaveValue('reference_values');
+  const variable = `Prensión propia ${Date.now()}`;
+  await page.locator('input[type=file]').setInputFiles({
+    name: 'normas.csv',
+    mimeType: 'text/csv',
+    buffer: Buffer.from(
+      [
+        'Test;Variable;Unidad;Población;Edad mín.;Edad máx.;Sexo;Estadístico;Media;DE;Fuente DOI',
+        `handgrip_strength;${variable};kg;adults_general;18;29;mujer;media y DE;30,2;4,8;10.1371/journal.pone.0113637`,
+        `handgrip_strength;Sin fuente;kg;adults_general;18;29;mujer;media y DE;30,2;4,8;10.9999/no-registrada`,
+      ].join('\n'),
+    ),
+  });
+  await page.getByRole('button', { name: 'Validar archivo' }).click();
+  await expect(page.getByText(/1 válidas/)).toBeVisible();
+  await expect(page.getByText(/Fuente no registrada/)).toBeVisible();
+  await page.getByRole('button', { name: 'Importar 1 fila válida' }).click();
+  await expect(page.getByRole('status')).toHaveText(/1 filas importadas/);
+
+  await page.goto(testUrl);
+  const item = page.locator('li').filter({ hasText: variable });
+  await expect(item.getByText('Del centro', { exact: true })).toBeVisible();
+  await item.getByRole('button', { name: 'Eliminar' }).click();
+  await expect(page.locator('li').filter({ hasText: variable })).toHaveCount(0);
+});

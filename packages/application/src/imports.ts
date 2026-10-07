@@ -15,7 +15,8 @@ import {
 import { schema } from '@tp/db';
 import { DomainError, normalizeHeader, parseCsv, toCsv } from '@tp/domain';
 import { and, asc, desc, eq, inArray, isNull, or, sql } from 'drizzle-orm';
-import { createAssessment, recordAssessmentResult } from './assessments';
+import type { AnyPgColumn } from 'drizzle-orm/pg-core';
+import { createAssessment, insertReferenceValue, recordAssessmentResult } from './assessments';
 import { writeAudit } from './audit';
 import { authorizeClient, requirePermission } from './authz';
 import { createClient } from './clients';
@@ -37,6 +38,8 @@ const {
   importJobs,
   importRows,
   movementPatterns,
+  populations,
+  referenceValues,
   sports,
 } = schema;
 
@@ -303,6 +306,105 @@ async function validate(
       dup(r, 'pmid', d.pmid as string | undefined);
     }
   }
+  if (entity === 'reference_values') {
+    const visibleTo = (col: AnyPgColumn) => or(isNull(col), eq(col, ctx.actor.organizationId));
+    const [ts, ps, ss] = await Promise.all([
+      ctx.db
+        .select({ id: assessmentTests.id, slug: assessmentTests.slug, name: assessmentTests.name })
+        .from(assessmentTests)
+        .where(visibleTo(assessmentTests.organizationId)),
+      ctx.db
+        .select({ id: populations.id, slug: populations.slug, name: populations.name })
+        .from(populations)
+        .where(visibleTo(populations.organizationId)),
+      ctx.db.select({ id: sports.id, slug: sports.slug, name: sports.name }).from(sports),
+    ]);
+    const dois = ok.map((r) => r.data.fuente_doi as string | undefined).filter(Boolean);
+    const pmids = ok.map((r) => r.data.fuente_pmid as string | undefined).filter(Boolean);
+    const srcs =
+      dois.length || pmids.length
+        ? await ctx.db
+            .select({
+              id: evidenceSources.id,
+              doi: evidenceSources.doi,
+              pmid: evidenceSources.pmid,
+            })
+            .from(evidenceSources)
+            .where(
+              and(
+                visibleTo(evidenceSources.organizationId),
+                or(
+                  dois.length
+                    ? inArray(sql`lower(${evidenceSources.doi})`, dois as string[])
+                    : undefined,
+                  pmids.length ? inArray(evidenceSources.pmid, pmids as string[]) : undefined,
+                ),
+              ),
+            )
+        : [];
+    // The centre's own rows, to refuse the same group twice (re-importing the same file).
+    const mine = await ctx.db
+      .select()
+      .from(referenceValues)
+      .where(eq(referenceValues.organizationId, ctx.actor.organizationId));
+    const groupKey = (x: {
+      testId: string;
+      variable: string;
+      populationId: string;
+      sex: string | null;
+      ageMin: number | null;
+      ageMax: number | null;
+      sourceId: string;
+    }) =>
+      [
+        x.testId,
+        norm(x.variable),
+        x.populationId,
+        x.sex ?? 'mixed',
+        x.ageMin,
+        x.ageMax,
+        x.sourceId,
+      ].join('|');
+    const existing = new Set(mine.map(groupKey));
+    for (const r of ok) {
+      const d = r.data;
+      const t = lookup(ts, d.test as string);
+      if (!t) add(r.errors, 'test', 'Test desconocido en el catálogo.');
+      else d.testId = t.id;
+      const pop = lookup(ps, d.poblacion as string);
+      if (!pop) add(r.errors, 'poblacion', 'Población desconocida en el catálogo.');
+      else d.populationId = pop.id;
+      if (d.deporte) {
+        const sp = lookup(ss, d.deporte as string);
+        if (!sp) add(r.errors, 'deporte', 'Deporte desconocido.');
+        else d.sportSlug = sp.slug;
+      }
+      const src =
+        srcs.find((x) => d.fuente_doi && x.doi?.toLowerCase() === d.fuente_doi) ??
+        srcs.find((x) => d.fuente_pmid && x.pmid === d.fuente_pmid);
+      if (!src)
+        add(
+          r.errors,
+          d.fuente_doi ? 'fuente_doi' : 'fuente_pmid',
+          'Fuente no registrada: añádela antes en Ciencia o con la importación de referencias.',
+        );
+      else d.sourceId = src.id;
+      if (t && pop && src) {
+        const key = groupKey({
+          testId: t.id,
+          variable: d.variable as string,
+          populationId: pop.id,
+          sex: (d.sexo as string | undefined) ?? null,
+          ageMin: (d.edad_min as number | undefined) ?? null,
+          ageMax: (d.edad_max as number | undefined) ?? null,
+          sourceId: src.id,
+        });
+        if (existing.has(key))
+          add(r.errors, 'variable', 'El centro ya tiene esta referencia (mismo grupo y fuente).');
+        dup(r, 'variable', key);
+      }
+    }
+  }
   return out;
 }
 
@@ -313,6 +415,7 @@ const LABEL: Record<ImportEntity, string> = {
   exercises: 'ejercicios',
   assessments: 'evaluaciones',
   references: 'referencias',
+  reference_values: 'valores de referencia',
 };
 
 function requireEntityPermission(ctx: RequestContext, entity: ImportEntity) {
@@ -321,6 +424,7 @@ function requireEntityPermission(ctx: RequestContext, entity: ImportEntity) {
   if (entity === 'exercises') requirePermission(ctx, 'library:write');
   if (entity === 'assessments') requirePermission(ctx, 'assessments:write');
   if (entity === 'references') requirePermission(ctx, 'science:write');
+  if (entity === 'reference_values') requirePermission(ctx, 'science:write');
 }
 
 async function createImportJob_(ctx: RequestContext, input: unknown) {
@@ -480,6 +584,7 @@ async function importRow(
     });
     return r.id;
   }
+  if (entity === 'reference_values') return insertReferenceValue(ctx, d);
   throw new Error('assessments are imported by group');
 }
 

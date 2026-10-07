@@ -18,6 +18,8 @@ import {
   getImportJob,
   grantConsent,
   importTemplate,
+  deleteReferenceValue,
+  getAssessmentTest,
   listAssessmentTests,
   listCatalog,
   listClientReports,
@@ -418,6 +420,99 @@ describe('validated imports (§52): preview with per-row errors before anything 
       .from(schema.exercises)
       .where(eq(schema.exercises.name, `Sentadilla importada ${o.tag}`));
     expect(e).toMatchObject({ status: 'draft', needsReview: true, source: 'import' });
+  });
+
+  it('normative reference values of the centre (phase 16): validated, owned, descriptive cut-offs', async () => {
+    const doi = `10.9999/import.${o.tag}`; // registered by the previous test
+    const head =
+      'Test;Variable;Unidad;Población;Edad mín.;Edad máx.;Sexo;Estadístico;Media;DE;Mediana;Percentiles;Corte;Dirección;Significado;Fuente DOI';
+    const lines = [
+      head,
+      `handgrip_strength;Prensión mano dominante;kg;adults_general;30;39;mujer;media y DE;29,4;5,1;;;;;;${doi}`,
+      `handgrip_strength;Prensión mano dominante;kg;adults_general;30;39;mujer;media y DE;29,4;5,1;;;;;;${doi}`,
+      `handgrip_strength;Otra;kg;poblacion_inventada;40;30;;mediana;;;;;;;;10.9999/no-registrada`,
+      `five_times_sit_to_stand;Tiempo 5 levantamientos;s;older_adults;60;69;mixto;punto de corte;;;;;12;por encima;Peor que la media del centro;${doi}`,
+      `handgrip_strength;Prensión (percentiles);kg;adults_general;;;hombre;percentiles;;;;P10=30|P50=40|P90=50;;;;${doi}`,
+    ];
+    await expect(
+      createImportJob(o.clientUser, {
+        entity: 'reference_values',
+        fileName: 'normas.csv',
+        contentBase64: csvFile(lines),
+      }),
+    ).rejects.toMatchObject({ code: 'forbidden' });
+    const job = await createImportJob(o.admin, {
+      entity: 'reference_values',
+      fileName: 'normas.csv',
+      contentBase64: csvFile(lines),
+    });
+    expect(job).toMatchObject({ total: 5, valid: 3 });
+    const rows = (await getImportJob(o.admin, job.id)).rows;
+    expect(rows.find((r) => r.rowNumber === 3)!.errors.variable![0]).toMatch(/Repetido/);
+    expect(Object.keys(rows.find((r) => r.rowNumber === 4)!.errors).sort()).toEqual([
+      'edad_max',
+      'mediana',
+    ]);
+    expect((await confirmImportJob(o.admin, job.id)).imported).toBe(3);
+
+    const mine = await testDb()
+      .db.select()
+      .from(schema.referenceValues)
+      .where(eq(schema.referenceValues.organizationId, o.org.organizationId));
+    expect(mine).toHaveLength(3);
+    const cut = mine.find((r) => r.statisticType === 'cutoff')!;
+    // A centre's cut-off is descriptive: it never raises the health-professional referral.
+    expect(cut.values).toMatchObject({ cutoff: 12, direction: 'above', referral: false });
+    expect(mine.find((r) => r.statisticType === 'percentiles')!.values).toEqual({
+      p10: 30,
+      p50: 40,
+      p90: 50,
+    });
+    expect(mine.find((r) => r.statisticType === 'mean_sd')).toMatchObject({
+      sex: 'female',
+      ageMin: 30,
+      ageMax: 39,
+      values: { mean: 29.4, sd: 5.1 },
+    });
+
+    // Visible to the centre only; the same file again is caught in the preview.
+    const testId = mine.find((r) => r.statisticType === 'mean_sd')!.testId;
+    const own = (await getAssessmentTest(o.trainer2, testId)).references.filter(
+      (r) => r.organizationId,
+    );
+    expect(own).toHaveLength(2);
+    expect(
+      (await getAssessmentTest(other.admin, testId)).references.some((r) => r.organizationId),
+    ).toBe(false);
+    const again = await createImportJob(o.admin, {
+      entity: 'reference_values',
+      fileName: 'normas.csv',
+      contentBase64: csvFile(lines),
+    });
+    expect(again.valid).toBe(0);
+    await cancelImportJob(o.admin, again.id);
+
+    // Only the centre's own rows can be removed; the platform's are read-only.
+    const global = (await getAssessmentTest(o.admin, testId)).references.find(
+      (r) => !r.organizationId,
+    );
+    if (global)
+      await expect(deleteReferenceValue(o.admin, global.id)).rejects.toMatchObject({
+        code: 'not_found',
+      });
+    await expect(deleteReferenceValue(other.admin, cut.id)).rejects.toMatchObject({
+      code: 'not_found',
+    });
+    await expect(deleteReferenceValue(o.clientUser, cut.id)).rejects.toMatchObject({
+      code: expect.stringMatching(/^(forbidden|not_found)$/),
+    });
+    await deleteReferenceValue(o.admin, cut.id);
+    expect(
+      await testDb()
+        .db.select()
+        .from(schema.referenceValues)
+        .where(eq(schema.referenceValues.id, cut.id)),
+    ).toHaveLength(0);
   });
 
   it('rejects files without required columns or in other formats; templates', async () => {
