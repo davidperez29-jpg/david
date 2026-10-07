@@ -31,6 +31,7 @@ let o: Org;
 let other: Org;
 const today = localDate(new Date());
 const thisMonday = addDays(today, 1 - isoWeekday(today));
+let aSessions: { id: string; scheduledDate: string | null }[] = [];
 const weeksOf = (p: PlanDetail) => p.phases.flatMap((ph) => ph.mesocycles.flatMap((m) => m.weeks));
 
 /** Active plan of 12 weeks × 3 days that started 8 weeks ago; the 8 past weeks are published. */
@@ -55,6 +56,7 @@ beforeAll(async () => {
 describe('adherence (acceptance §16.2)', () => {
   it('24 planned / 21 done = 87.5 %', async () => {
     const sessions = await pastPlan(o.admin, o.clientA);
+    aSessions = sessions;
     expect(sessions).toHaveLength(24);
     for (const [i, s] of sessions.entries()) {
       if (i < 19)
@@ -210,19 +212,24 @@ describe('rule configuration', () => {
         ],
       }),
     ).rejects.toMatchObject({ code: 'validation' });
-    // Client A: 8 sessions done of the 11–12 in the last 28 days (the count depends on the
-    // weekday of the run): 66,7–72,7 % → yellow with the defaults.
+    // Client A: the first 21 of 24 sessions are done. The last 28 days hold 10–12 of them and 7–8
+    // done, depending on the weekday of the run: 58,3–72,7 % → yellow or red with the defaults.
     await refreshClientAlerts(o.admin, o.clientA);
     const adh = async () =>
       (await listAlerts(o.admin, { clientId: o.clientA, status: 'live' })).find(
         (x) => x.type === 'adherence_low',
       );
-    expect((await adh())?.severity).toBe('yellow');
+    expect(['yellow', 'red']).toContain((await adh())?.severity);
     const [, pct, done, planned] = /Adherencia del ([\d,]+) % .*\((\d+) de (\d+) sesiones\)/.exec(
       (await adh())!.message,
     )!;
-    expect(Number(done)).toBe(8);
-    expect([11, 12]).toContain(Number(planned));
+    const from = addDays(today, -27);
+    expect(Number(done)).toBe(
+      aSessions.filter((x, i) => i < 21 && x.scheduledDate && x.scheduledDate >= from).length,
+    );
+    expect(Number(planned)).toBe(
+      aSessions.filter((x) => x.scheduledDate && x.scheduledDate >= from).length,
+    );
     expect(pct).toBe(
       (Math.round((Number(done) / Number(planned)) * 1000) / 10).toLocaleString('es-ES'),
     );
@@ -240,7 +247,7 @@ describe('rule configuration', () => {
         .find((r) => r.key === 'adherence_low')!
         .parameters.find((p) => p.key === 'redBelow')!.value,
     ).toBe(75);
-    // Same alert, escalated in place (66,7–72,7 % is below the new 75 %).
+    // Same alert, red in place (58,3–72,7 % is below the new 75 %).
     await refreshClientAlerts(o.admin, o.clientA);
     expect((await adh())?.severity).toBe('red');
     expect(
