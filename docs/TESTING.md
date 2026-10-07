@@ -698,3 +698,13 @@ pnpm --filter @tp/web test:e2e -- e2e/perf.spec.ts e2e/perf.mobile.spec.ts
 - **E2E** (`engine.spec.ts`): con la disponibilidad nueva de Javier, la propuesta «Días de entrenamiento» aparece sin «Editar», se acepta y se deshace.
 - **Demo**: los planes se crean en los días disponibles de cada cliente, así que no aparecen propuestas de días sin motivo.
 
+## Resultado de la reestructuración, fase 16 (valores de referencia del centro)
+
+- **Integración** (`reports.int.test.ts`):
+  - un archivo de 5 filas: 3 válidas (media y DE, punto de corte y percentiles), una repetida en el archivo y otra con edad mínima mayor que la máxima, mediana que falta y fuente no registrada;
+  - al confirmar se guardan 3 filas del centro, con `mean/sd`, `p10/p50/p90` y `cutoff` con `referral: false`;
+  - el entrenador las ve en la ficha del test; otro centro no; el mismo archivo otra vez da 0 válidas;
+  - solo se eliminan las del centro (otra organización y el cliente no pueden); el cliente no puede importar.
+- **E2E** (`reports.spec.ts`): desde la ficha de la dinamometría, «Importar normas del centro» abre la importación preseleccionada; una fila válida y otra con «Fuente no registrada»; la norma aparece «Del centro» y se elimina.
+- **Seguridad**: la matriz de acceso cruzado incluye `DELETE /assessment-references/{id}`.
+

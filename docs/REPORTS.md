@@ -90,6 +90,7 @@ Admite CSV (separador `;` o `,`, detectado automáticamente) o XLSX (primera hoj
 | Ejercicios | **Borrador** con `needs_review` y `source = import`: se revisan antes de publicar. |
 | Evaluaciones | Una evaluación por cliente, fecha y contexto, y un resultado por fila. Solo para clientes asignados (o de la organización, si es ADMIN). |
 | Referencias | Fuentes bibliográficas **no verificadas**: no alimentan recomendaciones hasta que ADMIN las verifique (Fase 4). |
+| Valores de referencia (fase 16) | Normas **del centro** para un test: población, edad, sexo, nivel, deporte, N, estadístico (media y DE, mediana, percentiles o punto de corte) y una **fuente ya registrada** por DOI o PMID. Ver `ASSESSMENT.md` §2.4. |
 
 - **Plantillas** con un ejemplo, y en XLSX una hoja de ayuda: `GET /imports/templates/{entity}?format=csv|xlsx`.
 - El archivo original **no se guarda** (minimización); solo las filas validadas del trabajo de importación.
@@ -116,5 +117,5 @@ Admite CSV (separador `;` o `,`, detectado automáticamente) o XLSX (primera hoj
 
 ## 6. Pendiente
 
-- Importación de valores de referencia normativos.
+- ~~Importación de valores de referencia normativos.~~ (hecho en la fase 16 de la reestructuración)
 - Trabajos en segundo plano para archivos grandes (hoy, todo es síncrono y cabe en 1 000 filas).

@@ -123,6 +123,7 @@ Detalle de reglas en `ASSESSMENT.md`. Una evaluación de un cliente fuera de alc
 | `PATCH /assessment-tests/{id}` | `assessments:catalog` | `updateTestSchema` (`expectedVersion`) | Solo tests propios; cambiar el protocolo crea una versión nueva. |
 | `POST /assessment-tests/{id}/reliability` | `assessments:catalog` | `localReliabilitySchema` (SEM, CV o MDC95 obligatorio) | Test-retest del centro. |
 | `DELETE /assessment-reliability/{id}` | `assessments:catalog` | — | Solo fiabilidad local. |
+| `DELETE /assessment-references/{id}` | `science:write` | — | Solo valores de referencia del centro (importados); los de la plataforma dan `404`. Reestructuración, fase 16. |
 | `GET /assessment-batteries` · `POST` | `assessments:read` / `assessments:catalog` | `batterySchema` | Baterías globales y propias. |
 | `GET /clients/{id}/assessments` · `POST` | `assessments:read` / `assessments:write` | `createAssessmentSchema` (`assessedOn`, `batteryId?`, `testIds`) | Si se indica una batería y no se pasan tests, se usan los de la batería. |
 | `GET /clients/{id}/assessments/proposal` | `assessments:write` | — | Batería propuesta, tests excluidos con su motivo y explicación. |
@@ -270,7 +271,7 @@ Detalle en `REPORTS.md`. Las respuestas de descarga son archivos (`Content-Dispo
 | `GET /reports/{id}/client-view` | `reports:read_shared` | — | Versión del cliente en lenguaje sencillo (7 apartados). Un cliente solo accede a los suyos compartidos; si no, 404. |
 | `GET /reports/{id}/client-view/download` | `reports:read_shared` | — | PDF de la versión del cliente; auditado como `export`. Operación pesada (límite por minuto). |
 | `GET /exports?entity&format[&clientId&planId&from&to]` | `data:export` | `entity`: `clients`, `assessments`, `plan`, `sessions` o `progress`; `format`: `csv` o `xlsx` | Exportación bajo RLS, auditada. |
-| `POST /imports` | `data:import` (+ el de la entidad) | `{entity, fileName, contentBase64}` | Valida el archivo y crea la vista previa: `{id, total, valid, invalid}`. No escribe datos. |
+| `POST /imports` | `data:import` (+ el de la entidad) | `{entity, fileName, contentBase64}` (`entity`: `clients`, `exercises`, `assessments`, `references` o `reference_values`) | Valida el archivo y crea la vista previa: `{id, total, valid, invalid}`. No escribe datos. |
 | `GET /imports` · `GET /imports/{id}` | `data:import` | — | Historial; filas con estado, datos y errores por columna. |
 | `POST /imports/{id}/confirm` | `data:import` | — | Importa las filas válidas: `{imported, failed}`. `409` si ya se confirmó o se canceló. |
 | `POST /imports/{id}/cancel` | `data:import` | — | Cancela sin importar. |

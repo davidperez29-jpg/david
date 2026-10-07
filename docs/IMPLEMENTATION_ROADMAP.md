@@ -32,6 +32,7 @@
 | 13 | Motor de programación: propuesta aplicada como revisión del plan activo e incremento de carga por ejercicio (elegida por el responsable) | Propuestas, revisiones, progresión de carga | ✅ Hecha |
 | 14 | Progresión por velocidad (VBT) y 1RM estimado orientativo (elegida por el responsable) | Motor de ajustes, registro de series con velocidad y RIR | ✅ Hecha |
 | 15 | Ajustes por disponibilidad: mover sesiones a los días que el cliente puede entrenar (elegida por el responsable) | Motor de ajustes, disponibilidad del cliente, reprogramar (A51) | ✅ Hecha |
+| 16 | Valores de referencia normativos del centro: importación validada y gestión en la ficha del test (elegida por el responsable) | Importaciones, catálogo de tests, fuentes | ✅ Hecha |
 
 ## Por qué el despliegue va primero (decisión A2)
 
@@ -302,3 +303,17 @@ Elegida por el responsable: último pendiente del motor de programación.
 - ✅ con más sesiones que días libres, mueve las que caben y lista las demás; sin disponibilidad o fuera de 14 días, nada (`reschedule.unit.test.ts`);
 - ✅ guardar la disponibilidad crea la propuesta; aceptar mueve las sesiones con revisión; no se edita; deshacer las devuelve (`programming.int.test.ts`);
 - ✅ el entrenador la acepta y la deshace desde la ficha (`engine.spec.ts`).
+
+## Fase 16 · Valores de referencia del centro ✅
+
+Elegida por el responsable: pendiente de Informes y Valoración.
+
+- Nueva importación «Valores de referencia» (CSV o XLSX) con vista previa: media y DE, mediana, percentiles o punto de corte, con población, edad, sexo, nivel, deporte, N, método y fuente ya registrada (A59).
+- La ficha del test enlaza a la importación, marca las normas «Del centro» y permite eliminarlas.
+- Un punto de corte importado es descriptivo: nunca deriva al profesional sanitario (A60).
+
+**Criterios**:
+- ✅ errores por columna en la vista previa (población, fuente no registrada, valores del estadístico, edades, duplicados en el archivo y en el centro); nada se escribe hasta confirmar (`reports.int.test.ts`);
+- ✅ los valores se guardan en el formato que usa la comparación (`mean/sd`, `median`, `pN`, `cutoff` con `referral: false`) y son del centro: otro centro no los ve (`reports.int.test.ts`);
+- ✅ solo se eliminan los del centro; el cliente no puede importar ni borrar (`reports.int.test.ts`); la ruta nueva está en la matriz de acceso cruzado;
+- ✅ el entrenador importa desde la ficha del test, ve «Del centro» y lo elimina (`reports.spec.ts`).

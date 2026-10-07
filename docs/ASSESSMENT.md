@@ -64,6 +64,23 @@ Una referencia solo es **aplicable** si coinciden la edad (rango), el sexo, el d
   - **Criterios clínicos de cribado** (marcados `referral: true`): muestran *Requiere valoración por profesional sanitario* y avisan de que no es un diagnóstico.
   - Los cortes EWGSOP2 **no se cargaron** porque no figuran en el resumen de PubMed (ver anexo).
 
+#### Normas propias del centro (fase 16 de la reestructuración)
+
+- Se importan desde **Informes → Importar → Valores de referencia**, o con «Importar normas del centro» en la ficha del test (CSV o XLSX, con vista previa).
+- Cada fila es un grupo de referencia de un test:
+  - población del catálogo, edad, sexo, nivel, deporte, N y método;
+  - estadístico **media y DE**, **mediana** (con Q1 y Q3 opcionales), **percentiles** (`P10=21|P50=29|P90=37`) o **punto de corte** (valor, dirección y significado);
+  - condición, limitaciones y notas de aplicabilidad.
+- La **fuente es obligatoria y debe existir ya** (DOI o PMID), del catálogo o del centro. Nunca se inventa: si falta, se registra antes en Ciencia o con la importación de referencias (A59).
+- Se validan en la vista previa:
+  - test, población y deporte desconocidos;
+  - valores que faltan para el estadístico y DE ≤ 0;
+  - edad mínima mayor que la máxima;
+  - el mismo grupo repetido en el archivo o ya presente en el centro (mismo test, variable, población, sexo, edades y fuente).
+- Son **del centro** (RLS de catálogo): otro centro no las ve. La ficha del test las marca «Del centro» y permite eliminarlas; las de la plataforma no se pueden borrar.
+- Un **punto de corte importado es siempre descriptivo** (`referral: false`): nunca muestra «Requiere valoración por profesional sanitario» (A60). Ese aviso solo lo dan los criterios clínicos revisados de la plataforma.
+- Se usan igual que las de la plataforma: misma comprobación de aplicabilidad (edad, sexo, deporte, población, método) y z-score solo con media y DE aplicable.
+
 ### 2.5 Seguridad
 - **Síntomas que detienen el test** (§11.7). Se muestran en la pantalla de registro: dolor torácico, disnea desproporcionada, mareo o desmayo, palpitaciones, y dolor agudo, inestabilidad o caída. El intento se marca como **no válido** y no entra en las comparaciones.
 - **Propuesta de batería.** El objetivo principal decide la plantilla; a partir de los 65 años se propone la batería de salud.

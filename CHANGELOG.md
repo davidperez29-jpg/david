@@ -2,6 +2,23 @@
 
 Formato: fecha · cambio · motivo · archivos · impacto.
 
+## 2026-10-07 — Reestructuración, fase 16: valores de referencia del centro
+
+- **Cambio:** nueva importación **«Valores de referencia (normas)»** en CSV o XLSX, con vista previa y errores por columna.
+  - Cada fila: test, variable, unidad, población, edad, sexo, nivel, deporte, N, estadístico (media y DE, mediana, percentiles o punto de corte), método, fuente (DOI o PMID ya registrado), condición, limitaciones y notas.
+  - **Motivo:** pendiente de Informes y Valoración; cada centro compara con sus propias normas.
+- **Cambio:** la ficha del test enlaza a la importación, marca las normas «Del centro» y permite eliminarlas.
+- **Seguridad:** la fuente debe existir ya (nunca se inventa); un punto de corte importado es descriptivo y nunca muestra el aviso de valoración sanitaria.
+- **Archivos:**
+  - `packages/contracts/src/reports.ts`;
+  - `packages/application/src/{imports,assessments}.ts`;
+  - `apps/web/src/app/api/v1/assessment-references/[referenceId]/route.ts`, `apps/web/src/app/app/assessments/{forms.tsx,tests/[testId]/page.tsx}`, `apps/web/src/app/app/informes/importar/page.tsx`, `apps/web/src/components/reports/actions.tsx`;
+  - `packages/application/test/reports.int.test.ts`, `apps/web/e2e/reports.spec.ts`, `docs/api/contract.json`;
+  - `docs/{ASSESSMENT,REPORTS,API,IMPLEMENTATION_ROADMAP,TESTING}.md`, `docs/PRODUCT_ARCHITECTURE.md` A59–A60.
+- **Impacto:**
+  - sin migraciones (la tabla `reference_values` ya era de catálogo con `organization_id`);
+  - una ruta nueva (`DELETE /assessment-references/{id}`) y un valor nuevo de `entity` en `POST /imports`.
+
 ## 2026-10-07 — Reestructuración, fase 15: ajustes por disponibilidad
 
 - **Cambio:** nuevo ajuste **«Días de entrenamiento»**: si hay sesiones de los próximos 14 días en días que el cliente no tiene disponibles, el motor propone moverlas al día disponible más cercano de su misma semana.
