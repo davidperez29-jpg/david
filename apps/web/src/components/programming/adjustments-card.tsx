@@ -15,12 +15,14 @@ const FIELD: Record<string, string> = {
   rirMin: 'RIR mín.',
   rirMax: 'RIR máx.',
   exerciseId: 'Ejercicio',
+  scheduledDate: 'Día',
 };
 const KIND: Record<string, string> = {
   load_progression: 'Progresión de carga',
   deload_week: 'Descarga',
   volume_reduction: 'Volumen',
   substitution: 'Sustitución',
+  reschedule: 'Días de entrenamiento',
 };
 const TONE: Record<string, 'accent' | 'ok' | 'danger' | 'warn' | 'neutral'> = {
   proposed: 'accent',
@@ -29,6 +31,13 @@ const TONE: Record<string, 'accent' | 'ok' | 'danger' | 'warn' | 'neutral'> = {
   accepted_with_changes: 'ok',
   rejected: 'danger',
 };
+const weekdayDate = (iso: string) =>
+  new Date(`${iso}T12:00:00Z`).toLocaleDateString('es-ES', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'numeric',
+    timeZone: 'UTC',
+  });
 const fmt = (v: number | string | null) =>
   v == null ? '—' : typeof v === 'number' ? v.toLocaleString('es-ES') : v;
 
@@ -38,6 +47,9 @@ function Changes({ a }: { a: AdjustmentView }) {
   if (!list.length) return null;
   const names = new Map(a.options.map((o) => [o.id, o.name]));
   const byTarget = new Map(a.targets.map((t) => [t.sessionExerciseId, t]));
+  const sessionNames = new Map(
+    a.targets.map((t) => [t.sessionId, `Sesión (${t.exerciseName}…)`] as const).reverse(),
+  );
   return (
     <details className="text-xs">
       <summary className="cursor-pointer text-muted">
@@ -55,6 +67,18 @@ function Changes({ a }: { a: AdjustmentView }) {
           </thead>
           <tbody>
             {list.map((c, i) => {
+              // A session move (availability): the whole session changes day.
+              if (c.field === 'scheduledDate')
+                return (
+                  <tr key={i} className="border-t border-border tabular-nums">
+                    <td className="py-0.5">{formatDate(String(c.from))}</td>
+                    <td>{sessionNames.get(c.sessionId ?? '') ?? 'Sesión completa'}</td>
+                    <td>{FIELD.scheduledDate}</td>
+                    <td>
+                      {weekdayDate(String(c.from))} → {weekdayDate(String(c.to))}
+                    </td>
+                  </tr>
+                );
               const t = byTarget.get(c.sessionExerciseId);
               return (
                 <tr key={i} className="border-t border-border tabular-nums">

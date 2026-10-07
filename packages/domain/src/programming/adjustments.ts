@@ -6,7 +6,7 @@
  */
 import type { Explanation } from '../decision/types';
 import { roundLoad } from '../planning/prescription';
-import { addDays, DEFAULT_DELOAD, type DeloadPolicy } from '../planning/structure';
+import { addDays, DEFAULT_DELOAD, isoWeekday, type DeloadPolicy } from '../planning/structure';
 import {
   doubleProgression,
   estimateOneRm,
@@ -17,7 +17,19 @@ import {
 } from '../planning/progression';
 
 export type AdjustmentKind =
-  'load_progression' | 'deload_week' | 'volume_reduction' | 'substitution';
+  'load_progression' | 'deload_week' | 'volume_reduction' | 'substitution' | 'reschedule';
+
+/** A future session of the active plan, for availability-based moves (restructure phase 15). */
+export interface PlanSessionSlot {
+  sessionId: string;
+  date: string;
+  weekIndex: number;
+  /** First day of its plan week: a session only moves inside its week (A51). */
+  weekStart: string;
+  name: string | null;
+  /** Has logs or attendance: never moved, but its day is taken. */
+  recorded: boolean;
+}
 
 /** A future planned exercise (snapshot of its values when the proposal was made). */
 export interface PlannedTarget {
@@ -76,6 +88,10 @@ export interface ProgrammingInput {
   /** Options per exercise: pre-approved alternatives first, then library substitutes. */
   substitutes: Record<string, { id: string; name: string }[]>;
   deload?: DeloadPolicy;
+  /** ISO weekdays the client can train (Ficha → Disponibilidad); empty = not stated. */
+  availableWeekdays?: number[];
+  /** Sessions of the active plan from today on (recorded or not). */
+  sessions?: PlanSessionSlot[];
 }
 
 export interface AdjustmentParams {
@@ -84,6 +100,8 @@ export interface AdjustmentParams {
   setsDelta?: number;
   rirDelta?: number;
   toExerciseId?: string | null;
+  /** Session moves of a `reschedule` proposal. */
+  moves?: { sessionId: string; from: string; to: string }[];
 }
 
 export interface AdjustmentCandidate {
@@ -98,13 +116,17 @@ export interface AdjustmentCandidate {
 }
 
 export interface ExerciseChange {
+  /** Empty for a session change (`scheduledDate`), which uses `sessionId`. */
   sessionExerciseId: string;
-  field: 'loadKg' | 'sets' | 'rirMin' | 'rirMax' | 'exerciseId';
+  sessionId?: string;
+  field: 'loadKg' | 'sets' | 'rirMin' | 'rirMax' | 'exerciseId' | 'scheduledDate';
   from: number | string | null;
   to: number | string | null;
 }
 
 const day = (iso: string) => iso.split('-').reverse().join('/');
+const WEEKDAY = ['', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo'];
+const dayName = (iso: string) => `${WEEKDAY[isoWeekday(iso)]} ${day(iso)}`;
 const kg = (n: number) => `${n.toLocaleString('es-ES')} kg`;
 const mps = (n: number) => `${n.toFixed(2).replace('.', ',')} m/s`;
 
@@ -178,6 +200,16 @@ export function changesFor(
   targets: PlannedTarget[],
 ): ExerciseChange[] {
   const out: ExerciseChange[] = [];
+  if (kind === 'reschedule')
+    return (params.moves ?? [])
+      .filter((m) => m.to !== m.from)
+      .map((m) => ({
+        sessionExerciseId: '',
+        sessionId: m.sessionId,
+        field: 'scheduledDate' as const,
+        from: m.from,
+        to: m.to,
+      }));
   for (const t of targets) {
     if (kind === 'load_progression' && t.loadKg != null && params.toKg != null) {
       const delta = params.toKg - (params.fromKg ?? t.loadKg);
@@ -378,7 +410,10 @@ export function proposeAdjustments(input: ProgrammingInput): AdjustmentCandidate
       });
   }
 
-  // 3. Per-exercise pain → substitution with pre-approved alternatives or library substitutes.
+  // 3. Availability: sessions planned on days the client cannot train (restructure phase 15).
+  out.push(...proposeReschedules(input));
+
+  // 4. Per-exercise pain → substitution with pre-approved alternatives or library substitutes.
   const painBy = new Map<string, ProgrammingInput['pains']>();
   for (const p of input.pains.filter((x) => x.intensity >= input.painThreshold))
     painBy.set(p.exerciseId, [...(painBy.get(p.exerciseId) ?? []), p]);
@@ -407,6 +442,98 @@ export function proposeAdjustments(input: ProgrammingInput): AdjustmentCandidate
         [
           'Las alternativas preaprobadas por el entrenador van primero.',
           'El dolor es autoinformado.',
+        ],
+      ),
+    });
+  }
+  return out;
+}
+
+/** How far ahead availability moves are proposed (the same window as load progressions). */
+export const RESCHEDULE_HORIZON_DAYS = 14;
+
+/**
+ * Sessions planned on a weekday the client cannot train → move each one, inside its own plan week,
+ * to the nearest free day the client can (later day on a tie). Never today or a past day, never a
+ * recorded session, never onto a day that already has a session. Sessions that do not fit are
+ * listed for the trainer (frequency is their decision: the engine never deletes a session).
+ */
+export function proposeReschedules(input: ProgrammingInput): AdjustmentCandidate[] {
+  const avail = new Set(input.availableWeekdays ?? []);
+  const all = input.sessions ?? [];
+  if (!avail.size || !all.length) return [];
+  const until = addDays(input.today, RESCHEDULE_HORIZON_DAYS);
+  const availKey = [...avail].sort((a, b) => a - b).join('');
+  const days = [...avail]
+    .sort((a, b) => a - b)
+    .map((d) => WEEKDAY[d])
+    .join(', ');
+  const out: AdjustmentCandidate[] = [];
+  const weeks = [...new Set(all.map((x) => x.weekIndex))].sort((a, b) => a - b);
+  for (const w of weeks) {
+    const inWeek = all.filter((x) => x.weekIndex === w);
+    const misplaced = inWeek
+      .filter(
+        (x) =>
+          !x.recorded && x.date > input.today && x.date <= until && !avail.has(isoWeekday(x.date)),
+      )
+      .sort((a, b) => a.date.localeCompare(b.date));
+    if (!misplaced.length) continue;
+    const moving = new Set(misplaced.map((x) => x.sessionId));
+    const busy = new Set(inWeek.filter((x) => !moving.has(x.sessionId)).map((x) => x.date));
+    const start = inWeek[0]!.weekStart;
+    const free = Array.from({ length: 7 }, (_, i) => addDays(start, i)).filter(
+      (d) => d > input.today && avail.has(isoWeekday(d)) && !busy.has(d),
+    );
+    const moves: { sessionId: string; from: string; to: string }[] = [];
+    const unplaced: PlanSessionSlot[] = [];
+    for (const x of misplaced) {
+      const dist = (d: string) => Math.abs(Date.parse(d) - Date.parse(x.date));
+      const best = [...free].sort((a, b) => dist(a) - dist(b) || b.localeCompare(a))[0];
+      if (!best) {
+        unplaced.push(x);
+        continue;
+      }
+      free.splice(free.indexOf(best), 1);
+      moves.push({ sessionId: x.sessionId, from: x.date, to: best });
+    }
+    if (!moves.length) continue;
+    const label = (x: { sessionId: string }) => {
+      const n = all.find((y) => y.sessionId === x.sessionId)?.name;
+      return n ? `«${n}»` : 'Sesión';
+    };
+    const ids = new Set(moves.map((m) => m.sessionId));
+    out.push({
+      key: `schedule:${w}:${availKey}`,
+      kind: 'reschedule',
+      title: `Semana ${w}: ${
+        moves.length === 1 ? 'mover 1 sesión' : `mover ${moves.length} sesiones`
+      } a días disponibles`,
+      params: { moves },
+      targets: input.upcoming.filter((t) => ids.has(t.sessionId)),
+      explanation: practical(
+        `Pasar ${moves.length === 1 ? 'la sesión' : `las ${moves.length} sesiones`} de la semana ${w} que caen en días sin disponibilidad a días en los que el cliente sí puede entrenar.`,
+        [
+          `Disponibilidad del cliente: ${days}.`,
+          ...moves.map((m) => `${label(m)}: ${dayName(m.from)} → ${dayName(m.to)}.`),
+          ...unplaced.map(
+            (x) => `${label(x)} del ${dayName(x.date)}: no cabe en ningún día libre de esa semana.`,
+          ),
+        ],
+        [
+          'Las sesiones previstas en días que el cliente no puede entrenar probablemente no se harán.',
+          ...(unplaced.length
+            ? [
+                'La semana tiene más sesiones que días disponibles: decide si se reduce la frecuencia o se juntan sesiones (el motor nunca borra sesiones).',
+              ]
+            : []),
+        ],
+        'schedule.availability',
+        [
+          'Regla práctica (nivel F): el día más cercano dentro de la misma semana del plan.',
+          'La disponibilidad es la de la ficha del cliente; si ha cambiado, actualízala.',
+          'Revisa el orden si quedan sesiones exigentes en días seguidos.',
+          'Solo se mueven sesiones sin registro y nunca a hoy ni a un día pasado.',
         ],
       ),
     });

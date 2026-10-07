@@ -266,9 +266,12 @@ export function AdjustmentActions({ adj }: { adj: Adjustment }) {
         <Button size="sm" disabled={a.pending} onClick={() => void decide('accept')}>
           Aceptar
         </Button>
-        <Button size="sm" variant="secondary" onClick={() => setMode('edit')}>
-          Editar
-        </Button>
+        {/* Session moves are accepted as proposed or moved by hand in the Calendario. */}
+        {adj.kind === 'reschedule' ? null : (
+          <Button size="sm" variant="secondary" onClick={() => setMode('edit')}>
+            Editar
+          </Button>
+        )}
         <Button size="sm" variant="secondary" onClick={() => setMode('reject')}>
           Rechazar
         </Button>

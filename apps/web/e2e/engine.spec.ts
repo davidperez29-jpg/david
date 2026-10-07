@@ -53,3 +53,63 @@ test('a proposal is applied to the active plan as a new revision', async ({ page
   await page.getByRole('link', { name: 'Gestión y revisiones' }).click();
   await expect(page.getByText(/Propuesta del motor aplicada/).first()).toBeVisible();
 });
+
+/**
+ * Restructure phase 15: Javier's plan now trains Tuesday, Thursday and Saturday (previous test).
+ * When his availability changes to Monday, Wednesday and Friday, the engine proposes moving the
+ * sessions of the next two weeks inside each week; the trainer accepts and undoes it.
+ */
+test('a new availability proposes moving sessions to the client’s days; accept and undo', async ({
+  page,
+}) => {
+  await login(page, 'lucia.moreno@example.com');
+  await page.getByRole('link', { name: 'Clientes', exact: true }).click();
+  await page.locator('main').getByRole('link', { name: 'Ocaña, Javier', exact: true }).click();
+  await expect(page).toHaveURL(/\/app\/clients\/[0-9a-f-]{36}/);
+  const clientId = new URL(page.url()).pathname.split('/')[3]!;
+  const origin = new URL(page.url()).origin;
+  const client = (await (await page.request.get(`/api/v1/clients/${clientId}`)).json()) as {
+    availability: { weekday: number; startTime: string | null; endTime: string | null }[];
+  };
+  const put = (slots: unknown[]) =>
+    page.request.put(`/api/v1/clients/${clientId}/availability`, {
+      headers: { Origin: origin },
+      data: { slots },
+    });
+  expect((await put([{ weekday: 1 }, { weekday: 3 }, { weekday: 5 }])).ok()).toBe(true);
+
+  await page.goto(`/app/clients/${clientId}?tab=programa#ajustes`);
+  const card = page.locator('section').filter({ has: page.locator('#ajustes') });
+  const item = card
+    .locator('li')
+    .filter({ hasText: /mover \d+ sesi(ón|ones) a días disponibles/ })
+    .first();
+  await expect(item).toBeVisible();
+  await expect(item.getByText('Días de entrenamiento')).toBeVisible();
+  // Not editable: accepted as proposed or moved by hand in the Calendario.
+  await expect(item.getByRole('button', { name: 'Editar' })).toHaveCount(0);
+  await item.getByText(/Qué cambiaría/).click();
+  await expect(item.getByText(/(lunes|miércoles|viernes), \d+\/\d+$/).first()).toBeVisible();
+
+  await item.getByRole('button', { name: 'Aceptar', exact: true }).click();
+  const decided = card
+    .locator('details')
+    .filter({ hasText: /Decididos recientemente/ })
+    .last();
+  await decided.locator('summary').first().click();
+  const done = decided
+    .locator('li')
+    .filter({ hasText: /a días disponibles/ })
+    .first();
+  await expect(done.getByText('Aceptada')).toBeVisible();
+  await done.getByRole('button', { name: 'Deshacer' }).click();
+  await expect(done.getByText('Deshecha')).toBeVisible();
+
+  // Back to Javier's own availability (times as HH:MM, as the form sends them).
+  const restore = client.availability.map((a) => ({
+    weekday: a.weekday,
+    startTime: a.startTime?.slice(0, 5) ?? null,
+    endTime: a.endTime?.slice(0, 5) ?? null,
+  }));
+  expect((await put(restore)).ok()).toBe(true);
+});

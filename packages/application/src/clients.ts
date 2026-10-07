@@ -23,6 +23,7 @@ import { and, asc, count, desc, eq, ilike, inArray, isNull, or, sql, type SQL } 
 import type { z } from 'zod';
 import { writeAudit } from './audit';
 import { authorizeClient, requirePermission } from './authz';
+import { clientActivity } from './client-events';
 import type { RequestContext } from './context';
 import { referralStatus } from './health';
 import { parse } from './validation';
@@ -763,7 +764,8 @@ async function setClientAvailability_(
       clientId,
       changes: { slots: slots.length },
     });
-  });
+  }); // New availability → the programming engine re-checks the plan's days (restructure phase 15).
+  clientActivity(ctx, clientId);
 }
 
 async function setClientEquipment_(

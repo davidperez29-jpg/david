@@ -49,6 +49,8 @@ export const recommendationType = pgEnum('recommendation_type', [
   'substitution',
   'reassessment',
   'referral_notice',
+  // Restructure phase 15: sessions moved to the client's available days.
+  'schedule',
 ]);
 export const recommendationStatus = pgEnum('recommendation_status', [
   'proposed',

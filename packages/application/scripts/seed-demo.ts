@@ -643,6 +643,12 @@ const GOAL_TEMPLATE: Record<string, string> = {
   general_physical_preparation: 'iniciacion-3d',
 };
 const WEEKDAYS: Record<number, number[]> = { 2: [2, 4], 3: [1, 3, 5] };
+/**
+ * The trainer plans on the days the client said they can train (restructure phase 15), when there
+ * are enough of them; otherwise the template's default days, and the engine proposes moving them.
+ */
+const planDays = (days: number[], perWeek: number) =>
+  days.length >= perWeek ? days.slice(0, perWeek) : (WEEKDAYS[perWeek] ?? [1, 2, 4, 5]);
 let plansCreated = 0;
 /**
  * Follow-up demo (Fase 8): adherence from 45 % to 100 % and alerts of every colour. Clients
@@ -667,7 +673,7 @@ for (const [i, c] of created.entries()) {
   const plan = await createPlanFromTemplate(c.by, c.id, {
     templateId: t.id,
     startDate: c.user ? lastWeekMonday : i % 2 === 0 ? addDays(lastWeekMonday, -21) : '2026-09-28',
-    weekdays: WEEKDAYS[t.sessionsPerWeek] ?? [1, 2, 4, 5],
+    weekdays: planDays(specs[i]!.days, t.sessionsPerWeek),
   });
   if (i % 2 === 0 || c.user) await setPlanStatus(c.by, plan.id, { status: 'active' });
   firstPlanId ??= plan.id;

@@ -30,6 +30,7 @@ import {
   runDecision,
   saveExerciseFeedback,
   setAutoApply,
+  setClientAvailability,
   setPlanStatus,
   type RequestContext,
 } from '../src';
@@ -429,6 +430,56 @@ describe('a proposal applied as a revision of the active plan (phase 13)', () =>
     await expect(acceptPlanProposal(o.admin, id, { mode: 'revision' })).rejects.toMatchObject({
       code: 'conflict',
     });
+  });
+});
+
+describe('availability: sessions moved to the days the client can train (phase 15)', () => {
+  it('a new availability proposes moves inside each week; accept moves them, undo puts them back', async () => {
+    const dates = async () =>
+      new Map(
+        (await getPlan(o.admin, planId)).phases
+          .flatMap((p) => p.mesocycles.flatMap((m) => m.weeks.flatMap((w) => w.sessions)))
+          .map((x) => [x.id, x.scheduledDate]),
+      );
+    const before = await dates();
+    // After the revision the plan trains Tuesday, Thursday and Saturday; the client can now only
+    // Monday, Wednesday and Friday. Saving it re-evaluates the adjustments after commit.
+    await setClientAvailability(o.admin, o.clientA, {
+      slots: [{ weekday: 1 }, { weekday: 3 }, { weekday: 5 }],
+    });
+    const moves = (await listAdjustments(o.admin, o.clientA)).items.filter(
+      (i) => i.kind === 'reschedule' && i.status === 'proposed',
+    );
+    expect(moves.length).toBeGreaterThan(0);
+    for (const m of moves) {
+      expect(m.type).toBe('schedule');
+      for (const c of m.preview) {
+        expect(c.field).toBe('scheduledDate');
+        expect([1, 3, 5]).toContain(isoWeekday(String(c.to)));
+        expect(String(c.to) > today).toBe(true);
+        // Inside its own week: never more than 6 days away.
+        expect(Math.abs(Date.parse(String(c.to)) - Date.parse(String(c.from)))).toBeLessThan(
+          7 * 86_400_000,
+        );
+      }
+      expect(m.explanation.rules[0]!.key).toBe('schedule.availability');
+    }
+    const a = moves[0]!;
+    // Not editable: accept, reject or move by hand in the calendar.
+    await expect(
+      decideAdjustment(o.admin, a.id, { action: 'accept_with_changes', params: { setsDelta: -1 } }),
+    ).rejects.toMatchObject({ code: 'validation' });
+
+    const revs = (await listPlanRevisions(o.admin, planId)).length;
+    await decideAdjustment(o.admin, a.id, { action: 'accept' });
+    const moved = await dates();
+    for (const c of a.preview) expect(moved.get(c.sessionId!)).toBe(c.to);
+    expect((await listPlanRevisions(o.admin, planId)).length).toBe(revs + 1);
+
+    await revertAdjustment(o.admin, a.id, { reason: 'El cliente vuelve a su horario' });
+    const back = await dates();
+    for (const c of a.preview) expect(back.get(c.sessionId!)).toBe(before.get(c.sessionId!));
+    await setClientAvailability(o.admin, o.clientA, { slots: [] });
   });
 });
 

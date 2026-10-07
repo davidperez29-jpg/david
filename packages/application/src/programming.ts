@@ -37,6 +37,7 @@ import {
   type ExerciseHistory,
   type Explanation,
   type PlannedTarget,
+  type PlanSessionSlot,
   type Replacement,
   type TemplateDefinition,
 } from '@tp/domain';
@@ -58,6 +59,7 @@ import { secured } from './rls';
 import { parse } from './validation';
 
 const {
+  clientAvailability,
   alerts,
   attendance,
   clientGoals,
@@ -85,12 +87,13 @@ const {
 } = schema;
 
 type App = { db: Database; now: () => Date };
-const ADJUSTMENT_TYPES = ['progression', 'deload', 'substitution'] as const;
+const ADJUSTMENT_TYPES = ['progression', 'deload', 'substitution', 'schedule'] as const;
 const TYPE_OF: Record<AdjustmentKind, (typeof ADJUSTMENT_TYPES)[number]> = {
   load_progression: 'progression',
   deload_week: 'deload',
   volume_reduction: 'deload',
   substitution: 'substitution',
+  reschedule: 'schedule',
 };
 const num = (v: string | number | null | undefined) => (v == null ? null : Number(v));
 
@@ -723,6 +726,29 @@ export async function buildProgrammingInput(app: App, clientId: string, planId: 
         .slice(0, 4);
     }
   }
+  // Availability moves (restructure phase 15): the stated weekdays and the plan's sessions ahead.
+  const [availRows, sessionRows] = await Promise.all([
+    db
+      .selectDistinct({ weekday: clientAvailability.weekday })
+      .from(clientAvailability)
+      .where(eq(clientAvailability.clientId, clientId)),
+    db
+      .select({
+        sessionId: sessions.id,
+        date: sessions.scheduledDate,
+        name: sessions.title,
+        weekIndex: microcycles.weekIndex,
+        weekStart: microcycles.startDate,
+        recorded: sql<boolean>`(exists (select 1 from ${setLogs} where ${setLogs.sessionId} = ${sessions.id})
+          or exists (select 1 from ${attendance} where ${attendance.sessionId} = ${sessions.id}))`,
+      })
+      .from(sessions)
+      .innerJoin(microcycles, eq(microcycles.id, sessions.microcycleId))
+      .innerJoin(mesocycles, eq(mesocycles.id, microcycles.mesocycleId))
+      .innerJoin(phases, eq(phases.id, mesocycles.phaseId))
+      .where(and(eq(phases.planId, planId), gte(sessions.scheduledDate, today)))
+      .orderBy(asc(sessions.scheduledDate)),
+  ]);
   const cfg = await organizationRules(db, c!.organizationId);
   const painRule = cfg.rules.find((r) => r.key === 'pain');
   return {
@@ -738,6 +764,17 @@ export async function buildProgrammingInput(app: App, clientId: string, planId: 
     pains,
     painThreshold: painRule?.parameters.yellowFrom ?? 4,
     substitutes,
+    availableWeekdays: availRows.map((r) => r.weekday),
+    sessions: sessionRows
+      .filter((r) => r.date && r.weekStart)
+      .map((r): PlanSessionSlot => ({
+        sessionId: r.sessionId,
+        date: r.date!,
+        weekIndex: r.weekIndex,
+        weekStart: r.weekStart!,
+        name: r.name,
+        recorded: Boolean(r.recorded),
+      })),
   };
 }
 
@@ -758,8 +795,15 @@ async function applyChanges(
   recommendationId: string,
   invert = false,
 ) {
+  const dates = await applySessionDates(
+    db,
+    today,
+    changes.filter((c) => c.field === 'scheduledDate'),
+    invert,
+  );
+  changes = changes.filter((c) => c.field !== 'scheduledDate');
   const ids = [...new Set(changes.map((c) => c.sessionExerciseId))];
-  if (!ids.length) return { applied: [] as ExerciseChange[], skipped: 0 };
+  if (!ids.length) return dates;
   const rows = await db
     .select({ se: sessionExercises, date: sessions.scheduledDate, sessionId: sessions.id })
     .from(sessionExercises)
@@ -783,25 +827,26 @@ async function applyChanges(
       ),
     );
   const byId = new Map(rows.filter((r) => r.date && r.date >= today).map((r) => [r.se.id, r.se]));
-  const applied: ExerciseChange[] = [];
-  let skipped = 0;
+  const applied: ExerciseChange[] = [...dates.applied];
+  let skipped = dates.skipped;
   // One update per exercise, so related fields (RIR min/max) never cross in between.
   for (const id of ids) {
     const row = byId.get(id);
     const set: Record<string, unknown> = {};
     for (const ch of changes.filter((x) => x.sessionExerciseId === id)) {
       const c = invert ? { ...ch, from: ch.to, to: ch.from } : ch;
+      const field = c.field as keyof typeof COLUMN;
       const current = row
         ? c.field === 'loadKg'
           ? num(row.loadKg)
-          : (row[COLUMN[c.field]] as number | string | null)
+          : (row[COLUMN[field]] as number | string | null)
         : undefined;
       // Never overwrite something the trainer changed since the proposal (or a performed session).
       if (row === undefined || current !== c.from) {
         skipped++;
         continue;
       }
-      set[COLUMN[c.field]] = c.field === 'loadKg' ? (c.to == null ? null : String(c.to)) : c.to;
+      set[COLUMN[field]] = c.field === 'loadKg' ? (c.to == null ? null : String(c.to)) : c.to;
       applied.push(c);
     }
     if (!row || !Object.keys(set).length) continue;
@@ -815,6 +860,85 @@ async function applyChanges(
         version: row.version + 1,
       })
       .where(eq(sessionExercises.id, row.id));
+  }
+  return { applied, skipped };
+}
+
+/**
+ * Session moves (availability, restructure phase 15), with the same rules as rescheduling by hand
+ * (A51): only sessions without a record, from today on, inside their own plan week, and never onto
+ * a day another session of the plan already has. A session moved since the proposal is skipped.
+ */
+async function applySessionDates(
+  db: Database,
+  today: string,
+  changes: ExerciseChange[],
+  invert: boolean,
+) {
+  const applied: ExerciseChange[] = [];
+  let skipped = 0;
+  for (const ch of changes) {
+    const c = invert ? { ...ch, from: ch.to, to: ch.from } : ch;
+    const [row] = await db
+      .select({ s: sessions, weekStart: microcycles.startDate, planId: phases.planId })
+      .from(sessions)
+      .innerJoin(microcycles, eq(microcycles.id, sessions.microcycleId))
+      .innerJoin(mesocycles, eq(mesocycles.id, microcycles.mesocycleId))
+      .innerJoin(phases, eq(phases.id, mesocycles.phaseId))
+      .where(eq(sessions.id, c.sessionId ?? ''));
+    const to = String(c.to);
+    const ok =
+      row?.s.scheduledDate != null &&
+      row.s.scheduledDate === c.from &&
+      row.s.scheduledDate >= today &&
+      to >= today &&
+      row.weekStart != null &&
+      row.weekStart <= to &&
+      to <= addDays(row.weekStart, 6);
+    const recorded =
+      ok &&
+      ((
+        await db
+          .select({ x: sql`1` })
+          .from(setLogs)
+          .where(eq(setLogs.sessionId, row.s.id))
+          .limit(1)
+      ).length > 0 ||
+        (
+          await db
+            .select({ x: sql`1` })
+            .from(attendance)
+            .where(eq(attendance.sessionId, row.s.id))
+            .limit(1)
+        ).length > 0);
+    const taken =
+      ok &&
+      !recorded &&
+      (
+        await db
+          .select({ x: sql`1` })
+          .from(sessions)
+          .innerJoin(microcycles, eq(microcycles.id, sessions.microcycleId))
+          .innerJoin(mesocycles, eq(mesocycles.id, microcycles.mesocycleId))
+          .innerJoin(phases, eq(phases.id, mesocycles.phaseId))
+          .where(
+            and(
+              eq(phases.planId, row.planId),
+              eq(sessions.scheduledDate, to),
+              sql`${sessions.id} <> ${row.s.id}`,
+            ),
+          )
+          .limit(1)
+      ).length > 0;
+    if (!ok || recorded || taken) {
+      skipped++;
+      continue;
+    }
+    await db
+      .update(sessions)
+      .set({ scheduledDate: to, version: row.s.version + 1 })
+      .where(eq(sessions.id, row.s.id));
+    applied.push(c);
   }
   return { applied, skipped };
 }
@@ -1105,6 +1229,12 @@ async function decideOne(
   const edited = Object.entries(edits ?? {}).filter(
     ([k, v]) => v !== undefined && v !== (p.params as Record<string, unknown>)[k],
   );
+  if (action === 'accept_with_changes' && p.kind === 'reschedule')
+    throw new DomainError(
+      'validation',
+      'Esta propuesta no se edita: acéptala, recházala o mueve las sesiones en el Calendario.',
+      { params: ['not_editable'] },
+    );
   if (action === 'accept_with_changes' && !edited.length)
     throw new DomainError('validation', 'Indica qué cambias.', { params: ['required'] });
   if (edits?.toExerciseId && !(p.options ?? []).some((o) => o.id === edits.toExerciseId))

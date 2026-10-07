@@ -351,6 +351,13 @@
       "when": 1791296736191,
       "tag": "0049_rls_v18",
       "breakpoints": true
+    },
+    {
+      "idx": 50,
+      "version": "7",
+      "when": 1791359127933,
+      "tag": "0050_availability_schedule",
+      "breakpoints": true
     }
   ]
 }
