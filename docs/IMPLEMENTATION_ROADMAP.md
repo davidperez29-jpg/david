@@ -31,6 +31,7 @@
 | 12 | Pendientes del entrenador: ajustes desde Alertas y reprogramar desde el Calendario (elegida por el responsable) | Motor de ajustes, calendario global | ✅ Hecha |
 | 13 | Motor de programación: propuesta aplicada como revisión del plan activo e incremento de carga por ejercicio (elegida por el responsable) | Propuestas, revisiones, progresión de carga | ✅ Hecha |
 | 14 | Progresión por velocidad (VBT) y 1RM estimado orientativo (elegida por el responsable) | Motor de ajustes, registro de series con velocidad y RIR | ✅ Hecha |
+| 15 | Ajustes por disponibilidad: mover sesiones a los días que el cliente puede entrenar (elegida por el responsable) | Motor de ajustes, disponibilidad del cliente, reprogramar (A51) | ✅ Hecha |
 
 ## Por qué el despliegue va primero (decisión A2)
 
@@ -286,3 +287,18 @@ Elegida por el responsable entre los pendientes del motor.
 - ✅ el 1RM estimado ignora series de más de 10 repeticiones hasta el fallo, sin RIR o sin carga (`vbt.unit.test.ts`);
 - ✅ cliente, entrenador no asignado y otra organización no ven la fuerza estimada (`programming.int.test.ts`); la ruta nueva está en la matriz de acceso cruzado;
 - ✅ la tarjeta aparece en Seguimiento con su aviso (`monitoring.spec.ts`).
+
+## Fase 15 · Ajustes por disponibilidad ✅
+
+Elegida por el responsable: último pendiente del motor de programación.
+
+- Si el cliente indica días disponibles y hay sesiones de los próximos 14 días en otros días, el motor propone moverlas dentro de su semana (tipo «Días de entrenamiento»).
+- Se recalcula al guardar la disponibilidad, también cuando la cambia el propio cliente.
+- El motor nunca borra sesiones: si no caben, lo dice y decide el entrenador (A57). La propuesta no se edita (A58).
+- Los datos demo planifican en los días disponibles de cada cliente.
+
+**Criterios**:
+- ✅ día más cercano dentro de la semana, el posterior si empatan; nunca hoy, un día pasado ni un día ocupado; las sesiones registradas no se mueven (`reschedule.unit.test.ts`);
+- ✅ con más sesiones que días libres, mueve las que caben y lista las demás; sin disponibilidad o fuera de 14 días, nada (`reschedule.unit.test.ts`);
+- ✅ guardar la disponibilidad crea la propuesta; aceptar mueve las sesiones con revisión; no se edita; deshacer las devuelve (`programming.int.test.ts`);
+- ✅ el entrenador la acepta y la deshace desde la ficha (`engine.spec.ts`).

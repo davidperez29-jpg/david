@@ -2,6 +2,25 @@
 
 Formato: fecha · cambio · motivo · archivos · impacto.
 
+## 2026-10-07 — Reestructuración, fase 15: ajustes por disponibilidad
+
+- **Cambio:** nuevo ajuste **«Días de entrenamiento»**: si hay sesiones de los próximos 14 días en días que el cliente no tiene disponibles, el motor propone moverlas al día disponible más cercano de su misma semana.
+  - Se recalcula al guardar la disponibilidad (también la del propio cliente), tras cada sesión cerrada y cada día.
+  - Aceptar, Rechazar, Posponer y Deshacer; no se edita (para otro día, el Calendario).
+  - **Motivo:** último pendiente del motor de programación.
+- **Cambio:** el motor **nunca borra sesiones**: si no caben, lo indica y decide el entrenador.
+- **Cambio:** los datos demo planifican en los días disponibles de cada cliente.
+- **Archivos:**
+  - `packages/domain/src/programming/adjustments.ts`;
+  - `packages/db/src/schema/decision.ts`, migración `0050_availability_schedule`;
+  - `packages/application/src/{programming,clients}.ts`, `packages/application/scripts/seed-demo.ts`;
+  - `apps/web/src/components/programming/{adjustments-card,actions}.tsx`;
+  - `packages/domain/test/reschedule.unit.test.ts`, `packages/application/test/programming.int.test.ts`, `apps/web/e2e/engine.spec.ts`;
+  - `docs/{PROGRAMMING_ENGINE,IMPLEMENTATION_ROADMAP,TESTING}.md`, `docs/PRODUCT_ARCHITECTURE.md` A57–A58.
+- **Impacto:**
+  - 1 migración (valor nuevo `schedule` en `recommendation_type`);
+  - sin rutas nuevas: usa las de ajustes (`kind: reschedule`, cambios con `field: scheduledDate` y `sessionId`).
+
 ## 2026-10-06 — Reestructuración, fase 14: progresión VBT/e1RM
 
 - **Cambio:** **progresión por velocidad**: con velocidad objetivo y 2 sesiones medidas, el motor propone subir o bajar la carga si la velocidad se aleja más de 0,06 m/s del objetivo; va antes que el RIR.

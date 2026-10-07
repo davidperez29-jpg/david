@@ -685,3 +685,16 @@ pnpm --filter @tp/web test:e2e -- e2e/perf.spec.ts e2e/perf.mobile.spec.ts
 - **Contratos**: nueva `GET /clients/{id}/estimated-strength` (forma registrada a mano porque el cliente de prueba no tiene series válidas en los datos demo).
 - **Evidencia**: el test del seed valida las 2 fuentes nuevas, sus hallazgos y la afirmación `c_rm_1rm_estimate`.
 
+## Resultado de la reestructuración, fase 15 (ajustes por disponibilidad)
+
+- **Unitarias** (`reschedule.unit.test.ts`):
+  - miércoles no disponible → jueves (el día libre más cercano de su semana); con empate, el posterior;
+  - nunca hoy, un día pasado ni un día ocupado por otra sesión (registrada o no);
+  - con más sesiones que días libres, mueve las que caben y lista las demás («el motor nunca borra sesiones»);
+  - sin disponibilidad, si todo cabe ya, fuera de 14 días o con la sesión registrada: nada.
+- **Integración** (`programming.int.test.ts`):
+  - tras la revisión (martes, jueves y sábado), guardar disponibilidad lunes, miércoles y viernes crea propuestas `schedule` dentro de cada semana;
+  - «Editar» se rechaza (`validation`); aceptar mueve las sesiones y crea una revisión; deshacer las devuelve a su día.
+- **E2E** (`engine.spec.ts`): con la disponibilidad nueva de Javier, la propuesta «Días de entrenamiento» aparece sin «Editar», se acepta y se deshace.
+- **Demo**: los planes se crean en los días disponibles de cada cliente, así que no aparecen propuestas de días sin motivo.
+

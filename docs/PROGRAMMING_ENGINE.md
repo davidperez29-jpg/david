@@ -66,6 +66,7 @@ Después:
 | Progresión de carga (`progression`) | 1) RIR medio por encima del objetivo + 1 en 2 sesiones → +carga; por debajo del objetivo − 1 → −carga. 2) Doble progresión: todas las series en el máximo del **rango** de repeticiones con el RIR objetivo → +carga | Desplaza la carga planificada de las sesiones de los próximos 14 días (respeta la progresión ya prevista). Incremento por material: barra 2,5 kg, mancuernas 2 kg, máquina/polea 2,5 kg, otros 1 kg | Práctica (F) de los cuadernos; el RIR es autoinformado |
 | Descarga (`deload`, semana) | Alerta abierta de RPE de sesión alto o de bienestar bajo | La primera semana que aún no ha empezado: −1 serie y RIR +2 (editable) | Práctica (F); el consenso sobre la descarga está pendiente de verificar **[REQUIERE VERIFICACIÓN]** |
 | Reducción de volumen (`deload`, volumen) | Alerta abierta de adherencia baja o de sesiones parciales (si no hay descarga) | −1 serie en los ejercicios de 3 o más series de esa semana (mínimo 2) | Práctica (F); conviene preguntar el motivo |
+| Días de entrenamiento (`schedule`, fase 15) | Sesiones de los próximos 14 días previstas en un día de la semana que el cliente no tiene en su **disponibilidad** (Ficha → Disponibilidad) | Moverlas, dentro de su semana del plan, al día libre disponible más cercano (el posterior si empatan). Las que no caben se listan para el entrenador | Práctica (F) |
 | Sustitución (`substitution`) | Molestias ≥ umbral 🟡 del centro (4/10 por defecto) en un ejercicio en los últimos 14 días | Cambiarlo en las sesiones previstas por una alternativa: primero las preaprobadas por el entrenador, después las del mismo patrón que el cliente tolera | No es un diagnóstico; si persisten, «Requiere valoración por profesional sanitario» |
 
 **Ciclo de vida.**
@@ -130,6 +131,22 @@ Cada propuesta lleva su **«¿Por qué?»** con la estructura de §13.6:
 - Afirmación `c_rm_1rm_estimate` (confianza baja).
 - `c_lv_1rm_prediction` suma el metaanálisis de Claassen 2026.
 
+### Ajustes por disponibilidad (fase 15 de la reestructuración)
+
+- **Cuándo**: al guardar la disponibilidad (la cambie el entrenador o el propio cliente desde «Mi perfil»), tras cada sesión cerrada, cada día y con «Recalcular ajustes».
+  - Solo si el cliente tiene disponibilidad indicada; sin ella no se propone nada.
+- **Qué propone** (`proposeReschedules`, regla `schedule.availability`, una propuesta por semana del plan):
+  - cada sesión sin registro de los próximos 14 días que cae en un día no disponible pasa al día libre disponible más cercano **de su misma semana** (el posterior si hay empate);
+  - nunca a hoy ni a un día pasado, ni a un día que ya tiene otra sesión del plan;
+  - las sesiones registradas no se mueven, pero ocupan su día.
+- **Frecuencia**: si la semana tiene más sesiones que días disponibles libres, se mueven las que caben y el «¿Por qué?» lista las demás.
+  - **El motor nunca borra sesiones** (A57): reducir la frecuencia o juntar sesiones lo decide el entrenador.
+- **Decisión**: Aceptar, Rechazar o Posponer. No se edita (A58): para otro día, el entrenador la rechaza y mueve la sesión en el Calendario.
+  - Al aceptar, se aplican las mismas reglas que al reprogramar a mano (A51), se crea una revisión del plan y queda auditado.
+  - Una sesión que alguien movió o registró desde la propuesta se salta.
+  - «Deshacer» devuelve cada sesión a su día si nadie la ha vuelto a mover.
+- Clave estable `schedule:{semana}:{días disponibles}`: con la misma disponibilidad no se repite; si la disponibilidad cambia, se propone de nuevo.
+
 ## 4. Interfaz
 
 - **Ficha → Planificación**:
@@ -155,5 +172,5 @@ Ver `API.md` («Motor de programación»).
 - ~~Propuesta como **nueva revisión del plan activo**.~~ (hecho en la fase 13 de la reestructuración)
 - ~~Incremento de carga configurable por ejercicio.~~ (hecho en la fase 13 de la reestructuración)
 - ~~Progresión por velocidad (VBT) y e1RM.~~ (hecho en la fase 14 de la reestructuración)
-- Ajustes de días o frecuencia por disponibilidad.
+- ~~Ajustes de días o frecuencia por disponibilidad.~~ (hecho en la fase 15 de la reestructuración; la frecuencia la decide el entrenador)
 - ~~Aplicar ajustes desde la página de alertas.~~ (hecho en la fase 12 de la reestructuración)
