@@ -6,3 +6,7 @@ onlyBuiltDependencies:
   - esbuild
   - sharp
   - unrs-resolver
+overrides:
+  # exceljs asks for uuid ^8 (GHSA-w5hq-g745-h8pq, moderate). exceljs only calls v4(), so it was not
+  # reachable, but 11.1.1+ is patched and keeps the CommonJS v4 export exceljs requires.
+  exceljs>uuid: ^11.1.1
