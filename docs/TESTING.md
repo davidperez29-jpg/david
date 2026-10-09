@@ -708,3 +708,20 @@ pnpm --filter @tp/web test:e2e -- e2e/perf.spec.ts e2e/perf.mobile.spec.ts
 - **E2E** (`reports.spec.ts`): desde la ficha de la dinamometría, «Importar normas del centro» abre la importación preseleccionada; una fila válida y otra con «Fuente no registrada»; la norma aparece «Del centro» y se elimina.
 - **Seguridad**: la matriz de acceso cruzado incluye `DELETE /assessment-references/{id}`.
 
+## Resultado de la reestructuración, fase 17 (umbrales por población)
+
+- **Unitarias** (`decision.unit.test.ts`, «population values of the centre»):
+  - gana la población más específica (hombres + fútbol frente a solo fútbol); si empatan, la primera; sin sexo indicado no coincide una población por sexo;
+  - los límites de edad están incluidos y una edad desconocida no coincide; el deporte puede ser el propio del cliente;
+  - etiquetas en español («mujeres, 16–18 años, fútbol», «65 años o más», «hasta 17 años, principiantes»);
+  - un umbral de CMJ solo para fútbol: el futbolista se valora con él («frente al umbral del centro para fútbol 35 cm») y otro deporte sigue pendiente; `populationValues` con su resumen;
+  - cualquier parámetro puede variar: reevaluación cada 4 semanas para principiantes y 6 para el resto.
+- **Integración** (`decision.int.test.ts`):
+  - se rechazan una población vacía, edades invertidas, un deporte desconocido, un parámetro desconocido, valores vacíos o negativos y dos poblaciones iguales;
+  - el entrenador recibe `403`;
+  - se guarda como versión nueva y se audita (`profile.relative_strength_low.variants`);
+  - el futbolista usa el valor del centro y otro cliente sigue pendiente;
+  - sin `variants` se conservan y con `[]` se quitan.
+- **E2E** (`decision.spec.ts`): Iker se valora con «el umbral del centro para fútbol»; ADMIN añade un valor de CMJ para mujeres futbolistas (versión 2), se ve al recargar y lo quita (versión 3).
+- **Demo**: los umbrales de futbolista son valores para fútbol; el valor general queda sin definir.
+

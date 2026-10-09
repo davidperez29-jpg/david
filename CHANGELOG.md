@@ -2,6 +2,26 @@
 
 Formato: fecha · cambio · motivo · archivos · impacto.
 
+## 2026-10-09 — Reestructuración, fase 17: umbrales por población
+
+- **Cambio:** las reglas del motor de decisiones admiten **valores por población** en cada parámetro: sexo, edad, experiencia y deporte (Ajustes → Reglas del motor de decisión → «Valores por población»).
+  - Se aplica la población más específica que coincida; un dato desconocido no coincide.
+  - Un umbral puede tener solo valores por población: para el resto de clientes sigue pendiente.
+  - **Motivo:** pendiente del motor de decisiones; un mismo umbral no sirve para un futbolista y para una persona mayor.
+- **Cambio:** el perfil y «Necesidades → Cálculo» dicen qué valor del centro se usó y para qué población.
+- **Cambio:** los datos demo fijan los umbrales de futbolista como valores para fútbol.
+- **Documentación:** tabla de los valores por defecto de todos los parámetros (`DECISION_ENGINE.md` §5).
+- **Archivos:**
+  - `packages/domain/src/decision/{population,engine,types,index}.ts`;
+  - `packages/db/src/schema/decision.ts`, migración `0051_rule_parameter_variants`;
+  - `packages/contracts/src/decision.ts`, `packages/application/src/decision.ts`, `packages/application/scripts/seed-demo.ts`;
+  - `apps/web/src/components/decision/actions.tsx`, `apps/web/src/app/app/settings/decision/page.tsx`, `apps/web/src/app/app/clients/[clientId]/decision-tab.tsx`;
+  - `packages/domain/test/decision.unit.test.ts`, `packages/application/test/decision.int.test.ts`, `apps/web/e2e/decision.spec.ts`, `docs/api/*.json`;
+  - `docs/{DECISION_ENGINE,API,IMPLEMENTATION_ROADMAP,TESTING}.md`, `docs/PRODUCT_ARCHITECTURE.md` A61–A62.
+- **Impacto:**
+  - 1 migración (columna `parameter_variants` en `rules`, vacía por defecto);
+  - sin rutas nuevas; `PUT /decision/rules` acepta `variants` opcionales, compatible con los clientes actuales.
+
 ## 2026-10-07 — Reestructuración, fase 16: valores de referencia del centro
 
 - **Cambio:** nueva importación **«Valores de referencia (normas)»** en CSV o XLSX, con vista previa y errores por columna.

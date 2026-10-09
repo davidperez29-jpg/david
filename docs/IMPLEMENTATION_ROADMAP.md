@@ -33,6 +33,7 @@
 | 14 | Progresión por velocidad (VBT) y 1RM estimado orientativo (elegida por el responsable) | Motor de ajustes, registro de series con velocidad y RIR | ✅ Hecha |
 | 15 | Ajustes por disponibilidad: mover sesiones a los días que el cliente puede entrenar (elegida por el responsable) | Motor de ajustes, disponibilidad del cliente, reprogramar (A51) | ✅ Hecha |
 | 16 | Valores de referencia normativos del centro: importación validada y gestión en la ficha del test (elegida por el responsable) | Importaciones, catálogo de tests, fuentes | ✅ Hecha |
+| 17 | Umbrales por población: valores de los parámetros de las reglas por sexo, edad, experiencia y deporte (elegida por el responsable) | Motor de decisiones, reglas como datos | ✅ Hecha |
 
 ## Por qué el despliegue va primero (decisión A2)
 
@@ -317,3 +318,18 @@ Elegida por el responsable: pendiente de Informes y Valoración.
 - ✅ los valores se guardan en el formato que usa la comparación (`mean/sd`, `median`, `pN`, `cutoff` con `referral: false`) y son del centro: otro centro no los ve (`reports.int.test.ts`);
 - ✅ solo se eliminan los del centro; el cliente no puede importar ni borrar (`reports.int.test.ts`); la ruta nueva está en la matriz de acceso cruzado;
 - ✅ el entrenador importa desde la ficha del test, ve «Del centro» y lo elimina (`reports.spec.ts`).
+
+## Fase 17 · Umbrales por población ✅
+
+Elegida por el responsable: pendiente del motor de decisiones.
+
+- Cada parámetro de una regla tiene un valor general y, si el centro quiere, **valores por población** (sexo, edad, experiencia y deporte). Se aplica la población más específica que coincida (A62).
+- Un umbral puede tener solo valores por población: para el resto de clientes sigue pendiente y el motor no inventa nada (A61).
+- El perfil y «Necesidades → Cálculo» dicen qué valor del centro se usó y para qué población.
+- Los datos demo fijan los umbrales de futbolista como valores para fútbol: ya no se aplican, por ejemplo, el CMJ de 35 cm a una persona mayor.
+
+**Criterios**:
+- ✅ gana la población más específica y, si empatan, la primera; un dato desconocido no coincide; el deporte puede ser el del cliente (`decision.unit.test.ts`);
+- ✅ un umbral solo para fútbol valora a los futbolistas y deja pendiente al resto; cualquier parámetro puede variar (reevaluación de principiantes) (`decision.unit.test.ts`);
+- ✅ validación por regla, versión nueva, auditoría con antes y después; sin `variants` se conservan y con `[]` se quitan; solo ADMIN (`decision.int.test.ts`);
+- ✅ ADMIN añade y quita un valor por población en el editor; la explicación de Iker muestra el umbral para fútbol (`decision.spec.ts`).

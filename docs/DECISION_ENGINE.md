@@ -9,6 +9,7 @@
 - **No inventa números.**
   - Los umbrales del perfil (fuerza relativa, CMJ, sprint) **no tienen valor por defecto**. Mientras el centro no los fije, el motor lo dice («Reglas con parámetros sin definir») y usa la valoración manual del entrenador.
   - Si existe una referencia verificada aplicable al cliente (Fase 5), el motor la usa antes que la valoración manual.
+  - El centro puede fijar un valor **solo para una población** (por ejemplo, sus futbolistas): para el resto de clientes sigue pendiente. La plataforma no trae valores por población (§5).
 - **Determinista.** Con los mismos datos y la misma versión de reglas, el resultado es el mismo. Cada ejecución guarda la huella de sus entradas (`inputHash`) y la versión de reglas.
 - **Sin `eval`.** Las condiciones son un DSL en JSON con operadores cerrados, interpretado en `dsl.ts`.
 
@@ -77,6 +78,55 @@ Cada necesidad, prioridad, método y propuesta de plan muestra estos apartados:
 - **Métricas por regla**: propuestas decididas, rechazadas (con su %) y cambiadas, calculadas con `unnest(rule_keys)`. Sirven para detectar reglas mal calibradas; con ≥ 5 decisiones y ≥ 50 % de rechazos se resaltan.
 - Recalcular sustituye las propuestas pendientes (`superseded`). Las decididas quedan como historial.
 
+### Valores por población (fase 17 de la reestructuración)
+
+Cada parámetro numérico de una regla tiene un **valor general** y puede tener **valores por población**, que fija el centro.
+
+- **Población**: cualquier combinación de:
+  - sexo (mujeres u hombres);
+  - edad (desde y/o hasta, ambos incluidos);
+  - experiencia (principiante, intermedio o avanzado);
+  - deporte: el deporte principal del cliente o el de su objetivo principal.
+- **Cuál se aplica** (`pickVariant`, determinista):
+  - todas las condiciones indicadas deben coincidir; si falta el dato del cliente (por ejemplo, sin fecha de nacimiento), esa población no se aplica;
+  - si coinciden varias, gana la **más específica** (más condiciones); si empatan, la primera de la lista;
+  - sus valores sustituyen a los generales; los parámetros que no indica siguen con el general.
+- **Un umbral puede no tener valor general y sí valores por población** (A62). Por ejemplo, umbral de CMJ solo para fútbol:
+  - los futbolistas se valoran con ese umbral;
+  - para el resto, la regla sigue **pendiente**: el motor lo dice y usa una referencia verificada aplicable o la valoración del entrenador.
+- **Explicación**:
+  - el perfil dice qué umbral se usó, por ejemplo «1,31 ×PC frente al umbral del centro para fútbol 1,5 ×PC»;
+  - el resultado incluye `populationValues` (regla, población, valores y resumen) y «Necesidades → Cálculo» lo muestra.
+- **Guardado** (`PUT /decision/rules`, ADMIN):
+  - forman parte de la versión de reglas: cambiarlas crea una versión nueva y se audita (`regla.variants`, antes y después);
+  - se validan: al menos una condición, edad mínima ≤ máxima, deporte del catálogo, parámetros de la regla, valores ≥ 0, sin dos poblaciones iguales en la misma regla y hasta 20 por regla;
+  - si una regla llega sin `variants`, se conservan las que tenía; con `[]` se quitan.
+- La plataforma **no trae valores por población** (A61): no hay umbrales universales verificados por sexo, edad o deporte para estos tests. Los valores son siempre del centro.
+
+### Valores por defecto de los parámetros
+
+Valores generales de la plataforma (versión 0), antes de que el centro cambie nada. Todos son configurables, y ninguno tiene valores por población de serie.
+
+| Regla | Parámetro | Valor por defecto | Origen |
+|---|---|---|---|
+| `profile.relative_strength_low` | Umbral de fuerza relativa (`threshold`) | **sin valor** (lo fija el centro) | Configurable por organización y población; no hay un umbral universal verificado. |
+| `profile.cmj_low` | Umbral de CMJ (`threshold`) | **sin valor** (lo fija el centro) | Configurable por organización y población; no hay un umbral universal verificado. |
+| `profile.sprint_slow` | Umbral de sprint 10 m (`threshold`) | **sin valor** (lo fija el centro) | Configurable por organización y población; no hay un umbral universal verificado. |
+| `needs.max_strength.relative_strength_low` | Aumento de la necesidad (`delta`) | 0,3 | Práctica (F) |
+| `needs.power.cmj_low` | Aumento de la necesidad (`delta`) | 0,3 | Práctica (F) |
+| `needs.speed.sprint_slow` | Aumento de la necesidad (`delta`) | 0,3 | Práctica (F) |
+| `prioritization.max_priorities` | Máximo de prioridades (`max`) | 3 | Práctica (F) |
+| `prioritization.low_adherence` | Adherencia por debajo de (`threshold`) | 60 % | Práctica (F) |
+| `prioritization.low_adherence` | Prioridades con adherencia baja (`max`) | 2 | Práctica (F) |
+| `prioritization.time_limited` | Minutos semanales por debajo de (`minutes`) | 120 min/sem | Práctica (F) |
+| `prioritization.time_limited` | Prioridades con poco tiempo (`max`) | 2 | Práctica (F) |
+| `methods.older_adults` | Edad desde (`age`) | 65 años | Práctica (F) |
+| `methods.youth` | Edad por debajo de (`age`) | 18 años | Práctica (F) |
+| `methods.minimal_dose_time` | Minutos semanales por debajo de (`minutes`) | 120 min/sem | Práctica (F) |
+| `progression.reassessment` | Reevaluar cada (`weeks`) | 6 semanas | Práctica (F): 6–12 semanas |
+| `progression.intro_phase` | Desde (introducción breve) (`brief`) | 0,3 | Práctica (F) |
+| `progression.intro_phase` | Desde (fase de adaptación) (`phase`) | 0,6 | Práctica (F) |
+
 ## 6. Interfaz
 
 - **Ficha → Necesidades**, en este orden:
@@ -92,6 +142,9 @@ Cada necesidad, prioridad, método y propuesta de plan muestra estos apartados:
   10. Reglas desactivadas para el cliente, con «Reactivar».
   - Cada propuesta tiene «¿Por qué?» (un `<details>` nativo, que funciona con teclado y sin JavaScript) y las acciones Aceptar · Editar · Rechazar · Posponer · Desactivar regla para este cliente.
 - **Ajustes → Reglas del motor de decisión**: reglas por dominio con descripción, nivel, evidencia, limitaciones, parámetros (en ámbar si están pendientes), la condición DSL y las métricas. Los entrenadores solo pueden leerlas.
+  - Cada regla con parámetros tiene **«Valores por población»** (fase 17): sexo, edad desde y hasta, experiencia, deporte, un valor por parámetro (vacío = el general) y una nota. «Añadir valores por población» y «Quitar».
+  - El aviso de reglas pendientes indica cuáles tienen valores para alguna población.
+- **Necesidades → Cálculo**: «Valores del centro para su población», con el resumen, la población y la regla.
 
 ## 7. Caso del futbolista (§69)
 
@@ -112,7 +165,7 @@ Cada necesidad, prioridad, método y propuesta de plan muestra estos apartados:
 - Integración: de extremo a extremo desde la base de datos.
 - E2E: pantalla con DOI, rechazo y métricas.
 
-**Demo.** Iker Arrieta tiene un 1RM reciente de 98 kg con 75 kg (1,31 ×PC). Su P1 es fuerza máxima, aceptada con cambios. El centro demo tiene fijados los umbrales de futbolista.
+**Demo.** Iker Arrieta tiene un 1RM reciente de 98 kg con 75 kg (1,31 ×PC). Su P1 es fuerza máxima, aceptada con cambios. El centro demo tiene fijados los umbrales de futbolista **como valores para fútbol** (fase 17): para el resto de clientes siguen pendientes.
 
 ## 8. API
 
@@ -122,4 +175,5 @@ Ver `API.md` («Motor de decisiones»).
 
 - ~~Generar el plan a partir de la propuesta y la progresión semana a semana~~: hecho en la Fase 11 (`PROGRAMMING_ENGINE.md`).
 - Editor visual de condiciones (hoy se muestran en JSON; solo se editan parámetros y activación).
-- Más rasgos y umbrales por población (por ejemplo, por sexo o categoría).
+- ~~Umbrales por población (por ejemplo, por sexo o categoría)~~: hecho en la fase 17 de la reestructuración (sexo, edad, experiencia y deporte; §5).
+- Más rasgos del perfil (por ejemplo, prensión manual o 5×STS en mayores).
