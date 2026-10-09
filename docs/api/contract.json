@@ -3052,6 +3052,75 @@
                     "null"
                   ]
                 }
+              },
+              "variants": {
+                "maxItems": 20,
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "when": {
+                      "type": "object",
+                      "properties": {
+                        "sex": {
+                          "type": "string",
+                          "enum": [
+                            "female",
+                            "male"
+                          ]
+                        },
+                        "ageMin": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 120
+                        },
+                        "ageMax": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 120
+                        },
+                        "experience": {
+                          "type": "string",
+                          "enum": [
+                            "beginner",
+                            "intermediate",
+                            "advanced"
+                          ]
+                        },
+                        "sport": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 60
+                        }
+                      }
+                    },
+                    "values": {
+                      "type": "object",
+                      "propertyNames": {
+                        "type": "string",
+                        "maxLength": 40
+                      },
+                      "additionalProperties": {
+                        "type": "number"
+                      }
+                    },
+                    "note": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "maxLength": 200
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "when",
+                    "values"
+                  ]
+                }
               }
             },
             "required": [
@@ -5266,6 +5335,41 @@
         "status"
       ]
     },
+    "populationCriteriaSchema": {
+      "type": "object",
+      "properties": {
+        "sex": {
+          "type": "string",
+          "enum": [
+            "female",
+            "male"
+          ]
+        },
+        "ageMin": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 120
+        },
+        "ageMax": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 120
+        },
+        "experience": {
+          "type": "string",
+          "enum": [
+            "beginner",
+            "intermediate",
+            "advanced"
+          ]
+        },
+        "sport": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 60
+        }
+      }
+    },
     "prescriptionSchema": {
       "type": "object",
       "properties": {
@@ -6101,6 +6205,71 @@
         "decidedByName",
         "decidedByRole",
         "decidedOn"
+      ]
+    },
+    "ruleVariantSchema": {
+      "type": "object",
+      "properties": {
+        "when": {
+          "type": "object",
+          "properties": {
+            "sex": {
+              "type": "string",
+              "enum": [
+                "female",
+                "male"
+              ]
+            },
+            "ageMin": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 120
+            },
+            "ageMax": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 120
+            },
+            "experience": {
+              "type": "string",
+              "enum": [
+                "beginner",
+                "intermediate",
+                "advanced"
+              ]
+            },
+            "sport": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 60
+            }
+          }
+        },
+        "values": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string",
+            "maxLength": 40
+          },
+          "additionalProperties": {
+            "type": "number"
+          }
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 200
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "when",
+        "values"
       ]
     },
     "saveTemplateSchema": {

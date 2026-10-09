@@ -143,6 +143,19 @@ export async function DecisionTab({
             ))}
           </ul>
         ) : null}
+        {r.populationValues?.length ? (
+          <div className="mt-2 text-sm">
+            <span className="font-medium">Valores del centro para su población:</span>
+            <ul className="list-disc pl-5 text-muted">
+              {r.populationValues.map((p) => (
+                <li key={p.ruleKey}>
+                  {p.summary} ({p.population}){p.note ? ` · ${p.note}` : ''}{' '}
+                  <span className="font-mono text-xs">{p.ruleKey}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
         {r.pendingRules.length ? (
           <p className="mt-2 text-sm">
             Reglas con parámetros sin definir:{' '}

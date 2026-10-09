@@ -17,6 +17,22 @@ export const traitFlagSchema = z.object({
   note: optionalText(300),
 });
 
+/** Who a centre's parameter values apply to (restructure phase 17). Empty fields = any. */
+export const populationCriteriaSchema = z.object({
+  sex: z.enum(['female', 'male']).optional(),
+  ageMin: z.coerce.number().int().min(0).max(120).optional(),
+  ageMax: z.coerce.number().int().min(0).max(120).optional(),
+  experience: z.enum(['beginner', 'intermediate', 'advanced']).optional(),
+  /** Sport slug of the catalogue. */
+  sport: z.string().trim().min(1).max(60).optional(),
+});
+
+export const ruleVariantSchema = z.object({
+  when: populationCriteriaSchema,
+  values: z.record(z.string().max(40), z.coerce.number().finite()),
+  note: optionalText(200),
+});
+
 export const decisionRulesSchema = z.object({
   rules: z
     .array(
@@ -24,6 +40,8 @@ export const decisionRulesSchema = z.object({
         key: z.string().trim().min(1).max(80),
         enabled: z.boolean(),
         parameters: z.record(z.string().max(40), z.coerce.number().finite().nullable()).default({}),
+        /** Omitted = keep the current population values; [] = remove them all. */
+        variants: z.array(ruleVariantSchema).max(20).optional(),
       }),
     )
     .min(1)

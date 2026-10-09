@@ -1,6 +1,6 @@
 import { schema } from '@tp/db';
 import { addDays, localDate } from '@tp/domain';
-import { and, eq } from 'drizzle-orm';
+import { and, desc, eq } from 'drizzle-orm';
 import { beforeAll, describe, expect, it } from 'vitest';
 import {
   createAssessment,
@@ -266,6 +266,114 @@ describe('the trainer has the last word (§13.9)', () => {
       ruleKey: 'needs.max_strength.relative_strength_low',
       enabled: true,
     });
+  });
+});
+
+describe('population values of the centre (restructure phase 17)', () => {
+  const key = 'profile.relative_strength_low';
+  const save = (variants?: unknown) =>
+    updateDecisionRules(o.admin, {
+      rules: [
+        {
+          key,
+          enabled: true,
+          parameters: {},
+          ...(variants === undefined ? {} : { variants: variants as never }),
+        },
+      ],
+    });
+
+  it('are validated per rule, then versioned and audited', async () => {
+    for (const variants of [
+      [{ when: {}, values: { threshold: 1 } }],
+      [{ when: { ageMin: 30, ageMax: 20 }, values: { threshold: 1 } }],
+      [{ when: { sport: 'quidditch' }, values: { threshold: 1 } }],
+      [{ when: { sex: 'male' }, values: { nope: 1 } }],
+      [{ when: { sex: 'male' }, values: {} }],
+      [{ when: { sex: 'male' }, values: { threshold: -1 } }],
+      [
+        { when: { sport: 'football' }, values: { threshold: 1 } },
+        { when: { sport: 'football' }, values: { threshold: 2 } },
+      ],
+    ])
+      await expect(save(variants)).rejects.toMatchObject({
+        code: 'validation',
+        details: { [`${key}.variants`]: [expect.any(String)] },
+      });
+    await expect(
+      updateDecisionRules(o.trainer2, {
+        rules: [{ key, enabled: true, parameters: {}, variants: [] }],
+      }),
+    ).rejects.toMatchObject({ code: 'forbidden' });
+
+    // The general threshold stays undefined (an earlier test cleared it); footballers get 1.5.
+    const { version } = await save([
+      { when: { sport: 'football' }, values: { threshold: 1.5 }, note: 'Primer equipo' },
+    ]);
+    const rules = await getDecisionRules(o.admin);
+    expect(rules.version).toBe(version);
+    expect(rules.sports.some((x) => x.slug === 'football')).toBe(true);
+    expect(rules.rules.find((r) => r.key === key)).toMatchObject({
+      pending: true,
+      variants: [
+        {
+          when: { sport: 'football' },
+          values: { threshold: 1.5 },
+          note: 'Primer equipo',
+          population: 'fútbol',
+        },
+      ],
+    });
+    const [audit] = await testDb()
+      .db.select()
+      .from(schema.auditLogs)
+      .where(
+        and(
+          eq(schema.auditLogs.organizationId, o.org.organizationId),
+          eq(schema.auditLogs.entityType, 'rule_set'),
+        ),
+      )
+      .orderBy(desc(schema.auditLogs.occurredAt))
+      .limit(1);
+    expect(audit!.changes).toContainEqual({
+      field: `${key}.variants`,
+      before: '',
+      after: 'football: threshold 1.5',
+    });
+  });
+
+  it('apply to the matching clients only, and the explanation says so', async () => {
+    const { result } = await runDecision(o.admin, o.clientA);
+    expect(result.traits.find((t) => t.key === 'relative_strength_low')).toMatchObject({
+      value: true,
+      basis: 'threshold',
+      detail: expect.stringContaining('frente al umbral del centro para fútbol 1,5'),
+    });
+    expect(result.pendingRules.map((p) => p.key)).not.toContain(key);
+    expect(result.populationValues).toContainEqual({
+      ruleKey: key,
+      population: 'fútbol',
+      values: { threshold: 1.5 },
+      summary: 'Umbral de fuerza relativa: 1,5 ×PC',
+      note: 'Primer equipo',
+    });
+    // Another client (no football): still pending, nothing invented.
+    const other = await runDecision(o.trainer2, o.clientB);
+    expect(other.result.pendingRules.map((p) => p.key)).toContain(key);
+    expect(other.result.populationValues).toEqual([]);
+  });
+
+  it('omitted keeps them; an empty list removes them', async () => {
+    await save();
+    expect(
+      (await getDecisionRules(o.admin)).rules.find((r) => r.key === key)!.variants,
+    ).toHaveLength(1);
+    await save([]);
+    expect((await getDecisionRules(o.admin)).rules.find((r) => r.key === key)!.variants).toEqual(
+      [],
+    );
+    const { result } = await runDecision(o.admin, o.clientA);
+    expect(result.pendingRules.map((p) => p.key)).toContain(key);
   });
 });
 

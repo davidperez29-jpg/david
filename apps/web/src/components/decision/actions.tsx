@@ -272,7 +272,211 @@ type Rule = {
     source: string;
   }[];
   stats: { decided: number; rejected: number; changed: number; rejectionRate: number } | null;
+  variants: Variant[];
 };
+
+/** The centre's parameter values for a population (restructure phase 17). */
+type Variant = {
+  when: {
+    sex?: 'female' | 'male';
+    ageMin?: number;
+    ageMax?: number;
+    experience?: 'beginner' | 'intermediate' | 'advanced';
+    sport?: string;
+  };
+  values: Record<string, number | null>;
+  note: string | null;
+  population?: string;
+};
+type Sport = { slug: string; name: string };
+
+const EXPERIENCE_OPTIONS: [string, string][] = [
+  ['beginner', 'Principiante'],
+  ['intermediate', 'Intermedio'],
+  ['advanced', 'Avanzado'],
+];
+const field = 'h-9 rounded-md border border-border bg-bg px-2 text-sm';
+const optNumber = (v: string) => (v.trim() === '' ? undefined : Number(v));
+
+/**
+ * «Valores por población»: other values of this rule's parameters for a sex, an age range, an
+ * experience level or a sport. They replace the general values for clients of that population;
+ * when several match, the most specific one applies (the first one on a tie).
+ */
+function PopulationValues({
+  rule,
+  sports,
+  editable,
+  error,
+  onChange,
+}: {
+  rule: Rule;
+  sports: Sport[];
+  editable: boolean;
+  error: string[] | undefined;
+  onChange: (variants: Variant[]) => void;
+}) {
+  const params = rule.parameters.filter((p) => typeof p.value !== 'string');
+  if (!params.length) return null;
+  const update = (i: number, patch: Partial<Variant>) =>
+    onChange(rule.variants.map((v, j) => (j === i ? { ...v, ...patch } : v)));
+  const setWhen = (i: number, key: keyof Variant['when'], value: unknown) =>
+    update(i, {
+      when: Object.fromEntries(
+        Object.entries({ ...rule.variants[i]!.when, [key]: value }).filter(
+          ([, x]) => x !== undefined && x !== '' && x !== null,
+        ),
+      ) as Variant['when'],
+    });
+  if (!editable && !rule.variants.length) return null;
+  return (
+    <div className="mt-3 flex flex-col gap-2 rounded-md border border-border p-2">
+      <p className="text-xs font-medium">Valores por población</p>
+      <p className="text-xs text-muted">
+        Sustituyen a los valores generales para los clientes de esa población. Si coinciden varias,
+        se aplica la más específica (la primera, si empatan). Los fija el centro: la plataforma no
+        trae valores por población.
+      </p>
+      {!editable ? (
+        <ul className="text-xs">
+          {rule.variants.map((v, i) => (
+            <li key={i}>
+              <span className="font-medium">{v.population}</span>:{' '}
+              {params
+                .filter((p) => v.values[p.key] != null)
+                .map((p) => `${p.label} ${v.values[p.key]}${p.unit ? ` ${p.unit}` : ''}`)
+                .join(' · ')}
+              {v.note ? ` (${v.note})` : ''}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        rule.variants.map((v, i) => (
+          <div
+            key={i}
+            role="group"
+            aria-label={`Valores por población ${i + 1}`}
+            className="flex flex-wrap items-end gap-2 border-t border-border pt-2 first:border-t-0 first:pt-0"
+          >
+            <label className="flex flex-col gap-1 text-xs">
+              Sexo
+              <select
+                value={v.when.sex ?? ''}
+                onChange={(e) => setWhen(i, 'sex', e.target.value || undefined)}
+                className={field}
+              >
+                <option value="">Cualquiera</option>
+                <option value="female">Mujeres</option>
+                <option value="male">Hombres</option>
+              </select>
+            </label>
+            <label className="flex flex-col gap-1 text-xs">
+              Edad desde
+              <input
+                type="number"
+                min={0}
+                max={120}
+                value={v.when.ageMin ?? ''}
+                onChange={(e) => setWhen(i, 'ageMin', optNumber(e.target.value))}
+                className={`${field} w-20`}
+              />
+            </label>
+            <label className="flex flex-col gap-1 text-xs">
+              Edad hasta
+              <input
+                type="number"
+                min={0}
+                max={120}
+                value={v.when.ageMax ?? ''}
+                onChange={(e) => setWhen(i, 'ageMax', optNumber(e.target.value))}
+                className={`${field} w-20`}
+              />
+            </label>
+            <label className="flex flex-col gap-1 text-xs">
+              Experiencia
+              <select
+                value={v.when.experience ?? ''}
+                onChange={(e) => setWhen(i, 'experience', e.target.value || undefined)}
+                className={field}
+              >
+                <option value="">Cualquiera</option>
+                {EXPERIENCE_OPTIONS.map(([k, l]) => (
+                  <option key={k} value={k}>
+                    {l}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="flex flex-col gap-1 text-xs">
+              Deporte
+              <select
+                value={v.when.sport ?? ''}
+                onChange={(e) => setWhen(i, 'sport', e.target.value || undefined)}
+                className={field}
+              >
+                <option value="">Cualquiera</option>
+                {sports.map((x) => (
+                  <option key={x.slug} value={x.slug}>
+                    {x.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            {params.map((p) => (
+              <label key={p.key} className="flex flex-col gap-1 text-xs">
+                {p.label}
+                {p.unit ? ` (${p.unit})` : ''}
+                <input
+                  type="number"
+                  step="any"
+                  min={0}
+                  value={v.values[p.key] ?? ''}
+                  placeholder="General"
+                  onChange={(e) =>
+                    update(i, {
+                      values: { ...v.values, [p.key]: optNumber(e.target.value) ?? null },
+                    })
+                  }
+                  className={`${field} w-28`}
+                />
+              </label>
+            ))}
+            <label className="flex flex-col gap-1 text-xs">
+              Nota
+              <input
+                value={v.note ?? ''}
+                maxLength={200}
+                onChange={(e) => update(i, { note: e.target.value })}
+                className={`${field} w-48`}
+              />
+            </label>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              onClick={() => onChange(rule.variants.filter((_, j) => j !== i))}
+            >
+              Quitar
+            </Button>
+          </div>
+        ))
+      )}
+      {editable ? (
+        <span>
+          <Button
+            type="button"
+            size="sm"
+            variant="secondary"
+            onClick={() => onChange([...rule.variants, { when: {}, values: {}, note: null }])}
+          >
+            Añadir valores por población
+          </Button>
+        </span>
+      ) : null}
+      {error ? <span className="text-xs text-danger">{error.join(' ')}</span> : null}
+    </div>
+  );
+}
 
 const DOMAINS: [string, string][] = [
   ['screening', 'Cribado'],
@@ -285,7 +489,15 @@ const DOMAINS: [string, string][] = [
 ];
 
 /** Decision rules as data (ADMIN edits; trainers read). Saving creates a new audited version. */
-export function DecisionRulesEditor({ rules, editable }: { rules: Rule[]; editable: boolean }) {
+export function DecisionRulesEditor({
+  rules,
+  sports,
+  editable,
+}: {
+  rules: Rule[];
+  sports: Sport[];
+  editable: boolean;
+}) {
   const a = useApiAction();
   const [state, setState] = useState(rules);
   const [notes, setNotes] = useState('');
@@ -305,6 +517,13 @@ export function DecisionRulesEditor({ rules, editable }: { rules: Rule[]; editab
                 .filter((p) => typeof p.value !== 'string')
                 .map((p) => [p.key, p.value === '' ? null : p.value]),
             ),
+            variants: r.variants.map((v) => ({
+              when: v.when,
+              values: Object.fromEntries(
+                Object.entries(v.values).filter(([, x]) => x !== null && x !== undefined),
+              ),
+              note: v.note?.trim() || null,
+            })),
           })),
           notes: notes.trim() || null,
         });
@@ -392,6 +611,13 @@ export function DecisionRulesEditor({ rules, editable }: { rules: Rule[]; editab
                     })}
                   </div>
                 ) : null}
+                <PopulationValues
+                  rule={r}
+                  sports={sports}
+                  editable={editable}
+                  error={a.fieldError(`${r.key}.variants`)}
+                  onChange={(variants) => set(r.key, { variants })}
+                />
                 <details className="mt-2 text-xs">
                   <summary className="cursor-pointer text-muted">Condición (DSL)</summary>
                   <pre className="mt-1 overflow-x-auto rounded bg-surface p-2">

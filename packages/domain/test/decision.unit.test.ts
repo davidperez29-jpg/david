@@ -2,9 +2,12 @@ import { describe, expect, it } from 'vitest';
 import {
   DEFAULT_DECISION_RULES,
   evaluate,
+  pickVariant,
+  populationLabel,
   REFERRAL_TEXT,
   runDecisionEngine,
   validateExpr,
+  whoOf,
   type ClientContext,
   type DecisionRule,
   type KnowledgeSnapshot,
@@ -490,5 +493,120 @@ describe('golden cases: safety and populations', () => {
     );
     expect(r.needs.every((n) => n.explanation.confidence !== 'high')).toBe(true);
     for (const t of r.traits) expect(t.value).toBeNull();
+  });
+});
+
+// ── Population values (restructure phase 17) ─────────────────────────────────
+describe('population values of the centre', () => {
+  const withVariants = (key: string, variants: DecisionRule['variants']) =>
+    DEFAULT_DECISION_RULES.map((r) => (r.key === key ? { ...r, variants } : r));
+
+  it('the most specific matching variant wins; on a tie, the first one', () => {
+    const variants = [
+      { when: { sport: 'football' }, values: { threshold: 1.4 } },
+      { when: { sex: 'male' as const, sport: 'football' }, values: { threshold: 1.2 } },
+      { when: { sport: 'football' }, values: { threshold: 9 } },
+    ];
+    expect(pickVariant(variants, whoOf(footballer()))?.index).toBe(1);
+    const woman = footballer({ person: { ...footballer().person, sex: 'female' } });
+    expect(pickVariant(variants, whoOf(woman))?.index).toBe(0);
+    // Sex not stated by the client: a sex-specific variant never applies.
+    const undisclosed = footballer({ person: { ...footballer().person, sex: 'undisclosed' } });
+    expect(pickVariant([variants[1]!], whoOf(undisclosed))).toBeNull();
+  });
+
+  it('age bounds are inclusive and an unknown age never matches; sport may be the client’s own', () => {
+    const v = [{ when: { ageMin: 18, ageMax: 22 }, values: { threshold: 1 } }];
+    expect(pickVariant(v, whoOf(footballer()))).not.toBeNull();
+    const noAge = footballer({ person: { ...footballer().person, age: null } });
+    expect(pickVariant(v, whoOf(noAge))).toBeNull();
+    const older = footballer({ person: { ...footballer().person, age: 23 } });
+    expect(pickVariant(v, whoOf(older))).toBeNull();
+    // The client's main sport counts even when the primary goal has none.
+    const own = footballer({
+      person: { ...footballer().person, sport: 'basketball' },
+      goals: { primary: null, secondary: [] },
+    });
+    expect(
+      pickVariant([{ when: { sport: 'basketball' }, values: { threshold: 1 } }], whoOf(own)),
+    ).not.toBeNull();
+    expect(
+      pickVariant([{ when: { experience: 'advanced' }, values: { threshold: 1 } }], whoOf(own)),
+    ).toBeNull();
+  });
+
+  it('labels the population in Spanish', () => {
+    expect(
+      populationLabel(
+        { sex: 'female', ageMin: 16, ageMax: 18, sport: 'football' },
+        { football: 'Fútbol' },
+      ),
+    ).toBe('mujeres, 16–18 años, fútbol');
+    expect(populationLabel({ ageMin: 65 })).toBe('65 años o más');
+    expect(populationLabel({ ageMax: 17, experience: 'beginner' })).toBe(
+      'hasta 17 años, principiantes',
+    );
+  });
+
+  it('a centre value for footballers fills a pending threshold only for them, and says so', () => {
+    const rules = withVariants('profile.cmj_low', [
+      { when: { sport: 'football' }, values: { threshold: 35 }, note: 'Primer equipo' },
+    ]);
+    const k = { ...knowledge(rules), sportNames: { football: 'Fútbol' } };
+    const r = runDecisionEngine(footballer(), k);
+    expect(r.traits.find((t) => t.key === 'cmj_low')).toMatchObject({
+      value: true,
+      basis: 'threshold',
+      detail: expect.stringContaining('frente al umbral del centro para fútbol 35 cm'),
+    });
+    expect(r.pendingRules.map((p) => p.key)).not.toContain('profile.cmj_low');
+    expect(r.populationValues).toEqual([
+      {
+        ruleKey: 'profile.cmj_low',
+        population: 'fútbol',
+        values: { threshold: 35 },
+        summary: 'Umbral de CMJ: 35 cm',
+        note: 'Primer equipo',
+      },
+    ]);
+    // Another sport: the rule is still pending (no invented value).
+    const other = footballer({
+      goals: {
+        primary: { ...footballer().goals.primary!, sport: 'basketball' },
+        secondary: [],
+      },
+    });
+    const o = runDecisionEngine(other, k);
+    expect(o.pendingRules.map((p) => p.key)).toContain('profile.cmj_low');
+    expect(o.populationValues).toEqual([]);
+  });
+
+  it('any parameter can vary: earlier reassessment for beginners', () => {
+    const k = knowledge(
+      rulesWith(FOOTBALL_THRESHOLDS).map((r) =>
+        r.key === 'progression.reassessment'
+          ? {
+              ...r,
+              variants: [{ when: { experience: 'beginner' as const }, values: { weeks: 4 } }],
+            }
+          : r,
+      ),
+    );
+    const beginner = footballer({ person: { ...footballer().person, experience: 'beginner' } });
+    const b = runDecisionEngine(beginner, k);
+    expect(b.planSkeleton?.reassessmentEveryWeeks).toBe(4);
+    expect(b.populationValues).toEqual([
+      {
+        ruleKey: 'progression.reassessment',
+        population: 'principiantes',
+        values: { weeks: 4 },
+        summary: 'Reevaluar cada: 4 semanas',
+        note: null,
+      },
+    ]);
+    // Intermediate: the centre's general value (6 weeks).
+    const i = runDecisionEngine(footballer(), k);
+    expect(i.planSkeleton?.reassessmentEveryWeeks).toBe(6);
+    expect(i.populationValues).toEqual([]);
   });
 });

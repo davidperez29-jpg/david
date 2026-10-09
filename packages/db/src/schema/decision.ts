@@ -98,6 +98,10 @@ export const rules = pgTable(
     parameters: jsonb('parameters')
       .notNull()
       .default(sql`'{}'::jsonb`),
+    /** Centre values of the parameters for populations (restructure phase 17): ParamVariant[]. */
+    parameterVariants: jsonb('parameter_variants')
+      .notNull()
+      .default(sql`'[]'::jsonb`),
     priority: integer('priority').notNull().default(100),
     evidenceClaimIds: uuid('evidence_claim_ids')
       .array()

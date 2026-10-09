@@ -1,0 +1,1 @@
+ALTER TABLE "rules" ADD COLUMN "parameter_variants" jsonb DEFAULT '[]'::jsonb NOT NULL;

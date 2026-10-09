@@ -34,6 +34,8 @@ export interface ClientContext {
     sex: 'female' | 'male' | 'other' | 'undisclosed';
     experience: Experience | null;
     yearsTraining: number | null;
+    /** The client's main sport (slug), if any (restructure phase 1). */
+    sport?: string | null;
   };
   goals: {
     primary: {
@@ -78,6 +80,27 @@ export interface ParamSpec {
   evidenceLevel: 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'H';
 }
 
+/**
+ * Who a centre's own parameter values apply to (restructure phase 17). Every stated criterion must
+ * match the client; a criterion whose client data is unknown (e.g. no birth date) does not match.
+ */
+export interface PopulationCriteria {
+  sex?: 'female' | 'male';
+  /** Inclusive age range, in years. */
+  ageMin?: number;
+  ageMax?: number;
+  experience?: Experience;
+  /** Sport slug: the client's main sport or the sport of the primary goal. */
+  sport?: string;
+}
+
+/** The centre's values of some of a rule's parameters for one population. */
+export interface ParamVariant {
+  when: PopulationCriteria;
+  values: Record<string, number>;
+  note?: string | null;
+}
+
 export type RuleAction =
   | { type: 'set_screening'; status: 'caution' | 'refer'; text: string }
   | { type: 'set_trait'; trait: string; value: boolean; text: string }
@@ -109,6 +132,8 @@ export interface DecisionRule {
   evidenceLevel: 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'H';
   limitations: string;
   enabled: boolean;
+  /** Values for specific populations; the most specific match wins (restructure phase 17). */
+  variants?: ParamVariant[];
 }
 
 export interface ClaimFact {
@@ -174,6 +199,8 @@ export interface KnowledgeSnapshot {
   templates: TemplateFact[];
   /** Rules disabled for this client (§13.9). */
   disabledRules: string[];
+  /** Sport slug → name, to describe population values in Spanish. */
+  sportNames?: Record<string, string>;
 }
 
 export interface Explanation {
@@ -269,6 +296,15 @@ export interface DecisionResult {
   } | null;
   warnings: string[];
   pendingRules: { key: string; params: string[] }[];
+  /** The centre's population values used for this client, per rule (restructure phase 17). */
+  populationValues: {
+    ruleKey: string;
+    population: string;
+    values: Record<string, number>;
+    /** «Umbral de CMJ: 35 cm». */
+    summary: string;
+    note: string | null;
+  }[];
   /** Hash of the inputs: same hash + same rule set version → same result. */
   inputHash: string;
 }

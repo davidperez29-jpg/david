@@ -791,7 +791,7 @@
     {
       "action": "string",
       "actor": "string",
-      "changes": "[object Object]|object|object|object|object|object|object|object",
+      "changes": "[object Object]|object|object|object|object|object|object|object|object",
       "entityType": "string",
       "id": "string",
       "occurredAt": "string",
@@ -1096,6 +1096,7 @@
           "age": "number",
           "experience": "string",
           "sex": "string",
+          "sport": "null",
           "yearsTraining": "null"
         },
         "populations": [
@@ -1255,7 +1256,14 @@
             "score": "number"
           }
         ],
-        "pendingRules": [],
+        "pendingRules": [
+          {
+            "key": "string",
+            "params": [
+              "string"
+            ]
+          }
+        ],
         "planSkeleton": {
           "explanation": {
             "applicability": [],
@@ -1283,6 +1291,17 @@
           "templateName": "string",
           "templateSlug": "string"
         },
+        "populationValues": [
+          {
+            "note": "string",
+            "population": "string",
+            "ruleKey": "string",
+            "summary": "string",
+            "values": {
+              "threshold": "number"
+            }
+          }
+        ],
         "priorities": [
           {
             "label": "string",
@@ -1457,6 +1476,7 @@
       "age": "number",
       "experience": "string",
       "sex": "string",
+      "sport": "null",
       "yearsTraining": "null"
     },
     "populations": [
@@ -1917,7 +1937,7 @@
         "id": "string",
         "published": "boolean",
         "scheduledDate": "string",
-        "status": "null",
+        "status": "string",
         "title": "string"
       }
     ],
@@ -1983,8 +2003,8 @@
         "data": "object",
         "id": "string",
         "message": "string",
-        "resolutionNote": "null",
-        "resolvedAt": "null",
+        "resolutionNote": "string",
+        "resolvedAt": "string",
         "resolvedBy": "null",
         "ruleKey": "string",
         "ruleSetVersion": "null",
@@ -2844,7 +2864,25 @@
           }
         ],
         "pending": "boolean",
-        "stats": "null"
+        "stats": "null",
+        "variants": [
+          {
+            "note": "string",
+            "population": "string",
+            "values": {
+              "threshold": "number"
+            },
+            "when": {
+              "sport": "string"
+            }
+          }
+        ]
+      }
+    ],
+    "sports": [
+      {
+        "name": "string",
+        "slug": "string"
       }
     ],
     "version": "number"

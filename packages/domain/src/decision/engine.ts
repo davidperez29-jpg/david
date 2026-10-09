@@ -16,6 +16,7 @@ import {
   QUALITY_ORDER,
   TRAITS,
 } from './knowledge';
+import { applyVariant, pickVariant, populationLabel, whoOf } from './population';
 import type {
   ClaimFact,
   ClientContext,
@@ -124,7 +125,30 @@ export function runDecisionEngine(ctx: ClientContext, k: KnowledgeSnapshot): Dec
   const warnings: string[] = [...ctx.missing];
   const pendingRules: DecisionResult['pendingRules'] = [];
   const active = (r: DecisionRule) => r.enabled && !k.disabledRules.includes(r.key);
-  const rules = k.rules.filter(active);
+  // The centre's values for the client's population replace the defaults (restructure phase 17).
+  const who = whoOf(ctx);
+  const populationValues: DecisionResult['populationValues'] = [];
+  const populationOf = new Map<string, string>();
+  const rules = k.rules.filter(active).map((r) => {
+    const hit = pickVariant(r.variants ?? [], who);
+    if (!hit) return r;
+    const population = populationLabel(hit.variant.when, k.sportNames);
+    populationOf.set(r.key, population);
+    populationValues.push({
+      ruleKey: r.key,
+      population,
+      values: hit.variant.values,
+      summary: Object.entries(hit.variant.values)
+        .filter(([key]) => key in r.parameters)
+        .map(([key, x]) => {
+          const p = r.parameters[key]!;
+          return `${p.label}: ${fmt(x)}${p.unit ? ` ${p.unit}` : ''}`;
+        })
+        .join(' · '),
+      note: hit.variant.note ?? null,
+    });
+    return applyVariant(r, hit.variant);
+  });
   const ruleByKey = (key: string) => rules.find((r) => r.key === key);
   for (const r of rules) {
     const p = pendingParams(r.parameters);
@@ -224,7 +248,7 @@ export function runDecisionEngine(ctx: ClientContext, k: KnowledgeSnapshot): Dec
       detail =
         v == null
           ? `No evaluable (${res.missing.join(', ')}).`
-          : `${fmt(value)} ${thr?.unit ?? ''} frente al umbral del centro ${fmt(Number(thr?.value))} ${thr?.unit ?? ''}.`;
+          : `${fmt(value)} ${thr?.unit ?? ''} frente al umbral del centro${populationOf.has(r.key) ? ` para ${populationOf.get(r.key)}` : ''} ${fmt(Number(thr?.value))} ${thr?.unit ?? ''}.`;
     }
     traitValues[t.trait] = v;
     traitBasis[t.trait] = basis;
@@ -717,6 +741,7 @@ export function runDecisionEngine(ctx: ClientContext, k: KnowledgeSnapshot): Dec
     planSkeleton,
     warnings: [...new Set(warnings)],
     pendingRules,
+    populationValues,
     inputHash: stableHash({
       ctx,
       version: k.ruleSetVersion,

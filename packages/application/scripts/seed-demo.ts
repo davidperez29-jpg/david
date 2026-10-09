@@ -849,11 +849,21 @@ async function runSessions(
 // Decision engine (§13): the centre's thresholds for its footballers (practical, level F — the
 // platform ships none) and a first run for every client. Iker's proposals get a few decisions so
 // the per-rule override metrics are not empty.
+// The centre's thresholds are for its footballers only (restructure phase 17): other clients
+// keep the general value undefined, so the engine uses a verified reference or the trainer.
+const football = (threshold: number) => [
+  { when: { sport: 'football' }, values: { threshold }, note: 'Futbolistas del centro (demo)' },
+];
 await updateDecisionRules(lucia, {
   rules: [
-    { key: 'profile.relative_strength_low', enabled: true, parameters: { threshold: 1.5 } },
-    { key: 'profile.cmj_low', enabled: true, parameters: { threshold: 35 } },
-    { key: 'profile.sprint_slow', enabled: true, parameters: { threshold: 1.85 } },
+    {
+      key: 'profile.relative_strength_low',
+      enabled: true,
+      parameters: {},
+      variants: football(1.5),
+    },
+    { key: 'profile.cmj_low', enabled: true, parameters: {}, variants: football(35) },
+    { key: 'profile.sprint_slow', enabled: true, parameters: {}, variants: football(1.85) },
   ],
   notes: 'Umbrales del centro para futbolistas (demo)',
 });

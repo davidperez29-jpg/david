@@ -13,7 +13,10 @@ import {
   DomainError,
   hasActiveConsent,
   localDate,
+  populationLabel,
   runDecisionEngine,
+  samePopulation,
+  stableHash,
   type ClaimFact,
   type ClientContext,
   type ConsentPurpose,
@@ -22,6 +25,7 @@ import {
   type Explanation,
   type KnowledgeSnapshot,
   type MetricFact,
+  type ParamVariant,
   EVIDENCE_KINDS,
 } from '@tp/domain';
 import { and, asc, desc, eq, inArray, isNull, ne, or, sql } from 'drizzle-orm';
@@ -101,6 +105,15 @@ async function organizationDecisionRules(db: Database, organizationId: string) {
     const row = rows.find((r) => r.key === d.key);
     if (!row) return d;
     const stored = row.parameters as Record<string, number | null>;
+    // Population values (restructure phase 17), only for parameters the rule still has.
+    const variants = ((row.parameterVariants ?? []) as ParamVariant[])
+      .map((v) => ({
+        ...v,
+        values: Object.fromEntries(
+          Object.entries(v.values).filter(([k, x]) => k in d.parameters && typeof x === 'number'),
+        ),
+      }))
+      .filter((v) => Object.keys(v.values).length);
     return {
       ...d,
       version: rs!.version,
@@ -111,6 +124,7 @@ async function organizationDecisionRules(db: Database, organizationId: string) {
           { ...p, value: k in stored ? stored[k]! : p.value },
         ]),
       ),
+      ...(variants.length ? { variants } : {}),
     };
   });
   return { version: rs?.version ?? 0, publishedAt: rs?.publishedAt ?? null, rules: merged };
@@ -137,6 +151,7 @@ async function knowledgeSnapshot(
     linkRows,
     tplRows,
     off,
+    sportRows,
   ] = await Promise.all([
     db
       .select()
@@ -199,6 +214,7 @@ async function knowledgeSnapshot(
       .where(
         and(eq(clientRuleOverrides.clientId, clientId), eq(clientRuleOverrides.enabled, false)),
       ),
+    db.select({ slug: sports.slug, name: sports.name }).from(sports),
   ]);
   const popSlug = new Map(pops.map((p) => [p.id, p.slug]));
   const claimKey = new Map(claimRows.map((c) => [c.id, c.key]));
@@ -274,6 +290,7 @@ async function knowledgeSnapshot(
         weeks: ((t.definition as { totalWeeks?: number } | null)?.totalWeeks ?? 12) as number,
       })),
     disabledRules: off.map((o) => o.key),
+    sportNames: Object.fromEntries(sportRows.map((x) => [x.slug, x.name])),
   };
 }
 
@@ -317,6 +334,9 @@ export async function buildDecisionContext(
     db.select().from(consents).where(eq(consents.clientId, clientId)),
     db.select().from(clientTraitFlags).where(eq(clientTraitFlags.clientId, clientId)),
   ]);
+  const [ownSport] = c.sportId
+    ? await db.select({ slug: sports.slug }).from(sports).where(eq(sports.id, c.sportId))
+    : [];
   const missing: string[] = [];
   const age = c.birthDate ? ageOn(c.birthDate, today) : null;
   const primaryRow = goalRows.find((g) => g.isPrimary) ?? null;
@@ -425,6 +445,7 @@ export async function buildDecisionContext(
       sex: c.sex,
       experience: experience as ClientContext['person']['experience'],
       yearsTraining: profile?.yearsTraining != null ? Number(profile.yearsTraining) : null,
+      sport: ownSport?.slug ?? null,
     },
     goals: {
       primary: primaryRow
@@ -757,9 +778,16 @@ async function getDecisionRules_(ctx: RequestContext) {
   requirePermission(ctx, 'decision:read');
   const cfg = await organizationDecisionRules(ctx.db as Database, ctx.actor.organizationId);
   const stats = await decisionRuleStats(ctx);
+  const sportList = await ctx.db
+    .select({ slug: sports.slug, name: sports.name })
+    .from(sports)
+    .orderBy(asc(sports.name));
+  const sportNames = Object.fromEntries(sportList.map((x) => [x.slug, x.name]));
   return {
     version: cfg.version,
     publishedAt: cfg.publishedAt,
+    /** Sports for the population values' «Deporte» (restructure phase 17). */
+    sports: sportList,
     rules: cfg.rules.map((r) => ({
       key: r.key,
       domain: r.domain,
@@ -771,6 +799,12 @@ async function getDecisionRules_(ctx: RequestContext) {
       condition: r.condition,
       parameters: Object.entries(r.parameters).map(([k, p]) => ({ key: k, ...p })),
       pending: Object.values(r.parameters).some((p) => p.value === null),
+      variants: (r.variants ?? []).map((v) => ({
+        when: v.when,
+        values: v.values,
+        note: v.note ?? null,
+        population: populationLabel(v.when, sportNames),
+      })),
       stats: stats.get(r.key) ?? null,
     })),
   };
@@ -804,6 +838,9 @@ async function updateDecisionRules_(ctx: RequestContext, input: unknown) {
   requirePermission(ctx, 'decision:rules');
   const current = await organizationDecisionRules(ctx.db as Database, ctx.actor.organizationId);
   const errors: Record<string, string[]> = {};
+  const sportSlugs = new Set(
+    (await ctx.db.select({ slug: sports.slug }).from(sports)).map((x) => x.slug),
+  );
   const next = current.rules.map((r) => {
     const o = d.rules.find((x) => x.key === r.key);
     if (!o) return r;
@@ -813,7 +850,31 @@ async function updateDecisionRules_(ctx: RequestContext, input: unknown) {
       else if (v !== null && v < 0) (errors[`${r.key}.${k}`] ??= []).push('Debe ser positivo.');
       else parameters[k] = { ...parameters[k]!, value: v };
     }
-    return { ...r, enabled: o.enabled, parameters };
+    // Population values (restructure phase 17): omitted = keep the current ones.
+    let variants = r.variants ?? [];
+    if (o.variants) {
+      const err = (msg: string) => (errors[`${r.key}.variants`] ??= []).push(msg);
+      variants = o.variants.map((v, i) => {
+        const n = `Valores por población ${i + 1}`;
+        const when = Object.fromEntries(
+          Object.entries(v.when).filter(([, x]) => x !== undefined && x !== null),
+        ) as ParamVariant['when'];
+        if (!Object.keys(when).length)
+          err(`${n}: indica al menos sexo, edad, experiencia o deporte.`);
+        if (when.ageMin != null && when.ageMax != null && when.ageMin > when.ageMax)
+          err(`${n}: la edad mínima es mayor que la máxima.`);
+        if (when.sport && !sportSlugs.has(when.sport)) err(`${n}: deporte desconocido.`);
+        if (!Object.keys(v.values).length) err(`${n}: indica al menos un valor.`);
+        for (const [k, x] of Object.entries(v.values)) {
+          if (!(k in parameters)) err(`${n}: parámetro desconocido «${k}».`);
+          else if (x < 0) err(`${n}: los valores deben ser positivos.`);
+        }
+        if (o.variants!.slice(0, i).some((p) => samePopulation(p.when, when)))
+          err(`${n}: repite una población anterior.`);
+        return { when, values: v.values, note: v.note ?? null };
+      });
+    }
+    return { ...r, enabled: o.enabled, parameters, variants };
   });
   for (const o of d.rules)
     if (!current.rules.some((r) => r.key === o.key))
@@ -871,6 +932,7 @@ async function updateDecisionRules_(ctx: RequestContext, input: unknown) {
       condition: r.condition as object,
       action: r.action,
       parameters: Object.fromEntries(Object.entries(r.parameters).map(([k, p]) => [k, p.value])),
+      parameterVariants: r.variants ?? [],
       evidenceLevel: r.evidenceLevel,
       limitations: r.limitations,
       enabled: r.enabled,
@@ -889,6 +951,15 @@ async function updateDecisionRules_(ctx: RequestContext, input: unknown) {
           before: b.parameters[k]!.value,
           after: p.value,
         })),
+      ...(stableHash(b.variants ?? []) !== stableHash(r.variants ?? [])
+        ? [
+            {
+              field: `${r.key}.variants`,
+              before: variantSummary(b.variants),
+              after: variantSummary(r.variants),
+            },
+          ]
+        : []),
     ];
   });
   await writeAudit(ctx.db, ctx, {
@@ -899,6 +970,18 @@ async function updateDecisionRules_(ctx: RequestContext, input: unknown) {
     reason: d.notes ?? `Reglas de decisión, versión ${rs!.version}`,
   });
   return { version: rs!.version };
+}
+
+/** «fútbol: threshold 35 · mujeres: threshold 28» for the audit trail. */
+function variantSummary(vs: ParamVariant[] | undefined) {
+  return (vs ?? [])
+    .map(
+      (v) =>
+        `${populationLabel(v.when)}: ${Object.entries(v.values)
+          .map(([k, x]) => `${k} ${x}`)
+          .join(', ')}`,
+    )
+    .join(' · ');
 }
 
 // Use cases run under Row Level Security (see rls.ts).
