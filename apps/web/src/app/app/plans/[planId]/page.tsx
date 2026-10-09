@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { getClient, getPlan, listPlanRevisions } from '@tp/application';
+import { getClient, getPlan, listClientPlans, listPlanRevisions } from '@tp/application';
 import { DomainError } from '@tp/domain';
 import { notFound } from 'next/navigation';
 import { Badge, Card } from '@/components/ui/card';
@@ -91,9 +91,13 @@ export default async function PlanPage({
     getClient(ctx, p.clientId!),
     listPlanRevisions(ctx, planId),
     // A proposal made for an active plan can be applied to it as a revision (phase 13).
+    // The client's plan list (one row each), not the whole tree of the active plan.
     p.kind === 'PROPOSAL' && p.status === 'proposed' && p.proposalOfPlanId
-      ? getPlan(ctx, p.proposalOfPlanId)
-          .then((a) => (a.status === 'active' ? { id: a.id, name: a.name } : null))
+      ? listClientPlans(ctx, p.clientId!)
+          .then((list) => {
+            const a = list.find((x) => x.id === p.proposalOfPlanId && x.status === 'active');
+            return a ? { id: a.id, name: a.name } : null;
+          })
           .catch(() => null)
       : null,
   ]);

@@ -52,9 +52,28 @@ const norm = (s: string) => s.trim().toLowerCase().normalize('NFD').replace(/[̀
 const add = (e: Errors, field: string, msg: string) => (e[field] ??= []).push(msg);
 
 /** By slug or by (accent/case-insensitive) name. */
+/**
+ * First catalog item whose slug, normalized slug or normalized name matches. The index is built
+ * once per list (up to 1 000 rows × the whole catalog would normalize every name per row).
+ */
+const indexes = new WeakMap<object, Map<string, number>[]>();
 function lookup<T extends { slug: string; name: string }>(list: T[], value: string): T | undefined {
+  let idx = indexes.get(list);
+  if (!idx) {
+    idx = [new Map(), new Map(), new Map()];
+    list.forEach((x, i) => {
+      for (const [m, k] of [
+        [idx![0]!, x.slug],
+        [idx![1]!, norm(x.slug)],
+        [idx![2]!, norm(x.name)],
+      ] as const)
+        if (!m.has(k)) m.set(k, i);
+    });
+    indexes.set(list, idx);
+  }
   const v = norm(value);
-  return list.find((x) => x.slug === value || norm(x.slug) === v || norm(x.name) === v);
+  const hits = [idx[0]!.get(value), idx[1]!.get(v), idx[2]!.get(v)].filter((i) => i != null);
+  return hits.length ? list[Math.min(...hits)] : undefined;
 }
 
 // ── Parsing ───────────────────────────────────────────────────────────────────
@@ -353,11 +372,30 @@ async function validate(
               ),
             )
         : [];
-    // The centre's own rows, to refuse the same group twice (re-importing the same file).
-    const mine = await ctx.db
-      .select()
-      .from(referenceValues)
-      .where(eq(referenceValues.organizationId, ctx.actor.organizationId));
+    // The centre's own rows of the file's tests, to refuse the same group twice (re-importing
+    // the same file): only the columns of the group key.
+    const fileTests = [
+      ...new Set(ok.map((r) => lookup(ts, r.data.test as string)?.id).filter((x) => x != null)),
+    ];
+    const mine = fileTests.length
+      ? await ctx.db
+          .select({
+            testId: referenceValues.testId,
+            variable: referenceValues.variable,
+            populationId: referenceValues.populationId,
+            sex: referenceValues.sex,
+            ageMin: referenceValues.ageMin,
+            ageMax: referenceValues.ageMax,
+            sourceId: referenceValues.sourceId,
+          })
+          .from(referenceValues)
+          .where(
+            and(
+              eq(referenceValues.organizationId, ctx.actor.organizationId),
+              inArray(referenceValues.testId, fileTests),
+            ),
+          )
+      : [];
     const groupKey = (x: {
       testId: string;
       variable: string;

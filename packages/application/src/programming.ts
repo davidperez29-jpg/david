@@ -26,6 +26,7 @@ import {
   DomainError,
   hasActiveConsent,
   isStandardLoadStep,
+  RESCHEDULE_HORIZON_DAYS,
   localDate,
   proposeAdjustments,
   addDays,
@@ -42,7 +43,7 @@ import {
   type Replacement,
   type TemplateDefinition,
 } from '@tp/domain';
-import { and, asc, desc, eq, gte, inArray, isNull, notExists, or, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, gte, inArray, isNull, lte, notExists, or, sql } from 'drizzle-orm';
 import { writeAudit } from './audit';
 import { authorizeClient, requirePermission } from './authz';
 import { onClientActivity } from './client-events';
@@ -747,7 +748,14 @@ export async function buildProgrammingInput(app: App, clientId: string, planId: 
       .innerJoin(microcycles, eq(microcycles.id, sessions.microcycleId))
       .innerJoin(mesocycles, eq(mesocycles.id, microcycles.mesocycleId))
       .innerJoin(phases, eq(phases.id, mesocycles.phaseId))
-      .where(and(eq(phases.planId, planId), gte(sessions.scheduledDate, today)))
+      .where(
+        and(
+          eq(phases.planId, planId),
+          gte(sessions.scheduledDate, today),
+          // The moves horizon plus the rest of its last week: later sessions never matter.
+          lte(sessions.scheduledDate, addDays(today, RESCHEDULE_HORIZON_DAYS + 6)),
+        ),
+      )
       .orderBy(asc(sessions.scheduledDate)),
   ]);
   const cfg = await organizationRules(db, c!.organizationId);
@@ -891,7 +899,14 @@ async function applySessionDates(
   for (const ch of changes) {
     const c = invert ? { ...ch, from: ch.to, to: ch.from } : ch;
     const [row] = await db
-      .select({ s: sessions, weekStart: microcycles.startDate, planId: phases.planId })
+      .select({
+        s: sessions,
+        weekStart: microcycles.startDate,
+        planId: phases.planId,
+        // Any record (a logged set or attendance) keeps the session where it is.
+        recorded: sql<boolean>`(exists (select 1 from ${setLogs} where ${setLogs.sessionId} = ${sessions.id})
+          or exists (select 1 from ${attendance} where ${attendance.sessionId} = ${sessions.id}))`,
+      })
       .from(sessions)
       .innerJoin(microcycles, eq(microcycles.id, sessions.microcycleId))
       .innerJoin(mesocycles, eq(mesocycles.id, microcycles.mesocycleId))
@@ -906,22 +921,7 @@ async function applySessionDates(
       row.weekStart != null &&
       row.weekStart <= to &&
       to <= addDays(row.weekStart, 6);
-    const recorded =
-      ok &&
-      ((
-        await db
-          .select({ x: sql`1` })
-          .from(setLogs)
-          .where(eq(setLogs.sessionId, row.s.id))
-          .limit(1)
-      ).length > 0 ||
-        (
-          await db
-            .select({ x: sql`1` })
-            .from(attendance)
-            .where(eq(attendance.sessionId, row.s.id))
-            .limit(1)
-        ).length > 0);
+    const recorded = ok && row.recorded;
     const taken =
       ok &&
       !recorded &&
@@ -965,8 +965,14 @@ async function applySessionDates(
 export async function evaluateAdjustments(app: App, clientId: string) {
   const db = app.db;
   const plan = await activePlan(db, clientId);
+  // Only what the comparison needs: payloads and explanations of the history are not loaded.
   const pendingOf = await db
-    .select()
+    .select({
+      id: recommendations.id,
+      key: recommendations.key,
+      status: recommendations.status,
+      planId: recommendations.planId,
+    })
     .from(recommendations)
     .where(
       and(
@@ -1007,7 +1013,13 @@ export async function evaluateAdjustments(app: App, clientId: string) {
       await db.update(recommendations).set({ status }).where(inArray(recommendations.id, ids));
   }
 
-  const [c] = await db.select().from(clients).where(eq(clients.id, clientId));
+  const [c] = await db
+    .select({
+      organizationId: clients.organizationId,
+      autoApplyLoadProgressions: clients.autoApplyLoadProgressions,
+    })
+    .from(clients)
+    .where(eq(clients.id, clientId));
   let created = 0;
   let autoApplied = 0;
   for (const cand of candidates) {

@@ -1,0 +1,2 @@
+CREATE INDEX "exercise_substitutions_session_exercise_idx" ON "exercise_substitutions" USING btree ("session_exercise_id");--> statement-breakpoint
+CREATE INDEX "recommendations_org_adjustments_idx" ON "recommendations" USING btree ("organization_id","status") WHERE "recommendations"."key" IS NOT NULL;

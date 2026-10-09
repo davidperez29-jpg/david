@@ -169,6 +169,11 @@ export const recommendations = pgTable(
   (t) => [
     index('recommendations_client_idx').on(t.clientId, t.status),
     index('recommendations_key_idx').on(t.clientId, t.key),
+    // Plan adjustments of the organization by status (Alertas card, phase 18). No enum literal in
+    // the predicate: a fresh install runs every migration in one transaction.
+    index('recommendations_org_adjustments_idx')
+      .on(t.organizationId, t.status)
+      .where(sql`${t.key} IS NOT NULL`),
     check(
       'recommendations_decided_ck',
       sql`${t.status} = 'proposed' OR ${t.status} = 'superseded' OR ${t.status} = 'expired' OR ${t.decidedAt} IS NOT NULL`,

@@ -335,6 +335,10 @@ Los planes propuestos usan `kind = PROPOSAL`, `status = proposed` y `recommendat
 - **Migraciones `0028` y `0029_rls_v9`**: `api_rate_limits`, tabla `system_only` con un contador por usuario, presupuesto y minuto. La purga el trabajo diario.
 - **Migración `0030`**: 14 índices para consultas por cliente o por sesión y para las claves foráneas de tablas hijas grandes.
   - Antes se revisó `pg_stat_user_tables` tras las pruebas de carga: ninguna tabla grande se recorría entera, salvo `clients` (1 000 filas, ya con índice para el listado ordenado).
+- **Migración `0052`** (revisión de calidad, fase 18 de la reestructuración):
+  - `recommendations_org_adjustments_idx` sobre `(organization_id, status)` de las filas con `key` (ajustes del plan): la tarjeta «Ajustes propuestos» de Alertas filtra por organización y estado, y la tabla crece con el historial.
+  - El predicado no usa valores del enum: en una instalación nueva todas las migraciones van en una sola transacción, y un valor añadido en ella no se puede usar hasta confirmarla.
+  - `exercise_substitutions_session_exercise_idx`: la comprobación de sustitución aprobada al anotar series y la clave foránea al borrar ejercicios planificados.
 - **Planes**: se escriben con un `INSERT` por nivel y los ids se generan en la aplicación (UUID v7). Crear un plan de 12 semanas pasa de ≈ 900 a ≈ 240 ms.
 - **RGPD**:
   - `external_measurements` entra en la exportación del interesado;

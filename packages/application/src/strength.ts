@@ -45,15 +45,19 @@ async function estimatedStrength_(ctx: RequestContext, clientId: string) {
       ),
     )
     .orderBy(asc(sessions.scheduledDate));
-  const byExercise = new Map<string, typeof rows>();
+  // One pass: exercise → session → sets (sessions keep their date order).
+  const byExercise = new Map<string, { name: string; sessions: Map<string, typeof rows> }>();
   for (const r of rows) {
     if (!r.exerciseId || !r.date) continue;
-    byExercise.set(r.exerciseId, [...(byExercise.get(r.exerciseId) ?? []), r]);
+    let ex = byExercise.get(r.exerciseId);
+    if (!ex) byExercise.set(r.exerciseId, (ex = { name: r.name, sessions: new Map() }));
+    let sets = ex.sessions.get(r.sessionId);
+    if (!sets) ex.sessions.set(r.sessionId, (sets = []));
+    sets.push(r);
   }
   const out = [];
-  for (const [exerciseId, list] of byExercise) {
-    const perSession = [...new Set(list.map((r) => r.sessionId))].flatMap((sid) => {
-      const sets = list.filter((r) => r.sessionId === sid);
+  for (const [exerciseId, { name, sessions: bySession }] of byExercise) {
+    const perSession = [...bySession.values()].flatMap((sets) => {
       const e = estimateOneRm(
         sets.map((s) => ({ loadKg: Number(s.loadKg), reps: s.reps ?? 0, rir: s.rir })),
       );
@@ -66,7 +70,7 @@ async function estimatedStrength_(ctx: RequestContext, clientId: string) {
       .at(-1);
     out.push({
       exerciseId,
-      name: list[0]!.name,
+      name,
       sessions: perSession.length,
       latest,
       earlier: earlier ? { date: earlier.date, kg: earlier.kg } : null,

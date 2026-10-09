@@ -276,6 +276,8 @@ export const exerciseSubstitutions = pgTable(
   (t) => [
     index('exercise_substitutions_client_idx').on(t.clientId),
     index('substitutions_session_idx').on(t.sessionId),
+    // Approved-substitution lookup when logging, and the FK on planned-exercise deletes.
+    index('exercise_substitutions_session_exercise_idx').on(t.sessionExerciseId),
   ],
 );
 

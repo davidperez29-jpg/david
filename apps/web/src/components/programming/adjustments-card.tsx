@@ -9,6 +9,15 @@ import {
   RefreshAdjustmentsButton,
 } from './actions';
 
+/** Only what the buttons need crosses to the client (not targets, preview or explanation). */
+const actionsOf = (a: AdjustmentView) => ({
+  id: a.id,
+  kind: a.kind,
+  status: a.status,
+  params: a.params,
+  options: a.options,
+});
+
 const FIELD: Record<string, string> = {
   loadKg: 'Carga (kg)',
   sets: 'Series',
@@ -113,7 +122,7 @@ export function PendingAdjustmentItem({ a }: { a: AdjustmentView }) {
       <p className="text-sm text-muted">{a.explanation.proposal}</p>
       <Changes a={a} />
       <Why e={a.explanation} />
-      <AdjustmentActions adj={a} />
+      <AdjustmentActions adj={actionsOf(a)} />
     </li>
   );
 }
@@ -177,7 +186,7 @@ export function AdjustmentsCard({
                   ) : null}
                 </div>
                 <Changes a={a} />
-                <AdjustmentActions adj={a} />
+                <AdjustmentActions adj={actionsOf(a)} />
               </li>
             ))}
           </ul>
