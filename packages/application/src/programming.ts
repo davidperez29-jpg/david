@@ -25,6 +25,7 @@ import {
   changesFor,
   DomainError,
   hasActiveConsent,
+  isStandardLoadStep,
   localDate,
   proposeAdjustments,
   addDays,
@@ -780,6 +781,12 @@ export async function buildProgrammingInput(app: App, clientId: string, planId: 
 
 // ── Applying changes (only future, not-yet-performed sessions; stale values are skipped) ──
 
+/** Audit field of a change: the session for a move, the planned exercise otherwise. */
+const changeField = (a: ExerciseChange) =>
+  a.field === 'scheduledDate'
+    ? `${a.sessionId}.scheduledDate`
+    : `${a.sessionExerciseId}.${a.field}`;
+
 const COLUMN = {
   loadKg: 'loadKg',
   sets: 'sets',
@@ -794,12 +801,15 @@ async function applyChanges(
   changes: ExerciseChange[],
   recommendationId: string,
   invert = false,
+  /** Who applies it (null = the system's auto-apply), stamped on moved sessions. */
+  userId: string | null = null,
 ) {
   const dates = await applySessionDates(
     db,
     today,
     changes.filter((c) => c.field === 'scheduledDate'),
     invert,
+    userId,
   );
   changes = changes.filter((c) => c.field !== 'scheduledDate');
   const ids = [...new Set(changes.map((c) => c.sessionExerciseId))];
@@ -874,6 +884,7 @@ async function applySessionDates(
   today: string,
   changes: ExerciseChange[],
   invert: boolean,
+  userId: string | null,
 ) {
   const applied: ExerciseChange[] = [];
   let skipped = 0;
@@ -936,7 +947,7 @@ async function applySessionDates(
     }
     await db
       .update(sessions)
-      .set({ scheduledDate: to, version: row.s.version + 1 })
+      .set({ scheduledDate: to, version: row.s.version + 1, updatedBy: userId })
       .where(eq(sessions.id, row.s.id));
     applied.push(c);
   }
@@ -1026,7 +1037,11 @@ export async function evaluateAdjustments(app: App, clientId: string) {
       })
       .returning();
     created++;
-    if (cand.kind === 'load_progression' && c!.autoApplyLoadProgressions) {
+    if (
+      cand.kind === 'load_progression' &&
+      c!.autoApplyLoadProgressions &&
+      withinStandardStep(cand, input.history)
+    ) {
       const { applied } = await applyChanges(
         db,
         input.today,
@@ -1052,7 +1067,7 @@ export async function evaluateAdjustments(app: App, clientId: string) {
           entityId: rec!.id,
           clientId,
           changes: applied.map((a) => ({
-            field: `${a.sessionExerciseId}.${a.field}`,
+            field: changeField(a),
             before: a.from,
             after: a.to,
           })),
@@ -1064,6 +1079,13 @@ export async function evaluateAdjustments(app: App, clientId: string) {
     }
   }
   return { created, expired: gone.length, autoApplied };
+}
+
+/** See `isStandardLoadStep`: one trainer's setting never changes other clients' plans alone. */
+function withinStandardStep(cand: AdjustmentCandidate, history: ExerciseHistory[]) {
+  const { fromKg, toKg } = cand.params;
+  const h = history.find((x) => x.exerciseId === cand.targets[0]?.exerciseId);
+  return fromKg != null && toKg != null && !!h && isStandardLoadStep(fromKg, toKg, h.equipment);
 }
 
 /** Daily job: every client with an active plan. */
@@ -1229,7 +1251,8 @@ async function decideOne(
   const edited = Object.entries(edits ?? {}).filter(
     ([k, v]) => v !== undefined && v !== (p.params as Record<string, unknown>)[k],
   );
-  if (action === 'accept_with_changes' && p.kind === 'reschedule')
+  // Session moves are applied as proposed: no edited values, whatever the action says.
+  if (p.kind === 'reschedule' && (action === 'accept_with_changes' || edited.length))
     throw new DomainError(
       'validation',
       'Esta propuesta no se edita: acéptala, recházala o mueve las sesiones en el Calendario.',
@@ -1249,6 +1272,8 @@ async function decideOne(
     today,
     changesFor(p.kind, params, p.targets),
     rec.id,
+    false,
+    ctx.actor.userId,
   );
   if (!applied.length)
     throw new DomainError(
@@ -1290,7 +1315,7 @@ async function decideOne(
     changes: [
       { field: 'status', before: rec.status, after: status },
       ...applied.map((a) => ({
-        field: `${a.sessionExerciseId}.${a.field}`,
+        field: changeField(a),
         before: a.from,
         after: a.to,
       })),
@@ -1334,7 +1359,14 @@ async function revertAdjustment_(ctx: RequestContext, id: string, input: unknown
     throw new DomainError('conflict', 'Solo se pueden deshacer ajustes aplicados.');
   const plan = await loadPlan(ctx, rec.planId!, 'plans:write');
   const applied = (rec.applied as ExerciseChange[] | null) ?? [];
-  const r = await applyChanges(ctx.db, localDate(ctx.now()), applied, rec.id, true);
+  const r = await applyChanges(
+    ctx.db,
+    localDate(ctx.now()),
+    applied,
+    rec.id,
+    true,
+    ctx.actor.userId,
+  );
   await ctx.db
     .update(recommendations)
     .set({
@@ -1358,7 +1390,7 @@ async function revertAdjustment_(ctx: RequestContext, id: string, input: unknown
     changes: [
       { field: 'status', before: rec.status, after: 'reverted' },
       ...r.applied.map((a) => ({
-        field: `${a.sessionExerciseId}.${a.field}`,
+        field: changeField(a),
         before: a.from,
         after: a.to,
       })),

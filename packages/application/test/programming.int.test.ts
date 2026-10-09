@@ -1,6 +1,6 @@
 import { schema } from '@tp/db';
 import { addDays, isoWeekday, localDate } from '@tp/domain';
-import { and, eq, inArray, sql } from 'drizzle-orm';
+import { and, desc, eq, inArray, sql } from 'drizzle-orm';
 import { randomUUID } from 'node:crypto';
 import { beforeAll, describe, expect, it } from 'vitest';
 import {
@@ -400,6 +400,17 @@ describe('a proposal applied as a revision of the active plan (phase 13)', () =>
       status: 'completed',
       performedDate: today,
     });
+    // Another one only has a logged set (no attendance yet): it is a record too.
+    const keptLogged = before[1]!;
+    await db().insert(schema.setLogs).values({
+      organizationId: o.org.organizationId,
+      clientId: o.clientA,
+      sessionId: keptLogged.id,
+      exerciseIdPerformed: squatId,
+      setIndex: 1,
+      loggedByRole: 'trainer',
+      loggedBy: o.org.adminUserId,
+    });
     const tpl = (await listPlanTemplates(o.admin)).find((t) => t.slug === 'hipertrofia-3d')!;
     const { id } = await generatePlanProposal(o.admin, o.clientA, {
       templateId: tpl.id,
@@ -410,14 +421,15 @@ describe('a proposal applied as a revision of the active plan (phase 13)', () =>
     const r = await acceptPlanProposal(o.admin, id, { mode: 'revision', reason: 'Nuevo bloque' });
     expect(r).toMatchObject({ id: planId });
     expect((r as { copied: number }).copied).toBeGreaterThan(0);
-    expect((r as { removed: number }).removed).toBe(before.length - 1);
+    expect((r as { removed: number }).removed).toBe(before.length - 2);
 
     const after = await futureOfActive();
-    expect(after.some((x) => x.id === kept.id)).toBe(true);
+    const recorded = new Set([kept.id, keptLogged.id]);
+    expect(after.filter((x) => recorded.has(x.id))).toHaveLength(2);
     // The rest are the proposal's days (Tuesday, Thursday and Saturday).
     expect(
       after
-        .filter((x) => x.id !== kept.id)
+        .filter((x) => !recorded.has(x.id))
         .every((x) => [2, 4, 6].includes(isoWeekday(x.scheduledDate!))),
     ).toBe(true);
     const revs = await listPlanRevisions(o.admin, planId);
@@ -469,12 +481,36 @@ describe('availability: sessions moved to the days the client can train (phase 1
     await expect(
       decideAdjustment(o.admin, a.id, { action: 'accept_with_changes', params: { setsDelta: -1 } }),
     ).rejects.toMatchObject({ code: 'validation' });
+    // Nor through a plain accept that carries edited values.
+    await expect(
+      decideAdjustment(o.admin, a.id, { action: 'accept', params: { toKg: 50 } }),
+    ).rejects.toMatchObject({ code: 'validation' });
 
     const revs = (await listPlanRevisions(o.admin, planId)).length;
     await decideAdjustment(o.admin, a.id, { action: 'accept' });
     const moved = await dates();
     for (const c of a.preview) expect(moved.get(c.sessionId!)).toBe(c.to);
     expect((await listPlanRevisions(o.admin, planId)).length).toBe(revs + 1);
+    // The audit names the moved session, and the session records who moved it.
+    const [audit] = await db()
+      .select({ changes: schema.auditLogs.changes })
+      .from(schema.auditLogs)
+      .where(
+        and(eq(schema.auditLogs.entityId, a.id), eq(schema.auditLogs.entityType, 'recommendation')),
+      )
+      .orderBy(desc(schema.auditLogs.occurredAt))
+      .limit(1);
+    const first = a.preview[0]!;
+    expect(audit!.changes).toContainEqual({
+      field: `${first.sessionId}.scheduledDate`,
+      before: first.from,
+      after: first.to,
+    });
+    const [s1] = await db()
+      .select({ updatedBy: schema.sessions.updatedBy })
+      .from(schema.sessions)
+      .where(eq(schema.sessions.id, first.sessionId!));
+    expect(s1!.updatedBy).toBe(o.org.adminUserId);
 
     await revertAdjustment(o.admin, a.id, { reason: 'El cliente vuelve a su horario' });
     const back = await dates();

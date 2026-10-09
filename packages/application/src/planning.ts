@@ -91,6 +91,7 @@ const {
   assessmentResults,
   assessmentTests,
   assessments,
+  setLogs,
 } = schema;
 
 const visible = (ctx: RequestContext, col: AnyPgColumn) =>
@@ -1204,7 +1205,14 @@ async function rescheduleSession_(ctx: RequestContext, id: string, input: unknow
     .select({ status: attendance.status })
     .from(attendance)
     .where(eq(attendance.sessionId, id));
-  if (done)
+  const [logged] = done
+    ? []
+    : await ctx.db
+        .select({ id: setLogs.id })
+        .from(setLogs)
+        .where(eq(setLogs.sessionId, id))
+        .limit(1);
+  if (done || logged)
     throw new DomainError('conflict', 'Esta sesión ya tiene registro: no se puede mover.', {
       session: ['recorded'],
     });
@@ -1945,7 +1953,9 @@ export async function replaceFutureSessions(
         id: sessions.id,
         date: sessions.scheduledDate,
         published: sessions.published,
-        recorded: sql<boolean>`EXISTS (SELECT 1 FROM attendance a WHERE a.session_id = ${sessions.id})`,
+        // Recorded = any attendance or any logged set (a set not marked done creates no attendance).
+        recorded: sql<boolean>`(EXISTS (SELECT 1 FROM attendance a WHERE a.session_id = ${sessions.id})
+          OR EXISTS (SELECT 1 FROM set_logs l WHERE l.session_id = ${sessions.id}))`,
       })
       .from(sessions)
       .innerJoin(microcycles, eq(microcycles.id, sessions.microcycleId))

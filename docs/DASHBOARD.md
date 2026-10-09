@@ -55,12 +55,13 @@ Las propuestas (alertas verdes) no cambian el color de la fila: se ven en Seguim
 - Alternativa para teclado y móvil: «Mover» junto a cada sesión, con un selector de fecha, en la vista semana y en la agenda del móvil.
 - El resultado se anuncia en una región `status` («Sesión movida al…» o el motivo del rechazo).
 - Las reglas las aplica el servidor (`rescheduleSession`, `POST /plan-sessions/{id}/reschedule`):
-  - solo sesiones sin ningún registro de asistencia;
+  - solo sesiones sin ningún registro: ni asistencia ni series anotadas (desde la fase 18, A65);
   - solo a hoy o un día futuro, dentro de las semanas del plan;
   - el plan debe ser editable: ni completado ni archivado;
   - bloqueo optimista por versión.
 - Si el día cae en otra semana del plan, la sesión pasa a esa semana, al final de su día. Queda auditado y el cliente lo ve en su calendario.
 - La interfaz solo ofrece mover las sesiones pendientes de un plan activo desde hoy.
+- Al soltar, el calendario solo acepta datos de arrastre con un identificador de sesión válido y una versión entera; cualquier otro contenido arrastrado desde otra página se ignora (fase 18).
 
 ### 1.3 Ficha del cliente › Resumen
 

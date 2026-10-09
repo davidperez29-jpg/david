@@ -58,6 +58,7 @@ import { authorizeClient, requirePermission } from './authz';
 import type { RequestContext } from './context';
 import { requireHealthConsent } from './health';
 import { secured } from './rls';
+import { log } from './observability';
 import { parse } from './validation';
 
 const {
@@ -83,8 +84,19 @@ const {
  */
 const seal = (keys: KeyRing, v: string | null | undefined) =>
   v ? encrypt(keys.encryptionKey, v) : null;
-const unseal = (keys: KeyRing, enc: string | null, plain?: string | null) =>
-  enc ? openSecret(keys, enc) : (plain ?? null);
+/** Shown instead of a value no current or previous key can open (the page still works). */
+export const UNREADABLE_TEXT =
+  '[Texto no disponible: no se pudo descifrar. Revisa las claves de cifrado.]';
+const unseal = (keys: KeyRing, enc: string | null, plain?: string | null) => {
+  if (!enc) return plain ?? null;
+  try {
+    return openSecret(keys, enc);
+  } catch {
+    // No content in the log: only that one value could not be opened (key ring incomplete).
+    log('warn', 'injury_text_unreadable');
+    return UNREADABLE_TEXT;
+  }
+};
 
 const visible = (ctx: RequestContext, col: AnyPgColumn) =>
   or(isNull(col), eq(col, ctx.actor.organizationId));

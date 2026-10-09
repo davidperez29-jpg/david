@@ -4,7 +4,7 @@ import { evidenceCards } from '@tp/application';
 import { SourceButton } from '@/components/science/source-button';
 import { DomainError } from '@tp/domain';
 import { notFound } from 'next/navigation';
-import { Identifiers, PubMedAttribution } from '@/components/science/evidence';
+import { Identifiers, PubMedAttribution, VerificationBadge } from '@/components/science/evidence';
 import { Badge, Card, EmptyState } from '@/components/ui/card';
 import { label } from '@/lib/labels';
 import { requireStaff } from '@/server/session';
@@ -23,6 +23,9 @@ export default async function TestPage({ params }: { params: Promise<{ testId: s
     if (e instanceof DomainError && e.code === 'not_found') notFound();
     throw e;
   });
+  // Centre norms change every client's comparison: importing and removing them is ADMIN's.
+  const canPublish = ctx.actor.roles.includes('ADMIN');
+  const VERIFIED = new Set(['verified', 'verified_with_corrections']);
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center gap-3">
@@ -125,12 +128,14 @@ export default async function TestPage({ params }: { params: Promise<{ testId: s
       <Card
         title="Valores de referencia"
         actions={
-          <Link
-            href="/app/informes/importar?que=reference_values"
-            className="text-sm text-accent underline"
-          >
-            Importar normas del centro
-          </Link>
+          canPublish ? (
+            <Link
+              href="/app/informes/importar?que=reference_values"
+              className="text-sm text-accent underline"
+            >
+              Importar normas del centro
+            </Link>
+          ) : null
         }
       >
         {t.references.length === 0 ? (
@@ -157,13 +162,18 @@ export default async function TestPage({ params }: { params: Promise<{ testId: s
                   <p className="text-xs text-muted">{r.applicabilityNotes}</p>
                 ) : null}
                 <p className="text-xs">
+                  {VERIFIED.has(r.source.verificationStatus) ? null : (
+                    <>
+                      <VerificationBadge status={r.source.verificationStatus} />{' '}
+                    </>
+                  )}
                   {r.source.label} — {r.source.title}{' '}
                   <Identifiers doi={r.source.doi} pmid={r.source.pmid} />
                 </p>
                 {r.limitations ? (
                   <p className="text-xs text-muted">Limitaciones: {r.limitations}</p>
                 ) : null}
-                {r.organizationId ? <DeleteReferenceButton id={r.id} /> : null}
+                {r.organizationId && canPublish ? <DeleteReferenceButton id={r.id} /> : null}
               </li>
             ))}
           </ul>

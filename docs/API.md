@@ -123,7 +123,7 @@ Detalle de reglas en `ASSESSMENT.md`. Una evaluación de un cliente fuera de alc
 | `PATCH /assessment-tests/{id}` | `assessments:catalog` | `updateTestSchema` (`expectedVersion`) | Solo tests propios; cambiar el protocolo crea una versión nueva. |
 | `POST /assessment-tests/{id}/reliability` | `assessments:catalog` | `localReliabilitySchema` (SEM, CV o MDC95 obligatorio) | Test-retest del centro. |
 | `DELETE /assessment-reliability/{id}` | `assessments:catalog` | — | Solo fiabilidad local. |
-| `DELETE /assessment-references/{id}` | `science:write` | — | Solo valores de referencia del centro (importados); los de la plataforma dan `404`. Reestructuración, fase 16. |
+| `DELETE /assessment-references/{id}` | `science:publish` (ADMIN) | — | Solo valores de referencia del centro (importados); los de la plataforma dan `404`. Reestructuración, fase 16; solo ADMIN desde la fase 18. |
 | `GET /assessment-batteries` · `POST` | `assessments:read` / `assessments:catalog` | `batterySchema` | Baterías globales y propias. |
 | `GET /clients/{id}/assessments` · `POST` | `assessments:read` / `assessments:write` | `createAssessmentSchema` (`assessedOn`, `batteryId?`, `testIds`) | Si se indica una batería y no se pasan tests, se usan los de la batería. |
 | `GET /clients/{id}/assessments/proposal` | `assessments:write` | — | Batería propuesta, tests excluidos con su motivo y explicación. |

@@ -19,6 +19,7 @@ La única excepción es la opción por cliente **«Aplicar las progresiones de c
 
 - Está **desactivada por defecto**.
 - Solo cubre progresiones de carga; nunca descargas ni sustituciones.
+- Solo aplica **pasos estándar** (fase 18, A64): como máximo el incremento de la plataforma para el material (`isStandardLoadStep`: 2,5 kg con barra o máquina, 2 kg con mancuernas, 1 kg en el resto). Un salto mayor (un incremento propio del centro, o un cambio por velocidad o RIR) queda como propuesta para el entrenador.
 - Cada cambio se audita con el rol `SYSTEM`.
 - Se puede **deshacer**.
 
@@ -142,6 +143,8 @@ Cada propuesta lleva su **«¿Por qué?»** con la estructura de §13.6:
 - **Frecuencia**: si la semana tiene más sesiones que días disponibles libres, se mueven las que caben y el «¿Por qué?» lista las demás.
   - **El motor nunca borra sesiones** (A57): reducir la frecuencia o juntar sesiones lo decide el entrenador.
 - **Decisión**: Aceptar, Rechazar o Posponer. No se edita (A58): para otro día, el entrenador la rechaza y mueve la sesión en el Calendario.
+  - Desde la fase 18 el servidor rechaza también un «Aceptar» que traiga valores editados (`400`), no solo «Aceptar con cambios».
+  - La auditoría nombra la sesión movida (`{sesión}.scheduledDate`) y la sesión guarda quién la movió (`updated_by`; vacío si fue el sistema).
   - Al aceptar, se aplican las mismas reglas que al reprogramar a mano (A51), se crea una revisión del plan y queda auditado.
   - Una sesión que alguien movió o registró desde la propuesta se salta.
   - «Deshacer» devuelve cada sesión a su día si nadie la ha vuelto a mover.

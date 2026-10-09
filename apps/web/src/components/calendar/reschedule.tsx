@@ -16,6 +16,7 @@ const Ctx = createContext<{
   say: (text: string, ok?: boolean) => void;
 } | null>(null);
 const TYPE = 'application/x-tp-session';
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 const DAY = (d: string) =>
   new Intl.DateTimeFormat('es-ES', {
@@ -112,8 +113,16 @@ export function DropDay({
         const raw = e.dataTransfer.getData(TYPE);
         if (!accepts || !raw) return;
         e.preventDefault();
-        const { id, version } = JSON.parse(raw) as { id: string; version: number };
-        void c!.move(id, version, date);
+        // Drag data can come from another page: only a session id and a version are accepted.
+        let parsed: unknown;
+        try {
+          parsed = JSON.parse(raw);
+        } catch {
+          return;
+        }
+        const { id, version } = (parsed ?? {}) as { id?: unknown; version?: unknown };
+        if (typeof id !== 'string' || !UUID.test(id) || !Number.isInteger(version)) return;
+        void c!.move(id, version as number, date);
       }}
     >
       {children}

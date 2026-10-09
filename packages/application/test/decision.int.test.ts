@@ -289,6 +289,9 @@ describe('population values of the centre (restructure phase 17)', () => {
       [{ when: { ageMin: 30, ageMax: 20 }, values: { threshold: 1 } }],
       [{ when: { sport: 'quidditch' }, values: { threshold: 1 } }],
       [{ when: { sex: 'male' }, values: { nope: 1 } }],
+      // Inherited names are not parameters (own keys only).
+      [{ when: { sex: 'male' }, values: { toString: 1 } }],
+      [{ when: { sex: 'male' }, values: { constructor: 1 } }],
       [{ when: { sex: 'male' }, values: {} }],
       [{ when: { sex: 'male' }, values: { threshold: -1 } }],
       [
@@ -300,6 +303,14 @@ describe('population values of the centre (restructure phase 17)', () => {
         code: 'validation',
         details: { [`${key}.variants`]: [expect.any(String)] },
       });
+    await expect(
+      updateDecisionRules(o.admin, {
+        rules: [{ key, enabled: true, parameters: { toString: 1 } }],
+      }),
+    ).rejects.toMatchObject({
+      code: 'validation',
+      details: { [`${key}.toString`]: ['Parámetro desconocido.'] },
+    });
     await expect(
       updateDecisionRules(o.trainer2, {
         rules: [{ key, enabled: true, parameters: {}, variants: [] }],

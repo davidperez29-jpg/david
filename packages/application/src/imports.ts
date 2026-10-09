@@ -44,6 +44,7 @@ const {
 } = schema;
 
 const MAX_ROWS = 1000;
+const MAX_CELL = 5000;
 type Errors = Record<string, string[]>;
 type Row = { rowNumber: number; data: Record<string, unknown>; errors: Errors };
 
@@ -90,6 +91,16 @@ function toRecords(entity: ImportEntity, rows: string[][]) {
     throw new DomainError('validation', `Máximo ${MAX_ROWS} filas por archivo.`, {
       file: ['too_many_rows'],
     });
+  // No importable field takes more than 4 000 characters: longer cells are refused before parsing.
+  for (const [i, r] of data.entries()) {
+    const j = r.findIndex((c) => (c ?? '').length > MAX_CELL);
+    if (j >= 0)
+      throw new DomainError(
+        'validation',
+        `La celda de la fila ${i + 2}, columna «${head[j] ?? j + 1}», es demasiado larga (máximo ${MAX_CELL.toLocaleString('es-ES')} caracteres).`,
+        { file: ['cell_too_long'] },
+      );
+  }
   return data.map((r, i) => ({
     // Spreadsheet row number (header = row 1).
     rowNumber: i + 2,
@@ -424,7 +435,8 @@ function requireEntityPermission(ctx: RequestContext, entity: ImportEntity) {
   if (entity === 'exercises') requirePermission(ctx, 'library:write');
   if (entity === 'assessments') requirePermission(ctx, 'assessments:write');
   if (entity === 'references') requirePermission(ctx, 'science:write');
-  if (entity === 'reference_values') requirePermission(ctx, 'science:write');
+  // Centre norms change comparisons for every client: publishing them is ADMIN's (phase 18).
+  if (entity === 'reference_values') requirePermission(ctx, 'science:publish');
 }
 
 async function createImportJob_(ctx: RequestContext, input: unknown) {

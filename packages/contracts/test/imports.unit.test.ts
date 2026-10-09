@@ -68,6 +68,35 @@ describe('import row validation (Spanish spreadsheets → canonical values)', ()
     ).toBe(false);
   });
 
+  it('reference values: percentile lists parse; malformed or oversized ones are refused fast', () => {
+    const base = {
+      test: 'handgrip_strength',
+      variable: 'Prensión',
+      unidad: 'kg',
+      poblacion: 'adults_general',
+      estadistico: 'percentiles',
+      fuente_doi: '10.9999/prueba',
+    };
+    const parse = (percentiles: string) =>
+      importRowSchemas.reference_values.safeParse({ ...base, percentiles });
+    const ok = parse(' P10=21 | p 50 : 29,5 |P90=37|');
+    expect(ok.success && ok.data.percentiles).toEqual({ p10: 21, p50: 29.5, p90: 37 });
+    for (const bad of ['P10=21', 'P10=1.234,5|P50=2', 'P10=21|P50=', 'P100=1|P50=2'])
+      expect(parse(bad).success).toBe(false);
+    // Long blanks used to backtrack for seconds (40 000 spaces ≈ 1.6 s): now bounded and linear.
+    const evil = [
+      '|' + ' '.repeat(40_000) + 'x',
+      '|' + ' '.repeat(450) + 'x',
+      'P10=' + ' '.repeat(450) + 'x|P50=1',
+      'p' + ' '.repeat(450) + '1=x',
+    ];
+    for (const e of evil) {
+      const t0 = performance.now();
+      expect(parse(e).success).toBe(false);
+      expect(performance.now() - t0).toBeLessThan(200);
+    }
+  });
+
   it('every entity documents its columns with an example', () => {
     for (const cols of Object.values(IMPORT_COLUMNS))
       expect(cols.every((c) => c.header && c.key && c.example !== undefined)).toBe(true);

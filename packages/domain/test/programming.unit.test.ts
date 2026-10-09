@@ -3,6 +3,7 @@ import {
   adaptTemplate,
   changesFor,
   expandTemplate,
+  isStandardLoadStep,
   loadIncrementFor,
   proposeAdjustments,
   proposeLoadChange,
@@ -111,6 +112,18 @@ describe('week-to-week load (§12.7)', () => {
     expect(loadIncrementFor(['barbell'])).toBe(2.5);
     expect(loadIncrementFor(['dumbbells'])).toBe(2);
     expect(loadIncrementFor(['bodyweight'])).toBe(1);
+  });
+
+  it('auto-apply only takes standard steps: one platform increment up or down, never more', () => {
+    expect(isStandardLoadStep(60, 62.5, ['barbell'])).toBe(true);
+    expect(isStandardLoadStep(62.5, 60, ['barbell'])).toBe(true);
+    expect(isStandardLoadStep(60, 65, ['barbell'])).toBe(false);
+    expect(isStandardLoadStep(20, 22, ['dumbbells'])).toBe(true);
+    expect(isStandardLoadStep(20, 22.5, ['dumbbells'])).toBe(false);
+    expect(isStandardLoadStep(10, 11, [])).toBe(true);
+    expect(isStandardLoadStep(10, 12, [])).toBe(false);
+    // Float sums (0.1 + 0.2 style) stay within the step.
+    expect(isStandardLoadStep(0.1 + 0.2, 2.8, ['barbell'])).toBe(true);
   });
 
   it('a load proposal shifts the next 2 weeks of planned loads, keeping the planned progression', () => {

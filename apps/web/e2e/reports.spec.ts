@@ -111,4 +111,14 @@ test('the centre imports its own reference values for a test and removes them', 
   await expect(item.getByText('Del centro', { exact: true })).toBeVisible();
   await item.getByRole('button', { name: 'Eliminar' }).click();
   await expect(page.locator('li').filter({ hasText: variable })).toHaveCount(0);
+
+  // Phase 18: centre norms are ADMIN's; a trainer reads them but cannot import or remove them.
+  await page.context().clearCookies();
+  await login(page, 'pablo.ibarra@example.com');
+  await page.goto(testUrl);
+  await expect(page.getByRole('heading', { name: 'Valores de referencia' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Importar normas del centro' })).toHaveCount(0);
+  await page.goto('/app/informes/importar?que=reference_values');
+  await expect(page.getByLabel('Qué importar')).toHaveValue('clients');
+  await expect(page.locator('option[value=reference_values]')).toHaveCount(0);
 });

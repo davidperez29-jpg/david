@@ -139,7 +139,7 @@ export function runDecisionEngine(ctx: ClientContext, k: KnowledgeSnapshot): Dec
       population,
       values: hit.variant.values,
       summary: Object.entries(hit.variant.values)
-        .filter(([key]) => key in r.parameters)
+        .filter(([key]) => Object.hasOwn(r.parameters, key))
         .map(([key, x]) => {
           const p = r.parameters[key]!;
           return `${p.label}: ${fmt(x)}${p.unit ? ` ${p.unit}` : ''}`;

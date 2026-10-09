@@ -18,9 +18,13 @@ export default async function ImportPage({
 }: {
   searchParams: Promise<{ que?: string }>;
 }) {
-  await requireStaff();
+  const ctx = await requireStaff();
+  // Centre norms change every client's comparison: only ADMIN imports them.
+  const canPublish = ctx.actor.roles.includes('ADMIN');
   const { que } = await searchParams;
-  const initial = (IMPORT_ENTITIES as readonly string[]).includes(que ?? '') ? que : undefined;
+  const allowed = (e: string) => canPublish || e !== 'reference_values';
+  const initial =
+    (IMPORT_ENTITIES as readonly string[]).includes(que ?? '') && allowed(que!) ? que : undefined;
   return (
     <div className="flex max-w-5xl flex-col gap-4">
       <Link href="/app/informes" className="text-sm text-muted hover:underline">
@@ -28,7 +32,7 @@ export default async function ImportPage({
       </Link>
       <h1 className="text-2xl font-semibold">Importar datos</h1>
       <Card title="1. Sube el archivo">
-        <ImportUploadForm initial={initial} />
+        <ImportUploadForm initial={initial} canPublish={canPublish} />
         <p className="mt-2 text-xs text-muted">
           Primero se valida cada fila (formato, catálogos, duplicados y permisos) y verás los
           errores por columna. No se importa nada hasta que confirmes. El archivo no se guarda.
@@ -36,20 +40,22 @@ export default async function ImportPage({
       </Card>
       <Card title="Columnas por tipo">
         <div className="grid gap-4 md:grid-cols-2">
-          {(Object.keys(IMPORT_COLUMNS) as (keyof typeof IMPORT_COLUMNS)[]).map((e) => (
-            <div key={e}>
-              <h3 className="text-sm font-semibold">{TITLES[e]}</h3>
-              <ul className="text-xs">
-                {IMPORT_COLUMNS[e].map((c) => (
-                  <li key={c.key}>
-                    <span className="font-medium">{c.header}</span>
-                    {c.required ? ' (obligatoria)' : ''}
-                    {c.help ? <span className="text-muted"> · {c.help}</span> : null}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+          {(Object.keys(IMPORT_COLUMNS) as (keyof typeof IMPORT_COLUMNS)[])
+            .filter(allowed)
+            .map((e) => (
+              <div key={e}>
+                <h3 className="text-sm font-semibold">{TITLES[e]}</h3>
+                <ul className="text-xs">
+                  {IMPORT_COLUMNS[e].map((c) => (
+                    <li key={c.key}>
+                      <span className="font-medium">{c.header}</span>
+                      {c.required ? ' (obligatoria)' : ''}
+                      {c.help ? <span className="text-muted"> · {c.help}</span> : null}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
         </div>
       </Card>
     </div>

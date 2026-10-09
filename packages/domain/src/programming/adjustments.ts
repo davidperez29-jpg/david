@@ -141,6 +141,15 @@ export function loadIncrementFor(equipment: string[]): number {
 }
 
 /**
+ * Auto-apply only takes steps no larger than the platform's increment for the equipment
+ * (restructure phase 18): a centre's larger increment, or a bigger velocity/RIR change, stays a
+ * proposal for the trainer to decide.
+ */
+export function isStandardLoadStep(fromKg: number, toKg: number, equipment: string[]): boolean {
+  return Math.abs(toKg - fromKg) <= loadIncrementFor(equipment) + 1e-9;
+}
+
+/**
  * Week-to-week load proposal for one exercise from its logged sessions: RIR adjustment over the
  * last 2 sessions first (it can go down as well), then double progression on the last session.
  */

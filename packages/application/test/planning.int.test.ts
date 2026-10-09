@@ -369,6 +369,27 @@ describe('client plans', () => {
         date: addDays(done.scheduledDate!, 1),
       }),
     ).rejects.toMatchObject({ code: 'conflict', details: { session: ['recorded'] } });
+    // Sets logged without attendance yet (the player is mid-session) are a record too.
+    const logged = weeks[3]!.sessions[1]!;
+    const [ex] = await testDb()
+      .db.select({ id: schema.exercises.id })
+      .from(schema.exercises)
+      .limit(1);
+    await testDb().db.insert(schema.setLogs).values({
+      organizationId: o.org.organizationId,
+      clientId: o.clientB,
+      sessionId: logged.id,
+      exerciseIdPerformed: ex!.id,
+      setIndex: 1,
+      loggedByRole: 'trainer',
+      loggedBy: o.org.adminUserId,
+    });
+    await expect(
+      rescheduleSession(o.admin, logged.id, {
+        expectedVersion: (await getSession(o.admin, logged.id)).version,
+        date: addDays(logged.scheduledDate!, 1),
+      }),
+    ).rejects.toMatchObject({ code: 'conflict', details: { session: ['recorded'] } });
     // An archived plan is locked.
     await setPlanStatus(o.admin, m.id, { status: 'archived' });
     await expect(

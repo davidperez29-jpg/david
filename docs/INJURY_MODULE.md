@@ -225,6 +225,7 @@ Datos del cliente:
 - `injuries` lleva el diagnóstico recibido cifrado y, desde la fase 11 de la reestructuración, también el mecanismo, el profesional, las restricciones y las notas.
 - Tablas hijas: `injury_phase_history`, `injury_symptoms`, `injury_alerts`, `injury_criterion_checks` y `rtp_decisions`. Sus textos libres (notas, nota de revisión, motivo de la decisión) también van cifrados.
 - Cifrado: AES-256-GCM en columnas `*_enc`. Las columnas en claro de antes de la fase 11 (`mechanism`, `notes`, `note`, `review_note`, `rationale`…) solo se leen como respaldo. `pnpm injuries:encrypt-text` las pasa a su columna cifrada y las vacía; se ejecuta en cada arranque. Se borrarán en una migración posterior (decisión A49).
+- Si un valor cifrado no se puede abrir con ninguna clave (falta una clave anterior), la ficha muestra «[Texto no disponible: no se pudo descifrar. Revisa las claves de cifrado.]» en ese campo y sigue funcionando. El registro anota solo `injury_text_unreadable`, sin contenido. El paso de cifrado del texto antiguo prefiere el texto en claro cuando el cifrado existente no se abre (fase 18, A66).
 - RLS: solo el equipo, nunca la app del cliente. Los hijos heredan organización y cliente del caso. Todo está en la matriz de seguridad.
 
 **Reglas** (`packages/domain/src/injury/index.ts`):

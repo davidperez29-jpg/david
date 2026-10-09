@@ -663,10 +663,12 @@ export async function encryptInjuryText(app: Pick<AppContext, 'keys'> & { db: Da
       .from(table)
       .where(isNotNull(plain))) as { id: string; plain: string; encrypted: string | null }[];
     for (const r of rows) {
+      // Keep an existing encrypted value only if it opens; otherwise the plaintext is the truth.
+      const keep = r.encrypted != null && safeOpen(app.keys, r.encrypted) != null;
       await app.db
         .update(table)
         .set({
-          [`${base}Enc`]: r.encrypted ?? encrypt(app.keys.encryptionKey, r.plain),
+          [`${base}Enc`]: keep ? r.encrypted : encrypt(app.keys.encryptionKey, r.plain),
           [`${base}Plain`]: null,
         } as never)
         .where(eq(cols.id!, r.id));

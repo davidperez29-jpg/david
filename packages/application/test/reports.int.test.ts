@@ -434,13 +434,15 @@ describe('validated imports (§52): preview with per-row errors before anything 
       `five_times_sit_to_stand;Tiempo 5 levantamientos;s;older_adults;60;69;mixto;punto de corte;;;;;12;por encima;Peor que la media del centro;${doi}`,
       `handgrip_strength;Prensión (percentiles);kg;adults_general;;;hombre;percentiles;;;;P10=30|P50=40|P90=50;;;;${doi}`,
     ];
-    await expect(
-      createImportJob(o.clientUser, {
-        entity: 'reference_values',
-        fileName: 'normas.csv',
-        contentBase64: csvFile(lines),
-      }),
-    ).rejects.toMatchObject({ code: 'forbidden' });
+    // Centre norms change every client's comparison: importing them is ADMIN's (phase 18).
+    for (const by of [o.clientUser, o.trainer2])
+      await expect(
+        createImportJob(by, {
+          entity: 'reference_values',
+          fileName: 'normas.csv',
+          contentBase64: csvFile(lines),
+        }),
+      ).rejects.toMatchObject({ code: 'forbidden' });
     const job = await createImportJob(o.admin, {
       entity: 'reference_values',
       fileName: 'normas.csv',
@@ -503,9 +505,10 @@ describe('validated imports (§52): preview with per-row errors before anything 
     await expect(deleteReferenceValue(other.admin, cut.id)).rejects.toMatchObject({
       code: 'not_found',
     });
-    await expect(deleteReferenceValue(o.clientUser, cut.id)).rejects.toMatchObject({
-      code: expect.stringMatching(/^(forbidden|not_found)$/),
-    });
+    for (const by of [o.clientUser, o.trainer2])
+      await expect(deleteReferenceValue(by, cut.id)).rejects.toMatchObject({
+        code: expect.stringMatching(/^(forbidden|not_found)$/),
+      });
     await deleteReferenceValue(o.admin, cut.id);
     expect(
       await testDb()
@@ -530,6 +533,21 @@ describe('validated imports (§52): preview with per-row errors before anything 
         contentBase64: b64('%PDF'),
       }),
     ).rejects.toMatchObject({ code: 'validation' });
+    // Oversized cells are refused before any parsing, naming the row and the column.
+    await expect(
+      createImportJob(o.admin, {
+        entity: 'clients',
+        fileName: 'x.csv',
+        contentBase64: csvFile([
+          'Nombre;Apellidos;Fecha de nacimiento',
+          `Ana;${'x'.repeat(6000)};01/01/1990`,
+        ]),
+      }),
+    ).rejects.toMatchObject({
+      code: 'validation',
+      message: expect.stringMatching(/fila 2, columna «Apellidos»/),
+      details: { file: ['cell_too_long'] },
+    });
     await expect(
       createImportJob(o.clientUser, {
         entity: 'clients',

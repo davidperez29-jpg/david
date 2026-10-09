@@ -547,9 +547,14 @@ const DIRECTION_MAP = {
 const percentileList = z.preprocess(
   (v) => {
     if (typeof v !== 'string') return v;
+    // Bounded input and a linear pattern on trimmed parts (no backtracking on long blanks).
+    if (v.length > 500) return null;
     const out: Record<string, number> = {};
-    for (const part of v.split('|').filter((x) => x.trim() !== '')) {
-      const m = /^\s*p?\s*(\d{1,2})\s*[=:]\s*(-?[\d.,]+)\s*$/i.exec(part);
+    for (const part of v
+      .split('|')
+      .map((x) => x.trim())
+      .filter(Boolean)) {
+      const m = /^p?\s*(\d{1,2})\s*[=:]\s*(-?\d+(?:[.,]\d+)?)$/i.exec(part);
       if (!m) return null;
       out[`p${Number(m[1])}`] = Number(m[2]!.replace(',', '.'));
     }

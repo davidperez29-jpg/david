@@ -110,7 +110,9 @@ async function organizationDecisionRules(db: Database, organizationId: string) {
       .map((v) => ({
         ...v,
         values: Object.fromEntries(
-          Object.entries(v.values).filter(([k, x]) => k in d.parameters && typeof x === 'number'),
+          Object.entries(v.values).filter(
+            ([k, x]) => Object.hasOwn(d.parameters, k) && typeof x === 'number',
+          ),
         ),
       }))
       .filter((v) => Object.keys(v.values).length);
@@ -121,7 +123,7 @@ async function organizationDecisionRules(db: Database, organizationId: string) {
       parameters: Object.fromEntries(
         Object.entries(d.parameters).map(([k, p]) => [
           k,
-          { ...p, value: k in stored ? stored[k]! : p.value },
+          { ...p, value: Object.hasOwn(stored, k) ? stored[k]! : p.value },
         ]),
       ),
       ...(variants.length ? { variants } : {}),
@@ -846,7 +848,8 @@ async function updateDecisionRules_(ctx: RequestContext, input: unknown) {
     if (!o) return r;
     const parameters = { ...r.parameters };
     for (const [k, v] of Object.entries(o.parameters)) {
-      if (!(k in parameters)) (errors[`${r.key}.${k}`] ??= []).push('Parámetro desconocido.');
+      if (!Object.hasOwn(parameters, k))
+        (errors[`${r.key}.${k}`] ??= []).push('Parámetro desconocido.');
       else if (v !== null && v < 0) (errors[`${r.key}.${k}`] ??= []).push('Debe ser positivo.');
       else parameters[k] = { ...parameters[k]!, value: v };
     }
@@ -866,7 +869,7 @@ async function updateDecisionRules_(ctx: RequestContext, input: unknown) {
         if (when.sport && !sportSlugs.has(when.sport)) err(`${n}: deporte desconocido.`);
         if (!Object.keys(v.values).length) err(`${n}: indica al menos un valor.`);
         for (const [k, x] of Object.entries(v.values)) {
-          if (!(k in parameters)) err(`${n}: parámetro desconocido «${k}».`);
+          if (!Object.hasOwn(parameters, k)) err(`${n}: parámetro desconocido «${k}».`);
           else if (x < 0) err(`${n}: los valores deben ser positivos.`);
         }
         if (o.variants!.slice(0, i).some((p) => samePopulation(p.when, when)))

@@ -360,7 +360,8 @@ async function deleteLocalReliability_(ctx: RequestContext, id: string): Promise
  * reviewed clinical screening references do.
  */
 export async function insertReferenceValue(ctx: RequestContext, d: Record<string, unknown>) {
-  requirePermission(ctx, 'science:write');
+  // They change z-scores and bands for every client of the centre: ADMIN only (phase 18).
+  requirePermission(ctx, 'science:publish');
   const stat = d.estadistico as 'mean_sd' | 'median_iqr' | 'percentiles' | 'cutoff';
   const values =
     stat === 'mean_sd'
@@ -412,7 +413,7 @@ export async function insertReferenceValue(ctx: RequestContext, d: Record<string
 
 /** Only the centre's own reference values can be removed; the platform's are read-only. */
 async function deleteReferenceValue_(ctx: RequestContext, id: string): Promise<void> {
-  requirePermission(ctx, 'science:write');
+  requirePermission(ctx, 'science:publish');
   const [r] = await ctx.db.select().from(referenceValues).where(eq(referenceValues.id, id));
   if (!r || r.organizationId !== ctx.actor.organizationId)
     throw new DomainError('not_found', 'Valor de referencia no encontrado.');

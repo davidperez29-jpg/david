@@ -107,7 +107,7 @@ export function applyVariant(rule: DecisionRule, variant: ParamVariant): Decisio
     parameters: Object.fromEntries(
       Object.entries(rule.parameters).map(([k, p]) => [
         k,
-        k in variant.values ? { ...p, value: variant.values[k]! } : p,
+        Object.hasOwn(variant.values, k) ? { ...p, value: variant.values[k]! } : p,
       ]),
     ),
   };

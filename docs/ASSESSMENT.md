@@ -78,6 +78,9 @@ Una referencia solo es **aplicable** si coinciden la edad (rango), el sexo, el d
   - edad mínima mayor que la máxima;
   - el mismo grupo repetido en el archivo o ya presente en el centro (mismo test, variable, población, sexo, edades y fuente).
 - Son **del centro** (RLS de catálogo): otro centro no las ve. La ficha del test las marca «Del centro» y permite eliminarlas; las de la plataforma no se pueden borrar.
+- **Solo el ADMIN** las importa y las elimina (`science:publish`, fase 18, A63): cambian los z-scores y las bandas de todos los clientes del centro. Los entrenadores las ven, pero no ven el enlace de importación ni «Eliminar».
+- Si la fuente de una norma no está verificada, la ficha lo indica junto a la cita (p. ej., «Pendiente de verificación»).
+- El campo de percentiles admite como máximo 500 caracteres, y ninguna celda del archivo puede superar los 5 000 (fase 18).
 - Un **punto de corte importado es siempre descriptivo** (`referral: false`): nunca muestra «Requiere valoración por profesional sanitario» (A60). Ese aviso solo lo dan los criterios clínicos revisados de la plataforma.
 - Se usan igual que las de la plataforma: misma comprobación de aplicabilidad (edad, sexo, deporte, población, método) y z-score solo con media y DE aplicable.
 

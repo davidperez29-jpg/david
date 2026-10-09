@@ -1,5 +1,7 @@
+import { encrypt } from '@tp/auth';
 import { schema } from '@tp/db';
 import { eq, sql } from 'drizzle-orm';
+import { randomBytes } from 'node:crypto';
 import { beforeAll, describe, expect, it } from 'vitest';
 import {
   advanceInjuryPhase,
@@ -22,6 +24,7 @@ import {
   requestInjuryDecision,
   reviewInjuryAlert,
   type AssessmentTestSummary,
+  UNREADABLE_TEXT,
 } from '../src';
 import { appContext, buildOrg, testDb } from './fixtures';
 
@@ -293,5 +296,23 @@ describe('free text encrypted at rest (restructure phase 11, DPIA R-11)', () => 
             and (mechanism is not null or notes is not null)`,
     );
     expect([...again][0]!.n).toBe(0);
+  });
+
+  it('a value no key opens shows a notice instead of breaking the case; the legacy step re-encrypts it', async () => {
+    const db = testDb().db;
+    // Sealed with a key that is not in the ring (e.g. a lost previous key); the plaintext remains.
+    await db
+      .update(schema.injuries)
+      .set({ notesEnc: encrypt(randomBytes(32), 'Nota ilegible'), notesPlain: 'Nota en claro' })
+      .where(eq(schema.injuries.id, injuryId));
+    let c = await getInjury(o.admin, o.clientA, injuryId);
+    expect(c.notes).toBe(UNREADABLE_TEXT);
+    expect(c.mechanism).toBe('Caída en el entrenamiento');
+    // The legacy step trusts the plaintext over an encrypted value that does not open.
+    await encryptInjuryText(appContext());
+    c = await getInjury(o.admin, o.clientA, injuryId);
+    expect(c.notes).toBe('Nota en claro');
+    const [row] = await db.select().from(schema.injuries).where(eq(schema.injuries.id, injuryId));
+    expect(row!.notesPlain).toBeNull();
   });
 });

@@ -281,8 +281,14 @@ const IMPORT_ENTITIES = [
   ['reference_values', 'Valores de referencia (normas)'],
 ] as const;
 
-/** Upload → validation preview (nothing is written until confirmed). */
-export function ImportUploadForm({ initial = 'clients' }: { initial?: string }) {
+/** Upload → validation preview (nothing is written until confirmed). Centre norms: ADMIN only. */
+export function ImportUploadForm({
+  initial = 'clients',
+  canPublish = false,
+}: {
+  initial?: string;
+  canPublish?: boolean;
+}) {
   const router = useRouter();
   const a = useApiAction();
   const [entity, setEntity] = useState(initial);
@@ -315,11 +321,13 @@ export function ImportUploadForm({ initial = 'clients' }: { initial?: string }) 
         <label className="flex flex-col gap-1 text-sm">
           Qué importar
           <select value={entity} onChange={(e) => setEntity(e.target.value)} className={field}>
-            {IMPORT_ENTITIES.map(([k, l]) => (
-              <option key={k} value={k}>
-                {l}
-              </option>
-            ))}
+            {IMPORT_ENTITIES.filter(([k]) => canPublish || k !== 'reference_values').map(
+              ([k, l]) => (
+                <option key={k} value={k}>
+                  {l}
+                </option>
+              ),
+            )}
           </select>
         </label>
         <span className="flex gap-2 text-sm">
