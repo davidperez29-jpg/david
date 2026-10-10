@@ -5,6 +5,8 @@
   --bg: #ffffff;
   --surface: #f6f7f8;
   --border: #e3e5e8;
+  /* Form-control outlines: ≥ 3:1 against bg and surface (WCAG 1.4.11; phase 18). */
+  --control-border: #868d98;
   --text: #16181d;
   --muted: #5d6470;
   --accent: #0f766e;
@@ -21,6 +23,7 @@
     --bg: #0f1115;
     --surface: #171a20;
     --border: #2a2f38;
+    --control-border: #666e7b;
     --text: #e8eaed;
     --muted: #9aa3af;
     --accent: #2dd4bf;
@@ -36,6 +39,7 @@
   --bg: #0f1115;
   --surface: #171a20;
   --border: #2a2f38;
+  --control-border: #666e7b;
   --text: #e8eaed;
   --muted: #9aa3af;
   --accent: #2dd4bf;
@@ -75,4 +79,12 @@ body {
 :focus-visible {
   outline: 2px solid var(--focus);
   outline-offset: 2px;
+}
+/*
+ * Text fields, selects and text areas drawn with the neutral border get the control border
+ * (unlayered, so it wins over the `border-border` utility). The light divider stays for cards and
+ * tables; warning and invalid states keep their own colour.
+ */
+:is(input, select, textarea).border-border:not([aria-invalid='true']) {
+  border-color: var(--control-border);
 }

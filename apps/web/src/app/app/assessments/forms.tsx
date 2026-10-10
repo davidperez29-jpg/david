@@ -3,6 +3,7 @@
 import type { BatteryProposalView } from '@tp/application';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { announce } from '@/components/ui/announcer';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/card';
 import { Field, Input, Select, Textarea } from '@/components/ui/field';
@@ -158,35 +159,71 @@ export function LocalReliabilityForm({ testId, unit }: { testId: string; unit: s
   );
 }
 
-export function DeleteReliabilityButton({ id }: { id: string }) {
+/**
+ * «Eliminar» with an inline confirmation (phase 18): the first press asks, naming what goes; the
+ * row disappears once removed, so the result is announced and focus goes to the card's heading.
+ */
+function ConfirmDelete({
+  path,
+  what,
+  focusId,
+}: {
+  path: string;
+  /** What is removed, e.g. «la norma Prensión (kg) · adultos». */
+  what: string;
+  focusId: string;
+}) {
   const a = useApiAction();
+  const [asking, setAsking] = useState(false);
+  if (!asking)
+    return (
+      <Button
+        variant="ghost"
+        size="sm"
+        aria-label={`Eliminar ${what}`}
+        onClick={() => setAsking(true)}
+      >
+        Eliminar
+      </Button>
+    );
   return (
-    <Button
-      variant="ghost"
-      size="sm"
-      disabled={a.pending}
-      onClick={() => void a.run(`/assessment-reliability/${id}`, 'DELETE')}
+    <span
+      role="group"
+      aria-label={`Confirmar: eliminar ${what}`}
+      className="inline-flex flex-wrap items-center gap-2 text-sm"
     >
-      Eliminar
-    </Button>
+      <span>¿Eliminar {what}?</span>
+      <Button
+        variant="danger"
+        size="sm"
+        // Moves focus into the confirmation it opened (keyboard and screen readers land on it).
+        autoFocus
+        disabled={a.pending}
+        onClick={async () => {
+          const r = await a.run(path, 'DELETE');
+          if (r !== null) announce(`Eliminado: ${what}.`, focusId);
+        }}
+      >
+        Sí, eliminar
+      </Button>
+      <Button variant="ghost" size="sm" disabled={a.pending} onClick={() => setAsking(false)}>
+        Cancelar
+      </Button>
+      <FormError error={a.error} />
+    </span>
+  );
+}
+
+export function DeleteReliabilityButton({ id, what }: { id: string; what: string }) {
+  return (
+    <ConfirmDelete path={`/assessment-reliability/${id}`} what={what} focusId="fiabilidad-titulo" />
   );
 }
 
 /** The centre's own reference values (imported) can be removed; the platform's cannot. */
-export function DeleteReferenceButton({ id }: { id: string }) {
-  const a = useApiAction();
+export function DeleteReferenceButton({ id, what }: { id: string; what: string }) {
   return (
-    <span className="inline-flex items-center gap-2">
-      <Button
-        variant="ghost"
-        size="sm"
-        disabled={a.pending}
-        onClick={() => void a.run(`/assessment-references/${id}`, 'DELETE')}
-      >
-        Eliminar
-      </Button>
-      <FormError error={a.error} />
-    </span>
+    <ConfirmDelete path={`/assessment-references/${id}`} what={what} focusId="referencias-titulo" />
   );
 }
 

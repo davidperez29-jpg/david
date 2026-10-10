@@ -160,5 +160,9 @@ export const toleranceSchema = z
 
 /** The centre's own load increment for an exercise (phase 13); null = back to the default. */
 export const exerciseLoadIncrementSchema = z.object({
-  incrementKg: z.coerce.number().positive().max(50).nullable(),
+  incrementKg: z.coerce
+    .number('Escribe un número')
+    .positive('Debe ser mayor que 0')
+    .max(50, 'Como máximo 50 kg')
+    .nullable(),
 });

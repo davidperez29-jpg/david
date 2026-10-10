@@ -109,8 +109,14 @@ test('the centre imports its own reference values for a test and removes them', 
   await page.goto(testUrl);
   const item = page.locator('li').filter({ hasText: variable });
   await expect(item.getByText('Del centro', { exact: true })).toBeVisible();
-  await item.getByRole('button', { name: 'Eliminar' }).click();
+  // Phase 18: an inline confirmation that names the norm; focus returns to the card's heading.
+  await item.getByRole('button', { name: `Eliminar la norma «${variable}»` }).click();
+  await expect(item.getByText(`¿Eliminar la norma «${variable}»`)).toBeVisible();
+  await expect(item.getByRole('button', { name: 'Sí, eliminar' })).toBeFocused();
+  await item.getByRole('button', { name: 'Sí, eliminar' }).click();
   await expect(page.locator('li').filter({ hasText: variable })).toHaveCount(0);
+  await expect(page.getByRole('heading', { name: 'Valores de referencia' })).toBeFocused();
+  await expect(page.getByTestId('announcer')).toHaveText(/Eliminado: la norma/);
 
   // Phase 18: centre norms are ADMIN's; a trainer reads them but cannot import or remove them.
   await page.context().clearCookies();

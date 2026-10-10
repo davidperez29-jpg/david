@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { a11yIds, CLIENT_TABS, scan } from './a11y-helpers';
+import { a11yIds, CLIENT_TABS, scan, scanState } from './a11y-helpers';
 import { login } from './helpers';
 
 /** WCAG 2.2 AA on every trainer page (desktop), light and dark. See a11y-helpers.ts. */
@@ -55,6 +55,53 @@ test('trainer pages meet WCAG 2.2 AA (axe, light and dark)', async ({ page }) =>
     '/app/settings/decision',
   ];
   for (const url of pages) await scan(page, url, found);
+  console.log(found.join('\n') || 'Sin infracciones graves.');
+  expect(found).toEqual([]);
+});
+
+/**
+ * Restructure phase 18: states that only appear after an action (open proposals with their
+ * table and edit form, a new population row, an error summary, «Mover» open), scanned too, and
+ * where the keyboard focus lands.
+ */
+test('interactive states of the engine, rules and calendar meet WCAG 2.2 AA', async ({ page }) => {
+  test.setTimeout(300_000);
+  const found: string[] = [];
+  await login(page, 'lucia.moreno@example.com');
+
+  // Alertas: a client's proposals open, with «Qué cambiaría» and the edit form.
+  await page.goto('/app/alerts');
+  const card = page
+    .locator('section')
+    .filter({ has: page.getByRole('heading', { name: /Ajustes propuestos/ }) });
+  if (await card.count()) {
+    await card.locator('details > summary').first().click();
+    const item = card.locator('li').first();
+    await item.locator('summary', { hasText: 'Qué cambiaría' }).click();
+    await expect(item.getByRole('region', { name: /Qué cambiaría/ })).toBeVisible();
+    const edit = item.getByRole('button', { name: 'Editar' });
+    if (await edit.count()) await edit.click();
+    await scanState(page, '/app/alerts (ajuste abierto)', found);
+  }
+  await expect(page.getByRole('heading', { name: 'Alertas activas' })).toBeVisible();
+
+  // Decision rules: a new population row takes the focus; saving it empty shows the summary.
+  await page.goto('/app/settings/decision');
+  await page.getByRole('button', { name: 'Añadir valores por población' }).first().click();
+  await expect(page.locator('[data-pv] select:focus')).toHaveCount(1);
+  await expect(page.getByText(/^Población \d+$/).first()).toBeVisible();
+  await page.getByRole('button', { name: 'Guardar nueva versión' }).click();
+  const summary = page.getByRole('group', { name: /Revisa (este campo|estos \d+ campos)/ });
+  await expect(summary).toBeFocused();
+  await scanState(page, '/app/settings/decision (fila nueva y errores)', found);
+
+  // Calendar, week view: «Mover» open.
+  await page.goto('/app/calendar?vista=semana');
+  const mover = page.locator('summary', { hasText: 'Mover' }).first();
+  if (await mover.count()) {
+    await mover.click();
+    await scanState(page, '/app/calendar (Mover abierto)', found);
+  }
   console.log(found.join('\n') || 'Sin infracciones graves.');
   expect(found).toEqual([]);
 });

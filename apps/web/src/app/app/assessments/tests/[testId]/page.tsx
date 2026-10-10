@@ -73,7 +73,7 @@ export default async function TestPage({ params }: { params: Promise<{ testId: s
         ) : null}
       </Card>
 
-      <Card title="Fiabilidad y error de medida">
+      <Card title="Fiabilidad y error de medida" headingId="fiabilidad-titulo">
         {t.reliability.length === 0 ? (
           <EmptyState>
             Error de medida desconocido: se mostrará la diferencia entre evaluaciones, sin
@@ -92,8 +92,12 @@ export default async function TestPage({ params }: { params: Promise<{ testId: s
                   {r.measurementMethod ? (
                     <span className="text-muted">· {r.measurementMethod}</span>
                   ) : null}
-                  {r.isLocal && !t.isGlobal ? null : null}
-                  {r.isLocal ? <DeleteReliabilityButton id={r.id} /> : null}
+                  {r.isLocal ? (
+                    <DeleteReliabilityButton
+                      id={r.id}
+                      what={`el test-retest del centro${r.population ? ` (${r.population})` : ''}`}
+                    />
+                  ) : null}
                 </div>
                 <p className="tabular-nums">
                   {[
@@ -127,6 +131,7 @@ export default async function TestPage({ params }: { params: Promise<{ testId: s
 
       <Card
         title="Valores de referencia"
+        headingId="referencias-titulo"
         actions={
           canPublish ? (
             <Link
@@ -173,7 +178,12 @@ export default async function TestPage({ params }: { params: Promise<{ testId: s
                 {r.limitations ? (
                   <p className="text-xs text-muted">Limitaciones: {r.limitations}</p>
                 ) : null}
-                {r.organizationId && canPublish ? <DeleteReferenceButton id={r.id} /> : null}
+                {r.organizationId && canPublish ? (
+                  <DeleteReferenceButton
+                    id={r.id}
+                    what={`la norma «${r.variable}» (${r.population})`}
+                  />
+                ) : null}
               </li>
             ))}
           </ul>

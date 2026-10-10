@@ -17,6 +17,9 @@ test('Alertas lists the pending adjustments by client and decides them there', a
   await expect(item.getByText('Propuesta', { exact: true })).toBeVisible();
   await item.getByRole('button', { name: 'Posponer' }).click();
   await expect(item.getByText('Pospuesta', { exact: true })).toBeVisible();
+  // Phase 18: the result is announced and the keyboard focus goes to the page heading.
+  await expect(page.getByTestId('announcer')).toHaveText(/^Ajuste pospuesto: /);
+  await expect(page.getByRole('heading', { name: 'Alertas', level: 1 })).toBeFocused();
   // Still pending (postponed), so still listed, now without «Posponer».
   await expect(item.getByRole('button', { name: 'Posponer' })).toHaveCount(0);
   await expect(javier.getByRole('link', { name: 'Ver el plan de Javier' })).toBeVisible();
@@ -56,6 +59,8 @@ test('the calendar moves a pending session to another day: «Mover» and drag an
   await movable.first().locator('input[type="date"]').fill(target);
   await movable.first().getByRole('button', { name: 'Mover a ese día' }).click();
   await expect(page.getByRole('status')).toHaveText(/Sesión movida al/);
+  // Phase 18: the focus stays on the result, not lost with the moved session.
+  await expect(page.getByRole('status')).toBeFocused();
   await expect(session(target)).toBeVisible();
 
   // 2) Drag it back to its original day.

@@ -57,7 +57,7 @@ test('trainer reviews the footballer’s needs with their “why”, decides and
   const strengthRule = page.getByRole('group', { name: 'profile.relative_strength_low' });
   // No general value: only the footballers' one.
   await expect(strengthRule.getByLabel(/^Umbral de fuerza relativa/).first()).toHaveValue('');
-  const football = strengthRule.getByRole('group', { name: 'Valores por población 1' });
+  const football = strengthRule.getByRole('group', { name: 'Población 1', exact: true });
   await expect(football.getByLabel('Deporte')).toHaveValue('football');
   await expect(football.getByLabel(/^Umbral de fuerza relativa/)).toHaveValue('1.5');
   await expect(page.getByText(/1 decididas · 0 rechazadas/).first()).toBeVisible();
@@ -65,7 +65,7 @@ test('trainer reviews the footballer’s needs with their “why”, decides and
   // ADMIN adds a value for women footballers (the most specific match wins) as a new version…
   const cmj = page.getByRole('group', { name: 'profile.cmj_low' });
   await cmj.getByRole('button', { name: 'Añadir valores por población' }).click();
-  const women = cmj.getByRole('group', { name: 'Valores por población 2' });
+  const women = cmj.getByRole('group', { name: 'Población 2', exact: true });
   await women.getByLabel('Sexo').selectOption('female');
   await women.getByLabel('Deporte').selectOption('football');
   await women.getByLabel(/^Umbral de CMJ/).fill('30');
@@ -74,7 +74,7 @@ test('trainer reviews the footballer’s needs with their “why”, decides and
   await expect(page.getByText('Guardado')).toBeVisible();
   await page.reload();
   await expect(page.getByText(/Versión 2 del centro/)).toBeVisible();
-  const saved = cmj.getByRole('group', { name: 'Valores por población 2' });
+  const saved = cmj.getByRole('group', { name: 'Población 2', exact: true });
   await expect(saved.getByLabel('Sexo')).toHaveValue('female');
   await expect(saved.getByLabel(/^Umbral de CMJ/)).toHaveValue('30');
   // …and removes it again (the demo stays as it was).
@@ -83,5 +83,5 @@ test('trainer reviews the footballer’s needs with their “why”, decides and
   await expect(page.getByText('Guardado')).toBeVisible();
   await page.reload();
   await expect(page.getByText(/Versión 3 del centro/)).toBeVisible();
-  await expect(cmj.getByRole('group', { name: 'Valores por población 2' })).toHaveCount(0);
+  await expect(cmj.getByRole('group', { name: 'Población 2', exact: true })).toHaveCount(0);
 });

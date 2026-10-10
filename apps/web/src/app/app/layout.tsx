@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { LogoutButton } from '@/components/logout-button';
+import { Announcer } from '@/components/ui/announcer';
 import { NavLink } from '@/components/nav-link';
 import { UserMenu, UserMenuLink } from '@/components/user-menu';
 import { monitoringOverview } from '@tp/application';
@@ -74,6 +75,7 @@ export default async function StaffLayout({ children }: { children: ReactNode })
           </UserMenu>
         </div>
       </header>
+      <Announcer />
       <main className="mx-auto max-w-7xl px-4 py-6">{children}</main>
     </div>
   );

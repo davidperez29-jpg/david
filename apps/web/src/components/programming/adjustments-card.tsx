@@ -13,6 +13,7 @@ import {
 const actionsOf = (a: AdjustmentView) => ({
   id: a.id,
   kind: a.kind,
+  title: a.title,
   status: a.status,
   params: a.params,
   options: a.options,
@@ -64,8 +65,19 @@ function Changes({ a }: { a: AdjustmentView }) {
       <summary className="cursor-pointer text-muted">
         {a.applied ? 'Cambios aplicados' : 'Qué cambiaría'} ({list.length})
       </summary>
-      <div className="overflow-x-auto">
+      {/* Keyboard users can scroll the table on a narrow screen (focusable region). */}
+      <div
+        className="overflow-x-auto"
+        role="region"
+        aria-label={`${a.applied ? 'Cambios aplicados' : 'Qué cambiaría'}: ${a.title}`}
+        tabIndex={0}
+      >
         <table className="mt-1 w-full">
+          {/* Worded apart from the summary above, so the two are not read as the same text. */}
+          <caption className="sr-only">
+            Tabla de cambios {a.applied ? 'aplicados' : 'propuestos'} de «{a.title}»: fecha,
+            ejercicio, campo y valor antes y después
+          </caption>
           <thead>
             <tr className="text-left text-muted">
               <th className="py-0.5">Fecha</th>
@@ -110,22 +122,30 @@ function Changes({ a }: { a: AdjustmentView }) {
   );
 }
 
-/** A pending adjustment with what it would change, why, and its decision buttons. */
-export function PendingAdjustmentItem({ a }: { a: AdjustmentView }) {
+/**
+ * A pending adjustment with what it would change, why, and its decision buttons. `focusId` is the
+ * stable heading that receives focus once it is decided and leaves the list.
+ */
+export function PendingAdjustmentItem({ a, focusId }: { a: AdjustmentView; focusId: string }) {
   return (
     <li className="flex flex-col gap-2 py-3">
       <div className="flex flex-wrap items-center gap-2">
         <Badge>{KIND[a.kind] ?? a.kind}</Badge>
-        <span className="font-medium">{a.title}</span>
+        <span id={`adj-${a.id}`} className="font-medium">
+          {a.title}
+        </span>
         <Badge tone={TONE[a.status] ?? 'neutral'}>{label('recommendationStatus', a.status)}</Badge>
       </div>
       <p className="text-sm text-muted">{a.explanation.proposal}</p>
       <Changes a={a} />
       <Why e={a.explanation} />
-      <AdjustmentActions adj={actionsOf(a)} />
+      <AdjustmentActions adj={actionsOf(a)} focusId={focusId} />
     </li>
   );
 }
+
+/** Heading that keeps the keyboard focus when a decided adjustment leaves the list. */
+const FOCUS = 'ajustes-titulo';
 
 export function AdjustmentsCard({
   clientId,
@@ -146,6 +166,7 @@ export function AdjustmentsCard({
           Ajustes propuestos {pending.length ? <Badge tone="accent">{pending.length}</Badge> : null}
         </span>
       }
+      headingId={FOCUS}
       actions={<RefreshAdjustmentsButton clientId={clientId} />}
     >
       <p className="mb-2 text-xs text-muted">
@@ -162,7 +183,7 @@ export function AdjustmentsCard({
           </div>
           <ul className="divide-y divide-border">
             {pending.map((a) => (
-              <PendingAdjustmentItem key={a.id} a={a} />
+              <PendingAdjustmentItem key={a.id} a={a} focusId={FOCUS} />
             ))}
           </ul>
         </>
@@ -174,7 +195,7 @@ export function AdjustmentsCard({
             {recent.map((a) => (
               <li key={a.id} className="flex flex-col gap-1 py-2">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span>{a.title}</span>
+                  <span id={`adj-${a.id}`}>{a.title}</span>
                   <Badge tone={TONE[a.status] ?? 'neutral'}>
                     {label('recommendationStatus', a.status)}
                   </Badge>
@@ -186,7 +207,7 @@ export function AdjustmentsCard({
                   ) : null}
                 </div>
                 <Changes a={a} />
-                <AdjustmentActions adj={actionsOf(a)} />
+                <AdjustmentActions adj={actionsOf(a)} focusId={FOCUS} />
               </li>
             ))}
           </ul>

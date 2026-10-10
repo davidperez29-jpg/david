@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { FormError, useApiAction } from '@/components/use-form';
+import { ErrorSummary, FormError, useApiAction } from '@/components/use-form';
 
 export function RunDecisionButton({ clientId, first }: { clientId: string; first: boolean }) {
   const a = useApiAction();
@@ -287,8 +287,14 @@ type Variant = {
   values: Record<string, number | null>;
   note: string | null;
   population?: string;
+  /** Client-only stable key (rows can be removed from the middle); never sent. */
+  uid?: string;
 };
 type Sport = { slug: string; name: string };
+// Rows from the server get their position (the same on the server render and on hydration);
+// rows added in the browser, a counter.
+let nextUid = 0;
+const withUid = (v: Variant): Variant => (v.uid ? v : { ...v, uid: `new${++nextUid}` });
 
 const EXPERIENCE_OPTIONS: [string, string][] = [
   ['beginner', 'Principiante'],
@@ -317,7 +323,11 @@ function PopulationValues({
   onChange: (variants: Variant[]) => void;
 }) {
   const params = rule.parameters.filter((p) => typeof p.value !== 'string');
+  const errorId = `rule-${rule.key}-variants-error`;
   if (!params.length) return null;
+  /** After adding or removing a row, focus goes somewhere sensible (not back to the page top). */
+  const focusLater = (selector: string) =>
+    requestAnimationFrame(() => document.querySelector<HTMLElement>(selector)?.focus());
   const update = (i: number, patch: Partial<Variant>) =>
     onChange(rule.variants.map((v, j) => (j === i ? { ...v, ...patch } : v)));
   const setWhen = (i: number, key: keyof Variant['when'], value: unknown) =>
@@ -332,10 +342,11 @@ function PopulationValues({
   return (
     <div className="mt-3 flex flex-col gap-2 rounded-md border border-border p-2">
       <p className="text-xs font-medium">Valores por población</p>
-      <p className="text-xs text-muted">
+      <p className="text-xs text-muted" id={`rule-${rule.key}-variants-help`}>
         Sustituyen a los valores generales para los clientes de esa población. Si coinciden varias,
         se aplica la más específica (la primera, si empatan). Los fija el centro: la plataforma no
-        trae valores por población.
+        trae valores por población. Cada fila necesita al menos una condición (sexo, edad,
+        experiencia o deporte) y al menos un valor.
       </p>
       {!editable ? (
         <ul className="text-xs">
@@ -353,11 +364,16 @@ function PopulationValues({
       ) : (
         rule.variants.map((v, i) => (
           <div
-            key={i}
+            key={v.uid ?? i}
             role="group"
-            aria-label={`Valores por población ${i + 1}`}
+            aria-labelledby={`${rule.key}-${v.uid}-title`}
+            aria-describedby={error ? errorId : undefined}
+            data-pv={v.uid}
             className="flex flex-wrap items-end gap-2 border-t border-border pt-2 first:border-t-0 first:pt-0"
           >
+            <p id={`${rule.key}-${v.uid}-title`} className="w-full text-xs font-medium">
+              Población {i + 1}
+            </p>
             <label className="flex flex-col gap-1 text-xs">
               Sexo
               <select
@@ -454,7 +470,14 @@ function PopulationValues({
               type="button"
               size="sm"
               variant="ghost"
-              onClick={() => onChange(rule.variants.filter((_, j) => j !== i))}
+              aria-label={`Quitar la población ${i + 1}`}
+              onClick={() => {
+                const rest = rule.variants.filter((_, j) => j !== i);
+                onChange(rest);
+                // To the row that takes its place, the previous one, or «Añadir…».
+                const near = rest[i] ?? rest[i - 1];
+                focusLater(near ? `[data-pv="${near.uid}"] select` : `[data-pv-add="${rule.key}"]`);
+              }}
             >
               Quitar
             </Button>
@@ -467,13 +490,22 @@ function PopulationValues({
             type="button"
             size="sm"
             variant="secondary"
-            onClick={() => onChange([...rule.variants, { when: {}, values: {}, note: null }])}
+            data-pv-add={rule.key}
+            onClick={() => {
+              const added = withUid({ when: {}, values: {}, note: null });
+              onChange([...rule.variants, added]);
+              focusLater(`[data-pv="${added.uid}"] select`);
+            }}
           >
             Añadir valores por población
           </Button>
         </span>
       ) : null}
-      {error ? <span className="text-xs text-danger">{error.join(' ')}</span> : null}
+      {error ? (
+        <span id={errorId} role="alert" className="text-xs text-danger">
+          {error.join(' ')}
+        </span>
+      ) : null}
     </div>
   );
 }
@@ -499,7 +531,9 @@ export function DecisionRulesEditor({
   editable: boolean;
 }) {
   const a = useApiAction();
-  const [state, setState] = useState(rules);
+  const [state, setState] = useState<Rule[]>(() =>
+    rules.map((r) => ({ ...r, variants: r.variants.map((v, i) => ({ ...v, uid: `saved${i}` })) })),
+  );
   const [notes, setNotes] = useState('');
   const set = (k: string, patch: Partial<Rule>) =>
     setState((s) => s.map((r) => (r.key === k ? { ...r, ...patch } : r)));
@@ -536,7 +570,11 @@ export function DecisionRulesEditor({
           <section key={domain} className="flex flex-col gap-2">
             <h2 className="text-lg font-semibold">{name}</h2>
             {list.map((r) => (
-              <fieldset key={r.key} className="rounded-lg border border-border p-3">
+              <fieldset
+                key={r.key}
+                id={`rule-${r.key}`}
+                className="rounded-lg border border-border p-3"
+              >
                 <legend className="px-1 font-mono text-xs">{r.key}</legend>
                 <p className="text-sm">{r.description}</p>
                 <p className="mt-1 text-xs text-muted">
@@ -572,6 +610,7 @@ export function DecisionRulesEditor({
                   <div className="mt-2 flex flex-wrap gap-3">
                     {r.parameters.map((p) => {
                       const err = a.fieldError(`${r.key}.${p.key}`);
+                      const errId = `rule-${r.key}-${p.key}-error`;
                       if (typeof p.value === 'string') return null;
                       return (
                         <label key={p.key} className="flex flex-col gap-1 text-xs">
@@ -584,6 +623,8 @@ export function DecisionRulesEditor({
                             value={p.value ?? ''}
                             placeholder="Sin definir"
                             disabled={!editable}
+                            aria-invalid={err ? true : undefined}
+                            aria-describedby={err ? errId : undefined}
                             onChange={(e) =>
                               set(r.key, {
                                 parameters: r.parameters.map((x) =>
@@ -605,7 +646,11 @@ export function DecisionRulesEditor({
                               Pendiente: el motor no inventa este valor.
                             </span>
                           ) : null}
-                          {err ? <span className="text-danger">{err.join(' ')}</span> : null}
+                          {err ? (
+                            <span id={errId} className="text-danger">
+                              {err.join(' ')}
+                            </span>
+                          ) : null}
                         </label>
                       );
                     })}
@@ -641,11 +686,22 @@ export function DecisionRulesEditor({
             />
           </label>
           <Button disabled={a.pending}>Guardar nueva versión</Button>
-          {a.done ? <span className="text-sm text-ok">Guardado</span> : null}
+          <span role="status" className="text-sm text-ok">
+            {a.done ? 'Guardado' : ''}
+          </span>
         </div>
       ) : (
         <p className="text-sm text-muted">Solo la administración puede cambiar las reglas.</p>
       )}
+      <ErrorSummary
+        error={a.error}
+        link={(field) => {
+          // Rule keys contain dots; the field is what follows the last one.
+          const cut = field.lastIndexOf('.');
+          const rule = state.find((r) => r.key === field.slice(0, cut));
+          return rule ? { href: `#rule-${rule.key}`, label: rule.key } : null;
+        }}
+      />
       <FormError error={a.error} />
     </form>
   );

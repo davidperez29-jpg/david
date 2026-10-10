@@ -36,7 +36,9 @@ export default async function AlertsPage({ searchParams }: { searchParams: Promi
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center gap-3">
-        <h1 className="text-2xl font-semibold">Alertas</h1>
+        <h1 id="alertas-titulo" tabIndex={-1} className="text-2xl font-semibold">
+          Alertas
+        </h1>
         <Link href="/app/settings/alertas" className="ml-auto text-sm text-accent underline">
           Reglas y umbrales
         </Link>
@@ -105,7 +107,7 @@ export default async function AlertsPage({ searchParams }: { searchParams: Promi
                 </summary>
                 <ul className="divide-y divide-border">
                   {list.map((a) => (
-                    <PendingAdjustmentItem key={a.id} a={a} />
+                    <PendingAdjustmentItem key={a.id} a={a} focusId="alertas-titulo" />
                   ))}
                 </ul>
                 <Link
@@ -119,7 +121,7 @@ export default async function AlertsPage({ searchParams }: { searchParams: Promi
           </div>
         </Card>
       ) : null}
-      <Card>
+      <Card title={estado === 'resueltas' ? 'Alertas resueltas' : 'Alertas activas'}>
         {rows.length === 0 ? (
           <EmptyState>
             {estado === 'resueltas' ? 'No hay alertas resueltas.' : 'No hay alertas activas.'}

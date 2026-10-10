@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { announce } from '@/components/ui/announcer';
 import { Button } from '@/components/ui/button';
 import { FormError, useApiAction } from '@/components/use-form';
 import { LABELS } from '@/lib/labels';
@@ -177,8 +178,13 @@ export function ProposalActions({
       ) : null}
       <div className="flex flex-wrap items-center gap-2">
         <input
-          aria-label="Motivo para descartar"
-          placeholder="Motivo para descartar (opcional)"
+          // Shared by «Descartar» and, when there is an active plan, by the new revision.
+          aria-label={activePlan ? 'Motivo (opcional)' : 'Motivo para descartar'}
+          placeholder={
+            activePlan
+              ? 'Motivo (opcional): se guarda al descartar o en la revisión'
+              : 'Motivo para descartar (opcional)'
+          }
           value={reason}
           maxLength={500}
           onChange={(e) => setReason(e.target.value)}
@@ -209,6 +215,7 @@ export function ProposalActions({
 type Adjustment = {
   id: string;
   kind: string;
+  title: string;
   status: string;
   params: {
     fromKg?: number;
@@ -220,8 +227,20 @@ type Adjustment = {
   options: { id: string; name: string }[];
 };
 
-/** Aceptar · Editar · Rechazar · Posponer for one adjustment; Deshacer once applied. */
-export function AdjustmentActions({ adj }: { adj: Adjustment }) {
+const DECIDED: Record<string, string> = {
+  accept: 'Ajuste aceptado y aplicado',
+  accept_with_changes: 'Ajuste aplicado con cambios',
+  reject: 'Ajuste rechazado',
+  postpone: 'Ajuste pospuesto',
+};
+
+/**
+ * Aceptar · Editar · Rechazar · Posponer for one adjustment; Deshacer once applied.
+ * The item leaves the list once decided, so the result is
+ * announced and focus goes to `focusId` (the list's heading) instead of being lost (phase 18).
+ * The buttons are described by the adjustment's title (`adj-{id}`), set by the list item.
+ */
+export function AdjustmentActions({ adj, focusId }: { adj: Adjustment; focusId?: string }) {
   const a = useApiAction();
   const [mode, setMode] = useState<'none' | 'edit' | 'reject'>('none');
   const [reason, setReason] = useState('');
@@ -229,12 +248,15 @@ export function AdjustmentActions({ adj }: { adj: Adjustment }) {
   const [setsDelta, setSetsDelta] = useState(String(adj.params.setsDelta ?? -1));
   const [rirDelta, setRirDelta] = useState(String(adj.params.rirDelta ?? 2));
   const [toEx, setToEx] = useState(adj.params.toExerciseId ?? adj.options[0]?.id ?? '');
-  const decide = (action: string, params?: Record<string, unknown>) =>
-    a.run(`/adjustments/${adj.id}/decision`, 'POST', {
+  const describedBy = `adj-${adj.id}`;
+  const decide = async (action: string, params?: Record<string, unknown>) => {
+    const r = await a.run(`/adjustments/${adj.id}/decision`, 'POST', {
       action,
       reason: reason.trim() || null,
       ...(params ? { params } : {}),
     });
+    if (r) announce(`${DECIDED[action] ?? 'Ajuste decidido'}: ${adj.title}.`, focusId);
+  };
 
   if (adj.status === 'accepted' || adj.status === 'accepted_with_changes')
     return (
@@ -243,7 +265,11 @@ export function AdjustmentActions({ adj }: { adj: Adjustment }) {
           size="sm"
           variant="ghost"
           disabled={a.pending}
-          onClick={() => void a.run(`/adjustments/${adj.id}/revert`, 'POST', {})}
+          aria-describedby={describedBy}
+          onClick={async () => {
+            const r = await a.run(`/adjustments/${adj.id}/revert`, 'POST', {});
+            if (r) announce(`Ajuste deshecho: ${adj.title}.`, focusId);
+          }}
         >
           Deshacer
         </Button>
@@ -263,16 +289,33 @@ export function AdjustmentActions({ adj }: { adj: Adjustment }) {
   return (
     <div className="flex flex-col gap-2">
       <div className="flex flex-wrap gap-1">
-        <Button size="sm" disabled={a.pending} onClick={() => void decide('accept')}>
+        <Button
+          size="sm"
+          disabled={a.pending}
+          aria-describedby={describedBy}
+          onClick={() => void decide('accept')}
+        >
           Aceptar
         </Button>
         {/* Session moves are accepted as proposed or moved by hand in the Calendario. */}
         {adj.kind === 'reschedule' ? null : (
-          <Button size="sm" variant="secondary" onClick={() => setMode('edit')}>
+          <Button
+            size="sm"
+            variant="secondary"
+            aria-describedby={describedBy}
+            aria-expanded={mode === 'edit'}
+            onClick={() => setMode('edit')}
+          >
             Editar
           </Button>
         )}
-        <Button size="sm" variant="secondary" onClick={() => setMode('reject')}>
+        <Button
+          size="sm"
+          variant="secondary"
+          aria-describedby={describedBy}
+          aria-expanded={mode === 'reject'}
+          onClick={() => setMode('reject')}
+        >
           Rechazar
         </Button>
         {adj.status === 'proposed' ? (
@@ -280,6 +323,7 @@ export function AdjustmentActions({ adj }: { adj: Adjustment }) {
             size="sm"
             variant="ghost"
             disabled={a.pending}
+            aria-describedby={describedBy}
             onClick={() => void decide('postpone')}
           >
             Posponer
@@ -352,7 +396,7 @@ export function AdjustmentActions({ adj }: { adj: Adjustment }) {
             </label>
           ) : null}
           <input
-            aria-label="Motivo"
+            aria-label="Motivo del cambio (se audita)"
             placeholder="Motivo del cambio (se audita)"
             value={reason}
             maxLength={500}
@@ -367,7 +411,7 @@ export function AdjustmentActions({ adj }: { adj: Adjustment }) {
       {mode === 'reject' ? (
         <div className="flex flex-wrap items-center gap-2">
           <input
-            aria-label="Motivo"
+            aria-label="Motivo del rechazo"
             placeholder="Motivo del rechazo"
             value={reason}
             maxLength={500}
@@ -405,10 +449,11 @@ export function BulkAcceptButton({ clientId, ids }: { clientId: string; ids: str
             'POST',
             { ids },
           );
-          if (r)
-            setResult(
-              `${r.applied} cambios aplicados${r.failed.length ? ` · ${r.failed.length} sin aplicar: ${r.failed[0]!.message}` : ''}`,
-            );
+          if (r) {
+            const text = `${r.applied} cambios aplicados${r.failed.length ? ` · ${r.failed.length} sin aplicar: ${r.failed[0]!.message}` : ''}`;
+            setResult(text);
+            announce(text);
+          }
         }}
       >
         Aceptar las {ids.length} progresiones de carga

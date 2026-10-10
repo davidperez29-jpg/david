@@ -85,3 +85,18 @@ export async function scan(page: Page, url: string, found: string[]) {
       );
   }
 }
+
+/** The page as it is now (a state reached by clicking), in light and dark (phase 18). */
+export async function scanState(page: Page, label: string, found: string[]) {
+  for (const scheme of ['light', 'dark'] as const) {
+    await page.emulateMedia({ colorScheme: scheme });
+    const r = await new AxeBuilder({ page }).withTags(TAGS).analyze();
+    for (const v of r.violations.filter((x) => x.impact === 'serious' || x.impact === 'critical'))
+      found.push(
+        `${label} [${scheme}] ${v.id} (${v.impact}): ${v.nodes.length} × ${v.nodes
+          .slice(0, 3)
+          .map((n) => n.target.join(' '))
+          .join(' | ')}`,
+      );
+  }
+}

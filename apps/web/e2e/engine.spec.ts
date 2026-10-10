@@ -18,11 +18,19 @@ test('the centre sets its own load increment for an exercise and can go back to 
   await page.getByRole('link', { name: 'Progresiones', exact: true }).click();
   const card = page.locator('section').filter({ hasText: 'Incremento de carga' });
   await expect(card.getByText('Por defecto', { exact: true })).toBeVisible();
+  // Phase 18: text that is not a number is refused in place (it used to reset the value).
+  await card.getByLabel('Incremento (kg)').fill('mucho');
+  await card.getByRole('button', { name: 'Guardar' }).click();
+  await expect(card.getByText(/Escribe un número mayor que 0/)).toBeVisible();
+  await expect(card.getByLabel('Incremento (kg)')).toHaveAttribute('aria-invalid', 'true');
+  await expect(card.getByLabel('Incremento (kg)')).toBeFocused();
   await card.getByLabel('Incremento (kg)').fill('1,25');
   await card.getByRole('button', { name: 'Guardar' }).click();
   await expect(card.getByText('Del centro', { exact: true })).toBeVisible();
   await card.getByRole('button', { name: 'Volver al de por defecto' }).click();
   await expect(card.getByText('Por defecto', { exact: true })).toBeVisible();
+  await expect(card.getByRole('status')).toHaveText(/Vuelve al de por defecto/);
+  await expect(card.getByLabel('Incremento (kg)')).toBeFocused();
 });
 
 test('a proposal is applied to the active plan as a new revision', async ({ page }) => {

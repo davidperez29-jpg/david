@@ -1,7 +1,15 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react';
 import { api } from '@/lib/api-client';
 
 /**
@@ -29,6 +37,7 @@ const DAY = (d: string) =>
 export function RescheduleProvider({ today, children }: { today: string; children: ReactNode }) {
   const router = useRouter();
   const [status, setStatus] = useState<{ ok: boolean; text: string } | null>(null);
+  const line = useRef<HTMLParagraphElement>(null);
   const move: Move = async (id, version, date) => {
     setStatus({ ok: true, text: 'Moviendo…' });
     const r = await api(`/plan-sessions/${id}/reschedule`, {
@@ -40,14 +49,18 @@ export function RescheduleProvider({ today, children }: { today: string; childre
       return;
     }
     setStatus({ ok: true, text: `Sesión movida al ${DAY(date)}.` });
+    // The session (and the «Mover» used) re-renders on another day: keep the keyboard focus here.
+    line.current?.focus();
     router.refresh();
   };
   return (
     <Ctx.Provider value={{ move, today, say: (text, ok = false) => setStatus({ ok, text }) }}>
       <p
+        ref={line}
+        tabIndex={-1}
         role="status"
         aria-live="polite"
-        className={`min-h-5 text-sm ${status && !status.ok ? 'text-danger' : 'text-muted'}`}
+        className={`min-h-5 text-sm outline-none ${status && !status.ok ? 'text-danger' : 'text-muted'}`}
       >
         {status?.text ?? ''}
       </p>
@@ -143,13 +156,18 @@ export function MoveSessionForm({
   label: string;
 }) {
   const c = useContext(Ctx);
+  // The same session can be listed twice (week grid and agenda): ids must stay unique.
+  const inputId = useId();
   // Shown once hydrated: before that, «Mover» would submit the form natively and reload the page.
   const [ready, setReady] = useState(false);
   useEffect(() => setReady(true), []);
   if (!c || !ready) return null;
   return (
     <details className="text-[11px]">
-      <summary className="cursor-pointer text-accent">Mover</summary>
+      {/* At least 24 × 24 px to press (WCAG 2.5.8), with room around it. */}
+      <summary className="mt-0.5 inline-flex min-h-6 min-w-6 cursor-pointer items-center px-1 text-accent">
+        Mover
+      </summary>
       <form
         className="mt-1 flex flex-wrap items-center gap-1"
         onSubmit={(e) => {
@@ -160,11 +178,11 @@ export function MoveSessionForm({
           else void c.move(id, version, value);
         }}
       >
-        <label className="sr-only" htmlFor={`mv-${id}`}>
+        <label className="sr-only" htmlFor={inputId}>
           Nuevo día para {label}
         </label>
         <input
-          id={`mv-${id}`}
+          id={inputId}
           type="date"
           name="date"
           min={c.today}

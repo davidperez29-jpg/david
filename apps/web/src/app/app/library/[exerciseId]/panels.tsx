@@ -636,8 +636,20 @@ export function LoadIncrementPanel({ exercise }: { exercise: ExerciseDetail }) {
   const a = useApiAction();
   const li = exercise.loadIncrement;
   const [value, setValue] = useState(String(li.kg).replace('.', ','));
-  const save = (incrementKg: number | null) =>
-    a.run(`/exercises/${exercise.id}/load-increment`, 'PUT', { incrementKg });
+  const [saved, setSaved] = useState('');
+  const input = useRef<HTMLInputElement>(null);
+  const save = async (incrementKg: number | null) => {
+    setSaved('');
+    const r = await a.run(`/exercises/${exercise.id}/load-increment`, 'PUT', { incrementKg });
+    if (r === null) return;
+    setSaved(
+      incrementKg === null
+        ? `Vuelve al de por defecto: ${String(li.defaultKg).replace('.', ',')} kg.`
+        : 'Incremento guardado.',
+    );
+    // «Volver al de por defecto» disappears once applied: the focus goes back to the field.
+    if (incrementKg === null) input.current?.focus();
+  };
   return (
     <Card title="Incremento de carga">
       <p className="mb-2 text-sm text-muted">
@@ -650,11 +662,27 @@ export function LoadIncrementPanel({ exercise }: { exercise: ExerciseDetail }) {
         className="flex flex-wrap items-end gap-2"
         onSubmit={(e) => {
           e.preventDefault();
-          void save(Number(value.replace(',', '.')));
+          // Never send something that is not a number: it reached the server as null and reset
+          // the centre's value without saying so (phase 18).
+          const kg = Number(value.trim().replace(',', '.'));
+          if (!value.trim() || !Number.isFinite(kg) || kg <= 0 || kg > 50) {
+            setSaved('');
+            a.setError({
+              code: 'validation',
+              message: 'Revisa el incremento.',
+              details: {
+                incrementKg: ['Escribe un número mayor que 0 y como máximo 50 (por ejemplo, 2,5).'],
+              },
+            });
+            input.current?.focus();
+            return;
+          }
+          void save(kg);
         }}
       >
         <Field label="Incremento (kg)" htmlFor="load-inc" error={a.fieldError('incrementKg')}>
           <Input
+            ref={input}
             id="load-inc"
             inputMode="decimal"
             value={value}
@@ -676,6 +704,9 @@ export function LoadIncrementPanel({ exercise }: { exercise: ExerciseDetail }) {
             Volver al de por defecto
           </Button>
         ) : null}
+        <span role="status" className="text-sm text-ok">
+          {saved}
+        </span>
       </form>
       <FormError error={a.error} />
     </Card>
