@@ -90,9 +90,14 @@ test('interactive states of the engine, rules and calendar meet WCAG 2.2 AA', as
   await page.getByRole('button', { name: 'Añadir valores por población' }).first().click();
   await expect(page.locator('[data-pv] select:focus')).toHaveCount(1);
   await expect(page.getByText(/^Población \d+$/).first()).toBeVisible();
-  await page.getByRole('button', { name: 'Guardar nueva versión' }).click();
+  const save = page.getByRole('button', { name: 'Guardar nueva versión' });
+  await save.click();
   const summary = page.getByRole('group', { name: /Revisa (este campo|estos \d+ campos)/ });
   await expect(summary).toBeFocused();
+  // The button fades back from its disabled look (opacity 0.5, CSS transition): scan the settled
+  // page, not a frame of the animation (a disabled control is exempt from contrast anyway).
+  await expect(save).toBeEnabled();
+  await expect(save).toHaveCSS('opacity', '1');
   await scanState(page, '/app/settings/decision (fila nueva y errores)', found);
 
   // Calendar, week view: «Mover» open.
