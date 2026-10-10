@@ -32,6 +32,22 @@ Los tiempos son del sistema (navegación y respuesta), no del pensamiento humano
 | Las semanas sin sesiones planificadas mostraban una barra mínima en «Tu constancia», como si hubiera actividad. | Sin barra y con «—». |
 | La tarea 2 dependía de esperar a cada navegación: un clic rápido sobre la vista anterior perdía el cambio de semana. | El encabezado «Semana del …» confirma la vista antes del siguiente paso. Para personas no es un problema, porque los enlaces son de página completa. |
 
+### Revisión de accesibilidad de la fase 18 de la reestructuración (09/10/2026)
+
+Alcance: lo añadido en las fases 11 a 17 (ajustes, reprogramar, disponibilidad, normas del centro, valores por población, incremento de carga). Criterio: WCAG 2.2 AA.
+
+| Observación | Corrección |
+|---|---|
+| Al decidir un ajuste, la propuesta desaparecía de la lista y el foco del teclado se perdía (volvía al principio de la página) sin ningún aviso. | Una región `aria-live` del armazón anuncia el resultado («Ajuste aceptado y aplicado: …») y el foco pasa al título de la lista (o al de Alertas). |
+| «Eliminar» de normas y de fiabilidad borraba al primer clic, con el mismo nombre en todas las filas. | Confirmación en línea que nombra lo que se elimina («¿Eliminar la norma «…» (adultos)?»), con el foco en «Sí, eliminar»; después se anuncia y el foco va al título de la tarjeta. |
+| Varios «Aceptar», «Editar» y «Rechazar» iguales en la misma lista. | Cada botón queda descrito por el título de su propuesta (`aria-describedby`), sin cambiar su nombre visible. |
+| Errores del editor de reglas solo junto al campo, a veces fuera de la vista; filas de población sin título visible y con claves por índice. | Resumen de errores enfocado, con enlaces a cada regla; «Población N» visible; claves estables; al añadir o quitar una fila, el foco va a un sitio con sentido; la ayuda dice que cada fila necesita una condición y un valor. |
+| Un incremento de carga que no era un número volvía en silencio al valor por defecto (error real). | Se valida en el navegador y se muestra el error en el campo; solo «Volver al de por defecto» envía `null`. |
+| Errores y ayudas de los formularios no estaban asociados a su campo. | `Field` añade `aria-invalid` y `aria-describedby` al control. |
+| Bordes de los campos con 1,26:1 de contraste. | Token `--control-border` (3,35:1 en claro y 3,67:1 en oscuro) en campos, desplegables y áreas de texto. |
+| «Mover» del Calendario: objetivo pequeño, ids repetidos y foco perdido tras mover. | 24 × 24 px como mínimo, `useId` y foco en la línea de estado. |
+| Tabla «Qué cambiaría» sin leyenda y con desplazamiento horizontal solo con ratón; tarjeta de alertas sin título; un motivo compartido etiquetado solo como «para descartar». | Leyenda accesible y región desplazable con teclado; títulos «Alertas activas» y «Alertas resueltas»; etiqueta neutra cuando el motivo sirve también para la revisión. |
+
 ## 3. Heurísticas revisadas (capturas en escritorio y Pixel 7, tema claro y oscuro)
 
 - **Lo urgente primero:** el inicio pone primero los clientes que hay que revisar, con el motivo en su fila. El calendario marca hoy y las sesiones pasadas sin registrar («!»).

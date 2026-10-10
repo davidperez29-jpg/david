@@ -6,6 +6,7 @@
 > - La correspondencia requisito a requisito con el texto oficial (numeración `V2.1.1`…) está sin hacer: **[REQUIERE VERIFICACIÓN]** por una persona revisora con el estándar delante.
 > - Estados: ✅ cumple · ◐ parcial (motivo) · ⏳ fuera de alcance de la aplicación o del despliegue · — no aplica.
 > - **Revisada de nuevo en la fase 10 de la reestructuración** (06/10/2026) con la interfaz nueva y los módulos de lesiones, fichaje, cola sin conexión y fichas «Fuente». Los cambios están marcados «(Reestr. F10)»; los hallazgos, en `PENTEST.md` (P-10 a P-13).
+> - **Revisada otra vez en la fase 18 de la reestructuración** (09/10/2026) con lo añadido en las fases 11 a 17. Los cambios están marcados «(Reestr. F18)»; los hallazgos, en `PENTEST.md` (P-14 a P-23).
 
 ## V1 Arquitectura y modelo de amenazas
 
@@ -56,6 +57,7 @@
 | CSRF | ✅ | `SameSite=Lax` + comprobación de `Origin`/`Referer` |
 | Datos de salud solo para quien los necesita | ✅ | (Reestr. F10) Los casos de lesión son solo de staff con el cliente en su ámbito: la RLS los oculta a la app del cliente, y sus lecturas se auditan como `view_sensitive` (`INJURY_MODULE.md`) |
 | Estados que impiden editar | ✅ | (Reestr. F10) Un plan completado o archivado no se edita tampoco por la API (`409`, P-12) |
+| Permisos acordes al alcance del cambio | ✅ | (Reestr. F18) Las normas del centro, que cambian las comparaciones de todos los clientes, solo las importa y elimina ADMIN (`science:publish`, P-17) |
 
 ## V5 Validación, saneamiento y codificación
 
@@ -65,7 +67,9 @@
 | Consultas parametrizadas, sin SQL dinámico con datos | ✅ | Drizzle; escape de comodines `LIKE` |
 | Codificación de salida | ✅ | React escapa por defecto; sin `dangerouslySetInnerHTML` con datos de usuario |
 | Inyección de fórmulas en CSV/XLSX | ✅ | `domain/reports/csv.ts` |
-| Límite de tamaño de las peticiones | ✅ | 256 KB en JSON; 2 MB en archivos |
+| Límite de tamaño de las peticiones | ✅ | 256 KB en JSON; 2 MB en archivos. (Reestr. F18) Además, 5 000 caracteres por celda importada y 500 en la lista de percentiles (P-14) |
+| Expresiones regulares sin retroceso catastrófico (ReDoS) | ✅ | (Reestr. F18) Patrones lineales sobre texto acotado; una prueba rechaza entradas patológicas en < 200 ms (P-14) |
+| Claves de objetos controladas por el usuario | ✅ | (Reestr. F18) Solo claves propias (`Object.hasOwn`), nunca heredadas del prototipo (P-16) |
 
 ## V6 Criptografía almacenada
 
@@ -73,7 +77,7 @@
 |---|---|---|
 | AES-256-GCM con IV aleatorio | ✅ | `auth/crypto.ts` |
 | Claves derivadas de una maestra (HKDF/HMAC) y fuera del código | ✅ | `APP_ENCRYPTION_KEY` en el entorno |
-| Rotación de claves sin pérdida de datos | ✅ | `APP_ENCRYPTION_KEYS_PREVIOUS` + `pnpm keys:rotate` |
+| Rotación de claves sin pérdida de datos | ✅ | `APP_ENCRYPTION_KEYS_PREVIOUS` + `pnpm keys:rotate`. (Reestr. F18) Un valor que ninguna clave abre no rompe la página: aviso en el campo y registro sin contenido (P-20) |
 | Números aleatorios criptográficos | ✅ | `node:crypto` |
 | Gestión de secretos en un vault o KMS | ⏳ | Despliegue (Fase 15) |
 
@@ -111,7 +115,7 @@
 | Control | Estado | Evidencia |
 |---|---|---|
 | Dependencias fijadas en un *lockfile*; sin scripts de terceros en el navegador | ✅ | `pnpm-lock.yaml`; CSP sin orígenes externos para scripts |
-| Análisis de dependencias en CI | ✅ | `pnpm audit --prod --audit-level high` en CI (Fase 14); 1 moderada aceptada (`PENTEST.md` P-9) |
+| Análisis de dependencias en CI | ✅ | `pnpm audit --prod --audit-level high` en CI (Fase 14). (Reestr. F18) La moderada de `uuid` (P-9) está corregida: `pnpm audit --prod` no encuentra nada |
 
 ## V11 Lógica de negocio
 
@@ -120,6 +124,7 @@
 | Flujos en orden y sin saltos | ✅ | Máquinas de estado: planes (completado o archivado = solo lectura en el servidor), importaciones, solicitudes RGPD, sesiones, fases de lesión (avanzar solo con criterios cumplidos, sin avisos abiertos y por decisión humana) |
 | Límites antiautomatización en operaciones caras | ✅ | Login limitado; en la Fase 15, presupuesto por usuario y minuto para lecturas, escrituras y operaciones pesadas (`api-limits.ts`) |
 | Concurrencia | ✅ | Bloqueo optimista; consumo atómico de tokens y códigos; sincronización idempotente |
+| Lo realizado no se pierde | ✅ | (Reestr. F18) Una sesión con cualquier registro (asistencia o series) no se mueve ni se sustituye (P-15); una propuesta de días no admite valores editados (P-18); la aplicación automática solo da pasos estándar (P-21) |
 
 ## V12 Archivos y recursos
 

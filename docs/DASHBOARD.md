@@ -54,6 +54,9 @@ Las propuestas (alertas verdes) no cambian el color de la fila: se ven en Seguim
 - Una sesión pendiente se arrastra a otro día, en la vista mes o en la semana.
 - Alternativa para teclado y móvil: «Mover» junto a cada sesión, con un selector de fecha, en la vista semana y en la agenda del móvil.
 - El resultado se anuncia en una región `status` («Sesión movida al…» o el motivo del rechazo).
+  - Desde la fase 18, tras mover una sesión el foco pasa a esa línea de estado: la sesión (y el «Mover» usado) se vuelve a pintar en otro día.
+  - «Mover» mide al menos 24 × 24 px (WCAG 2.5.8) y su campo de fecha tiene un id único aunque la sesión salga en la cuadrícula y en la agenda.
+  - La vista mes solo admite arrastrar. Con teclado o en el móvil se usa la vista semana o la agenda, que tienen «Mover».
 - Las reglas las aplica el servidor (`rescheduleSession`, `POST /plan-sessions/{id}/reschedule`):
   - solo sesiones sin ningún registro: ni asistencia ni series anotadas (desde la fase 18, A65);
   - solo a hoy o un día futuro, dentro de las semanas del plan;

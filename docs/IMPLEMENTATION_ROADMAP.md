@@ -34,6 +34,7 @@
 | 15 | Ajustes por disponibilidad: mover sesiones a los días que el cliente puede entrenar (elegida por el responsable) | Motor de ajustes, disponibilidad del cliente, reprogramar (A51) | ✅ Hecha |
 | 16 | Valores de referencia normativos del centro: importación validada y gestión en la ficha del test (elegida por el responsable) | Importaciones, catálogo de tests, fuentes | ✅ Hecha |
 | 17 | Umbrales por población: valores de los parámetros de las reglas por sexo, edad, experiencia y deporte (elegida por el responsable) | Motor de decisiones, reglas como datos | ✅ Hecha |
+| 18 | Revisión general de calidad de las fases 11–17: seguridad, accesibilidad y rendimiento, con correcciones (elegida por el responsable) | Todo lo añadido en las fases 11–17 | ✅ Hecha |
 
 ## Por qué el despliegue va primero (decisión A2)
 
@@ -333,3 +334,44 @@ Elegida por el responsable: pendiente del motor de decisiones.
 - ✅ un umbral solo para fútbol valora a los futbolistas y deja pendiente al resto; cualquier parámetro puede variar (reevaluación de principiantes) (`decision.unit.test.ts`);
 - ✅ validación por regla, versión nueva, auditoría con antes y después; sin `variants` se conservan y con `[]` se quitan; solo ADMIN (`decision.int.test.ts`);
 - ✅ ADMIN añade y quita un valor por población en el editor; la explicación de Iker muestra el umbral para fútbol (`decision.spec.ts`).
+
+## Fase 18 · Revisión de calidad ✅
+
+Elegida por el responsable: repaso de seguridad, accesibilidad y rendimiento de lo añadido en las fases 11 a 17, con correcciones.
+
+- **Seguridad** (`PENTEST.md` P-14 a P-23):
+  - ReDoS en los percentiles y celdas sin límite en las importaciones;
+  - sesiones con series anotadas tratadas como no registradas (A65);
+  - nombres heredados como parámetros de reglas;
+  - normas del centro solo para ADMIN (A63);
+  - propuestas de días aceptadas con valores editados;
+  - datos de arrastre ajenos en el Calendario;
+  - textos de lesión ilegibles (A66);
+  - aplicación automática limitada a pasos estándar (A64);
+  - `uuid` corregido (P-9).
+- **Rendimiento**:
+  - migración `0052`: índices de ajustes por organización y de sustituciones por ejercicio planificado;
+  - consultas más estrechas en la evaluación de ajustes, la importación de normas, el 1RM estimado y la página del plan;
+  - menos datos enviados al navegador en los botones de ajustes.
+- **Accesibilidad** (WCAG 2.2 AA):
+  - anuncios y foco tras decidir ajustes, eliminar normas o fiabilidad y mover sesiones;
+  - confirmación al eliminar, con el nombre de lo que se elimina;
+  - resumen de errores con enlaces en el editor de reglas;
+  - errores y ayudas asociados a su campo (`aria-invalid`, `aria-describedby`);
+  - bordes de campos con contraste 3:1;
+  - tamaño mínimo de «Mover» e ids únicos;
+  - títulos, leyendas de tabla y regiones desplazables con teclado.
+- **Error real corregido**: un incremento de carga que no era un número volvía en silencio al valor por defecto.
+
+**Criterios**:
+- ✅ cada hallazgo de seguridad tiene su prueba (unitaria, de integración o E2E) y la matriz de acceso cruzado y la RLS siguen en verde;
+- ✅ los listados siguen por debajo de 300 ms de p95 con 1 000 clientes (`perf.spec.ts`);
+- ✅ axe sin infracciones graves también en los estados abiertos (ajuste con su tabla y edición, fila nueva y resumen de errores, «Mover»), con foco comprobado (`a11y.spec.ts`, `trainer-ops.spec.ts`, `reports.spec.ts`, `engine.spec.ts`).
+
+**Queda pendiente** (medido o revisado; sin impacto hoy con 1 000 clientes):
+- aplicar una propuesta como revisión copia las sesiones una a una: agruparlas por nivel, como al crear un plan;
+- los efectos tras confirmar (alertas, ajustes) corren antes de responder; con mucho volumen, pasarlos a una cola;
+- el paso de cifrado del texto antiguo de lesiones recorre sus tablas en cada arranque, aunque ya no quede nada;
+- algunas claves foráneas `client_id` de tablas pequeñas no tienen índice;
+- el trabajo diario lee las reglas de la organización una vez por cliente;
+- borrar las columnas en claro antiguas de lesiones (P-22, A49).

@@ -725,3 +725,21 @@ pnpm --filter @tp/web test:e2e -- e2e/perf.spec.ts e2e/perf.mobile.spec.ts
 - **E2E** (`decision.spec.ts`): Iker se valora con «el umbral del centro para fútbol»; ADMIN añade un valor de CMJ para mujeres futbolistas (versión 2), se ve al recargar y lo quita (versión 3).
 - **Demo**: los umbrales de futbolista son valores para fútbol; el valor general queda sin definir.
 
+## Resultado de la reestructuración, fase 18 (revisión de calidad)
+
+- **Unitarias**:
+  - `imports.unit.test.ts` (contratos): percentiles con espacios, `P 50`, coma decimal y barra final; se rechazan un solo percentil, `1.234,5`, un valor vacío y `P100`; cuatro entradas patológicas (40 000 espacios tras `|`, 450 espacios en distintas posiciones) se rechazan en menos de 200 ms;
+  - `programming.unit.test.ts`: `isStandardLoadStep` (barra 2,5 kg, mancuernas 2 kg, resto 1 kg; arriba y abajo; sumas de coma flotante).
+- **Integración**:
+  - `planning.int.test.ts`: una sesión con una serie anotada y sin asistencia no se puede mover (`409`, `session: recorded`);
+  - `programming.int.test.ts`: una revisión desde una propuesta conserva la sesión con asistencia **y** la que solo tiene series; un «Aceptar» con valores editados en una propuesta de días da `400`; la auditoría nombra `{sesión}.scheduledDate` y la sesión guarda quién la movió;
+  - `decision.int.test.ts`: `toString` y `constructor` no son parámetros ni valores por población;
+  - `reports.int.test.ts`: un entrenador no puede importar ni eliminar normas; una celda de 6 000 caracteres se rechaza nombrando la fila y la columna;
+  - `injuries.int.test.ts`: un texto cifrado con una clave desconocida muestra el aviso, el resto de la ficha se lee y el paso de cifrado lo rehace desde el texto en claro.
+- **E2E**:
+  - `reports.spec.ts`: eliminar una norma pide confirmación con su nombre, el foco va a «Sí, eliminar» y después al título de la tarjeta, y se anuncia; un entrenador no ve «Importar normas del centro» ni la opción en el asistente;
+  - `engine.spec.ts`: un incremento que no es un número se rechaza en el campo (`aria-invalid`, foco) sin tocar el valor; «Volver al de por defecto» se anuncia y devuelve el foco al campo;
+  - `trainer-ops.spec.ts`: al posponer un ajuste en Alertas se anuncia y el foco va al título de la página; al mover una sesión, el foco queda en la línea de estado;
+  - `a11y.spec.ts`, prueba nueva de estados interactivos: un ajuste abierto en Alertas con «Qué cambiaría» y el formulario de edición, una fila nueva de valores por población (con el foco en su primer campo) y el resumen de errores enfocado, y «Mover» abierto en el Calendario; axe en claro y oscuro sin infracciones graves.
+- **Rendimiento** (`perf.spec.ts`, 1 000 clientes): todo por debajo de 300 ms de p95. En la ejecución 90 de CI, `/api/v1/science/searches` dio 332 ms una vez, coincidiendo con un *checkpoint* de PostgreSQL de 270 s tras cargar los datos; en local da 26–31 ms (31 filas). No se cambió el umbral.
+

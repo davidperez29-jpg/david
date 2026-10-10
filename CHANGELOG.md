@@ -2,6 +2,42 @@
 
 Formato: fecha · cambio · motivo · archivos · impacto.
 
+## 2026-10-09 — Reestructuración, fase 18: revisión de calidad
+
+- **Cambio (seguridad):** correcciones de la revisión de lo añadido en las fases 11–17 (`PENTEST.md` P-14 a P-23):
+  - ReDoS en la lista de percentiles y celdas de importación sin límite: máximo 500 y 5 000 caracteres, y patrón lineal;
+  - una sesión con series anotadas cuenta como registrada: no se mueve ni la sustituye una revisión (A65);
+  - las reglas solo aceptan parámetros propios (`Object.hasOwn`);
+  - las normas del centro solo las importa y elimina ADMIN (A63);
+  - una propuesta de días no se acepta con valores editados;
+  - el Calendario solo acepta al soltar un id de sesión y una versión;
+  - un texto de lesión que ninguna clave abre muestra un aviso y se re-cifra desde el texto en claro (A66);
+  - la aplicación automática solo da pasos estándar de carga (A64);
+  - `uuid` ≥ 11.1.1 bajo `exceljs` (P-9).
+  - **Motivo:** revisión general de calidad elegida por el responsable.
+- **Cambio (rendimiento):** migración `0052` (índices de ajustes por organización y de sustituciones por ejercicio planificado) y consultas más estrechas en ajustes, importación de normas, 1RM estimado y la página del plan.
+- **Cambio (accesibilidad, WCAG 2.2 AA):**
+  - anuncios y foco tras decidir ajustes, eliminar y mover sesiones;
+  - confirmación en línea al eliminar normas y fiabilidad;
+  - resumen de errores en el editor de reglas;
+  - errores asociados a sus campos;
+  - bordes de campos con contraste 3:1;
+  - «Mover» con tamaño mínimo e ids únicos;
+  - títulos, leyendas y regiones desplazables.
+- **Corrección:** un incremento de carga que no era un número volvía en silencio al valor por defecto.
+- **Archivos:**
+  - `packages/contracts/src/{reports,library}.ts`;
+  - `packages/application/src/{imports,planning,decision,programming,assessments,injuries,privacy,strength}.ts`;
+  - `packages/domain/src/decision/{engine,population}.ts`, `packages/domain/src/programming/adjustments.ts`;
+  - `packages/db/src/schema/{decision,tracking}.ts`, migración `0052_perf_indexes_phase18`;
+  - `apps/web/src/components/{ui/announcer,ui/card,ui/field,use-form,programming/*,decision/actions,calendar/reschedule,reports/actions}.tsx`, `apps/web/src/app/globals.css` y páginas de Alertas, test, plan, importación, ejercicio y layout;
+  - pruebas unitarias, de integración y E2E (`a11y`, `engine`, `reports`, `trainer-ops`);
+  - `docs/{PENTEST,ASVS_L2,TESTING,IMPLEMENTATION_ROADMAP,UX_REVIEW,DASHBOARD,ASSESSMENT,PROGRAMMING_ENGINE,INJURY_MODULE,DATABASE,API}.md`, `docs/PRODUCT_ARCHITECTURE.md` A63–A66.
+- **Impacto:**
+  - 1 migración (2 índices);
+  - `DELETE /assessment-references/{id}` y la importación `reference_values` pasan a exigir `science:publish` (ADMIN): un entrenador recibe `403`;
+  - sin rutas nuevas.
+
 ## 2026-10-09 — Reestructuración, fase 17: umbrales por población
 
 - **Cambio:** las reglas del motor de decisiones admiten **valores por población** en cada parámetro: sexo, edad, experiencia y deporte (Ajustes → Reglas del motor de decisión → «Valores por población»).
