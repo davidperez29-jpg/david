@@ -774,3 +774,15 @@ pnpm --filter @tp/web test:e2e -- e2e/perf.spec.ts e2e/perf.mobile.spec.ts
   | `/app/library/revision/videos` | 69 ms |
 
 - **Seguridad**: la matriz de acceso cruzado descubre las 5 rutas nuevas (239 rutas autenticadas, 624 ataques) y sigue en verde; `POST /exercise-review/bulk` cuenta como operación pesada en el límite de peticiones.
+- **Encontrado al validar la fase y corregido**:
+  - `perf.spec.ts` falló en la batería completa: el Calendario de un ADMIN con 1 000 clientes dio 307 y 313 ms de p95. `EXPLAIN ANALYZE` con la RLS del ADMIN mostró 87 de 148 ms en `app_client_visible()`, evaluada 5 094 veces (una por sesión del rango). Con la política de `clients` en línea (migración `0053_rls_v19`), la consulta baja a 80–90 ms y en la batería completa:
+
+    | Ruta (ADMIN, 1 000 clientes) | Antes | Después |
+    |---|---|---|
+    | `/app/calendar` | 307–313 ms | 207 ms |
+    | `GET /api/v1/calendar` (6 semanas) | 290 ms | 176 ms |
+
+    La matriz RLS (674 comprobaciones) sigue en verde: la regla de acceso no cambia.
+  - `decision.int.test.ts` («es determinista») falló 2 de 6 veces en la suite completa: las fuentes de una afirmación llegaban en otro orden. Con las consultas del conocimiento ordenadas, 5 de 5 ejecuciones en verde.
+  - `a11y.spec.ts` (estados) falló en CI (ejecuciones 92 y 95) con el contraste de `.bg-accent`: axe medía a mitad de la transición del cambio de tema. `scanState` espera a que no haya animaciones en curso.
+- **Batería E2E completa** tras las correcciones (base de datos nueva con demo y carga): 72 de 72 en verde.
