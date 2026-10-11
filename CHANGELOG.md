@@ -10,16 +10,22 @@ Formato: fecha · cambio · motivo · archivos · impacto.
   - un cambio para varios ejercicios a la vez (patrón, categoría, músculo principal, nivel, perfil, revisado, publicar los completos, archivar), versionado y auditado por ejercicio, omitiendo con su motivo los globales, los archivados y los cambiados mientras tanto (A67);
   - verificación de vídeos de uno en uno, siempre por una persona (A68).
 - **Motivo:** fase elegida por el responsable. El banco tenía 1 141 borradores sin revisar (324 sin patrón, ninguno con nivel ni explicación para el cliente) y 1 011 vídeos sin verificar, sin una forma ordenada de completarlos.
-- **Corrección:** la auditoría de la verificación de un vídeo no guardaba el estado anterior.
+- **Correcciones** (encontradas al validar la fase):
+  - la auditoría de la verificación de un vídeo no guardaba el estado anterior;
+  - **rendimiento**: el Calendario de un ADMIN con 1 000 clientes llegó a 307–313 ms de p95 (límite 300). La política RLS de `clients` llamaba a una función que PostgreSQL no puede integrar y se ejecutaba una vez por sesión del mes. Ahora está en línea, como la de las demás tablas de cliente, con la misma regla (migración `0053_rls_v19`);
+  - **determinismo del motor de decisiones**: las fuentes de cada afirmación salían en orden variable (consulta sin `ORDER BY`), así que dos ejecuciones con los mismos datos podían dar una explicación con las fuentes en otro orden. Las consultas del conocimiento tienen ahora un orden fijo;
+  - **prueba de accesibilidad**: al cambiar de tema en la misma página, axe medía el contraste a mitad de la transición de colores de los botones (CI 92 y 95). Ahora espera a que terminen las animaciones.
 - **Archivos:**
   - `packages/domain/src/library/{review,publish,index}.ts`, `packages/contracts/src/library.ts`;
-  - `packages/application/src/{library-review,library,api-limits,index}.ts`;
+  - `packages/application/src/{library-review,library,api-limits,index,decision}.ts`;
+  - `packages/db/src/rls/{policies,generate}.ts`, migración `0053_rls_v19`;
   - `apps/web/src/app/api/v1/exercise-review/**`, `apps/web/src/app/app/library/{page,[exerciseId]/page,revision/page,revision/videos/page}.tsx`, `apps/web/src/components/library/{review-table,video-verdict}.tsx`, `apps/web/src/lib/labels.ts`;
-  - pruebas: `library.unit.test.ts`, `library-review.int.test.ts`, E2E `bank-review.spec.ts`, `a11y.spec.ts`, `perf.spec.ts`; contratos `docs/api/{contract,responses}.json`;
-  - `docs/{EXERCISE_LIBRARY,API,TESTING,IMPLEMENTATION_ROADMAP,ROADMAP}.md`, `docs/PRODUCT_ARCHITECTURE.md` A67–A68.
+  - pruebas: `library.unit.test.ts`, `library-review.int.test.ts`, E2E `bank-review.spec.ts`, `a11y.spec.ts`, `a11y-helpers.ts`, `perf.spec.ts`; contratos `docs/api/{contract,responses}.json`;
+  - `docs/{EXERCISE_LIBRARY,API,DATABASE,TESTING,IMPLEMENTATION_ROADMAP,ROADMAP}.md`, `docs/PRODUCT_ARCHITECTURE.md` A67–A68.
 - **Impacto:**
   - 5 rutas nuevas (`GET /exercise-review`, `/overview`, `/next`, `/videos`; `POST /exercise-review/bulk`, operación pesada);
-  - sin migraciones ni cambios en rutas existentes.
+  - 1 migración (`0053_rls_v19`: política de `clients` en línea; mismo acceso, sin cambios de datos);
+  - sin cambios en rutas existentes.
 
 ## 2026-10-09 — Reestructuración, fase 18: revisión de calidad
 

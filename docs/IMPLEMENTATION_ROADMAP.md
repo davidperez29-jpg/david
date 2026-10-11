@@ -396,5 +396,10 @@ Elegida por el responsable: completar el banco importado (1 141 borradores: 324 
 - ✅ axe sin infracciones graves en la revisión, la cola filtrada, la verificación de vídeos y la ficha con la barra de revisión (`a11y.spec.ts`);
 - ✅ la revisión responde por debajo de 300 ms de p95 con el banco completo (`perf.spec.ts`).
 
+- **Encontrado al validar y corregido**:
+  - el Calendario de un ADMIN con 1 000 clientes llegó a 313 ms de p95: la política RLS de `clients` pasa a estar en línea (migración `0053_rls_v19`, mismo acceso);
+  - el motor de decisiones podía listar las fuentes de una afirmación en otro orden con los mismos datos: las consultas del conocimiento tienen orden fijo;
+  - la prueba de accesibilidad de estados medía el contraste a mitad del cambio de tema: espera a que terminen las animaciones.
+
 **Queda pendiente**: el trabajo en sí. Escribir la explicación para el cliente de cada ejercicio y ver cada vídeo es tarea del centro; la plataforma no lo inventa.
 
