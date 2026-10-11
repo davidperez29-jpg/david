@@ -137,7 +137,7 @@ Ver `docs/API.md` (sección «Biblioteca de ejercicios»).
 |---|---|
 | Vista del ejercicio para el cliente dentro de la sesión (vídeo verificado, silueta, cues) | 7 |
 | Sustitución en vivo durante la sesión, con alternativas preaprobadas | 7 |
-| Comprobación periódica de enlaces de vídeo rotos (job) | 15 (requiere acceso de red a YouTube/Vimeo) |
+| Comprobación periódica de enlaces de vídeo rotos (job) | 15 (requiere acceso de red a YouTube/Vimeo). La verificación de que el vídeo **muestra el ejercicio** es siempre de una persona (§8.4) |
 | Set de siluetas propio | Decisión D10 |
 | Adaptador S3 en la UE para archivos | Despliegue |
 
@@ -150,3 +150,72 @@ Ver `docs/API.md` (sección «Biblioteca de ejercicios»).
 - 63 progresiones sin ciclos.
 
 No tienen vídeo. Se pueden «Copiar a mi organización» para adaptarlos.
+
+## 8. Revisión del banco (fase 19)
+
+El banco importado (§4) llega como borradores **sin revisar**: hay que completarlos y comprobarlos uno a uno antes de publicarlos. La página **Ejercicios → «Revisión del banco»** (`/app/library/revision`) organiza ese trabajo.
+
+### 8.1 Qué le falta a cada ejercicio
+Las carencias son los requisitos de publicación (§2.1) más el estado de los vídeos:
+
+| Carencia | Cuándo | ¿Impide publicar? |
+|---|---|---|
+| Sin revisar | Importado y aún no marcado como revisado | Sí |
+| Sin patrón | No tiene patrón de movimiento | Sí |
+| Sin categoría | Ninguna categoría | Sí |
+| Sin músculo principal | Su patrón es de fuerza y no tiene ningún músculo principal | Sí |
+| Sin nivel | — | Sí |
+| Sin explicación para el cliente | — | Sí |
+| Sin perfil de prescripción | — | Sí |
+| Vídeo sin verificar | Algún vídeo pendiente de verificación | No |
+| Vídeo roto | Algún vídeo marcado como roto | No |
+
+- **Listos para publicar**: borradores sin ninguna carencia que impida publicar.
+- **Avance**: publicados + listos, sobre el total de ejercicios del centro (sin archivados).
+- La regla vive en el dominio (`reviewGaps`, `packages/domain/src/library/review.ts`). La consulta SQL de la cola la replica para filtrar y contar en la base de datos; una prueba de integración comprueba que ambas coinciden en cada carencia.
+
+### 8.2 La cola
+- Cada carencia es un filtro con su recuento. También se filtra por nombre, patrón, categoría y estado (borrador o publicado).
+- Orden por nombre, 50 por página. Solo ejercicios **del centro**: los globales son de la plataforma (§7).
+- **«Revisar»** abre la ficha con la cola: una barra dice qué le falta, cuántos quedan detrás y enlaza **«Siguiente»** de la misma cola. Así se completa el banco uno a uno sin volver a la lista.
+
+### 8.3 Cambios en bloque
+Se marcan ejercicios y se aplica **un cambio** a todos (máximo 100 por vez):
+- poner patrón, nivel o perfil de prescripción;
+- añadir una categoría (si es la primera, queda como principal) o un músculo principal;
+- marcar como revisados;
+- publicar (**solo los completos**; los demás se listan con «Le faltan datos para publicarse»);
+- archivar (pide confirmación; se pueden volver a borrador).
+
+Reglas (A67):
+- **Los textos nunca se escriben en bloque**: la explicación para el cliente y las instrucciones son propias de cada ejercicio y se escriben con «Revisar».
+- Cada ejercicio se cambia, se **versiona** y se **audita por separado** (motivo «Revisión del banco (en bloque)»).
+- La lista envía la versión que la persona vio. Un ejercicio que alguien cambió mientras tanto **se omite**, no se sobrescribe.
+- También se omiten los globales, los archivados y los que no son del centro. Un ejercicio omitido no detiene a los demás: el resultado los lista con su motivo.
+- Si el valor ya era ese, cuenta como «ya estaban así» y no crea versión.
+- Permisos: `library:write`; publicar exige `library:publish`. Es una operación pesada en el límite de peticiones.
+
+### 8.4 Vídeos
+**«Verificar vídeos»** (`/app/library/revision/videos`) muestra los vídeos pendientes **de uno en uno**, incrustados con `youtube-nocookie` o Vimeo:
+- «He visto el vídeo: es correcto» o «Está roto o no corresponde»; el siguiente ocupa su lugar.
+- «Saltar» lo deja pendiente para otro momento.
+- **Nada se verifica automáticamente** (A68): comprobar que un enlace carga no dice si muestra este ejercicio con buena técnica.
+- La auditoría guarda el estado anterior y el nuevo.
+- Hasta que se verifica, el cliente ve el aviso de vídeo pendiente (§2.2).
+
+### 8.5 Estado del banco en la demo
+Recién cargada la demo (`pnpm db:seed:demo`), la revisión muestra:
+
+| | Ejercicios |
+|---|---|
+| Total del centro | 1 141 (0 publicados, 0 listos) |
+| Sin revisar | 1 141 |
+| Sin patrón | 324 |
+| Sin músculo principal | 144 (de los que ya tienen un patrón de fuerza; al poner patrón a los 324 puede aparecer en más) |
+| Sin nivel | 1 141 |
+| Sin explicación para el cliente | 1 141 |
+| Sin categoría · sin perfil | 0 · 0 |
+| Con vídeo sin verificar | 1 007 (1 011 vídeos) |
+
+Patrón, músculo y nivel se pueden completar en bloque por grupos (filtrando por categoría o por nombre). La **explicación para el cliente** de los 1 141 hay que escribirla una a una: es el trabajo que más tiempo llevará.
+

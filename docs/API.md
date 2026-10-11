@@ -79,6 +79,11 @@ Base: `/api/v1`. JSON. Autenticación por cookie de sesión `tp_session` (httpOn
 | `POST /exercises/{id}/silhouette` | `library:write` | `multipart/form-data` (`file`) | PNG/JPEG/WebP ≤ 2 MB, tipo detectado por contenido. |
 | `GET /exercises/{id}/substitutes` | `library:read` | `substitutesQuerySchema` (`reason`, `clientId?`, `location?`, `limit`) | Sugerencias con motivos y número de excluidos. |
 | `POST /exercise-progressions` · `DELETE /exercise-progressions/{id}` | `library:write` | `progressionSchema` | Rechaza contradicciones (ciclos). |
+| `GET /exercise-review/overview` | `library:read` | — | Revisión del banco (fase 19): total, publicados, listos para publicar, recuento por carencia y estado de los vídeos. Solo ejercicios del centro, sin archivados. |
+| `GET /exercise-review` | `library:read` | `exerciseReviewQuerySchema` (`gap` —una carencia o `ready`—, `q`, `patternId`, `categoryId`, `status`, `limit`, `offset`) | Cola de revisión por nombre, con lo que le falta a cada ejercicio y su `version`. |
+| `GET /exercise-review/next` | `library:read` | `nextReviewQuerySchema` (`after` + los filtros de la cola) | `{ next, remaining }`: el siguiente de la misma cola y cuántos quedan. `404` si `after` no es del centro. |
+| `POST /exercise-review/bulk` | `library:write` (`library:publish` para `publish`) | `bulkExerciseEditSchema` (`ids` 1–100, `expectedVersions?`, `edit`: `set_pattern`, `add_category`, `add_primary_muscle`, `set_level`, `set_profile`, `mark_reviewed`, `publish`, `archive`) | Un cambio para varios ejercicios. Cada uno se cambia, se versiona y se audita por separado; los globales, archivados, cambiados mientras tanto o (al publicar) incompletos se omiten con su motivo. Devuelve `{ applied, unchanged, skipped[] }`. Nunca escribe textos. Operación pesada. |
+| `GET /exercise-review/videos` | `library:read` | `pendingVideosQuerySchema` (`limit`, `offset`) | Vídeos pendientes de verificar de los ejercicios del centro, con `embedUrl`. Se verifican con `POST /exercises/{id}/media/{mediaId}/verify`. |
 | `GET /files/{id}` | `library:read` | — | Archivo autorizado (siluetas). |
 | `GET/POST /clients/{id}/tolerances` · `DELETE …/{toleranceId}` | `health:read` / `health:write` (staff) + consentimiento | `toleranceSchema` | Ejercicios o patrones tolerados / no tolerados. |
 
@@ -311,7 +316,7 @@ Detalle en `SECURITY.md` §2.2–2.3. Si la organización exige 2FA a ADMIN (`re
 ## Optimización y escala (Fase 15)
 
 - **Límite de peticiones por usuario**: 1 000 lecturas, 120 escrituras y 30 operaciones pesadas por minuto.
-  - Son pesadas: exportaciones, descargas de informes, datos del interesado, importaciones y generación de informes.
+  - Son pesadas: exportaciones, descargas de informes, datos del interesado, importaciones, generación de informes y cambios en bloque de la revisión del banco.
   - Al superarlo: `429` con `Retry-After` en segundos.
   - Configurable con `API_LIMIT_*`.
 - **Tamaño del cuerpo**: 256 KB por defecto. Más en las rutas que reciben archivos: 3 MB en `POST /imports`, 1,1 MB en `POST /clients/{id}/external-measurements`. Si se supera: `422 «Petición demasiado grande.»`.

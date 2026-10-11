@@ -57,7 +57,7 @@ Plan completo y criterios de aceptación: `MASTER_SPECIFICATION.md` §16.
 | Tests | ✅ 102 unitarios, 63 de integración y 8 E2E. |
 | Documentación | ✅ `EXERCISE_LIBRARY.md`, `API.md`, `TESTING.md`. |
 | Datos | ✅ Demo con 1 141 ejercicios en borrador y 1 011 vídeos pendientes de verificar. |
-| Pendiente conocido | Revisión humana del banco importado (324 ejercicios sin patrón, 720 sin músculos); verificación de los vídeos. |
+| Pendiente conocido | Revisión humana del banco importado (324 ejercicios sin patrón, 720 sin músculos) y verificación de los vídeos. Desde la fase 19 de la reestructuración hay una cola para hacerlo («Revisión del banco», `EXERCISE_LIBRARY.md` §8); el trabajo de revisar sigue siendo del centro. |
 
 ## Criterios de cierre de la Fase 4
 

@@ -35,6 +35,7 @@
 | 16 | Valores de referencia normativos del centro: importación validada y gestión en la ficha del test (elegida por el responsable) | Importaciones, catálogo de tests, fuentes | ✅ Hecha |
 | 17 | Umbrales por población: valores de los parámetros de las reglas por sexo, edad, experiencia y deporte (elegida por el responsable) | Motor de decisiones, reglas como datos | ✅ Hecha |
 | 18 | Revisión general de calidad de las fases 11–17: seguridad, accesibilidad y rendimiento, con correcciones (elegida por el responsable) | Todo lo añadido en las fases 11–17 | ✅ Hecha |
+| 19 | Revisión del banco: cola para completar el banco importado, cambios en bloque, avance visible y verificación de vídeos (elegida por el responsable) | Biblioteca de ejercicios | ✅ Hecha |
 
 ## Por qué el despliegue va primero (decisión A2)
 
@@ -375,3 +376,25 @@ Elegida por el responsable: repaso de seguridad, accesibilidad y rendimiento de 
 - algunas claves foráneas `client_id` de tablas pequeñas no tienen índice;
 - el trabajo diario lee las reglas de la organización una vez por cliente;
 - borrar las columnas en claro antiguas de lesiones (P-22, A49).
+
+## Fase 19 · Revisión del banco ✅
+
+Elegida por el responsable: completar el banco importado (1 141 borradores: 324 sin patrón, 144 con patrón de fuerza y sin músculo principal, ninguno con nivel ni explicación para el cliente) y verificar sus 1 011 vídeos.
+
+- **Ejercicios → «Revisión del banco»** (`EXERCISE_LIBRARY.md` §8):
+  - avance (publicados + listos sobre el total) y qué falta, como filtros con su recuento;
+  - cola por nombre con filtros de nombre, patrón, categoría y estado;
+  - «Revisar» abre la ficha con una barra: qué le falta, cuántos quedan y «Siguiente» de la misma cola.
+- **Cambios en bloque** (A67): patrón, categoría, músculo principal, nivel, perfil, revisado, publicar (solo los completos) y archivar, para hasta 100 ejercicios. Cada uno se versiona y audita por separado; se omiten con su motivo los globales, los archivados y los cambiados mientras tanto. Los textos nunca se escriben en bloque.
+- **Verificar vídeos**: de uno en uno, incrustados; correcto, roto o saltar. Solo una persona verifica (A68); la auditoría guarda el estado anterior.
+- **API**: `GET /exercise-review`, `/overview`, `/next`, `/videos` y `POST /exercise-review/bulk` (operación pesada).
+
+**Criterios**:
+- ✅ la regla de carencias del dominio y la consulta SQL coinciden en cada carencia; ningún centro ve la cola de otro (`library-review.int.test.ts`);
+- ✅ un cambio en bloque versiona y audita cada ejercicio, omite el que cambió mientras tanto, los globales, los archivados y los ajenos, y no crea versión si el valor ya era ese; publicar solo publica los completos; un cliente recibe `403` (`library-review.int.test.ts`, `library.unit.test.ts`);
+- ✅ un entrenador filtra «Sin nivel», pone nivel a dos ejercicios, ve el resultado anunciado con el foco en la cola y el recuento baja; revisa uno a uno con «Siguiente»; verifica vídeos y salta uno (`bank-review.spec.ts`);
+- ✅ axe sin infracciones graves en la revisión, la cola filtrada, la verificación de vídeos y la ficha con la barra de revisión (`a11y.spec.ts`);
+- ✅ la revisión responde por debajo de 300 ms de p95 con el banco completo (`perf.spec.ts`).
+
+**Queda pendiente**: el trabajo en sí. Escribir la explicación para el cliente de cada ejercicio y ver cada vídeo es tarea del centro; la plataforma no lo inventa.
+

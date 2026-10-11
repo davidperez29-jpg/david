@@ -743,3 +743,34 @@ pnpm --filter @tp/web test:e2e -- e2e/perf.spec.ts e2e/perf.mobile.spec.ts
   - `a11y.spec.ts`, prueba nueva de estados interactivos: un ajuste abierto en Alertas con «Qué cambiaría» y el formulario de edición, una fila nueva de valores por población (con el foco en su primer campo) y el resumen de errores enfocado, y «Mover» abierto en el Calendario; axe en claro y oscuro sin infracciones graves.
 - **Rendimiento** (`perf.spec.ts`, 1 000 clientes): todo por debajo de 300 ms de p95. En la ejecución 90 de CI, `/api/v1/science/searches` dio 332 ms una vez, coincidiendo con un *checkpoint* de PostgreSQL de 270 s tras cargar los datos; en local da 26–31 ms (31 filas). No se cambió el umbral.
 
+
+## Resultado de la reestructuración, fase 19 (revisión del banco)
+
+- **Unitarias** (`library.unit.test.ts`):
+  - `reviewGaps`: las carencias de publicación más los vídeos pendientes o rotos, en orden fijo; un vídeo roto no impide publicar;
+  - `bulkSkipReason`: global, archivado, cambiado mientras tanto (versión distinta de la vista) e incompleto al publicar, en ese orden de prioridad.
+- **Integración** (`library-review.int.test.ts`, 7 pruebas):
+  - recuentos por carencia; para cada una, la lista filtrada da el mismo total y todos sus ejercicios tienen esa carencia según el dominio;
+  - un cambio en bloque con una versión desfasada aplica uno y omite el otro con «Alguien lo ha cambiado mientras tanto»; la auditoría lleva el motivo y el campo; repetir el mismo valor no crea versión;
+  - patrón, primera categoría como principal y músculo principal (un tercero que ya lo tenía cuenta como «ya estaba así»);
+  - publicar en bloque solo publica los completos; marcar como revisado los deja listos; archivar los saca de la cola y un cambio posterior los omite;
+  - aislamiento: otro centro recibe «No existe o no es de tu centro», un global se omite, un cliente recibe `403`, un patrón desconocido da `422` y una lista vacía se rechaza;
+  - «Siguiente» de la misma cola por nombre y cuántos quedan; un ejercicio de otro centro da `404`;
+  - vídeos pendientes solo del centro; marcar uno como roto lo saca de la cola y la auditoría dice `pending_verification → broken`.
+- **E2E** (`bank-review.spec.ts`):
+  - «Sin nivel (n)» → dos ejercicios con «Poner nivel» → «2 cambiados», el foco en el título de la cola, que pasa a n − 2, y el anuncio;
+  - «Revisar» abre la ficha con la barra («Le falta», «Quedan n − 3») y «Siguiente» lleva al siguiente de la cola;
+  - «Verificar vídeos»: el `iframe` tiene título, «Saltar» pasa al siguiente y «Está roto o no corresponde» resta uno y deja el foco en el título.
+- **Accesibilidad** (`a11y.spec.ts`): `/app/library/revision`, la cola filtrada, `/app/library/revision/videos` y la ficha de un ejercicio del banco con la barra de revisión, en claro y oscuro, sin infracciones graves.
+- **Rendimiento** (`perf.spec.ts`, prueba nueva con el banco completo de la demo: 1 141 ejercicios y 1 011 vídeos), p95 en local:
+
+  | Ruta | p95 |
+  |---|---|
+  | `GET /api/v1/exercise-review/overview` | 110 ms |
+  | `GET /api/v1/exercise-review?limit=50` | 77 ms |
+  | `GET /api/v1/exercise-review?gap=missing_primary_muscle` | 81 ms |
+  | `GET /api/v1/exercise-review/videos?limit=1` | 59 ms |
+  | `/app/library/revision` | 139 ms |
+  | `/app/library/revision/videos` | 69 ms |
+
+- **Seguridad**: la matriz de acceso cruzado descubre las 5 rutas nuevas (239 rutas autenticadas, 624 ataques) y sigue en verde; `POST /exercise-review/bulk` cuenta como operación pesada en el límite de peticiones.

@@ -2,6 +2,25 @@
 
 Formato: fecha · cambio · motivo · archivos · impacto.
 
+## 2026-10-11 — Reestructuración, fase 19: revisión del banco
+
+- **Cambio:** Ejercicios → «Revisión del banco» para completar el banco importado:
+  - avance y qué falta a cada ejercicio, como filtros con su recuento;
+  - cola por nombre con filtros; «Revisar» abre la ficha con lo que le falta, cuántos quedan y «Siguiente»;
+  - un cambio para varios ejercicios a la vez (patrón, categoría, músculo principal, nivel, perfil, revisado, publicar los completos, archivar), versionado y auditado por ejercicio, omitiendo con su motivo los globales, los archivados y los cambiados mientras tanto (A67);
+  - verificación de vídeos de uno en uno, siempre por una persona (A68).
+- **Motivo:** fase elegida por el responsable. El banco tenía 1 141 borradores sin revisar (324 sin patrón, ninguno con nivel ni explicación para el cliente) y 1 011 vídeos sin verificar, sin una forma ordenada de completarlos.
+- **Corrección:** la auditoría de la verificación de un vídeo no guardaba el estado anterior.
+- **Archivos:**
+  - `packages/domain/src/library/{review,publish,index}.ts`, `packages/contracts/src/library.ts`;
+  - `packages/application/src/{library-review,library,api-limits,index}.ts`;
+  - `apps/web/src/app/api/v1/exercise-review/**`, `apps/web/src/app/app/library/{page,[exerciseId]/page,revision/page,revision/videos/page}.tsx`, `apps/web/src/components/library/{review-table,video-verdict}.tsx`, `apps/web/src/lib/labels.ts`;
+  - pruebas: `library.unit.test.ts`, `library-review.int.test.ts`, E2E `bank-review.spec.ts`, `a11y.spec.ts`, `perf.spec.ts`; contratos `docs/api/{contract,responses}.json`;
+  - `docs/{EXERCISE_LIBRARY,API,TESTING,IMPLEMENTATION_ROADMAP,ROADMAP}.md`, `docs/PRODUCT_ARCHITECTURE.md` A67–A68.
+- **Impacto:**
+  - 5 rutas nuevas (`GET /exercise-review`, `/overview`, `/next`, `/videos`; `POST /exercise-review/bulk`, operación pesada);
+  - sin migraciones ni cambios en rutas existentes.
+
 ## 2026-10-09 — Reestructuración, fase 18: revisión de calidad
 
 - **Cambio (seguridad):** correcciones de la revisión de lo añadido en las fases 11–17 (`PENTEST.md` P-14 a P-23):
