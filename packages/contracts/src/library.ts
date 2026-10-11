@@ -106,6 +106,57 @@ export const listExercisesSchema = paginationSchema.extend({
   scope: z.enum(['all', 'organization', 'global']).default('all'),
 });
 
+// ── Bank review (restructure phase 19) ─────────────────────────────────────────
+
+/** What an exercise lacks (see `reviewGaps` in the domain); `ready` = complete draft. */
+export const REVIEW_GAP_VALUES = [
+  'pending_review',
+  'missing_pattern',
+  'missing_category',
+  'missing_primary_muscle',
+  'missing_level',
+  'missing_client_description',
+  'missing_prescription_profile',
+  'pending_video',
+  'broken_video',
+] as const;
+
+const reviewFilters = {
+  gap: z.enum([...REVIEW_GAP_VALUES, 'ready']).optional(),
+  q: z.string().trim().max(100).optional(),
+  patternId: z.uuid().optional(),
+  categoryId: z.uuid().optional(),
+  status: z.enum(['draft', 'published']).optional(),
+};
+
+export const exerciseReviewQuerySchema = paginationSchema.extend(reviewFilters);
+
+/** The next exercise of the same queue, after the one being reviewed (by name). */
+export const nextReviewQuerySchema = z.object({ after: z.uuid(), ...reviewFilters });
+
+export const bulkEditSchema = z.discriminatedUnion('kind', [
+  z.object({ kind: z.literal('set_pattern'), patternId: z.uuid() }),
+  z.object({ kind: z.literal('add_category'), categoryId: z.uuid() }),
+  z.object({ kind: z.literal('set_level'), level: z.enum(LEVELS) }),
+  z.object({ kind: z.literal('set_profile'), profileId: z.uuid() }),
+  z.object({ kind: z.literal('add_primary_muscle'), muscleId: z.uuid() }),
+  z.object({ kind: z.literal('mark_reviewed') }),
+  z.object({ kind: z.literal('publish') }),
+  z.object({ kind: z.literal('archive') }),
+]);
+
+export const bulkExerciseEditSchema = z.object({
+  ids: z.array(z.uuid()).min(1).max(100),
+  /** Version of each exercise as listed: one changed since is skipped, not overwritten. */
+  expectedVersions: z
+    .record(z.uuid(), z.number().int().min(1))
+    .refine((r) => Object.keys(r).length <= 100, 'Máximo 100 ejercicios')
+    .optional(),
+  edit: bulkEditSchema,
+});
+
+export const pendingVideosQuerySchema = paginationSchema;
+
 export const addVideoSchema = z.object({
   url: z.string().trim().min(5).max(300),
   title: optionalText(200),

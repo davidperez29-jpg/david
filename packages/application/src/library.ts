@@ -936,6 +936,10 @@ async function verifyExerciseMedia_(
   requirePermission(ctx, 'library:write', { organizationId: ctx.actor.organizationId });
   await loadOwn(ctx, id);
   await ctx.db.transaction(async (tx) => {
+    const [before] = await tx
+      .select({ status: exerciseMedia.status })
+      .from(exerciseMedia)
+      .where(and(eq(exerciseMedia.id, mediaId), eq(exerciseMedia.exerciseId, id)));
     const updated = await tx
       .update(exerciseMedia)
       .set({
@@ -950,7 +954,7 @@ async function verifyExerciseMedia_(
       action: 'update',
       entityType: 'exercise_media',
       entityId: mediaId,
-      changes: [{ field: 'status', before: null, after: status }],
+      changes: [{ field: 'status', before: before?.status ?? null, after: status }],
     });
   });
 }

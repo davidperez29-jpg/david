@@ -3,7 +3,9 @@ import {
   findProgressionCycle,
   normalizeName,
   parseVideoUrl,
+  bulkSkipReason,
   publishProblems,
+  reviewGaps,
   slugify,
   suggestSubstitutes,
   type ExerciseFacts,
@@ -207,5 +209,79 @@ describe('publishProblems', () => {
     expect(
       publishProblems({ ...base, primaryMuscleCount: 0, patternFamily: 'conditioning' }),
     ).toEqual([]);
+  });
+});
+
+describe('bank review (restructure phase 19)', () => {
+  const facts = {
+    name: 'Sentadilla importada',
+    movementPatternId: null,
+    patternFamily: null,
+    categoryCount: 0,
+    primaryMuscleCount: 0,
+    level: null,
+    clientDescription: '  ',
+    prescriptionProfileId: null,
+    needsReview: true,
+    pendingVideos: 1,
+    brokenVideos: 0,
+  };
+
+  it('lists what an imported exercise lacks, in queue order, videos included', () => {
+    expect(reviewGaps(facts)).toEqual([
+      'pending_review',
+      'missing_pattern',
+      'missing_category',
+      'missing_level',
+      'missing_client_description',
+      'missing_prescription_profile',
+      'pending_video',
+    ]);
+    // Muscles are asked for once the pattern says they matter (strength families).
+    expect(reviewGaps({ ...facts, movementPatternId: 'p', patternFamily: 'lower' })).toContain(
+      'missing_primary_muscle',
+    );
+    expect(
+      reviewGaps({ ...facts, movementPatternId: 'p', patternFamily: 'locomotion' }),
+    ).not.toContain('missing_primary_muscle');
+    // A broken video is a gap, but videos never block publishing.
+    const complete = {
+      ...facts,
+      movementPatternId: 'p',
+      patternFamily: 'lower',
+      categoryCount: 1,
+      primaryMuscleCount: 1,
+      level: 'beginner',
+      clientDescription: 'Baja controlando.',
+      prescriptionProfileId: 'x',
+      needsReview: false,
+      pendingVideos: 0,
+      brokenVideos: 1,
+    };
+    expect(reviewGaps(complete)).toEqual(['broken_video']);
+    expect(publishProblems(complete)).toEqual([]);
+  });
+
+  it('bulk edits skip global, archived and changed exercises; publish only when complete', () => {
+    const t = {
+      isGlobal: false,
+      status: 'draft',
+      version: 3,
+      expectedVersion: 3,
+      publishProblems: [] as const,
+    };
+    const level = { kind: 'set_level', level: 'beginner' } as const;
+    expect(bulkSkipReason(t, level)).toBeNull();
+    expect(bulkSkipReason({ ...t, expectedVersion: undefined }, level)).toBeNull();
+    expect(bulkSkipReason({ ...t, isGlobal: true }, level)).toBe('global');
+    expect(bulkSkipReason({ ...t, status: 'archived' }, { kind: 'mark_reviewed' })).toBe(
+      'archived',
+    );
+    expect(bulkSkipReason({ ...t, expectedVersion: 2 }, level)).toBe('changed');
+    expect(bulkSkipReason({ ...t, publishProblems: ['missing_level'] }, { kind: 'publish' })).toBe(
+      'not_ready',
+    );
+    // Other changes do not need a complete exercise.
+    expect(bulkSkipReason({ ...t, publishProblems: ['missing_level'] }, level)).toBeNull();
   });
 });

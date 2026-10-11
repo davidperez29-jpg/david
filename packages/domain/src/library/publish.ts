@@ -25,7 +25,7 @@ export type PublishProblem =
   | 'pending_review';
 
 /** Pattern families where target muscles are meaningful and required. */
-const MUSCLE_FAMILIES = new Set(['lower', 'upper', 'trunk', 'full_body', 'accessory']);
+export const MUSCLE_FAMILIES = new Set(['lower', 'upper', 'trunk', 'full_body', 'accessory']);
 
 export function publishProblems(f: PublishFacts): PublishProblem[] {
   const p: PublishProblem[] = [];

@@ -27,6 +27,8 @@ const HEAVY = [
   /^\/api\/v1\/clients\/[^/]+\/subject-data/,
   /^\/api\/v1\/imports(\/|$)/,
   /^\/api\/v1\/clients\/[^/]+\/reports$/,
+  // One request changes up to 100 exercises (bank review, phase 19).
+  /^\/api\/v1\/exercise-review\/bulk$/,
 ];
 
 export function budgetFor(method: string, path: string): ApiBudget {
