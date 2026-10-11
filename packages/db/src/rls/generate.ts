@@ -39,15 +39,6 @@ export function generateRlsSql(): string {
   stmt(
     `CREATE OR REPLACE FUNCTION app_is_staff() RETURNS boolean LANGUAGE sql STABLE AS $$ SELECT app_has_role('ADMIN') OR app_has_role('TRAINER') $$;`,
   );
-  // Visibility of a client row given its id and organization (used by the clients policy itself).
-  stmt(`CREATE OR REPLACE FUNCTION app_client_visible(cid uuid, corg uuid) RETURNS boolean LANGUAGE sql STABLE AS $$
-    SELECT corg = app_org_id() AND (
-      app_has_role('ADMIN')
-      OR (app_has_role('TRAINER') AND EXISTS (
-            SELECT 1 FROM trainer_client_assignments a
-            WHERE a.client_id = cid AND a.trainer_id = app_trainer_id() AND a.ended_at IS NULL))
-      OR (app_has_role('CLIENT') AND cid = app_client_id()))
-  $$;`);
   // For child tables: is the referenced client visible (goes through clients' RLS).
   stmt(
     `CREATE OR REPLACE FUNCTION app_can_access_client(cid uuid) RETURNS boolean LANGUAGE sql STABLE AS $$ SELECT EXISTS (SELECT 1 FROM clients c WHERE c.id = cid) $$;`,
@@ -245,6 +236,8 @@ END $$;`);
         break;
     }
   }
+  // Replaced by the inline clients policy (restructure phase 19); dropped once no policy uses it.
+  stmt(`DROP FUNCTION IF EXISTS app_client_visible(uuid, uuid);`);
   // Append-only audit trail: no UPDATE/DELETE privilege for the runtime role either.
   stmt(`REVOKE UPDATE, DELETE, TRUNCATE ON audit_logs FROM app_runtime;`);
   stmt(`GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO app_runtime;`);

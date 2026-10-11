@@ -157,7 +157,8 @@ Restricciones relevantes:
 
 ### 5.2 Funciones auxiliares
 - `app_org_id()`, `app_user_id()`, `app_client_id()`, `app_trainer_id()`, `app_has_role(r)`, `app_is_staff()`.
-- `app_client_visible(id, org)` y `app_can_access_client(id)`, que pasa a su vez por la RLS de `clients`.
+- `app_can_access_client(id)`, que pasa a su vez por la RLS de `clients`.
+- La política de `clients` está escrita en línea, como la de las tablas de cliente (migración `0053_rls_v19`). Antes llamaba a `app_client_visible(id, org)`, que PostgreSQL no puede integrar en la consulta porque contiene una subconsulta: se ejecutaba una vez por fila unida (≈ 17 µs; 5 000 veces en el Calendario de un ADMIN con 1 000 clientes). La regla es la misma: el centro, y además ADMIN, el entrenador asignado o el propio cliente.
 - `email_in_use(email)` (SECURITY DEFINER): comprueba un email en todas las organizaciones sin revelar cuál lo usa.
 - Fase 14, ambas SECURITY DEFINER y solo ejecutables por `app_runtime`:
   - `app_trainer_assigned(cliente)`: ¿asignación activa del entrenador actual?;
@@ -339,6 +340,7 @@ Los planes propuestos usan `kind = PROPOSAL`, `status = proposed` y `recommendat
   - `recommendations_org_adjustments_idx` sobre `(organization_id, status)` de las filas con `key` (ajustes del plan): la tarjeta «Ajustes propuestos» de Alertas filtra por organización y estado, y la tabla crece con el historial.
   - El predicado no usa valores del enum: en una instalación nueva todas las migraciones van en una sola transacción, y un valor añadido en ella no se puede usar hasta confirmarla.
   - `exercise_substitutions_session_exercise_idx`: la comprobación de sustitución aprobada al anotar series y la clave foránea al borrar ejercicios planificados.
+- **Migración `0053_rls_v19`** (fase 19 de la reestructuración): política de `clients` en línea y `app_client_visible` eliminada (§5.2). La consulta del Calendario del ADMIN con 1 000 clientes pasa de 125–160 ms a 80–90 ms: ahora recorre los clientes una vez y usa el índice `(client_id, scheduled_date)` de `sessions`.
 - **Planes**: se escriben con un `INSERT` por nivel y los ids se generan en la aplicación (UUID v7). Crear un plan de 12 semanas pasa de ≈ 900 a ≈ 240 ms.
 - **RGPD**:
   - `external_measurements` entra en la exportación del interesado;

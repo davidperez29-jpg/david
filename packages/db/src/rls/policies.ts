@@ -32,6 +32,9 @@ export type PolicyKind =
   /** Custom SQL policies (written verbatim). */
   | { kind: 'custom'; sql: string };
 
+/** Visibility of a row of `clients` (the policy of the table itself). */
+const CLIENT_ROW_VISIBLE = `organization_id = app_org_id() AND (app_has_role('ADMIN') OR (app_has_role('TRAINER') AND app_trainer_assigned(id)) OR (app_has_role('CLIENT') AND id = app_client_id()))`;
+
 export const RLS_POLICIES: Record<string, PolicyKind> = {
   // ── Identity ────────────────────────────────────────────────────────────────
   roles: { kind: 'global_readonly' },
@@ -83,9 +86,12 @@ CREATE POLICY audit_logs_insert ON audit_logs FOR INSERT WITH CHECK (organizatio
   // ── Clients ─────────────────────────────────────────────────────────────────
   clients: {
     kind: 'custom',
-    sql: `CREATE POLICY clients_select ON clients FOR SELECT USING (app_client_visible(id, organization_id));
+    // Inline, like the client tables (restructure phase 19): a helper function with a subquery is
+    // not inlined and ran once per joined row (5 000 sessions in the ADMIN calendar). Same rule:
+    // the centre, and ADMIN, an assigned trainer or the client themself.
+    sql: `CREATE POLICY clients_select ON clients FOR SELECT USING (${CLIENT_ROW_VISIBLE});
 CREATE POLICY clients_insert ON clients FOR INSERT WITH CHECK (organization_id = app_org_id() AND app_is_staff());
-CREATE POLICY clients_update ON clients FOR UPDATE USING (app_client_visible(id, organization_id)) WITH CHECK (organization_id = app_org_id());
+CREATE POLICY clients_update ON clients FOR UPDATE USING (${CLIENT_ROW_VISIBLE}) WITH CHECK (organization_id = app_org_id());
 CREATE POLICY clients_delete ON clients FOR DELETE USING (organization_id = app_org_id() AND app_has_role('ADMIN'));`,
   },
   trainer_client_assignments: {
