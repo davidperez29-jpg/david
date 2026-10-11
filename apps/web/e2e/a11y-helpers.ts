@@ -93,6 +93,11 @@ export async function scan(page: Page, url: string, found: string[]) {
 export async function scanState(page: Page, label: string, found: string[]) {
   for (const scheme of ['light', 'dark'] as const) {
     await page.emulateMedia({ colorScheme: scheme });
+    // Switching theme in place animates colours (`transition` on buttons): scan the settled page,
+    // not a frame halfway between the dark and light palettes (CI runs 92 and 95).
+    await page.waitForFunction(() =>
+      document.getAnimations().every((a) => a.playState !== 'running'),
+    );
     const r = await new AxeBuilder({ page }).withTags(TAGS).analyze();
     for (const v of r.violations.filter((x) => x.impact === 'serious' || x.impact === 'critical'))
       found.push(
