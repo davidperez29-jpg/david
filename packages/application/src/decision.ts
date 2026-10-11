@@ -160,7 +160,8 @@ async function knowledgeSnapshot(
       .from(knowledgeClaims)
       .where(
         and(visible(ctx, knowledgeClaims.organizationId), eq(knowledgeClaims.status, 'published')),
-      ),
+      )
+      .orderBy(asc(knowledgeClaims.key), asc(knowledgeClaims.id)),
     db
       .select({
         claimId: claimEvidence.claimId,
@@ -180,11 +181,19 @@ async function knowledgeSnapshot(
           eq(claimEvidence.role, 'supports'),
           inArray(evidenceSources.verificationStatus, ['verified', 'verified_with_corrections']),
         ),
-      ),
+      )
+      .orderBy(asc(claimEvidence.claimId), asc(evidenceSources.id)),
     db.select({ id: populations.id, slug: populations.slug }).from(populations),
-    db.select().from(methods).where(visible(ctx, methods.organizationId)),
-    db.select().from(methodVariables),
-    db.select({ methodId: methodNotes.methodId, claimId: methodNotes.claimId }).from(methodNotes),
+    db
+      .select()
+      .from(methods)
+      .where(visible(ctx, methods.organizationId))
+      .orderBy(asc(methods.slug), asc(methods.id)),
+    db.select().from(methodVariables).orderBy(asc(methodVariables.id)),
+    db
+      .select({ methodId: methodNotes.methodId, claimId: methodNotes.claimId })
+      .from(methodNotes)
+      .orderBy(asc(methodNotes.id)),
     db
       .select({
         id: exercises.id,
@@ -196,7 +205,8 @@ async function knowledgeSnapshot(
       })
       .from(exercises)
       .innerJoin(movementPatterns, eq(movementPatterns.id, exercises.movementPatternId))
-      .where(and(visible(ctx, exercises.organizationId), eq(exercises.status, 'published'))),
+      .where(and(visible(ctx, exercises.organizationId), eq(exercises.status, 'published')))
+      .orderBy(asc(exercises.name), asc(exercises.id)),
     db
       .select({
         exerciseId: exerciseEquipment.exerciseId,
@@ -204,19 +214,26 @@ async function knowledgeSnapshot(
         optional: exerciseEquipment.optional,
       })
       .from(exerciseEquipment)
-      .innerJoin(equipment, eq(equipment.id, exerciseEquipment.equipmentId)),
+      .innerJoin(equipment, eq(equipment.id, exerciseEquipment.equipmentId))
+      .orderBy(asc(exerciseEquipment.exerciseId), asc(equipment.slug)),
     db
       .select({ exerciseId: exerciseMethodLinks.exerciseId, slug: methods.slug })
       .from(exerciseMethodLinks)
-      .innerJoin(methods, eq(methods.id, exerciseMethodLinks.methodId)),
-    db.select().from(planTemplates).where(visible(ctx, planTemplates.organizationId)),
+      .innerJoin(methods, eq(methods.id, exerciseMethodLinks.methodId))
+      .orderBy(asc(exerciseMethodLinks.exerciseId), asc(methods.slug)),
+    db
+      .select()
+      .from(planTemplates)
+      .where(visible(ctx, planTemplates.organizationId))
+      .orderBy(asc(planTemplates.slug), asc(planTemplates.id)),
     db
       .select({ key: clientRuleOverrides.ruleKey })
       .from(clientRuleOverrides)
       .where(
         and(eq(clientRuleOverrides.clientId, clientId), eq(clientRuleOverrides.enabled, false)),
-      ),
-    db.select({ slug: sports.slug, name: sports.name }).from(sports),
+      )
+      .orderBy(asc(clientRuleOverrides.ruleKey)),
+    db.select({ slug: sports.slug, name: sports.name }).from(sports).orderBy(asc(sports.slug)),
   ]);
   const popSlug = new Map(pops.map((p) => [p.id, p.slug]));
   const claimKey = new Map(claimRows.map((c) => [c.id, c.key]));

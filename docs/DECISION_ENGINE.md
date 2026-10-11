@@ -10,7 +10,7 @@
   - Los umbrales del perfil (fuerza relativa, CMJ, sprint) **no tienen valor por defecto**. Mientras el centro no los fije, el motor lo dice («Reglas con parámetros sin definir») y usa la valoración manual del entrenador.
   - Si existe una referencia verificada aplicable al cliente (Fase 5), el motor la usa antes que la valoración manual.
   - El centro puede fijar un valor **solo para una población** (por ejemplo, sus futbolistas): para el resto de clientes sigue pendiente. La plataforma no trae valores por población (§5).
-- **Determinista.** Con los mismos datos y la misma versión de reglas, el resultado es el mismo. Cada ejecución guarda la huella de sus entradas (`inputHash`) y la versión de reglas.
+- **Determinista.** Con los mismos datos y la misma versión de reglas, el resultado es el mismo. Cada ejecución guarda la huella de sus entradas (`inputHash`) y la versión de reglas. Las consultas del conocimiento (afirmaciones, fuentes, métodos, ejercicios, plantillas) se leen con un orden fijo, para que también el orden de las fuentes en una explicación sea siempre el mismo (fase 19 de la reestructuración).
 - **Sin `eval`.** Las condiciones son un DSL en JSON con operadores cerrados, interpretado en `dsl.ts`.
 
 ## 2. Arquitectura
