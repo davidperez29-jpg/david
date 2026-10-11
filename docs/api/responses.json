@@ -2430,12 +2430,25 @@
         "decidedBy": "null",
         "decisionReason": "null",
         "explanation": {
-          "applicability": [],
+          "applicability": [
+            "string"
+          ],
           "confidence": "string",
           "data": [
             "string"
           ],
-          "evidence": [],
+          "evidence": [
+            {
+              "claimKey": "string",
+              "confidence": "string",
+              "evidenceKind": "string",
+              "limitations": "string",
+              "sources": [
+                "object"
+              ],
+              "statement": "string"
+            }
+          ],
           "interpretation": [
             "string"
           ],
@@ -2911,6 +2924,66 @@
       "version": "number"
     }
   ],
+  "GET exercise-review": {
+    "items": [
+      {
+        "categories": [
+          "string"
+        ],
+        "gaps": [
+          "string"
+        ],
+        "id": "string",
+        "level": "string",
+        "name": "string",
+        "pattern": "string",
+        "reviewNotes": "string",
+        "source": "string",
+        "status": "string",
+        "version": "number"
+      }
+    ],
+    "limit": "number",
+    "offset": "number",
+    "total": "number"
+  },
+  "GET exercise-review/overview": {
+    "gaps": {
+      "broken_video": "number",
+      "missing_category": "number",
+      "missing_client_description": "number",
+      "missing_level": "number",
+      "missing_pattern": "number",
+      "missing_prescription_profile": "number",
+      "missing_primary_muscle": "number",
+      "pending_review": "number",
+      "pending_video": "number"
+    },
+    "published": "number",
+    "ready": "number",
+    "total": "number",
+    "videos": {
+      "broken": "number",
+      "pending": "number",
+      "verified": "number"
+    }
+  },
+  "GET exercise-review/videos": {
+    "items": [
+      {
+        "channel": "string",
+        "embedUrl": "string",
+        "exerciseId": "string",
+        "exerciseName": "string",
+        "mediaId": "string",
+        "title": "null",
+        "url": "string"
+      }
+    ],
+    "limit": "number",
+    "offset": "number",
+    "total": "number"
+  },
   "GET exercises": {
     "items": [
       {
@@ -2920,7 +2993,7 @@
         "hasSilhouette": "boolean",
         "id": "string",
         "isGlobal": "boolean",
-        "level": "null",
+        "level": "string",
         "name": "string",
         "needsReview": "boolean",
         "pattern": "string",
@@ -2964,7 +3037,7 @@
     "intendedVelocity": "null",
     "isGlobal": "boolean",
     "laterality": "null",
-    "level": "null",
+    "level": "string",
     "loadIncrement": {
       "custom": "boolean",
       "defaultKg": "number",

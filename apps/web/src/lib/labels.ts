@@ -195,6 +195,19 @@ export const LABELS = {
     not_tolerated: 'No tolerado',
     restricted: 'Con restricción',
   },
+  /** What an exercise of the bank still lacks (restructure phase 19), as short filters. */
+  reviewGap: {
+    pending_review: 'Sin revisar',
+    missing_pattern: 'Sin patrón',
+    missing_category: 'Sin categoría',
+    missing_primary_muscle: 'Sin músculo principal',
+    missing_level: 'Sin nivel',
+    missing_client_description: 'Sin explicación para el cliente',
+    missing_prescription_profile: 'Sin perfil de prescripción',
+    pending_video: 'Vídeo sin verificar',
+    broken_video: 'Vídeo roto',
+    ready: 'Listos para publicar',
+  },
   publishProblem: {
     missing_pattern: 'Falta el patrón de movimiento',
     missing_category: 'Falta al menos una categoría',

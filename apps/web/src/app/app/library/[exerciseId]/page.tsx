@@ -1,8 +1,13 @@
 import Link from 'next/link';
-import { getExercise, listLibraryTaxonomies, listMethods } from '@tp/application';
+import {
+  getExercise,
+  listLibraryTaxonomies,
+  listMethods,
+  nextExerciseToReview,
+} from '@tp/application';
 import { evidenceCards, type EvidenceCards } from '@tp/application';
 import { SourceButton } from '@/components/science/source-button';
-import { DomainError } from '@tp/domain';
+import { DomainError, REVIEW_GAPS, type ReviewGap } from '@tp/domain';
 import { notFound } from 'next/navigation';
 import { BodyMap } from '@/components/library/body-map';
 import { Badge, Card } from '@/components/ui/card';
@@ -31,11 +36,13 @@ export default async function ExercisePage({
   searchParams,
 }: {
   params: Promise<{ exerciseId: string }>;
-  searchParams: Promise<{ tab?: string }>;
+  searchParams: Promise<{ tab?: string; revision?: string }>;
 }) {
   const ctx = await requireStaff();
   const { exerciseId } = await params;
-  const { tab = 'ficha' } = await searchParams;
+  const { tab = 'ficha', revision } = await searchParams;
+  // Opened from the bank review queue (phase 19): the queue's filters travel with the page.
+  const keep = revision !== undefined ? `&revision=${encodeURIComponent(revision)}` : '';
   const [ex, tax] = await Promise.all([
     getExercise(ctx, exerciseId).catch((e) => {
       if (e instanceof DomainError && e.code === 'not_found') notFound();
@@ -56,6 +63,7 @@ export default async function ExercisePage({
         {ex.needsReview ? <Badge tone="warn">Pendiente de revisión</Badge> : null}
         {ex.isGlobal ? <Badge tone="accent">Global (solo lectura)</Badge> : null}
       </div>
+      {revision !== undefined ? <ReviewBar ex={ex} queue={revision} /> : null}
       {ex.needsReview && ex.reviewNotes ? (
         <p className="rounded-md border border-warn p-3 text-sm">
           <strong>Notas de importación:</strong> {ex.reviewNotes}
@@ -82,7 +90,7 @@ export default async function ExercisePage({
         {TABS.map(([key, name]) => (
           <Link
             key={key}
-            href={`?tab=${key}`}
+            href={`?tab=${key}${keep}`}
             aria-current={tab === key ? 'page' : undefined}
             className={`-mb-px border-b-2 px-3 py-2 text-sm ${tab === key ? 'border-accent font-medium text-text' : 'border-transparent text-muted hover:text-text'}`}
           >
@@ -113,6 +121,68 @@ export default async function ExercisePage({
 }
 
 type Ex = Awaited<ReturnType<typeof getExercise>>;
+
+const QUEUE_KEYS = ['gap', 'q', 'patternId', 'categoryId', 'status'];
+
+/**
+ * Bar of the bank review (restructure phase 19): what this exercise still lacks, how many remain
+ * in the queue after it and a link to the next one, so the bank is reviewed one by one.
+ */
+async function ReviewBar({ ex, queue }: { ex: Ex; queue: string }) {
+  const ctx = await requireStaff();
+  const filters = Object.fromEntries(
+    [...new URLSearchParams(queue)].filter(([k, v]) => QUEUE_KEYS.includes(k) && v),
+  );
+  const videos = ex.media.filter((m) => m.type === 'video');
+  const lacks = new Set<ReviewGap>([
+    ...ex.publishProblems,
+    ...(videos.some((v) => v.status === 'pending_verification') ? ['pending_video' as const] : []),
+    ...(videos.some((v) => v.status === 'broken') ? ['broken_video' as const] : []),
+  ]);
+  const gaps = REVIEW_GAPS.filter((g) => lacks.has(g));
+  const { next, remaining } = await nextExerciseToReview(ctx, { ...filters, after: ex.id }).catch(
+    () => ({ next: null, remaining: 0 }),
+  );
+  const back = `/app/library/revision${queue ? `?${queue}` : ''}`;
+  return (
+    <nav
+      aria-label="Revisión del banco"
+      className="flex flex-wrap items-center gap-2 rounded-md border border-accent p-3 text-sm"
+    >
+      <span className="font-medium">Revisión del banco.</span>
+      {gaps.length ? (
+        <span className="flex flex-wrap items-center gap-1">
+          Le falta:
+          {gaps.map((g) => (
+            <Badge key={g} tone={g === 'broken_video' ? 'danger' : 'warn'}>
+              {label('reviewGap', g)}
+            </Badge>
+          ))}
+        </span>
+      ) : (
+        <Badge tone="ok">
+          {ex.status === 'published' ? 'Publicado' : 'Completo: se puede publicar'}
+        </Badge>
+      )}
+      <span className="text-muted">Quedan {remaining} en la cola después de este.</span>
+      <span className="ml-auto flex flex-wrap gap-3">
+        <Link href={back} className="underline">
+          Volver a la cola
+        </Link>
+        {next ? (
+          <Link
+            href={`/app/library/${next.id}?revision=${encodeURIComponent(queue)}`}
+            className="font-medium text-accent underline"
+          >
+            Siguiente: {next.name} →
+          </Link>
+        ) : (
+          <span className="text-muted">Es el último de la cola.</span>
+        )}
+      </span>
+    </nav>
+  );
+}
 type Method = Awaited<ReturnType<typeof listMethods>>[number];
 
 /**

@@ -41,6 +41,9 @@ export async function a11yIds() {
       exercise: await one(
         `SELECT id FROM exercises WHERE organization_id IS NULL AND status = 'published' ORDER BY id LIMIT 1`,
       ),
+      bankExercise: await one(
+        `SELECT id FROM exercises WHERE organization_id IS NOT NULL AND needs_review ORDER BY name, id LIMIT 1`,
+      ),
       test: await one(`SELECT id FROM assessment_tests ORDER BY id LIMIT 1`),
       claim: await one(`SELECT id FROM knowledge_claims ORDER BY id LIMIT 1`),
       method: await one(`SELECT id FROM methods ORDER BY id LIMIT 1`),

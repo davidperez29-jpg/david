@@ -20,6 +20,7 @@ const PAGES = [
   // Restructure phase 10: pages added since phase 14.
   '/app/groups',
   '/app/library',
+  '/app/library/revision',
   '/app/assessments',
   '/app/science/sources',
   '/app/science/busquedas',
@@ -85,6 +86,33 @@ test('listings answer in < 300 ms p95 with 1 000 clients', async ({ baseURL }) =
       rows.push(`${who.padEnd(26)} ${url.padEnd(48)} p95 ${String(v).padStart(4)} ms`);
       if (v >= LIMIT_MS) slow.push(`${who} ${url}: p95 ${v} ms`);
     }
+  }
+  console.log(rows.join('\n'));
+  expect(slow).toEqual([]);
+});
+
+// Restructure phase 19: the review of the imported bank (1 141 drafts and 1 011 videos in the demo).
+test('bank review answers in < 300 ms p95 with the whole imported bank', async ({ baseURL }) => {
+  test.setTimeout(300_000);
+  const lucia = await login(baseURL!, 'lucia.moreno@example.com');
+  test.skip(!lucia, 'Sin datos demo: ejecuta pnpm db:seed:demo');
+  const rows: string[] = [];
+  const slow: string[] = [];
+  for (const url of [
+    '/api/v1/exercise-review/overview',
+    '/api/v1/exercise-review?limit=50',
+    '/api/v1/exercise-review?gap=missing_primary_muscle&limit=50',
+    '/api/v1/exercise-review?gap=ready&limit=50',
+    '/api/v1/exercise-review/videos?limit=1',
+    '/app/library/revision',
+    '/app/library/revision?gap=missing_pattern',
+    '/app/library/revision/videos',
+  ]) {
+    const { ms, status } = await time(lucia!, url);
+    expect(status, url).toBe(200);
+    const v = Math.round(p95(ms));
+    rows.push(`banco (1 141 ejercicios)   ${url.padEnd(60)} p95 ${String(v).padStart(4)} ms`);
+    if (v >= LIMIT_MS) slow.push(`${url}: p95 ${v} ms`);
   }
   console.log(rows.join('\n'));
   expect(slow).toEqual([]);

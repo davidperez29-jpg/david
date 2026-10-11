@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { listExercises, listLibraryTaxonomies } from '@tp/application';
+import { exerciseReviewOverview, listExercises, listLibraryTaxonomies } from '@tp/application';
 import { Badge, Card, EmptyState } from '@/components/ui/card';
 import { label, LABELS } from '@/lib/labels';
 import { requireStaff } from '@/server/session';
@@ -10,9 +10,10 @@ export default async function LibraryPage({ searchParams }: { searchParams: Prom
   const ctx = await requireStaff();
   const sp = await searchParams;
   const clean = Object.fromEntries(Object.entries(sp).filter(([, v]) => v));
-  const [tax, page] = await Promise.all([
+  const [tax, page, review] = await Promise.all([
     listLibraryTaxonomies(ctx),
     listExercises(ctx, { ...clean, limit: 50 }),
+    exerciseReviewOverview(ctx),
   ]);
   const groups = [...new Set(tax.muscles.map((m) => m.groupSlug))];
   const qs = (patch: SP) =>
@@ -24,12 +25,19 @@ export default async function LibraryPage({ searchParams }: { searchParams: Prom
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h1 className="text-2xl font-semibold">Biblioteca de ejercicios</h1>
-        <Link
-          href="/app/library/new"
-          className="inline-flex h-10 items-center rounded-md bg-accent px-4 text-sm font-medium text-accent-contrast"
-        >
-          Nuevo ejercicio
-        </Link>
+        <span className="flex flex-wrap items-center gap-3">
+          {review.total ? (
+            <Link href="/app/library/revision" className="text-sm text-accent underline">
+              Revisión del banco ({review.gaps.pending_review} sin revisar)
+            </Link>
+          ) : null}
+          <Link
+            href="/app/library/new"
+            className="inline-flex h-10 items-center rounded-md bg-accent px-4 text-sm font-medium text-accent-contrast"
+          >
+            Nuevo ejercicio
+          </Link>
+        </span>
       </div>
       <form className="flex flex-wrap gap-2" role="search">
         <input
