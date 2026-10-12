@@ -176,7 +176,10 @@ export const planRevisions = pgTable(
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     createdBy: uuid('created_by'),
   },
-  (t) => [unique('plan_revisions_uq').on(t.planId, t.revision)],
+  (t) => [
+    unique('plan_revisions_uq').on(t.planId, t.revision),
+    index('plan_revisions_client_idx').on(t.clientId),
+  ],
 );
 
 export const phases = pgTable(
@@ -200,6 +203,7 @@ export const phases = pgTable(
   (t) => [
     unique('phases_pos_uq').on(t.planId, t.position),
     check('phases_weeks_ck', sql`${t.startWeek} >= 1 AND ${t.endWeek} >= ${t.startWeek}`),
+    index('phases_client_idx').on(t.clientId),
   ],
 );
 
@@ -222,6 +226,7 @@ export const mesocycles = pgTable(
   (t) => [
     unique('mesocycles_pos_uq').on(t.phaseId, t.position),
     check('mesocycles_weeks_ck', sql`${t.weeks} BETWEEN 1 AND 16`),
+    index('mesocycles_client_idx').on(t.clientId),
   ],
 );
 
@@ -242,7 +247,10 @@ export const microcycles = pgTable(
     notes: text('notes'),
     ...timestamps(),
   },
-  (t) => [unique('microcycles_week_uq').on(t.mesocycleId, t.weekIndex)],
+  (t) => [
+    unique('microcycles_week_uq').on(t.mesocycleId, t.weekIndex),
+    index('microcycles_client_idx').on(t.clientId),
+  ],
 );
 
 export const sessions = pgTable(
@@ -293,7 +301,10 @@ export const sessionBlocks = pgTable(
     restBetweenRoundsS: smallint('rest_between_rounds_s'),
     notes: text('notes'),
   },
-  (t) => [unique('session_blocks_pos_uq').on(t.sessionId, t.position)],
+  (t) => [
+    unique('session_blocks_pos_uq').on(t.sessionId, t.position),
+    index('session_blocks_client_idx').on(t.clientId),
+  ],
 );
 
 /** Prescription variables (§12.4) as typed columns; uncommon ones in `extra`. */
@@ -395,6 +406,7 @@ export const sessionExercises = pgTable(
     unique('session_exercises_pos_uq').on(t.blockId, t.position),
     ...prescriptionChecks(t, 'session_exercises'),
     index('session_exercises_exercise_idx').on(t.exerciseId),
+    index('session_exercises_client_idx').on(t.clientId),
   ],
 );
 
@@ -413,6 +425,7 @@ export const exerciseSets = pgTable(
   (t) => [
     unique('exercise_sets_idx_uq').on(t.sessionExerciseId, t.setIndex),
     ...prescriptionChecks(t, 'exercise_sets'),
+    index('exercise_sets_client_idx').on(t.clientId),
   ],
 );
 

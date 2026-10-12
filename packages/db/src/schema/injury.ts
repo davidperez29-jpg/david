@@ -235,7 +235,10 @@ export const injuryPhaseHistory = pgTable(
     notePlain: text('note'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [index('injury_phase_history_injury_idx').on(t.injuryId)],
+  (t) => [
+    index('injury_phase_history_injury_idx').on(t.injuryId),
+    index('injury_phase_history_client_idx').on(t.clientId),
+  ],
 );
 
 /** [SALUD] Symptoms recorded by the staff for the case (the client's session pain stays in pain_logs). */
@@ -259,6 +262,7 @@ export const injurySymptoms = pgTable(
   (t) => [
     index('injury_symptoms_injury_idx').on(t.injuryId, t.recordedOn),
     check('injury_symptoms_pain_ck', sql`${t.pain} BETWEEN 0 AND 10`),
+    index('injury_symptoms_client_idx').on(t.clientId),
   ],
 );
 
@@ -277,7 +281,10 @@ export const injuryAlerts = pgTable(
     reviewNotePlain: text('review_note'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [index('injury_alerts_injury_idx').on(t.injuryId, t.reviewedAt)],
+  (t) => [
+    index('injury_alerts_injury_idx').on(t.injuryId, t.reviewedAt),
+    index('injury_alerts_client_idx').on(t.clientId),
+  ],
 );
 
 export const injuryCriterionChecks = pgTable(
@@ -301,6 +308,7 @@ export const injuryCriterionChecks = pgTable(
   (t) => [
     index('injury_criterion_checks_idx').on(t.injuryId, t.criterionId, t.checkedAt),
     check('injury_criterion_checks_source_ck', sql`${t.source} IN ('auto', 'manual')`),
+    index('injury_criterion_checks_client_idx').on(t.clientId),
   ],
 );
 
@@ -320,5 +328,8 @@ export const rtpDecisions = pgTable(
     recordedBy: uuid('recorded_by'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [index('rtp_decisions_injury_idx').on(t.injuryId)],
+  (t) => [
+    index('rtp_decisions_injury_idx').on(t.injuryId),
+    index('rtp_decisions_client_idx').on(t.clientId),
+  ],
 );

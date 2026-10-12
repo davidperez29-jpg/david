@@ -162,6 +162,7 @@ export const integrationConnections = pgTable(
   },
   (t) => [
     check('integration_connections_status_ck', sql`${t.status} IN ('active','revoked','error')`),
+    index('integration_connections_client_idx').on(t.clientId),
   ],
 );
 

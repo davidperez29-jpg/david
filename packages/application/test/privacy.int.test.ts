@@ -117,6 +117,21 @@ describe('access and portability (RGPD arts. 15, 20)', () => {
     expect(missing).toEqual([]);
   });
 
+  it('reads a client’s rows of any table through an index (restructure phase 20)', async () => {
+    // The export, the erasure and ON DELETE CASCADE look rows up by client_id: without an index
+    // that starts with it, each lookup scans the whole table, of every centre.
+    const rows = await db().execute<{ table_name: string }>(
+      sql`select c.table_name from information_schema.columns c
+           where c.table_schema = 'public' and c.column_name = 'client_id'
+             and not exists (
+               select 1 from pg_index i
+               join pg_attribute a on a.attrelid = i.indrelid and a.attnum = i.indkey[0]
+               where i.indrelid = quote_ident(c.table_name)::regclass and a.attname = 'client_id')
+           order by 1`,
+    );
+    expect([...rows].map((r) => r.table_name)).toEqual([]);
+  });
+
   it('nobody else exports it: trainers (§14.2), other clients, other organizations', async () => {
     await expect(exportSubjectData(o.trainer2, o.clientA)).rejects.toMatchObject({
       code: expect.stringMatching(/^(forbidden|not_found)$/),

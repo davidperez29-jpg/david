@@ -379,6 +379,13 @@
       "when": 1791747569281,
       "tag": "0053_rls_v19",
       "breakpoints": true
+    },
+    {
+      "idx": 54,
+      "version": "7",
+      "when": 1791824907734,
+      "tag": "0054_client_fk_indexes",
+      "breakpoints": true
     }
   ]
 }

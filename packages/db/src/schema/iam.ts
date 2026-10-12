@@ -172,7 +172,10 @@ export const invitations = pgTable(
     ...timestamps(),
     ...authorship(),
   },
-  (t) => [index('invitations_org_idx').on(t.organizationId)],
+  (t) => [
+    index('invitations_org_idx').on(t.organizationId),
+    index('invitations_client_idx').on(t.clientId),
+  ],
 );
 
 export const passwordResetTokens = pgTable('password_reset_tokens', {

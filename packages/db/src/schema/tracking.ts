@@ -199,6 +199,7 @@ export const exerciseFeedback = pgTable(
     scale010('exercise_feedback_difficulty_ck', t.difficulty),
     scale010('exercise_feedback_pain_ck', t.pain),
     index('exercise_feedback_session_idx').on(t.sessionId),
+    index('exercise_feedback_client_idx').on(t.clientId),
   ],
 );
 
