@@ -69,7 +69,7 @@ trabajo diario (pnpm monitor:daily) → todos los clientes con plan activo o ale
 - **Rojas:** cada alerta roja nueva notifica dentro de la app a los entrenadores activos del cliente.
 - **Estados:** abierta → vista → resuelta (con nota, auditado).
 
-**Trabajo diario:** `pnpm monitor:daily` (`packages/application/scripts/monitor-daily.ts`). Programarlo una vez al día, por ejemplo con cron `15 5 * * *`. Así funcionan las reglas que dependen del paso del tiempo (sesiones no realizadas, reevaluación vencida y ventanas de adherencia).
+**Trabajo diario:** `pnpm monitor:daily` (`packages/application/scripts/monitor-daily.ts`). Programarlo una vez al día, por ejemplo con cron `15 5 * * *`. Así funcionan las reglas que dependen del paso del tiempo (sesiones no realizadas, reevaluación vencida y ventanas de adherencia). Lee las reglas de cada centro una vez por ejecución, no una vez por cliente (fase 20 de la reestructuración).
 
 ## 4. Valoración por ejercicio
 

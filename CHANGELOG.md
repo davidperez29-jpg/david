@@ -2,6 +2,27 @@
 
 Formato: fecha · cambio · motivo · archivos · impacto.
 
+## 2026-10-12 — Reestructuración, fase 20: pendientes técnicos de la fase 18
+
+- **Cambio (rendimiento):**
+  - aplicar una propuesta como revisión y duplicar una semana copian las sesiones por niveles (una lectura y un `INSERT` por nivel); 27 sesiones: de 1,15–1,36 s a 0,45–0,48 s;
+  - índice de `client_id` en las 15 tablas que no lo tenían (migración `0054`); buscar los ejercicios prescritos de un cliente: de 11 a 0,5 ms con 100 000 filas;
+  - el trabajo diario lee las reglas de cada centro una vez por ejecución.
+- **Cambio (seguridad, P-22):** las columnas en claro antiguas de lesiones dejan el esquema y el código.
+  - La migración `0055` hace que la base rechace texto en ellas.
+  - El paso de arranque mueve lo que quedara, las marca en el primer arranque y las borra en el siguiente (A69). Una vez borradas, solo consulta el catálogo.
+- **Motivo:** pendientes de la revisión de calidad de la fase 18, elegidos por el responsable.
+- **Archivos:**
+  - `packages/application/src/{planning,monitoring,privacy,injuries}.ts`, `packages/application/scripts/encrypt-injury-text.ts`;
+  - `packages/db/src/schema/{planning,tracking,platform,injury,iam}.ts`, migraciones `0054_client_fk_indexes` y `0055_injury_plaintext_retired`;
+  - `deploy/start.sh`, `docker-compose.yml` (comentarios);
+  - pruebas: `programming.int.test.ts`, `privacy.int.test.ts`, `monitoring.int.test.ts`, `injuries.int.test.ts`;
+  - `docs/{DATABASE,INJURY_MODULE,PENTEST,DPIA,MONITORING,PROGRAMMING_ENGINE,TESTING,IMPLEMENTATION_ROADMAP}.md`, `docs/PRODUCT_ARCHITECTURE.md` A69.
+- **Impacto:**
+  - 2 migraciones (15 índices; 8 restricciones `NOT VALID`, sin reescribir tablas);
+  - las columnas en claro desaparecen en el **segundo** arranque de esta versión (no hace falta hacer nada);
+  - sin cambios en la API ni en la interfaz.
+
 ## 2026-10-11 — Reestructuración, fase 19: revisión del banco
 
 - **Cambio:** Ejercicios → «Revisión del banco» para completar el banco importado:

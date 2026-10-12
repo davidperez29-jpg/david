@@ -786,3 +786,19 @@ pnpm --filter @tp/web test:e2e -- e2e/perf.spec.ts e2e/perf.mobile.spec.ts
   - `decision.int.test.ts` («es determinista») falló 2 de 6 veces en la suite completa: las fuentes de una afirmación llegaban en otro orden. Con las consultas del conocimiento ordenadas, 5 de 5 ejecuciones en verde.
   - `a11y.spec.ts` (estados) falló en CI (ejecuciones 92 y 95) con el contraste de `.bg-accent`: axe medía a mitad de la transición del cambio de tema. `scanState` espera a que no haya animaciones en curso.
 - **Batería E2E completa** tras las correcciones (base de datos nueva con demo y carga): 72 de 72 en verde.
+
+## Resultado de la reestructuración, fase 20 (pendientes técnicos de la fase 18)
+
+- **Integración**:
+  - `programming.int.test.ts`: al aplicar una propuesta como revisión, cada copia tiene los mismos bloques y ejercicios, en el mismo orden, que la sesión propuesta de su día. Tiempo de la prueba (27 sesiones copiadas, 28 sustituidas): de 1,15–1,36 s a 0,45–0,48 s;
+  - `privacy.int.test.ts`: ninguna tabla con `client_id` queda sin un índice que empiece por esa columna (la consulta encontró 15 antes de la migración `0054`);
+  - `monitoring.int.test.ts`: tras el trabajo diario, que lee las reglas una vez por centro, evaluar cada cliente por separado no crea ni resuelve nada;
+  - `injuries.int.test.ts`: la base rechaza texto en una columna en claro (`injuries_mechanism_legacy_null_ck`); con texto antiguo simulado, el primer arranque lo mueve (también sobre un valor cifrado que no abre) y marca las ocho columnas, el segundo las borra y el tercero no hace nada; la ficha se lee igual.
+- **Base de datos** (datos de carga, por cliente):
+
+  | Consulta por `client_id` | Antes | Después |
+  |---|---|---|
+  | `session_exercises` (100 000 filas) | 11 ms (recorrido completo) | 0,5 ms |
+  | `session_blocks` (38 000 filas) | 3–4 ms | 0,1 ms |
+
+- **Paso de arranque** en la base de desarrollo: primer arranque «8 columnas marcadas», segundo «8 borradas», tercero sin cambios.

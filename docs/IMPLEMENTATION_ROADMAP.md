@@ -36,6 +36,7 @@
 | 17 | Umbrales por población: valores de los parámetros de las reglas por sexo, edad, experiencia y deporte (elegida por el responsable) | Motor de decisiones, reglas como datos | ✅ Hecha |
 | 18 | Revisión general de calidad de las fases 11–17: seguridad, accesibilidad y rendimiento, con correcciones (elegida por el responsable) | Todo lo añadido en las fases 11–17 | ✅ Hecha |
 | 19 | Revisión del banco: cola para completar el banco importado, cambios en bloque, avance visible y verificación de vídeos (elegida por el responsable) | Biblioteca de ejercicios | ✅ Hecha |
+| 20 | Pendientes técnicos de la fase 18: copia de sesiones en bloque, índices de `client_id`, reglas una vez por centro en el trabajo diario y retirada de las columnas en claro de lesiones (elegida por el responsable) | Planificación, base de datos, seguimiento, lesiones | ✅ Hecha |
 
 ## Por qué el despliegue va primero (decisión A2)
 
@@ -370,12 +371,12 @@ Elegida por el responsable: repaso de seguridad, accesibilidad y rendimiento de 
 - ✅ axe sin infracciones graves también en los estados abiertos (ajuste con su tabla y edición, fila nueva y resumen de errores, «Mover»), con foco comprobado (`a11y.spec.ts`, `trainer-ops.spec.ts`, `reports.spec.ts`, `engine.spec.ts`).
 
 **Queda pendiente** (medido o revisado; sin impacto hoy con 1 000 clientes):
-- aplicar una propuesta como revisión copia las sesiones una a una: agruparlas por nivel, como al crear un plan;
+- ~~aplicar una propuesta como revisión copia las sesiones una a una: agruparlas por nivel, como al crear un plan;~~ (fase 20)
 - los efectos tras confirmar (alertas, ajustes) corren antes de responder; con mucho volumen, pasarlos a una cola;
-- el paso de cifrado del texto antiguo de lesiones recorre sus tablas en cada arranque, aunque ya no quede nada;
-- algunas claves foráneas `client_id` de tablas pequeñas no tienen índice;
-- el trabajo diario lee las reglas de la organización una vez por cliente;
-- borrar las columnas en claro antiguas de lesiones (P-22, A49).
+- ~~el paso de cifrado del texto antiguo de lesiones recorre sus tablas en cada arranque, aunque ya no quede nada;~~ (fase 20)
+- ~~algunas claves foráneas `client_id` de tablas pequeñas no tienen índice;~~ (fase 20)
+- ~~el trabajo diario lee las reglas de la organización una vez por cliente;~~ (fase 20)
+- ~~borrar las columnas en claro antiguas de lesiones (P-22, A49).~~ (fase 20, A69)
 
 ## Fase 19 · Revisión del banco ✅
 
@@ -402,4 +403,25 @@ Elegida por el responsable: completar el banco importado (1 141 borradores: 324 
   - la prueba de accesibilidad de estados medía el contraste a mitad del cambio de tema: espera a que terminen las animaciones.
 
 **Queda pendiente**: el trabajo en sí. Escribir la explicación para el cliente de cada ejercicio y ver cada vídeo es tarea del centro; la plataforma no lo inventa.
+
+## Fase 20 · Pendientes técnicos de la fase 18 ✅
+
+Elegida por el responsable: cerrar los pendientes técnicos que dejó la revisión de calidad de la fase 18.
+
+- **Aplicar una propuesta como revisión** copiaba cada sesión con varias consultas por sesión y por bloque. Ahora lee cada nivel una vez y lo escribe con un `INSERT`, con los ids generados en la aplicación, como al crear un plan. «Duplicar semana» usa la misma copia. 27 sesiones: de 1,15–1,36 s a 0,45–0,48 s.
+- **Índices de `client_id`** (migración `0054`): 15 tablas no tenían índice para buscar las filas de un cliente (exportación del interesado, supresión, borrado en cascada). Buscar los ejercicios prescritos de un cliente con 100 000 filas pasa de 11 ms a 0,5 ms. Una prueba falla si una tabla con `client_id` no tiene un índice que empiece por esa columna.
+- **Trabajo diario**: lee las reglas de cada centro una vez por ejecución, no una vez por cliente (unas 2 000 consultas menos con 1 000 clientes).
+- **Columnas en claro de lesiones** (P-22, A69):
+  - el código ya no las lee ni están en el esquema;
+  - la migración `0055` hace que la base rechace texto en ellas, sin borrarlas todavía: la instancia anterior, que aún las lee, puede estar sirviendo mientras arranca la nueva;
+  - el paso de arranque mueve el texto que quedara, las marca en el primer arranque y las borra en el siguiente;
+  - una vez borradas, el paso solo consulta el catálogo (antes recorría las ocho columnas en cada arranque).
+
+**Criterios**:
+- ✅ cada copia de una revisión tiene los mismos bloques y ejercicios que la sesión propuesta de su día (`programming.int.test.ts`);
+- ✅ ninguna tabla con `client_id` queda sin índice que empiece por ella (`privacy.int.test.ts`);
+- ✅ tras el trabajo diario, evaluar cada cliente por separado no cambia nada (`monitoring.int.test.ts`);
+- ✅ la base rechaza texto en claro; el texto antiguo se mueve (también sobre un valor cifrado que no abre), las columnas se marcan y se borran en el arranque siguiente, y después el paso no hace nada (`injuries.int.test.ts`).
+
+**Queda pendiente**: los efectos tras confirmar (alertas y ajustes) siguen ejecutándose antes de responder; con mucho volumen, pasarlos a una cola.
 

@@ -341,7 +341,9 @@ Los planes propuestos usan `kind = PROPOSAL`, `status = proposed` y `recommendat
   - El predicado no usa valores del enum: en una instalación nueva todas las migraciones van en una sola transacción, y un valor añadido en ella no se puede usar hasta confirmarla.
   - `exercise_substitutions_session_exercise_idx`: la comprobación de sustitución aprobada al anotar series y la clave foránea al borrar ejercicios planificados.
 - **Migración `0053_rls_v19`** (fase 19 de la reestructuración): política de `clients` en línea y `app_client_visible` eliminada (§5.2). La consulta del Calendario del ADMIN con 1 000 clientes pasa de 125–160 ms a 80–90 ms: ahora recorre los clientes una vez y usa el índice `(client_id, scheduled_date)` de `sessions`.
-- **Planes**: se escriben con un `INSERT` por nivel y los ids se generan en la aplicación (UUID v7). Crear un plan de 12 semanas pasa de ≈ 900 a ≈ 240 ms.
+- **Migración `0054`** (fase 20 de la reestructuración): índice de `client_id` en las 15 tablas que no lo tenían (estructura del plan, ejercicios y series prescritos, valoraciones de ejercicio, seguimiento de lesiones, conexiones e invitaciones). Una prueba (`privacy.int.test.ts`) falla si una tabla con `client_id` no tiene un índice que empiece por esa columna.
+- **Migración `0055`** (fase 20, A69): las columnas en claro antiguas de lesiones salen del esquema; la migración solo añade `CHECK (columna IS NULL) NOT VALID` y el paso de arranque las borra en el arranque siguiente al que las marca (`INJURY_MODULE.md`).
+- **Planes**: se escriben con un `INSERT` por nivel y los ids se generan en la aplicación (UUID v7). Crear un plan de 12 semanas pasa de ≈ 900 a ≈ 240 ms. Desde la fase 20, copiar sesiones (aplicar una propuesta como revisión, duplicar una semana) también lee y escribe por niveles.
 - **RGPD**:
   - `external_measurements` entra en la exportación del interesado;
   - `external_measurements` e `integration_connections` se borran al suprimir;

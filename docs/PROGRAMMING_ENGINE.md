@@ -46,6 +46,7 @@ Después:
     - Sus sesiones desde hoy sustituyen a las sesiones futuras **sin registrar** del plan activo; lo ya registrado no se toca.
     - Cada sesión va a la semana del plan activo que contiene su fecha. Las fechas fuera de esas semanas, o en un día con una sesión ya registrada, no se copian y se cuentan.
     - Las copias se publican si las sesiones sustituidas lo estaban.
+    - Se copian todas a la vez, por niveles (sesiones, bloques, ejercicios), como al crear un plan (fase 20).
     - Queda una nueva **revisión** del plan activo («Propuesta del motor aplicada…»), auditada.
     - La propuesta se archiva y la recomendación queda `accepted`.
     - `409` si la propuesta no se generó sobre un plan activo o ese plan ya no está activo; `422` si no hay nada que aplicar.
