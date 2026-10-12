@@ -802,3 +802,5 @@ pnpm --filter @tp/web test:e2e -- e2e/perf.spec.ts e2e/perf.mobile.spec.ts
   | `session_blocks` (38 000 filas) | 3–4 ms | 0,1 ms |
 
 - **Paso de arranque** en la base de desarrollo: primer arranque «8 columnas marcadas», segundo «8 borradas», tercero sin cambios.
+- **Encontrado al validar y corregido**: `session-grid.spec.ts` falló un lunes (4 pruebas): `engine.spec.ts` aplica antes al plan de Javier una propuesta que empieza la semana siguiente, y la revisión vaciaba el resto de su semana actual. Ahora se sustituye desde el primer día de la propuesta.
+- **Batería E2E completa** (base de datos nueva con demo y carga): 72 de 72 en verde. El Calendario del ADMIN con 1 000 clientes queda en 123 ms de p95 (207 ms en la fase 19).
