@@ -119,11 +119,7 @@ export const SUBJECT_EXPORT_EXCLUDED: Record<string, string> = {
 export const SUBJECT_EXPORT_TABLES = SECTIONS.map(([, t]) => getTableName(t));
 const HIDDEN = new Set(['organizationId', 'clientId', 'snapshot', 'codeHash']);
 
-/**
- * Decrypts *Enc columns (renamed without the suffix) and drops internal columns. A legacy
- * *Plain column (not yet moved by `encryptInjuryText`) fills the same name only when its
- * encrypted twin is empty.
- */
+/** Decrypts *Enc columns (renamed without the suffix) and drops internal columns. */
 function clean(keys: AppContext['keys'], row: Record<string, unknown>) {
   const out: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(row)) {
@@ -132,12 +128,8 @@ function clean(keys: AppContext['keys'], row: Record<string, unknown>) {
       out[k.slice(0, -3)] = typeof v === 'string' ? safeOpen(keys, v) : null;
       continue;
     }
-    if (k.endsWith('Plain')) continue;
     out[k] = v;
   }
-  for (const [k, v] of Object.entries(row))
-    if (k.endsWith('Plain') && v != null && row[`${k.slice(0, -5)}Enc`] == null)
-      out[k.slice(0, -5)] = v;
   return out;
 }
 function safeOpen(keys: AppContext['keys'], v: string): string | null {
@@ -635,47 +627,83 @@ export const ENCRYPTED_COLUMNS = [
   enc(s.rtpDecisions, 'rationaleEnc'),
 ];
 
-/** Legacy plaintext columns of the injury module and the encrypted column that replaces each. */
-const INJURY_PLAINTEXT: [PgTable, string][] = [
-  [s.injuries, 'mechanism'],
-  [s.injuries, 'professional'],
-  [s.injuries, 'restrictions'],
-  [s.injuries, 'notes'],
-  [s.injuryPhaseHistory, 'note'],
-  [s.injuryAlerts, 'reviewNote'],
-  [s.injuryCriterionChecks, 'note'],
-  [s.rtpDecisions, 'rationale'],
+/**
+ * Legacy plaintext columns of the injury module (no longer in the schema) and the encrypted
+ * column that replaces each.
+ */
+const INJURY_PLAINTEXT: [PgTable, string, AnyPgColumn][] = [
+  [s.injuries, 'mechanism', s.injuries.mechanismEnc],
+  [s.injuries, 'professional', s.injuries.professionalEnc],
+  [s.injuries, 'restrictions', s.injuries.restrictionsEnc],
+  [s.injuries, 'notes', s.injuries.notesEnc],
+  [s.injuryPhaseHistory, 'note', s.injuryPhaseHistory.noteEnc],
+  [s.injuryAlerts, 'review_note', s.injuryAlerts.reviewNoteEnc],
+  [s.injuryCriterionChecks, 'note', s.injuryCriterionChecks.noteEnc],
+  [s.rtpDecisions, 'rationale', s.rtpDecisions.rationaleEnc],
 ];
+/** Left on a legacy column by the first start of a version that no longer reads it. */
+const RETIRED = 'retired: not read by the application since restructure phase 20';
 
 /**
- * Moves the injury free text written before restructure phase 11 into its encrypted column and
- * empties the plaintext one (system script, idempotent; run on every start after the
- * migrations, deploy/start.sh). An encrypted value already present is kept.
+ * Retires the injury free text written before restructure phase 11 (system step on every start,
+ * after the migrations, deploy/start.sh). While a legacy plaintext column exists, its text moves
+ * into the encrypted column and the plaintext is emptied; an encrypted value is kept only if it
+ * opens. The first start marks the columns; the next one drops them, when no instance of an
+ * earlier version (which still read them) can be running (A69). Once they are gone, the step only
+ * reads the catalogue.
  */
 export async function encryptInjuryText(app: Pick<AppContext, 'keys'> & { db: Database }) {
+  const names = INJURY_PLAINTEXT.map(([t, col]) => `${getTableName(t)}.${col}`);
+  const present = [
+    ...(await app.db.execute<{ name: string; comment: string | null }>(
+      sql`select c.table_name || '.' || c.column_name as name,
+            col_description(quote_ident(c.table_name)::regclass, c.ordinal_position) as comment
+          from information_schema.columns c
+          where c.table_schema = 'public'
+            and c.table_name || '.' || c.column_name in (${sql.join(
+              names.map((n) => sql`${n}`),
+              sql`, `,
+            )})`,
+    )),
+  ];
+  const legacy = INJURY_PLAINTEXT.filter(([t, col]) =>
+    present.some((p) => p.name === `${getTableName(t)}.${col}`),
+  );
   let moved = 0;
-  for (const [table, base] of INJURY_PLAINTEXT) {
-    const cols = getTableColumns(table) as Record<string, Col>;
-    const plain = cols[`${base}Plain`]!;
-    const encrypted = cols[`${base}Enc`]!;
-    const rows = (await app.db
-      .select({ id: cols.id!, plain, encrypted })
-      .from(table)
-      .where(isNotNull(plain))) as { id: string; plain: string; encrypted: string | null }[];
+  for (const [t, col, encrypted] of legacy) {
+    const table = sql.identifier(getTableName(t));
+    const [plain, enc] = [sql.identifier(col), sql.identifier(encrypted.name)];
+    const rows = [
+      ...(await app.db.execute<{ id: string; plain: string; enc: string | null }>(
+        sql`select id, ${plain} as plain, ${enc} as enc from ${table} where ${plain} is not null`,
+      )),
+    ];
     for (const r of rows) {
       // Keep an existing encrypted value only if it opens; otherwise the plaintext is the truth.
-      const keep = r.encrypted != null && safeOpen(app.keys, r.encrypted) != null;
-      await app.db
-        .update(table)
-        .set({
-          [`${base}Enc`]: keep ? r.encrypted : encrypt(app.keys.encryptionKey, r.plain),
-          [`${base}Plain`]: null,
-        } as never)
-        .where(eq(cols.id!, r.id));
+      const value =
+        r.enc != null && safeOpen(app.keys, r.enc) != null
+          ? r.enc
+          : encrypt(app.keys.encryptionKey, r.plain);
+      await app.db.execute(
+        sql`update ${table} set ${enc} = ${value}, ${plain} = null where id = ${r.id}`,
+      );
       moved++;
     }
   }
-  return { moved };
+  const retired = legacy.length > 0 && present.every((p) => p.comment === RETIRED);
+  for (const [t, col] of legacy) {
+    const target = sql`${sql.identifier(getTableName(t))}.${sql.identifier(col)}`;
+    if (retired)
+      await app.db.execute(
+        sql`alter table ${sql.identifier(getTableName(t))} drop column if exists ${sql.identifier(col)}`,
+      );
+    else await app.db.execute(sql`comment on column ${target} is ${sql.raw(`'${RETIRED}'`)}`);
+  }
+  return {
+    moved,
+    marked: retired ? 0 : legacy.length,
+    dropped: retired ? legacy.length : 0,
+  };
 }
 
 /** Re-encrypts every encrypted column with the current key (after APP_ENCRYPTION_KEY changes). */

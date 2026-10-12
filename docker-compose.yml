@@ -29,7 +29,8 @@ services:
         node node_modules/tsx/dist/cli.mjs scripts/encrypt-injury-text.ts
     environment:
       DATABASE_URL: postgres://app:${POSTGRES_PASSWORD}@db:5432/app
-      # Encrypts the injury free text written before restructure phase 11 (idempotent).
+      # Encrypts the injury free text written before restructure phase 11 and retires its old
+      # columns (restructure phase 20, idempotent).
       APP_ENCRYPTION_KEY: ${APP_ENCRYPTION_KEY:?set APP_ENCRYPTION_KEY}
     depends_on:
       db: { condition: service_healthy }

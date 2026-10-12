@@ -263,56 +263,59 @@ describe('free text encrypted at rest (restructure phase 11, DPIA R-11)', () => 
     expect(c.decisions.some((d) => d.rationale === 'Continuar con la fase de fuerza.')).toBe(true);
   });
 
-  it('moves text written before encryption into the encrypted columns (idempotent)', async () => {
+  it('the database refuses injury text in clear (restructure phase 20)', async () => {
+    await expect(
+      testDb().db.execute(sql`update injuries set mechanism = 'En claro' where id = ${injuryId}`),
+    ).rejects.toMatchObject({ cause: { constraint_name: 'injuries_mechanism_legacy_null_ck' } });
+  });
+
+  it('legacy text moves at start-up and the legacy columns go one start later (A69)', async () => {
     const db = testDb().db;
-    // A case as it was stored before phase 11: plaintext columns, no encrypted value.
+    // A case as stored before phase 11 (the checks only exist since phase 20): plaintext, and a
+    // note sealed with a key that is no longer in the ring.
+    await db.execute(sql`alter table injuries drop constraint injuries_mechanism_legacy_null_ck,
+      drop constraint injuries_notes_legacy_null_ck`);
+    await db.execute(
+      sql`alter table rtp_decisions drop constraint rtp_decisions_rationale_legacy_null_ck`,
+    );
     await db.execute(sql`update injuries
       set mechanism = 'Caída en el entrenamiento', mechanism_enc = null,
-          notes = 'Nota antigua', notes_enc = null
+          notes = 'Nota en claro', notes_enc = ${encrypt(randomBytes(32), 'Nota ilegible')}
       where id = ${injuryId}`);
     await db.execute(sql`update rtp_decisions set rationale = 'Motivo antiguo', rationale_enc = null
       where injury_id = ${injuryId}`);
-    // Readable before the move (fallback to the legacy column).
+    // The application no longer reads the legacy columns; a value no key opens shows a notice.
     let c = await getInjury(o.admin, o.clientA, injuryId);
-    expect(c.mechanism).toBe('Caída en el entrenamiento');
-    const app = appContext();
-    expect((await encryptInjuryText(app)).moved).toBeGreaterThanOrEqual(3);
-    const [row] = await db.select().from(schema.injuries).where(eq(schema.injuries.id, injuryId));
-    expect(row!.mechanismPlain).toBeNull();
-    expect(row!.notesPlain).toBeNull();
-    expect(row!.mechanismEnc).not.toContain('Caída');
-    c = await getInjury(o.admin, o.clientA, injuryId);
-    expect(c.mechanism).toBe('Caída en el entrenamiento');
-    expect(c.notes).toBe('Nota antigua');
-    expect(c.decisions.every((d) => d.rationale === 'Motivo antiguo')).toBe(true);
-    const [left] = await db
-      .select({ n: sql<number>`count(*)::int` })
-      .from(schema.injuries)
-      .where(eq(schema.injuries.id, injuryId));
-    expect(left!.n).toBe(1);
-    // Nothing left to move for this case.
-    const again = await db.execute<{ n: number }>(
-      sql`select count(*)::int as n from injuries where id = ${injuryId}
-            and (mechanism is not null or notes is not null)`,
-    );
-    expect([...again][0]!.n).toBe(0);
-  });
-
-  it('a value no key opens shows a notice instead of breaking the case; the legacy step re-encrypts it', async () => {
-    const db = testDb().db;
-    // Sealed with a key that is not in the ring (e.g. a lost previous key); the plaintext remains.
-    await db
-      .update(schema.injuries)
-      .set({ notesEnc: encrypt(randomBytes(32), 'Nota ilegible'), notesPlain: 'Nota en claro' })
-      .where(eq(schema.injuries.id, injuryId));
-    let c = await getInjury(o.admin, o.clientA, injuryId);
+    expect(c.mechanism).toBeNull();
     expect(c.notes).toBe(UNREADABLE_TEXT);
-    expect(c.mechanism).toBe('Caída en el entrenamiento');
-    // The legacy step trusts the plaintext over an encrypted value that does not open.
-    await encryptInjuryText(appContext());
+
+    // First start of this version: the text moves (the plaintext wins over a value that does not
+    // open) and the legacy columns are only marked.
+    const app = appContext();
+    const first = await encryptInjuryText(app);
+    expect(first.moved).toBeGreaterThanOrEqual(3);
+    expect(first).toMatchObject({ marked: 8, dropped: 0 });
     c = await getInjury(o.admin, o.clientA, injuryId);
+    expect(c.mechanism).toBe('Caída en el entrenamiento');
     expect(c.notes).toBe('Nota en claro');
-    const [row] = await db.select().from(schema.injuries).where(eq(schema.injuries.id, injuryId));
-    expect(row!.notesPlain).toBeNull();
+    expect(c.decisions.every((d) => d.rationale === 'Motivo antiguo')).toBe(true);
+    const [row] = await db.execute<{ mechanism: string | null; enc: string }>(
+      sql`select mechanism, mechanism_enc as enc from injuries where id = ${injuryId}`,
+    );
+    expect(row!.mechanism).toBeNull();
+    expect(row!.enc).not.toContain('Caída');
+
+    // The next start drops them; from then on the step only reads the catalogue.
+    expect(await encryptInjuryText(app)).toEqual({ moved: 0, marked: 0, dropped: 8 });
+    const [left] = await db.execute<{ n: number }>(
+      sql`select count(*)::int as n from information_schema.columns
+           where table_schema = 'public' and table_name in
+             ('injuries', 'injury_phase_history', 'injury_alerts', 'injury_criterion_checks', 'rtp_decisions')
+             and column_name in ('mechanism', 'professional', 'restrictions', 'notes', 'note', 'review_note', 'rationale')`,
+    );
+    expect(left!.n).toBe(0);
+    expect(await encryptInjuryText(app)).toEqual({ moved: 0, marked: 0, dropped: 0 });
+    c = await getInjury(o.admin, o.clientA, injuryId);
+    expect(c.mechanism).toBe('Caída en el entrenamiento');
   });
 });

@@ -79,16 +79,16 @@ const {
 } = schema;
 
 /**
- * Free text of the case is stored AES-256-GCM encrypted (restructure phase 11, DPIA R-11). Rows
- * written before then keep their legacy plaintext column until `encryptInjuryText` moves it.
+ * Free text of the case is stored AES-256-GCM encrypted (restructure phase 11, DPIA R-11). The
+ * legacy plaintext columns are no longer read (restructure phase 20, A69).
  */
 const seal = (keys: KeyRing, v: string | null | undefined) =>
   v ? encrypt(keys.encryptionKey, v) : null;
 /** Shown instead of a value no current or previous key can open (the page still works). */
 export const UNREADABLE_TEXT =
   '[Texto no disponible: no se pudo descifrar. Revisa las claves de cifrado.]';
-const unseal = (keys: KeyRing, enc: string | null, plain?: string | null) => {
-  if (!enc) return plain ?? null;
+const unseal = (keys: KeyRing, enc: string | null) => {
+  if (!enc) return null;
   try {
     return openSecret(keys, enc);
   } catch {
@@ -395,7 +395,7 @@ async function criteriaState(
       source: last ? 'manual' : null,
       assessmentId: null,
       checkedOn: last ? last.checkedAt.toISOString().slice(0, 10) : null,
-      note: last ? unseal(keys, last.noteEnc, last.notePlain) : null,
+      note: last ? unseal(keys, last.noteEnc) : null,
     });
   }
   return out;
@@ -533,7 +533,6 @@ async function getInjury_(ctx: RequestContext, clientId: string, injuryId: strin
         startedOn: injuryPhaseHistory.startedOn,
         endedOn: injuryPhaseHistory.endedOn,
         noteEnc: injuryPhaseHistory.noteEnc,
-        notePlain: injuryPhaseHistory.notePlain,
       })
       .from(injuryPhaseHistory)
       .where(eq(injuryPhaseHistory.injuryId, injury.id))
@@ -574,12 +573,12 @@ async function getInjury_(ctx: RequestContext, clientId: string, injuryId: strin
     side: injury.side,
     sideLabel: SIDES[injury.side],
     occurredOn: injury.occurredOn,
-    mechanism: unseal(ctx.keys, injury.mechanismEnc, injury.mechanismPlain),
+    mechanism: unseal(ctx.keys, injury.mechanismEnc),
     diagnosis: injury.diagnosisEnc ? openSecret(ctx.keys, injury.diagnosisEnc) : null,
-    professional: unseal(ctx.keys, injury.professionalEnc, injury.professionalPlain),
+    professional: unseal(ctx.keys, injury.professionalEnc),
     clinicalClearanceOn: injury.clinicalClearanceOn,
-    restrictions: unseal(ctx.keys, injury.restrictionsEnc, injury.restrictionsPlain),
-    notes: unseal(ctx.keys, injury.notesEnc, injury.notesPlain),
+    restrictions: unseal(ctx.keys, injury.restrictionsEnc),
+    notes: unseal(ctx.keys, injury.notesEnc),
     phaseStartedOn: injury.phaseStartedOn,
     closedAt: injury.closedAt,
     version: injury.version,
@@ -613,9 +612,9 @@ async function getInjury_(ctx: RequestContext, clientId: string, injuryId: strin
           criteria: c.phase.criteria.map((k) => ({ ...k, state: c.states.get(k.id) ?? null })),
         }
       : null,
-    history: history.map(({ noteEnc, notePlain, ...h }) => ({
+    history: history.map(({ noteEnc, ...h }) => ({
       ...h,
-      note: unseal(ctx.keys, noteEnc, notePlain),
+      note: unseal(ctx.keys, noteEnc),
       phase: phaseName(h.phaseId),
     })),
     symptoms: symptoms.map((s) => ({
@@ -638,7 +637,7 @@ async function getInjury_(ctx: RequestContext, clientId: string, injuryId: strin
       message: a.message,
       createdAt: a.createdAt,
       reviewedAt: a.reviewedAt,
-      reviewNote: unseal(ctx.keys, a.reviewNoteEnc, a.reviewNotePlain),
+      reviewNote: unseal(ctx.keys, a.reviewNoteEnc),
     })),
     checklist,
     decisions: decisions.map((d) => ({
@@ -650,7 +649,7 @@ async function getInjury_(ctx: RequestContext, clientId: string, injuryId: strin
       decidedByName: d.decidedByName,
       decidedByRole: d.decidedByRole,
       decidedOn: d.decidedOn,
-      rationale: unseal(ctx.keys, d.rationaleEnc, d.rationalePlain),
+      rationale: unseal(ctx.keys, d.rationaleEnc),
     })),
     stages: Object.entries(RTP_STAGES).map(([value, label]) => ({ value, label })),
     outcomes: Object.entries(RTP_OUTCOMES).map(([value, label]) => ({ value, label })),

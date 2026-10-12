@@ -386,6 +386,13 @@
       "when": 1791824907734,
       "tag": "0054_client_fk_indexes",
       "breakpoints": true
+    },
+    {
+      "idx": 55,
+      "version": "7",
+      "when": 1791825241883,
+      "tag": "0055_injury_plaintext_retired",
+      "breakpoints": true
     }
   ]
 }

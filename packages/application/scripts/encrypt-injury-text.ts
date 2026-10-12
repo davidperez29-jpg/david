@@ -1,7 +1,8 @@
 /**
- * Restructure phase 11 (DPIA R-11): moves the injury free text written before encryption into
- * its encrypted columns and empties the plaintext ones. Idempotent: deploy/start.sh runs it on
- * every start, after the migrations.
+ * Restructure phase 11 (DPIA R-11) and phase 20 (A69): moves any injury free text written before
+ * encryption into its encrypted columns; the legacy plaintext columns are marked on the first
+ * start of this version and dropped on the next one. Idempotent: deploy/start.sh runs it on every
+ * start, after the migrations; once the columns are gone it only reads the catalogue.
  */
 import 'dotenv/config';
 import { keyRingFromBase64 } from '@tp/auth';
@@ -15,4 +16,6 @@ const keys = keyRingFromBase64(
 );
 const r = await encryptInjuryText({ db, keys });
 await close();
-console.log(`Injury text encryption: ${r.moved} legacy values encrypted.`);
+console.log(
+  `Injury text encryption: ${r.moved} legacy values encrypted, ${r.marked} legacy columns marked, ${r.dropped} dropped.`,
+);
