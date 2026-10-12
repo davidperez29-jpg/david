@@ -43,7 +43,7 @@ Después:
 - **Aceptar** (`POST /plans/{id}/proposal/accept`), siempre por decisión del entrenador:
   - `mode: draft` (por defecto): pasa a `CLIENT_PLAN` en borrador. La recomendación queda `accepted`. El plan activo no cambia: activar el nuevo es una decisión aparte.
   - `mode: revision` (fase 13 de la reestructuración): se aplica al plan activo para el que se propuso.
-    - Sus sesiones desde hoy sustituyen a las sesiones futuras **sin registrar** del plan activo; lo ya registrado no se toca.
+    - Sus sesiones sustituyen a las sesiones **sin registrar** del plan activo **desde el primer día de la propuesta** (o desde hoy, si empezó antes); lo ya registrado no se toca. Una propuesta que empieza la semana que viene deja intacto el resto de esta semana (fase 20; antes la vaciaba).
     - Cada sesión va a la semana del plan activo que contiene su fecha. Las fechas fuera de esas semanas, o en un día con una sesión ya registrada, no se copian y se cuentan.
     - Las copias se publican si las sesiones sustituidas lo estaban.
     - Se copian todas a la vez, por niveles (sesiones, bloques, ejercicios), como al crear un plan (fase 20).

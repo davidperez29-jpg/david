@@ -353,7 +353,10 @@ async function applyProposalAsRevision(
       'El plan para el que se propuso ya no está activo: acéptala como plan en borrador.',
       { mode: ['no_active_plan'] },
     );
-  const from = localDate(ctx.now());
+  // From the proposal's first day (restructure phase 20): a proposal that starts next week leaves
+  // the rest of this week as it is, instead of emptying it.
+  const today = localDate(ctx.now());
+  const from = p.startDate && p.startDate > today ? p.startDate : today;
   const result = await ctx.db.transaction(async (tx) => {
     const r = await replaceFutureSessions(ctx, tx, active, p.id, from);
     if (!r.copied)

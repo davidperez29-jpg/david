@@ -390,9 +390,14 @@ describe('a proposal applied as a revision of the active plan (phase 13)', () =>
       (await getPlan(o.admin, planId)).phases
         .flatMap((p) => p.mesocycles.flatMap((m) => m.weeks.flatMap((w) => w.sessions)))
         .filter((x) => x.scheduledDate && x.scheduledDate >= today);
+    // The proposal starts next week: only its days are replaced (phase 20); the rest of this week
+    // stays as it is.
+    const start = addDays(thisMonday, 7);
     const before = await futureOfActive();
+    const untouched = before.filter((x) => x.scheduledDate! < start);
+    const inRange = before.filter((x) => x.scheduledDate! >= start);
     // One future session already has a record: it must stay as it is.
-    const kept = before[0]!;
+    const kept = inRange[0]!;
     await db().insert(schema.attendance).values({
       organizationId: o.org.organizationId,
       clientId: o.clientA,
@@ -401,7 +406,7 @@ describe('a proposal applied as a revision of the active plan (phase 13)', () =>
       performedDate: today,
     });
     // Another one only has a logged set (no attendance yet): it is a record too.
-    const keptLogged = before[1]!;
+    const keptLogged = inRange[1]!;
     await db().insert(schema.setLogs).values({
       organizationId: o.org.organizationId,
       clientId: o.clientA,
@@ -414,7 +419,7 @@ describe('a proposal applied as a revision of the active plan (phase 13)', () =>
     const tpl = (await listPlanTemplates(o.admin)).find((t) => t.slug === 'hipertrofia-3d')!;
     const { id } = await generatePlanProposal(o.admin, o.clientA, {
       templateId: tpl.id,
-      startDate: addDays(thisMonday, 7),
+      startDate: start,
       weekdays: [2, 4, 6],
     });
     // What each session holds: blocks and exercises in order (phase 20: copied in bulk).
@@ -444,19 +449,19 @@ describe('a proposal applied as a revision of the active plan (phase 13)', () =>
     const r = await acceptPlanProposal(o.admin, id, { mode: 'revision', reason: 'Nuevo bloque' });
     expect(r).toMatchObject({ id: planId });
     expect((r as { copied: number }).copied).toBeGreaterThan(0);
-    expect((r as { removed: number }).removed).toBe(before.length - 2);
+    expect((r as { removed: number }).removed).toBe(inRange.length - 2);
 
     const after = await futureOfActive();
+    expect(after.filter((x) => x.scheduledDate! < start).map((x) => x.id)).toEqual(
+      untouched.map((x) => x.id),
+    );
     const recorded = new Set([kept.id, keptLogged.id]);
     expect(after.filter((x) => recorded.has(x.id))).toHaveLength(2);
-    // The rest are the proposal's days (Tuesday, Thursday and Saturday).
-    expect(
-      after
-        .filter((x) => !recorded.has(x.id))
-        .every((x) => [2, 4, 6].includes(isoWeekday(x.scheduledDate!))),
-    ).toBe(true);
+    // From its first day, the rest are the proposal's days (Tuesday, Thursday and Saturday).
+    const copies = after.filter((x) => x.scheduledDate! >= start && !recorded.has(x.id));
+    expect(copies.every((x) => [2, 4, 6].includes(isoWeekday(x.scheduledDate!)))).toBe(true);
     // Each copy holds the same blocks and exercises as the proposed session of its day.
-    for (const x of after.filter((y) => !recorded.has(y.id))) {
+    for (const x of copies) {
       const copy = await content(x.id);
       expect(copy.length).toBeGreaterThan(0);
       expect(copy).toEqual(await content(proposed.get(x.scheduledDate)!));

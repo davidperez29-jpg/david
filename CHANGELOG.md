@@ -11,6 +11,7 @@ Formato: fecha · cambio · motivo · archivos · impacto.
 - **Cambio (seguridad, P-22):** las columnas en claro antiguas de lesiones dejan el esquema y el código.
   - La migración `0055` hace que la base rechace texto en ellas.
   - El paso de arranque mueve lo que quedara, las marca en el primer arranque y las borra en el siguiente (A69). Una vez borradas, solo consulta el catálogo.
+- **Corrección** (encontrada al validar): aplicar como revisión una propuesta que empieza la semana que viene vaciaba el resto de la semana actual (se sustituía desde hoy y la propuesta no tenía sesiones esos días). Ahora se sustituye desde el primer día de la propuesta. Hacía fallar `session-grid.spec.ts` los lunes, cuando `engine.spec.ts` aplica antes una propuesta al plan de Javier.
 - **Motivo:** pendientes de la revisión de calidad de la fase 18, elegidos por el responsable.
 - **Archivos:**
   - `packages/application/src/{planning,monitoring,privacy,injuries}.ts`, `packages/application/scripts/encrypt-injury-text.ts`;

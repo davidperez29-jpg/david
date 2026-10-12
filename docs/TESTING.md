@@ -790,7 +790,7 @@ pnpm --filter @tp/web test:e2e -- e2e/perf.spec.ts e2e/perf.mobile.spec.ts
 ## Resultado de la reestructuración, fase 20 (pendientes técnicos de la fase 18)
 
 - **Integración**:
-  - `programming.int.test.ts`: al aplicar una propuesta como revisión, cada copia tiene los mismos bloques y ejercicios, en el mismo orden, que la sesión propuesta de su día. Tiempo de la prueba (27 sesiones copiadas, 28 sustituidas): de 1,15–1,36 s a 0,45–0,48 s;
+  - `programming.int.test.ts`: al aplicar una propuesta como revisión, cada copia tiene los mismos bloques y ejercicios, en el mismo orden, que la sesión propuesta de su día, y las sesiones anteriores al primer día de la propuesta siguen siendo las mismas. Tiempo de la prueba (27 sesiones copiadas): de 1,15–1,36 s a 0,45–0,48 s;
   - `privacy.int.test.ts`: ninguna tabla con `client_id` queda sin un índice que empiece por esa columna (la consulta encontró 15 antes de la migración `0054`);
   - `monitoring.int.test.ts`: tras el trabajo diario, que lee las reglas una vez por centro, evaluar cada cliente por separado no crea ni resuelve nada;
   - `injuries.int.test.ts`: la base rechaza texto en una columna en claro (`injuries_mechanism_legacy_null_ck`); con texto antiguo simulado, el primer arranque lo mueve (también sobre un valor cifrado que no abre) y marca las ocho columnas, el segundo las borra y el tercero no hace nada; la ficha se lee igual.

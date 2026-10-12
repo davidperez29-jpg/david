@@ -423,5 +423,7 @@ Elegida por el responsable: cerrar los pendientes técnicos que dejó la revisi�
 - ✅ tras el trabajo diario, evaluar cada cliente por separado no cambia nada (`monitoring.int.test.ts`);
 - ✅ la base rechaza texto en claro; el texto antiguo se mueve (también sobre un valor cifrado que no abre), las columnas se marcan y se borran en el arranque siguiente, y después el paso no hace nada (`injuries.int.test.ts`).
 
+- **Encontrado al validar y corregido**: aplicar como revisión una propuesta que empieza la semana que viene vaciaba el resto de la semana actual. Ahora se sustituye desde el primer día de la propuesta (`PROGRAMMING_ENGINE.md`).
+
 **Queda pendiente**: los efectos tras confirmar (alertas y ajustes) siguen ejecutándose antes de responder; con mucho volumen, pasarlos a una cola.
 
