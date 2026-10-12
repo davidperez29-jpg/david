@@ -417,6 +417,29 @@ describe('a proposal applied as a revision of the active plan (phase 13)', () =>
       startDate: addDays(thisMonday, 7),
       weekdays: [2, 4, 6],
     });
+    // What each session holds: blocks and exercises in order (phase 20: copied in bulk).
+    const content = async (sessionId: string) =>
+      (
+        await db()
+          .select({
+            block: schema.sessionBlocks.position,
+            type: schema.sessionBlocks.type,
+            position: schema.sessionExercises.position,
+            exercise: schema.sessionExercises.exerciseId,
+          })
+          .from(schema.sessionExercises)
+          .innerJoin(
+            schema.sessionBlocks,
+            eq(schema.sessionBlocks.id, schema.sessionExercises.blockId),
+          )
+          .where(eq(schema.sessionBlocks.sessionId, sessionId))
+          .orderBy(schema.sessionBlocks.position, schema.sessionExercises.position)
+      ).map((x) => `${x.block} ${x.type} ${x.position} ${x.exercise}`);
+    const proposed = new Map(
+      (await getPlan(o.admin, id)).phases
+        .flatMap((p) => p.mesocycles.flatMap((m) => m.weeks.flatMap((w) => w.sessions)))
+        .map((x) => [x.scheduledDate, x.id]),
+    );
     const revsBefore = await listPlanRevisions(o.admin, planId);
     const r = await acceptPlanProposal(o.admin, id, { mode: 'revision', reason: 'Nuevo bloque' });
     expect(r).toMatchObject({ id: planId });
@@ -432,6 +455,12 @@ describe('a proposal applied as a revision of the active plan (phase 13)', () =>
         .filter((x) => !recorded.has(x.id))
         .every((x) => [2, 4, 6].includes(isoWeekday(x.scheduledDate!))),
     ).toBe(true);
+    // Each copy holds the same blocks and exercises as the proposed session of its day.
+    for (const x of after.filter((y) => !recorded.has(y.id))) {
+      const copy = await content(x.id);
+      expect(copy.length).toBeGreaterThan(0);
+      expect(copy).toEqual(await content(proposed.get(x.scheduledDate)!));
+    }
     const revs = await listPlanRevisions(o.admin, planId);
     expect(revs.length).toBe(revsBefore.length + 1);
     expect(revs[0]!.reason).toBe('Propuesta del motor aplicada: Nuevo bloque');

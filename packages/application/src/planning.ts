@@ -243,6 +243,16 @@ async function clientExperience(db: Executor, clientId: string) {
   return p?.e ?? null;
 }
 
+/** Many rows in a few INSERTs; chunks keep each statement well below PostgreSQL's 65 535 parameters. */
+async function insertChunked<T>(
+  tx: Executor,
+  table: Parameters<Executor['insert']>[0],
+  values: T[],
+) {
+  for (let i = 0; i < values.length; i += 500)
+    await tx.insert(table).values(values.slice(i, i + 500) as never);
+}
+
 /** Latest valid assessment value of a test (e.g. one_rm_back_squat) for %1RM → kg. */
 async function latestTestValue(
   db: Executor,
@@ -549,17 +559,13 @@ export async function materialize(
       }
     }
   }
-  // Parents first; chunks keep each statement well below PostgreSQL's 65 535 parameters.
-  const insertAll = async <T>(table: Parameters<typeof tx.insert>[0], values: T[]) => {
-    for (let i = 0; i < values.length; i += 500)
-      await tx.insert(table).values(values.slice(i, i + 500) as never);
-  };
-  await insertAll(phases, rows.phases);
-  await insertAll(mesocycles, rows.mesocycles);
-  await insertAll(microcycles, rows.microcycles);
-  await insertAll(sessions, rows.sessions);
-  await insertAll(sessionBlocks, rows.blocks);
-  await insertAll(sessionExercises, rows.exercises);
+  // Parents first.
+  await insertChunked(tx, phases, rows.phases);
+  await insertChunked(tx, mesocycles, rows.mesocycles);
+  await insertChunked(tx, microcycles, rows.microcycles);
+  await insertChunked(tx, sessions, rows.sessions);
+  await insertChunked(tx, sessionBlocks, rows.blocks);
+  await insertChunked(tx, sessionExercises, rows.exercises);
   return { conflicts, weeks: expanded.totalWeeks };
 }
 
@@ -1845,93 +1851,134 @@ async function resolveExerciseNames_(ctx: RequestContext, input: unknown) {
 
 // ── Duplication (deep copies, §12.2) ──────────────────────────────────────────
 
-async function copySessionInto(
+type CopyTarget = {
+  microcycleId: string;
+  organizationId: string;
+  clientId: string | null;
+  scheduledDate: string | null;
+  /** Without it, the copy goes after the sessions already in its week. */
+  position?: number;
+  published?: boolean;
+};
+
+/**
+ * Deep copies of sessions (blocks and exercises included). Restructure phase 20: one read and one
+ * INSERT per level for all of them, with the ids generated here (UUID v7) as when a plan is
+ * created, instead of a round trip per row. Copies into the same week without a position go after
+ * its sessions, in the given order. Returns the new ids in the same order.
+ */
+async function copySessionsInto(
+  ctx: RequestContext,
+  tx: Executor,
+  items: { sourceId: string; target: CopyTarget }[],
+): Promise<string[]> {
+  if (!items.length) return [];
+  const sourceIds = [...new Set(items.map((i) => i.sourceId))];
+  const weeks = [
+    ...new Set(
+      items.filter((i) => i.target.position === undefined).map((i) => i.target.microcycleId),
+    ),
+  ];
+  const [sources, lastPositions, blocks] = await Promise.all([
+    tx.select().from(sessions).where(inArray(sessions.id, sourceIds)),
+    weeks.length
+      ? tx
+          .select({
+            microcycleId: sessions.microcycleId,
+            max: sql<number>`coalesce(max(${sessions.position}), 0)::int`,
+          })
+          .from(sessions)
+          .where(inArray(sessions.microcycleId, weeks))
+          .groupBy(sessions.microcycleId)
+      : Promise.resolve([]),
+    tx
+      .select()
+      .from(sessionBlocks)
+      .where(inArray(sessionBlocks.sessionId, sourceIds))
+      .orderBy(asc(sessionBlocks.position)),
+  ]);
+  const exercises = blocks.length
+    ? await tx
+        .select()
+        .from(sessionExercises)
+        .where(
+          inArray(
+            sessionExercises.blockId,
+            blocks.map((b) => b.id),
+          ),
+        )
+        .orderBy(asc(sessionExercises.position))
+    : [];
+  const source = new Map(sources.map((x) => [x.id, x]));
+  const last = new Map(lastPositions.map((x) => [x.microcycleId, x.max]));
+  const rows = {
+    sessions: [] as (typeof sessions.$inferInsert)[],
+    blocks: [] as (typeof sessionBlocks.$inferInsert)[],
+    exercises: [] as (typeof sessionExercises.$inferInsert)[],
+  };
+  const ids = items.map(({ sourceId, target }) => {
+    const {
+      id: _id,
+      createdAt: _c,
+      updatedAt: _u,
+      version: _v,
+      published: _p,
+      publishedAt: _pa,
+      ...rest
+    } = source.get(sourceId)!;
+    void _id;
+    void _c;
+    void _u;
+    void _v;
+    void _p;
+    void _pa;
+    const position = target.position ?? (last.get(target.microcycleId) ?? 0) + 1;
+    if (target.position === undefined) last.set(target.microcycleId, position);
+    const sessionId = uuidv7();
+    const scope = { organizationId: target.organizationId, clientId: target.clientId };
+    rows.sessions.push({
+      ...rest,
+      ...scope,
+      id: sessionId,
+      microcycleId: target.microcycleId,
+      position,
+      scheduledDate: target.scheduledDate,
+      ...(target.published ? { published: true, publishedAt: ctx.now() } : {}),
+      createdBy: ctx.actor.userId,
+      updatedBy: null,
+    });
+    for (const b of blocks.filter((x) => x.sessionId === sourceId)) {
+      const blockId = uuidv7();
+      rows.blocks.push({ ...b, ...scope, id: blockId, sessionId });
+      for (const e of exercises.filter((x) => x.blockId === b.id)) {
+        const { id: _e, createdAt: _ca, updatedAt: _ua, version: _ve, ...erest } = e;
+        void _e;
+        void _ca;
+        void _ua;
+        void _ve;
+        rows.exercises.push({
+          ...erest,
+          ...scope,
+          blockId,
+          createdBy: ctx.actor.userId,
+          updatedBy: null,
+        });
+      }
+    }
+    return sessionId;
+  });
+  await insertChunked(tx, sessions, rows.sessions);
+  await insertChunked(tx, sessionBlocks, rows.blocks);
+  await insertChunked(tx, sessionExercises, rows.exercises);
+  return ids;
+}
+
+const copySessionInto = async (
   ctx: RequestContext,
   tx: Executor,
   sourceId: string,
-  target: {
-    microcycleId: string;
-    organizationId: string;
-    clientId: string | null;
-    scheduledDate: string | null;
-    position?: number;
-  },
-) {
-  const [src] = await tx.select().from(sessions).where(eq(sessions.id, sourceId));
-  const [{ max } = { max: 0 }] = await tx
-    .select({ max: sql<number>`coalesce(max(${sessions.position}), 0)::int` })
-    .from(sessions)
-    .where(eq(sessions.microcycleId, target.microcycleId));
-  const {
-    id: _id,
-    createdAt: _c,
-    updatedAt: _u,
-    version: _v,
-    published: _p,
-    publishedAt: _pa,
-    ...rest
-  } = src!;
-  void _id;
-  void _c;
-  void _u;
-  void _v;
-  void _p;
-  void _pa;
-  const [copy] = await tx
-    .insert(sessions)
-    .values({
-      ...rest,
-      organizationId: target.organizationId,
-      clientId: target.clientId,
-      microcycleId: target.microcycleId,
-      position: target.position ?? max + 1,
-      scheduledDate: target.scheduledDate,
-      createdBy: ctx.actor.userId,
-      updatedBy: null,
-    })
-    .returning({ id: sessions.id });
-  const blocks = await tx
-    .select()
-    .from(sessionBlocks)
-    .where(eq(sessionBlocks.sessionId, sourceId))
-    .orderBy(asc(sessionBlocks.position));
-  for (const b of blocks) {
-    const { id: bid, ...brest } = b;
-    const [nb] = await tx
-      .insert(sessionBlocks)
-      .values({
-        ...brest,
-        organizationId: target.organizationId,
-        clientId: target.clientId,
-        sessionId: copy!.id,
-      })
-      .returning({ id: sessionBlocks.id });
-    const exs = await tx
-      .select()
-      .from(sessionExercises)
-      .where(eq(sessionExercises.blockId, bid))
-      .orderBy(asc(sessionExercises.position));
-    if (exs.length) {
-      await tx.insert(sessionExercises).values(
-        exs.map(({ id: _e, createdAt: _ca, updatedAt: _ua, version: _ve, ...erest }) => {
-          void _e;
-          void _ca;
-          void _ua;
-          void _ve;
-          return {
-            ...erest,
-            organizationId: target.organizationId,
-            clientId: target.clientId,
-            blockId: nb!.id,
-            createdBy: ctx.actor.userId,
-            updatedBy: null,
-          };
-        }),
-      );
-    }
-  }
-  return copy!.id;
-}
+  target: CopyTarget,
+) => (await copySessionsInto(ctx, tx, [{ sourceId, target }]))[0]!;
 
 /**
  * Replaces the unrecorded sessions of `target` from `from` on with the sessions of another plan
@@ -1983,28 +2030,25 @@ export async function replaceFutureSessions(
         replaceable.map((s) => s.id),
       ),
     );
-  let copied = 0;
-  let skipped = 0;
+  const copies: { sourceId: string; target: CopyTarget }[] = [];
   for (const s of incoming) {
     const week = weeks.find((w) => w.start! <= s.date! && s.date! <= addDays(w.start!, 6));
     // Outside the plan's weeks, or a day that already has a recorded session: not copied.
-    if (!week || recordedDays.has(s.date)) {
-      skipped++;
-      continue;
-    }
-    const id = await copySessionInto(ctx, tx, s.id, {
-      microcycleId: week.id,
-      organizationId: target.organizationId,
-      clientId: target.clientId,
-      scheduledDate: s.date,
-    });
-    if (published)
-      await tx
-        .update(sessions)
-        .set({ published: true, publishedAt: ctx.now() })
-        .where(eq(sessions.id, id));
-    copied++;
+    if (week && !recordedDays.has(s.date))
+      copies.push({
+        sourceId: s.id,
+        target: {
+          microcycleId: week.id,
+          organizationId: target.organizationId,
+          clientId: target.clientId,
+          scheduledDate: s.date,
+          published,
+        },
+      });
   }
+  await copySessionsInto(ctx, tx, copies);
+  const copied = copies.length;
+  const skipped = incoming.length - copied;
   return { removed: replaceable.length, copied, skipped };
 }
 
@@ -2074,15 +2118,20 @@ async function duplicateWeek_(
       .from(sessions)
       .where(eq(sessions.microcycleId, src.id))
       .orderBy(asc(sessions.position));
-    for (const [i, x] of srcSessions.entries()) {
-      await copySessionInto(ctx, tx, x.id, {
-        microcycleId: target.id,
-        organizationId: plan.organizationId,
-        clientId: plan.clientId,
-        scheduledDate: x.scheduledDate ? addDays(x.scheduledDate, shift) : null,
-        position: i + 1,
-      });
-    }
+    await copySessionsInto(
+      ctx,
+      tx,
+      srcSessions.map((x, i) => ({
+        sourceId: x.id,
+        target: {
+          microcycleId: target.id,
+          organizationId: plan.organizationId,
+          clientId: plan.clientId,
+          scheduledDate: x.scheduledDate ? addDays(x.scheduledDate, shift) : null,
+          position: i + 1,
+        },
+      })),
+    );
     await writeAudit(tx, ctx, {
       action: 'update',
       entityType: 'microcycle',
