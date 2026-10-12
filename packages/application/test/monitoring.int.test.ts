@@ -13,6 +13,7 @@ import {
   listAlerts,
   listPlanTemplates,
   monitorAllClients,
+  monitorClient,
   monitoringOverview,
   publishSessions,
   refreshClientAlerts,
@@ -191,8 +192,13 @@ describe('alerts', () => {
   });
 
   it('the daily job evaluates every client with an active plan', async () => {
-    const r = await monitorAllClients({ db: testDb().db, now: () => new Date() });
+    const app = { db: testDb().db, now: () => new Date() };
+    const r = await monitorAllClients(app);
     expect(r.clients).toBeGreaterThanOrEqual(2);
+    // It reads each centre's rules once per run (phase 20): the result is the same as evaluating
+    // each client on its own, so doing that afterwards changes nothing.
+    for (const id of [o.clientA, o.clientB])
+      expect(await monitorClient(app, id)).toMatchObject({ created: 0, resolved: 0 });
   });
 });
 

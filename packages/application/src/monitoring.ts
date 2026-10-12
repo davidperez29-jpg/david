@@ -507,9 +507,13 @@ function systemContext(db: Database, organizationId: string, now: () => Date): R
  * automatically; a situation a person resolved is not raised again for a few days. New red alerts
  * notify the client's active trainers.
  */
+type OrganizationRules = Awaited<ReturnType<typeof organizationRules>>;
+
 export async function monitorClient(
   app: { db: Database; now: () => Date },
   clientId: string,
+  /** Rule sets already read in this run, by organization (the daily job: once per centre). */
+  rulesByOrg?: Map<string, Promise<OrganizationRules>>,
 ): Promise<{ open: number; created: number; resolved: number }> {
   const db = app.db;
   const [c] = await db
@@ -518,7 +522,12 @@ export async function monitorClient(
     .where(eq(clients.id, clientId));
   if (!c) return { open: 0, created: 0, resolved: 0 };
   const today = localDate(app.now());
-  const cfg = await organizationRules(db, c.organizationId);
+  let rules = rulesByOrg?.get(c.organizationId);
+  if (!rules) {
+    rules = organizationRules(db, c.organizationId);
+    rulesByOrg?.set(c.organizationId, rules);
+  }
+  const cfg = await rules;
   const off = await db
     .select({ key: clientRuleOverrides.ruleKey })
     .from(clientRuleOverrides)
@@ -657,8 +666,10 @@ export async function monitorAllClients(app: { db: Database; now: () => Date }) 
   const all = [...new Set([...ids.map((x) => x.id!), ...withAlerts.map((x) => x.id)])];
   let created = 0;
   let resolved = 0;
+  // Restructure phase 20: the organization's rules are read once per run, not once per client.
+  const rulesByOrg = new Map<string, Promise<OrganizationRules>>();
   for (const id of all) {
-    const r = await monitorClient(app, id);
+    const r = await monitorClient(app, id, rulesByOrg);
     created += r.created;
     resolved += r.resolved;
   }
