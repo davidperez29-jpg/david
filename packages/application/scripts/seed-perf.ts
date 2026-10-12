@@ -147,6 +147,13 @@ for (let i = 0; i < Math.min(PLANS, clientIds.length); i++) {
   });
   await setPlanStatus(admin, plan.id, { status: 'active' });
 }
+// Measurements start from a settled database, not while PostgreSQL flushes the rows just loaded:
+// a spread checkpoint of that load (270 s) overlapped perf.spec.ts in CI runs 90 and 99. Needs a
+// superuser or pg_checkpoint; elsewhere it is skipped.
+await db.execute(sql`VACUUM ANALYZE`);
+await db
+  .execute(sql`CHECKPOINT`)
+  .catch(() => console.log('Perf: CHECKPOINT not allowed, skipped.'));
 console.log(
   `Perf data created in ${Math.round((Date.now() - t0) / 1000)} s: 10 trainers, ${CLIENTS} clients, ${PLANS} active plans.
   ADMIN   : escala.admin@example.com
