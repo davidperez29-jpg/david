@@ -213,6 +213,23 @@ describe('bank review queue (restructure phase 19)', () => {
     ).rejects.toMatchObject({ code: 'validation' });
   });
 
+  it('two bulk changes at once on the same exercise: one applies, the other is told (P-24)', async () => {
+    const e = await imported('Banco 0 concurrente');
+    const results = await Promise.all(
+      [cat('strength'), cat('strength')].map((categoryId) =>
+        bulkEditExercises(o.admin, { ids: [e], edit: { kind: 'add_category', categoryId } }),
+      ),
+    );
+    // No error and no duplicate link; whatever did not apply was left as it was.
+    expect(results.reduce((n, r) => n + r.applied, 0)).toBe(1);
+    const links = await db()
+      .select()
+      .from(schema.exerciseCategoryLinks)
+      .where(eq(schema.exerciseCategoryLinks.exerciseId, e));
+    expect(links).toHaveLength(1);
+    expect(await versionOf(e)).toBe(2);
+  });
+
   it('next pending in the same queue, by name, with what remains', async () => {
     const d = await imported('Banco D remo');
     const e = await imported('Banco E salto');

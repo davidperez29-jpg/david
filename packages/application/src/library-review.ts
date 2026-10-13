@@ -394,11 +394,13 @@ async function bulkEditExercises_(ctx: RequestContext, input: unknown) {
         skipped.push({ id, name: row.name, reason: SKIP_TEXT[skip] });
         continue;
       }
-      const change = await applyEdit(tx, row, edit);
+      const change = await planEdit(tx, row, edit);
       if (!change) {
         unchanged++;
         continue;
       }
+      // The versioned update goes first and locks the exercise; relations are only written when
+      // it matched, so a change made meanwhile is never mixed with this one (phase 21, P-24).
       const updated = await tx
         .update(exercises)
         .set({ ...change.set, version: row.version + 1, updatedBy: ctx.actor.userId })
@@ -408,6 +410,7 @@ async function bulkEditExercises_(ctx: RequestContext, input: unknown) {
         skipped.push({ id, name: row.name, reason: SKIP_TEXT.changed });
         continue;
       }
+      await change.write?.();
       await writeAudit(tx, ctx, {
         action: 'update',
         entityType: 'exercise',
@@ -430,14 +433,18 @@ type Row = {
   needsReview: boolean;
 };
 
-/** Writes one change (relations here, columns returned in `set`); null when already so. */
-async function applyEdit(
+/**
+ * One change: columns in `set` and, for relations, `write`, run only after the versioned update
+ * of the exercise matched. Null when it is already so.
+ */
+async function planEdit(
   tx: Executor,
   row: Row,
   edit: BulkEdit,
 ): Promise<{
   set: Partial<typeof exercises.$inferInsert>;
   audit: { field: string; before: unknown; after: unknown };
+  write?: () => Promise<unknown>;
 } | null> {
   switch (edit.kind) {
     case 'set_pattern':
@@ -494,13 +501,17 @@ async function applyEdit(
         .from(exerciseCategoryLinks)
         .where(eq(exerciseCategoryLinks.exerciseId, row.id));
       if (links.some((l) => l.categoryId === edit.categoryId)) return null;
-      // The first category of an exercise is its main one.
-      await tx.insert(exerciseCategoryLinks).values({
-        exerciseId: row.id,
-        categoryId: edit.categoryId,
-        isPrimary: links.length === 0,
-      });
-      return { set: {}, audit: { field: 'categoryIds', before: null, after: edit.categoryId } };
+      return {
+        set: {},
+        audit: { field: 'categoryIds', before: null, after: edit.categoryId },
+        // The first category of an exercise is its main one.
+        write: () =>
+          tx.insert(exerciseCategoryLinks).values({
+            exerciseId: row.id,
+            categoryId: edit.categoryId,
+            isPrimary: links.length === 0,
+          }),
+      };
     }
     case 'add_primary_muscle': {
       const [m] = await tx
@@ -510,23 +521,23 @@ async function applyEdit(
           and(eq(exerciseMuscles.exerciseId, row.id), eq(exerciseMuscles.muscleId, edit.muscleId)),
         );
       if (m?.role === 'primary') return null;
-      if (m)
-        await tx
-          .update(exerciseMuscles)
-          .set({ role: 'primary' })
-          .where(
-            and(
-              eq(exerciseMuscles.exerciseId, row.id),
-              eq(exerciseMuscles.muscleId, edit.muscleId),
-            ),
-          );
-      else
-        await tx
-          .insert(exerciseMuscles)
-          .values({ exerciseId: row.id, muscleId: edit.muscleId, role: 'primary' });
       return {
         set: {},
         audit: { field: `muscles.${edit.muscleId}`, before: m?.role ?? null, after: 'primary' },
+        write: () =>
+          m
+            ? tx
+                .update(exerciseMuscles)
+                .set({ role: 'primary' })
+                .where(
+                  and(
+                    eq(exerciseMuscles.exerciseId, row.id),
+                    eq(exerciseMuscles.muscleId, edit.muscleId),
+                  ),
+                )
+            : tx
+                .insert(exerciseMuscles)
+                .values({ exerciseId: row.id, muscleId: edit.muscleId, role: 'primary' }),
       };
     }
   }
