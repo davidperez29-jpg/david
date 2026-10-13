@@ -18,6 +18,7 @@ Formato: fecha · cambio · motivo · archivos · impacto.
   - «Aplicar» dice qué falta y lleva el foco allí;
   - _reflow_ a 320 px. También en los filtros de la biblioteca, la búsqueda de tests, los umbrales de alertas y las reglas de decisión.
 - **Cambio (rendimiento):** `copySessionsInto` agrupa bloques y ejercicios una vez, porque antes era cuadrático. La revisión del banco, medida con el banco completo, no necesitó cambios.
+- **Corrección (encontrada en CI):** tras importar, el mensaje con el número de filas importadas desaparecía al refrescarse la página. Ahora lo dice el anunciador global y la página lo conserva («Estado: importada · 1 fila importada.»).
 - **Motivo:** revisión de calidad de lo añadido en las fases 19 y 20, elegida por el responsable.
 - **Archivos:**
   - `packages/application/src/{library-review,privacy,planning}.ts`, `packages/application/scripts/encrypt-injury-text.ts`;
