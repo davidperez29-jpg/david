@@ -835,4 +835,5 @@ pnpm --filter @tp/web test:e2e -- e2e/perf.spec.ts e2e/perf.mobile.spec.ts
   El resumen dio 228 ms una vez, justo después de 300 cambios en bloque, con filas muertas aún sin limpiar. Asentada la base, vuelve a 36–47 ms. Se cambió solo `copySessionsInto`: agrupa bloques y ejercicios una vez en lugar de filtrarlos dentro de los bucles, que era cuadrático.
 - **Seguridad**: matriz RLS y acceso cruzado en verde (674 pruebas). `pnpm audit --prod` no encuentra vulnerabilidades.
 - **Unitarias y de integración**: 594 unitarias; 252 de integración y 2 omitidas.
+- **Batería E2E completa** (base de datos nueva con demo y carga): 74 de 74 en verde. En `perf.spec.ts`, p95 de la revisión del banco con 1 000 clientes (ADMIN): resumen 31 ms, cola 21 ms, vídeos 25 ms y `/app/library/revision` 66 ms. El Calendario del ADMIN queda en 154 ms.
 
