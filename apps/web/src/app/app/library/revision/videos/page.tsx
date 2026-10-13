@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { listPendingVideos } from '@tp/application';
+import { VideoEmbed } from '@/components/library/video-embed';
 import { VideoVerdict } from '@/components/library/video-verdict';
 import { Card, EmptyState } from '@/components/ui/card';
 import { requireStaff } from '@/server/session';
@@ -43,13 +44,10 @@ export default async function PendingVideosPage({
         <Card title={v.exerciseName} headingId="video-titulo">
           {v.embedUrl ? (
             <div className="aspect-video w-full overflow-hidden rounded-md border border-border">
-              <iframe
+              <VideoEmbed
                 src={v.embedUrl}
                 title={`Vídeo de «${v.exerciseName}»`}
                 className="h-full w-full"
-                loading="lazy"
-                allow="encrypted-media; picture-in-picture"
-                allowFullScreen
               />
             </div>
           ) : (

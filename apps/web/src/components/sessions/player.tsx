@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { PlayerSession } from '@tp/application';
 import { BodyMap } from '@/components/library/body-map';
+import { VideoEmbed } from '@/components/library/video-embed';
 import { Button } from '@/components/ui/button';
 import { LABELS } from '@/lib/labels';
 import {
@@ -875,14 +876,10 @@ function VideoToggle({ title, url }: { title: string; url: string }) {
         {open ? '■ Ocultar vídeo' : '▶ Ver vídeo'}
       </button>
       {open ? (
-        <iframe
+        <VideoEmbed
           title={`Vídeo de ${title}`}
           src={url}
           className="mt-1 aspect-video w-full rounded"
-          allow="encrypted-media; picture-in-picture"
-          referrerPolicy="strict-origin-when-cross-origin"
-          sandbox="allow-scripts allow-same-origin allow-presentation"
-          loading="lazy"
         />
       ) : null}
     </div>

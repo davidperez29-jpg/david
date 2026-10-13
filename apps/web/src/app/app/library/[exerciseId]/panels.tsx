@@ -10,6 +10,7 @@ import { Field, Input, Select } from '@/components/ui/field';
 import { FormError, useApiAction } from '@/components/use-form';
 import { api } from '@/lib/api-client';
 import { ExercisePicker, type SearchHit } from '@/components/library/exercise-picker';
+import { VideoEmbed } from '@/components/library/video-embed';
 import { formatDateTime, label, LABELS } from '@/lib/labels';
 
 const opts = (o: Record<string, string>) =>
@@ -216,14 +217,10 @@ export function MediaPanel({ exercise }: { exercise: ExerciseDetail }) {
                     <summary className="cursor-pointer text-sm text-muted">
                       Ver vídeo para verificarlo
                     </summary>
-                    <iframe
+                    <VideoEmbed
                       title={`Vídeo de ${exercise.name}`}
                       src={v.embedUrl}
                       className="mt-2 aspect-video w-full max-w-xl rounded"
-                      allow="encrypted-media; picture-in-picture"
-                      referrerPolicy="strict-origin-when-cross-origin"
-                      sandbox="allow-scripts allow-same-origin allow-presentation"
-                      loading="lazy"
                     />
                   </details>
                 ) : null}
