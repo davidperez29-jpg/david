@@ -805,3 +805,34 @@ pnpm --filter @tp/web test:e2e -- e2e/perf.spec.ts e2e/perf.mobile.spec.ts
 - **Encontrado al validar y corregido**: `session-grid.spec.ts` falló un lunes (4 pruebas): `engine.spec.ts` aplica antes al plan de Javier una propuesta que empieza la semana siguiente, y la revisión vaciaba el resto de su semana actual. Ahora se sustituye desde el primer día de la propuesta.
 - **Batería E2E completa** (base de datos nueva con demo y carga): 72 de 72 en verde. El Calendario del ADMIN con 1 000 clientes queda en 123 ms de p95 (207 ms en la fase 19).
 - **CI 99**: `perf.spec.ts` dio 409 ms de p95 en `GET /exercise-review/videos` (18 ms en la ejecución 98 con el mismo código). El registro de PostgreSQL muestra un *checkpoint* de 270 s (40 % del búfer, los datos de carga recién escritos) solapado con la medición, como en la ejecución 90. `pnpm db:seed:perf` termina ahora con `VACUUM ANALYZE` y `CHECKPOINT`, para medir sobre una base asentada; no se cambió el umbral.
+
+## Resultado de la reestructuración, fase 21 (revisión de calidad 19–20)
+
+- **Integración**:
+  - `library-review.int.test.ts`: dos «añadir categoría» simultáneos sobre el mismo ejercicio. Uno se aplica y el otro se omite, con un solo vínculo y la versión 2. Con el código anterior falla 3 de 3 veces por clave duplicada (P-24);
+  - `injuries.int.test.ts`: secuencia de versiones del paso de arranque (P-25 y P-26). `v20` marca las ocho columnas. Repetir `v20`, arrancar sin identificador o con un identificador que parece SQL no hace nada. `v21` las borra y reescribe las cinco tablas. `v22` ya no hace nada.
+- **E2E** (`bank-review.spec.ts`):
+  - títulos «Revisión del banco», «Verificar vídeos» y el nombre del ejercicio;
+  - «Aplicar» sin nada marcado muestra el error y lleva el foco a «Seleccionar todos los de esta página»; sin valor, lo lleva a «Valor»;
+  - la selección no pasa de una página a otra;
+  - la confirmación de archivar nombra cuántos, y Escape devuelve el foco a «Aplicar a 1 ejercicio»;
+  - el veredicto de un vídeo se anuncia junto con el siguiente;
+  - con la confirmación abierta, la revisión cabe a 320 px.
+- **Accesibilidad** (`a11y.spec.ts`):
+  - los estados de la revisión del banco (selección con valor, confirmación de archivar y resultado con omitidos), en claro y oscuro;
+  - prueba nueva: 19 páginas del entrenador a 320 px sin desplazamiento horizontal (WCAG 1.4.10). Antes de corregirlas, cuatro se desplazaban de 10 a 18 px.
+- **Rendimiento** (aplicación, banco completo de la demo con 1 141 ejercicios):
+
+  | Operación | Tiempo |
+  |---|---|
+  | Resumen del banco | 36–47 ms |
+  | Cola, 50 ejercicios | 22–65 ms |
+  | «Siguiente» de la cola | 5–6 ms |
+  | Vídeo pendiente | 16–17 ms |
+  | Cambio en bloque de 100 ejercicios: nivel | 184–216 ms |
+  | Cambio en bloque de 100 ejercicios: categoría o músculo | 350–370 ms |
+
+  El resumen dio 228 ms una vez, justo después de 300 cambios en bloque, con filas muertas aún sin limpiar. Asentada la base, vuelve a 36–47 ms. Se cambió solo `copySessionsInto`: agrupa bloques y ejercicios una vez en lugar de filtrarlos dentro de los bucles, que era cuadrático.
+- **Seguridad**: matriz RLS y acceso cruzado en verde (674 pruebas). `pnpm audit --prod` no encuentra vulnerabilidades.
+- **Unitarias y de integración**: 594 unitarias; 252 de integración y 2 omitidas.
+

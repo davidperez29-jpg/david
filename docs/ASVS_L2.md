@@ -7,6 +7,7 @@
 > - Estados: ✅ cumple · ◐ parcial (motivo) · ⏳ fuera de alcance de la aplicación o del despliegue · — no aplica.
 > - **Revisada de nuevo en la fase 10 de la reestructuración** (06/10/2026) con la interfaz nueva y los módulos de lesiones, fichaje, cola sin conexión y fichas «Fuente». Los cambios están marcados «(Reestr. F10)»; los hallazgos, en `PENTEST.md` (P-10 a P-13).
 > - **Revisada otra vez en la fase 18 de la reestructuración** (09/10/2026) con lo añadido en las fases 11 a 17. Los cambios están marcados «(Reestr. F18)»; los hallazgos, en `PENTEST.md` (P-14 a P-23).
+> - **Revisada en la fase 21 de la reestructuración** (13/10/2026) con lo añadido en las fases 19 y 20 (revisión del banco y pendientes técnicos). Los cambios están marcados «(Reestr. F21)»; los hallazgos, en `PENTEST.md` (P-24 a P-27).
 
 ## V1 Arquitectura y modelo de amenazas
 
@@ -97,7 +98,7 @@
 | Control | Estado | Evidencia |
 |---|---|---|
 | Datos sensibles fuera de cachés | ✅ | Descargas con `Cache-Control: no-store` |
-| Minimización y consentimiento | ✅ | `SECURITY.md` §2.1 |
+| Minimización y consentimiento | ✅ | `SECURITY.md` §2.1. (Reestr. F21) Las columnas en claro antiguas del texto de lesión se borran cuando arranca una versión distinta de la que las marcó (P-25), y las tablas se reescriben (`VACUUM FULL`) para que el texto no quede en sus ficheros (P-26) |
 | Exportación y supresión de los datos del interesado | ✅ | `SECURITY.md` §2.2. (Reestr. F10) Cubren los casos de lesión y el resto de tablas nuevas. Una prueba de guardia exige que toda tabla con `client_id` se exporte o tenga un motivo escrito (P-11) |
 | Retención configurable y depuración automática | ✅ | `SECURITY.md` §2.3 (plazo de clientes: **[REQUIERE VALIDACIÓN LEGAL]**) |
 | Datos sensibles fuera de la URL | ✅ | Los tokens de invitación y de recuperación se consumen y se guardan como hash; ninguna consulta lleva datos personales |
@@ -123,7 +124,7 @@
 |---|---|---|
 | Flujos en orden y sin saltos | ✅ | Máquinas de estado: planes (completado o archivado = solo lectura en el servidor), importaciones, solicitudes RGPD, sesiones, fases de lesión (avanzar solo con criterios cumplidos, sin avisos abiertos y por decisión humana) |
 | Límites antiautomatización en operaciones caras | ✅ | Login limitado; en la Fase 15, presupuesto por usuario y minuto para lecturas, escrituras y operaciones pesadas (`api-limits.ts`) |
-| Concurrencia | ✅ | Bloqueo optimista; consumo atómico de tokens y códigos; sincronización idempotente |
+| Concurrencia | ✅ | Bloqueo optimista; consumo atómico de tokens y códigos; sincronización idempotente. (Reestr. F21) En los cambios masivos del banco, la actualización con versión va primero y bloquea la fila. Las relaciones (categoría, músculo) solo se escriben si coincidió la versión, así que dos cambios a la vez no dejan escrituras sin auditar (P-24) |
 | Lo realizado no se pierde | ✅ | (Reestr. F18) Una sesión con cualquier registro (asistencia o series) no se mueve ni se sustituye (P-15); una propuesta de días no admite valores editados (P-18); la aplicación automática solo da pasos estándar (P-21) |
 
 ## V12 Archivos y recursos

@@ -2,6 +2,34 @@
 
 Formato: fecha · cambio · motivo · archivos · impacto.
 
+## 2026-10-13 — Reestructuración, fase 21: revisión de calidad de las fases 19–20
+
+- **Cambio (seguridad):**
+  - P-24: en los cambios en bloque, la actualización con versión va primero y la categoría o el músculo solo se escriben si coincidió. Antes, un ejercicio cambiado mientras tanto se informaba como omitido pero se quedaba con la relación, sin versión ni auditoría, y dos cambios a la vez daban un error 500;
+  - P-25: las columnas antiguas de lesiones se marcan con la versión que arranca (`APP_VERSION`, o `RENDER_GIT_COMMIT` en Render) y se borran cuando arranca una versión distinta. Antes, una segunda réplica o un reinicio de la misma versión las borraba mientras la anterior aún las leía. Sin identificador de versión no se marca ni se borra nada;
+  - P-26: tras el borrado, `VACUUM FULL` de las tablas afectadas, para que el texto antiguo no quede en sus ficheros;
+  - P-27: «Verificar vídeos», la ficha y el reproductor usan el mismo `VideoEmbed`, con `sandbox`, solo el origen como *referrer* y sin pantalla completa.
+- **Cambio (accesibilidad, A-BR-1 a A-BR-7):**
+  - la selección de la revisión del banco es de la página que se ve;
+  - la confirmación de archivar dice cuántos ejercicios, y «Cancelar» o Escape devuelven el foco a «Aplicar»;
+  - el veredicto de un vídeo se anuncia junto con el siguiente;
+  - título propio para la revisión, los vídeos y la ficha de ejercicio;
+  - un solo anuncio del resultado;
+  - «Aplicar» dice qué falta y lleva el foco allí;
+  - *reflow* a 320 px. También en los filtros de la biblioteca, la búsqueda de tests, los umbrales de alertas y las reglas de decisión.
+- **Cambio (rendimiento):** `copySessionsInto` agrupa bloques y ejercicios una vez, porque antes era cuadrático. La revisión del banco, medida con el banco completo, no necesitó cambios.
+- **Motivo:** revisión de calidad de lo añadido en las fases 19 y 20, elegida por el responsable.
+- **Archivos:**
+  - `packages/application/src/{library-review,privacy,planning}.ts`, `packages/application/scripts/encrypt-injury-text.ts`;
+  - `apps/web/src/components/library/{video-embed,review-table,video-verdict}.tsx`, `apps/web/src/components/sessions/player.tsx`, `apps/web/src/components/{monitoring,decision}/actions.tsx`;
+  - `apps/web/src/app/app/library/{page,revision/page,revision/videos/page,[exerciseId]/page,[exerciseId]/panels}.tsx`, `apps/web/src/app/app/assessments/page.tsx`;
+  - `deploy/start.sh`, `docker-compose.yml` (`APP_VERSION` en la migración);
+  - pruebas: `library-review.int.test.ts`, `injuries.int.test.ts`, `bank-review.spec.ts`, `a11y.spec.ts`;
+  - `docs/{PENTEST,ASVS_L2,DPIA,INJURY_MODULE,OPERATIONS,UX_REVIEW,EXERCISE_LIBRARY,TESTING,IMPLEMENTATION_ROADMAP}.md`, `docs/PRODUCT_ARCHITECTURE.md` A69.
+- **Impacto:**
+  - sin migraciones ni cambios en la API;
+  - **despliegue**: da un `APP_VERSION` distinto a cada versión (en Render no hace falta). Las columnas en claro antiguas se borran al arrancar la versión siguiente a la que las marcó, no en el segundo arranque. Después, no se puede volver a una versión anterior a la fase 20 (`OPERATIONS.md` §3).
+
 ## 2026-10-12 — Reestructuración, fase 20: pendientes técnicos de la fase 18
 
 - **Cambio (rendimiento):**

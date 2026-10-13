@@ -7,8 +7,9 @@ cd /app/packages/db
 node node_modules/tsx/dist/cli.mjs scripts/migrate.ts
 node node_modules/tsx/dist/cli.mjs scripts/seed.ts
 cd /app/packages/application
-# Restructure phases 11 and 20: legacy injury text is encrypted; its old columns are marked on
-# the first start of a version and dropped on the next one (idempotent).
+# Restructure phases 11, 20 and 21: legacy injury text is encrypted; its old columns are marked
+# with this release (RENDER_GIT_COMMIT on Render, or APP_VERSION) and dropped when a different
+# release starts. Without a release id nothing is marked or dropped (idempotent).
 node node_modules/tsx/dist/cli.mjs scripts/encrypt-injury-text.ts
 node node_modules/tsx/dist/cli.mjs scripts/bootstrap.ts
 if [ "$DEMO_DATA" = "true" ]; then

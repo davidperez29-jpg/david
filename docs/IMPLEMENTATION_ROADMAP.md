@@ -37,6 +37,7 @@
 | 18 | Revisión general de calidad de las fases 11–17: seguridad, accesibilidad y rendimiento, con correcciones (elegida por el responsable) | Todo lo añadido en las fases 11–17 | ✅ Hecha |
 | 19 | Revisión del banco: cola para completar el banco importado, cambios en bloque, avance visible y verificación de vídeos (elegida por el responsable) | Biblioteca de ejercicios | ✅ Hecha |
 | 20 | Pendientes técnicos de la fase 18: copia de sesiones en bloque, índices de `client_id`, reglas una vez por centro en el trabajo diario y retirada de las columnas en claro de lesiones (elegida por el responsable) | Planificación, base de datos, seguimiento, lesiones | ✅ Hecha |
+| 21 | Revisión de calidad de las fases 19–20: seguridad, accesibilidad y rendimiento, con correcciones (elegida por el responsable) | Revisión del banco, pendientes técnicos | ✅ Hecha |
 
 ## Por qué el despliegue va primero (decisión A2)
 
@@ -426,4 +427,33 @@ Elegida por el responsable: cerrar los pendientes técnicos que dejó la revisi�
 - **Encontrado al validar y corregido**: aplicar como revisión una propuesta que empieza la semana que viene vaciaba el resto de la semana actual. Ahora se sustituye desde el primer día de la propuesta (`PROGRAMMING_ENGINE.md`).
 
 **Queda pendiente**: los efectos tras confirmar (alertas y ajustes) siguen ejecutándose antes de responder; con mucho volumen, pasarlos a una cola.
+
+## Fase 21 · Revisión de calidad 19–20 ✅
+
+Elegida por el responsable: revisar la seguridad, la accesibilidad y el rendimiento de lo añadido en las fases 19 y 20, como en la fase 18.
+
+- **Seguridad** (`PENTEST.md`, P-24 a P-27, todos bajos y corregidos):
+  - cambios en bloque: la relación (categoría, músculo) se escribía antes de comprobar la versión, y quedaba sin versión nueva ni auditoría si otra persona había cambiado el ejercicio (P-24);
+  - columnas antiguas de lesiones: el borrado «en el arranque siguiente» también ocurría con una segunda réplica o un reinicio de la misma versión. Ahora la marca guarda la versión (`APP_VERSION` o `RENDER_GIT_COMMIT`) y solo borra una versión distinta (P-25). Después, `VACUUM FULL` reescribe las tablas (P-26);
+  - el vídeo de «Verificar vídeos» se incrustaba sin `sandbox`. Las tres páginas con vídeo usan ahora un solo componente (P-27).
+- **Accesibilidad** (`UX_REVIEW.md`, A-BR-1 a A-BR-7):
+  - la selección es de la página que se ve;
+  - la confirmación de archivar dice cuántos ejercicios archiva y devuelve el foco;
+  - el veredicto de un vídeo se anuncia junto con el siguiente;
+  - las páginas de revisión tienen título propio;
+  - el resultado se anuncia una sola vez;
+  - «Aplicar» dice qué falta;
+  - todo cabe a 320 px.
+  - De paso se corrigió el *reflow* de otras cuatro páginas del entrenador, y la suite comprueba 19 páginas a 320 px.
+- **Rendimiento**: medido sobre el banco completo de la demo, sin cambios necesarios en la revisión del banco (`TESTING.md`). La copia de sesiones agrupa bloques y ejercicios una sola vez, porque antes era cuadrática.
+
+**Criterios**:
+- ✅ dos cambios en bloque simultáneos sobre el mismo ejercicio: uno se aplica y el otro se omite, sin escrituras sueltas (`library-review.int.test.ts`);
+- ✅ las columnas antiguas solo se borran al arrancar otra versión, nunca sin identificador (`injuries.int.test.ts`);
+- ✅ foco, anuncios, títulos y *reflow* de la revisión del banco (`bank-review.spec.ts`, `a11y.spec.ts`);
+- ✅ matrices de seguridad en verde y `pnpm audit --prod` sin vulnerabilidades.
+
+**Queda pendiente**:
+- título propio en el resto de páginas de la aplicación. Hoy solo lo tienen el inicio de sesión, la revisión del banco y la ficha de ejercicio, así que en las demás el cambio de página no se anuncia con su nombre;
+- los efectos tras confirmar (alertas y ajustes) siguen ejecutándose antes de responder. Con mucho volumen, conviene pasarlos a una cola.
 

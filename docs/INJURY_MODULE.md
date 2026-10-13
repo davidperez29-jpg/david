@@ -226,7 +226,7 @@ Datos del cliente:
 - Tablas hijas: `injury_phase_history`, `injury_symptoms`, `injury_alerts`, `injury_criterion_checks` y `rtp_decisions`. Sus textos libres (notas, nota de revisión, motivo de la decisión) también van cifrados.
 - Cifrado: AES-256-GCM en columnas `*_enc`. Las columnas en claro de antes de la fase 11 (`mechanism`, `notes`, `note`, `review_note`, `rationale`…) ya no se leen ni están en el esquema (fase 20, A69):
   - desde la migración `0055` la base rechaza cualquier texto en ellas;
-  - `pnpm injuries:encrypt-text` (en cada arranque) pasa el texto que quedara a su columna cifrada, las marca en el primer arranque de la versión y las borra en el siguiente;
+  - `pnpm injuries:encrypt-text` (en cada arranque) pasa el texto que quedara a su columna cifrada y marca las columnas con la versión que arranca (`APP_VERSION`, o `RENDER_GIT_COMMIT` en Render). Las borra cuando arranca una versión distinta, y después reescribe las tablas (`VACUUM FULL`) para que el texto antiguo no quede en sus ficheros (fase 21). Sin identificador de versión no marca ni borra nada;
   - una vez borradas, el paso solo consulta el catálogo.
 - Si un valor cifrado no se puede abrir con ninguna clave (falta una clave anterior), la ficha muestra «[Texto no disponible: no se pudo descifrar. Revisa las claves de cifrado.]» en ese campo y sigue funcionando. El registro anota solo `injury_text_unreadable`, sin contenido. El paso de cifrado del texto antiguo prefiere el texto en claro cuando el cifrado existente no se abre (fase 18, A66).
 - RLS: solo el equipo, nunca la app del cliente. Los hijos heredan organización y cliente del caso. Todo está en la matriz de seguridad.

@@ -48,6 +48,21 @@ Alcance: lo añadido en las fases 11 a 17 (ajustes, reprogramar, disponibilidad,
 | «Mover» del Calendario: objetivo pequeño, ids repetidos y foco perdido tras mover. | 24 × 24 px como mínimo, `useId` y foco en la línea de estado. |
 | Tabla «Qué cambiaría» sin leyenda y con desplazamiento horizontal solo con ratón; tarjeta de alertas sin título; un motivo compartido etiquetado solo como «para descartar». | Leyenda accesible y región desplazable con teclado; títulos «Alertas activas» y «Alertas resueltas»; etiqueta neutra cuando el motivo sirve también para la revisión. |
 
+### Revisión de accesibilidad de la fase 21 de la reestructuración (13/10/2026)
+
+Alcance: la revisión del banco de la fase 19 (cola, cambios masivos y verificación de vídeos) y, de paso, el *reflow* a 320 px de las páginas del entrenador. Criterio: WCAG 2.2 AA.
+
+| Observación | Corrección |
+|---|---|
+| A-BR-1. La selección se mantenía al pasar de página o cambiar de filtro, así que «Aplicar» podía cambiar ejercicios que ya no estaban en pantalla. | Cada página o filtro empieza sin nada marcado, y solo se envían los ejercicios visibles. |
+| A-BR-2. La confirmación de «Archivar» no decía cuántos ejercicios archivaba, se cerraba aunque fallara y, al cancelar, el foco se perdía. | «¿Archivar 3 ejercicios?», con el nombre accesible «Confirmar: archivar 3 ejercicios». Solo se cierra si funciona, y «Cancelar» o Escape devuelven el foco a «Aplicar». |
+| A-BR-3. Tras dar un veredicto sobre un vídeo, el siguiente aparecía sin aviso. Tras el último, el foco se quedaba sin destino. | Un solo anuncio: «Vídeo de «X» marcado como roto. Ahora: vídeo de «Y».». La página vacía conserva un título con el mismo id, que recibe el foco. |
+| A-BR-4. Las páginas de revisión, de vídeos y de cada ejercicio tenían el título genérico, así que pasar a «Siguiente» no se anunciaba. | Título propio por página («Revisión del banco», «Verificar vídeos», nombre del ejercicio). |
+| A-BR-5. El resultado de un cambio masivo se anunciaba dos veces (región propia y anunciador global). | Solo el anunciador global. |
+| A-BR-6. «Aplicar» estaba desactivado sin explicar qué faltaba. | Siempre activo, salvo mientras guarda. Si falta algo, lo dice («Marca al menos un ejercicio en la tabla.» o «Elige un valor para el cambio.») y lleva el foco al control. |
+| A-BR-7. El formulario y la tabla de la revisión no cabían a 320 px. | Desplegables que encogen, `fieldset` sin anchura mínima y tabla en una región desplazable propia. |
+| Al medir A-BR-7 se vio que los filtros de la biblioteca, la búsqueda de tests, los umbrales de alertas y las reglas de decisión también se desplazaban 10–18 px en horizontal a 320 px (1.4.10). | Los campos encogen, los `fieldset` no conservan su anchura mínima y las claves largas se parten. La suite a11y comprueba 19 páginas del entrenador a 320 px. |
+
 ## 3. Heurísticas revisadas (capturas en escritorio y Pixel 7, tema claro y oscuro)
 
 - **Lo urgente primero:** el inicio pone primero los clientes que hay que revisar, con el motivo en su fila. El calendario marca hoy y las sesiones pasadas sin registrar («!»).

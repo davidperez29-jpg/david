@@ -31,7 +31,7 @@
 | `PWNED_PASSWORDS_CHECK` | No | `on` = rechazar contraseñas filtradas (k-anonimato) |
 | `LOG_LEVEL` | No | `debug`, `info` (por defecto), `warn` o `error` |
 | `ERROR_WEBHOOK_URL` | No | Recibe los errores inesperados ya depurados (JSON). Por ejemplo, un colector o un *relay* de Sentry en la UE *[Completar]* |
-| `APP_VERSION` | No | Aparece en `/api/health` |
+| `APP_VERSION` | Recomendada (en Render no: usa `RENDER_GIT_COMMIT`) | Identifica la versión desplegada, con letras, números, `.`, `_` o `-` (hasta 64). Aparece en `/api/health` y decide cuándo se borran las columnas antiguas de lesiones (A69). Sin ella no se borran nunca |
 | `API_LIMIT_READ` · `API_LIMIT_WRITE` · `API_LIMIT_HEAVY` | No | Peticiones por usuario y minuto (por defecto 1 000 · 120 · 30) |
 
 Los secretos van en el gestor de secretos del proveedor, nunca en el repositorio ni en la imagen *[Completar: vault o KMS]*.
@@ -51,11 +51,11 @@ docker build --target web  -t training-platform:$VERSION .
 docker build --target jobs -t training-platform-jobs:$VERSION .
 # 1. Migraciones, catálogos y cifrado del texto antiguo de lesiones (una vez por despliegue;
 #    las migraciones solo avanzan; el cifrado es idempotente y necesita la clave)
-docker run --rm -e DATABASE_URL=… -e APP_ENCRYPTION_KEY=… training-platform-jobs:$VERSION \
+docker run --rm -e DATABASE_URL=… -e APP_ENCRYPTION_KEY=… -e APP_VERSION=$VERSION training-platform-jobs:$VERSION \
   sh -c 'node node_modules/tsx/dist/cli.mjs scripts/migrate.ts && node node_modules/tsx/dist/cli.mjs scripts/seed.ts \
     && cd /app/packages/application && node node_modules/tsx/dist/cli.mjs scripts/encrypt-injury-text.ts'
 # 2. App (tantas réplicas como haga falta)
-docker run -d -p 3000:3000 -e DATABASE_URL=… -e APP_ENCRYPTION_KEY=… -e APP_BASE_URL=… \
+docker run -d -p 3000:3000 -e DATABASE_URL=… -e APP_ENCRYPTION_KEY=… -e APP_BASE_URL=… -e APP_VERSION=$VERSION \
   -v files:/data/files training-platform:$VERSION
 # Trabajos diarios (cron del proveedor), con la imagen jobs:
 docker run --rm -e DATABASE_URL=… -e APP_ENCRYPTION_KEY=… -w /app/packages/application \
@@ -79,6 +79,12 @@ El perfil `demo` es solo para probar: nunca en producción (contraseña conocida
 3. Esperar a que `/api/ready` responda 200 antes de dar tráfico a cada una.
 
 Las migraciones son compatibles hacia atrás con la versión anterior durante el despliegue (solo añaden). Si alguna vez no lo fueran, el CHANGELOG lo indicará.
+
+**Columnas antiguas de lesiones (fases 20 y 21, A69)**: el paso de cifrado marca las columnas en claro antiguas con la versión que arranca y las borra cuando arranca una versión distinta. Por eso:
+
+- Da a cada versión un `APP_VERSION` propio (en Render, `RENDER_GIT_COMMIT` lo hace solo). Con el mismo valor en dos versiones, el borrado se retrasa hasta la siguiente; sin valor, no se borra nunca.
+- Una vez borradas, no se puede volver a una versión anterior a la fase 20, porque esas versiones aún leen las columnas. Volver a la fase 20 o posterior no tiene problema.
+- Tras el borrado, el paso reescribe las tablas de lesiones (`VACUUM FULL`). Las bloquea unos segundos, una sola vez.
 
 **Detrás de un proxy**: el límite de inicio de sesión por IP usa `X-Forwarded-For`. Configura el balanceador para que sustituya esa cabecera, no para que la añada, y que no se pueda falsear (PENTEST P-4).
 

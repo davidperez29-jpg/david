@@ -187,17 +187,20 @@ Se marcan ejercicios y se aplica **un cambio** a todos (máximo 100 por vez):
 - publicar (**solo los completos**; los demás se listan con «Le faltan datos para publicarse»);
 - archivar (pide confirmación; se pueden volver a borrador).
 
+La selección es de la página que se ve: al pasar de página o cambiar de filtro empieza vacía, y solo se envían los ejercicios en pantalla. «Aplicar» no se desactiva. Si falta algo, lo dice («Marca al menos un ejercicio en la tabla.» o «Elige un valor para el cambio.») y lleva el foco al control (fase 21).
+
 Reglas (A67):
 - **Los textos nunca se escriben en bloque**: la explicación para el cliente y las instrucciones son propias de cada ejercicio y se escriben con «Revisar».
 - Cada ejercicio se cambia, se **versiona** y se **audita por separado** (motivo «Revisión del banco (en bloque)»).
 - La lista envía la versión que la persona vio. Un ejercicio que alguien cambió mientras tanto **se omite**, no se sobrescribe.
+- Primero se actualiza el ejercicio con esa versión, lo que además lo bloquea. La categoría o el músculo solo se escriben si la versión coincidió. Si llegan dos cambios a la vez sobre el mismo ejercicio, uno se aplica y el otro se omite (P-24, fase 21).
 - También se omiten los globales, los archivados y los que no son del centro. Un ejercicio omitido no detiene a los demás: el resultado los lista con su motivo.
 - Si el valor ya era ese, cuenta como «ya estaban así» y no crea versión.
 - Permisos: `library:write`; publicar exige `library:publish`. Es una operación pesada en el límite de peticiones.
 
 ### 8.4 Vídeos
-**«Verificar vídeos»** (`/app/library/revision/videos`) muestra los vídeos pendientes **de uno en uno**, incrustados con `youtube-nocookie` o Vimeo:
-- «He visto el vídeo: es correcto» o «Está roto o no corresponde»; el siguiente ocupa su lugar.
+**«Verificar vídeos»** (`/app/library/revision/videos`) muestra los vídeos pendientes **de uno en uno**, incrustados con `youtube-nocookie` o Vimeo. Usa el mismo componente que la ficha y el reproductor de sesión (`VideoEmbed`): con `sandbox`, sin abrir ventanas ni navegar la página y con solo el origen como *referrer* (P-27, fase 21).
+- «He visto el vídeo: es correcto» o «Está roto o no corresponde»; el siguiente ocupa su lugar y se anuncia junto con el veredicto («Vídeo de «X» marcado como roto. Ahora: vídeo de «Y».»).
 - «Saltar» lo deja pendiente para otro momento.
 - **Nada se verifica automáticamente** (A68): comprobar que un enlace carga no dice si muestra este ejercicio con buena técnica.
 - La auditoría guarda el estado anterior y el nuevo.
