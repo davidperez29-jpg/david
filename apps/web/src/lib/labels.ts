@@ -512,3 +512,6 @@ export const KIND_LABELS: Record<string, string> = {
   risk_reduction: 'Reducción de factores de riesgo',
   readaptation: 'Readaptación',
 };
+
+/** «1 fila importada», «3 filas importadas» (import result, restructure phase 21). */
+export const importedText = (n: number) => (n === 1 ? '1 fila importada' : `${n} filas importadas`);

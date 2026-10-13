@@ -61,7 +61,9 @@ test('client report with 11 sections and PDF; validated import; export', async (
   await expect(page.getByText(/Fecha nacimiento: Fecha no válida/)).toBeVisible();
   await expect(page.getByText('Sexo: Sexo no válido')).toBeVisible();
   await page.getByRole('button', { name: 'Importar 1 fila válida' }).click();
-  await expect(page.getByRole('status')).toHaveText(/1 filas importadas/);
+  // The result is said by the shell's live region and stays on the page once it refreshes.
+  await expect(page.getByTestId('announcer')).toHaveText('1 fila importada.');
+  await expect(page.getByText('Estado: importada · 1 fila importada.')).toBeVisible();
 
   // Export: an XLSX download of the clients the trainer can see.
   await page.goto('/app/informes');
@@ -104,7 +106,9 @@ test('the centre imports its own reference values for a test and removes them', 
   await expect(page.getByText(/1 válidas/)).toBeVisible();
   await expect(page.getByText(/Fuente no registrada/)).toBeVisible();
   await page.getByRole('button', { name: 'Importar 1 fila válida' }).click();
-  await expect(page.getByRole('status')).toHaveText(/1 filas importadas/);
+  // The result is said by the shell's live region and stays on the page once it refreshes.
+  await expect(page.getByTestId('announcer')).toHaveText('1 fila importada.');
+  await expect(page.getByText('Estado: importada · 1 fila importada.')).toBeVisible();
 
   await page.goto(testUrl);
   const item = page.locator('li').filter({ hasText: variable });

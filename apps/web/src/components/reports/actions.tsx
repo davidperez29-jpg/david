@@ -2,8 +2,10 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { announce } from '@/components/ui/announcer';
 import { Button } from '@/components/ui/button';
 import { FormError, useApiAction } from '@/components/use-form';
+import { importedText } from '@/lib/labels';
 
 /** Generates a report (frozen snapshot) and opens it. */
 export function GenerateReportForm({
@@ -368,7 +370,6 @@ export function ImportUploadForm({
 export function ImportDecision({ jobId, valid }: { jobId: string; valid: number }) {
   const router = useRouter();
   const a = useApiAction();
-  const [result, setResult] = useState<string | null>(null);
   return (
     <div className="flex flex-col gap-2">
       <div className="flex flex-wrap gap-2">
@@ -379,9 +380,13 @@ export function ImportDecision({ jobId, valid }: { jobId: string; valid: number 
               imported: number;
               failed: { rowNumber: number; message: string }[];
             }>(`/imports/${jobId}/confirm`, 'POST', {});
+            // The refresh replaces this control with the job's final state, which keeps the
+            // count on screen; the shell's live region says it and the card title keeps the
+            // focus (restructure phase 21: a status line here vanished with the control).
             if (r)
-              setResult(
-                `${r.imported} filas importadas${r.failed.length ? ` · ${r.failed.length} con error al importar (ver tabla)` : ''}.`,
+              announce(
+                `${importedText(r.imported)}${r.failed.length ? ` · ${r.failed.length} con error al importar (ver tabla)` : ''}.`,
+                'import-decision',
               );
           }}
         >
@@ -398,11 +403,6 @@ export function ImportDecision({ jobId, valid }: { jobId: string; valid: number 
           Cancelar
         </Button>
       </div>
-      {result ? (
-        <p role="status" className="text-sm text-ok">
-          {result}
-        </p>
-      ) : null}
       <FormError error={a.error} />
     </div>
   );

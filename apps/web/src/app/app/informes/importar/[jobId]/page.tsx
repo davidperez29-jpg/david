@@ -4,7 +4,7 @@ import { DomainError } from '@tp/domain';
 import { notFound } from 'next/navigation';
 import { ImportDecision } from '@/components/reports/actions';
 import { Badge, Card } from '@/components/ui/card';
-import { formatDateTime } from '@/lib/labels';
+import { formatDateTime, importedText } from '@/lib/labels';
 import { requireStaff } from '@/server/session';
 
 const ROW: Record<string, [string, 'ok' | 'danger' | 'accent' | 'neutral']> = {
@@ -25,13 +25,14 @@ export default async function ImportJobPage({ params }: { params: Promise<{ jobI
   });
   const invalid = job.rows.filter((r) => r.status === 'invalid').length;
   const valid = job.rows.filter((r) => r.status === 'valid').length;
+  const imported = job.rows.filter((r) => r.status === 'imported').length;
   return (
     <div className="flex flex-col gap-4">
       <Link href="/app/informes" className="text-sm text-muted hover:underline">
         ← Informes
       </Link>
       <h1 className="text-2xl font-semibold">Importación · {job.fileName}</h1>
-      <Card title="2. Revisa y confirma">
+      <Card title="2. Revisa y confirma" headingId="import-decision">
         <p className="text-sm">
           {job.total} filas · <strong>{valid} válidas</strong> ·{' '}
           <span className={invalid ? 'text-danger' : ''}>{invalid} con errores</span> · creada{' '}
@@ -49,7 +50,7 @@ export default async function ImportJobPage({ params }: { params: Promise<{ jobI
           <p className="mt-2 text-sm text-muted">
             Estado:{' '}
             {job.status === 'succeeded'
-              ? 'importada'
+              ? `importada · ${importedText(imported)}`
               : job.status === 'cancelled'
                 ? 'cancelada'
                 : job.status}
