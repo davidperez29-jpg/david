@@ -133,6 +133,14 @@ test('five rows pasted from Excel become five exercises, recognized by name', as
   await expect(rows(page)).toHaveCount(before);
 });
 
+/** The next row save (PATCH) of this page. */
+const rowSaved = (p: Page) =>
+  p.waitForResponse(
+    (res) =>
+      /\/api\/v1\/session-exercises\/[0-9a-f-]{36}$/.test(res.url()) &&
+      res.request().method() === 'PATCH',
+  );
+
 test('two trainers editing the same row: nothing is overwritten, the second one is told', async ({
   browser,
 }) => {
@@ -142,11 +150,15 @@ test('two trainers editing the same row: nothing is overwritten, the second one 
     await login(p, 'lucia.moreno@example.com');
     await openClient(p, 'Ocaña, Javier');
   }
-  // A changes the load; B, with the page loaded before, changes the rest of the same row.
+  // A changes the load; B, with the page loaded before, changes the rest of the same row. Cells
+  // show a change at once and save it in the background: wait for each save that the next step
+  // depends on (CI run 108 reloaded A before B's change was stored).
   await cell(a, 0, 5).click();
   await a.keyboard.type('41');
+  const savedA = rowSaved(a);
   await a.keyboard.press('Enter');
   await expect(cell(a, 0, 5)).toHaveText('41 kg');
+  expect((await savedA).ok()).toBe(true);
   await cell(b, 0, 8).click();
   await b.keyboard.type('75');
   await b.keyboard.press('Enter');
@@ -157,8 +169,10 @@ test('two trainers editing the same row: nothing is overwritten, the second one 
   await expect(cell(b, 0, 5)).toHaveText('41 kg');
   await cell(b, 0, 8).click();
   await b.keyboard.type('75');
+  const savedB = rowSaved(b);
   await b.keyboard.press('Enter');
   await expect(cell(b, 0, 8)).toHaveText('1:15');
+  expect((await savedB).ok()).toBe(true);
   await a.reload();
   await expect(cell(a, 0, 5)).toHaveText('41 kg');
   await expect(cell(a, 0, 8)).toHaveText('1:15');
