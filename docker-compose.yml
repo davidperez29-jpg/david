@@ -32,6 +32,8 @@ services:
       # Encrypts the injury free text written before restructure phase 11 and retires its old
       # columns (restructure phase 20, idempotent).
       APP_ENCRYPTION_KEY: ${APP_ENCRYPTION_KEY:?set APP_ENCRYPTION_KEY}
+      # The legacy injury columns are dropped only when a different release starts (A69).
+      APP_VERSION: ${APP_VERSION:-local}
     depends_on:
       db: { condition: service_healthy }
 

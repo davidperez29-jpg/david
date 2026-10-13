@@ -269,7 +269,7 @@ describe('free text encrypted at rest (restructure phase 11, DPIA R-11)', () => 
     ).rejects.toMatchObject({ cause: { constraint_name: 'injuries_mechanism_legacy_null_ck' } });
   });
 
-  it('legacy text moves at start-up and the legacy columns go one start later (A69)', async () => {
+  it('legacy text moves at start-up; the legacy columns go when another release starts (A69)', async () => {
     const db = testDb().db;
     // A case as stored before phase 11 (the checks only exist since phase 20): plaintext, and a
     // note sealed with a key that is no longer in the ring.
@@ -289,10 +289,10 @@ describe('free text encrypted at rest (restructure phase 11, DPIA R-11)', () => 
     expect(c.mechanism).toBeNull();
     expect(c.notes).toBe(UNREADABLE_TEXT);
 
-    // First start of this version: the text moves (the plaintext wins over a value that does not
-    // open) and the legacy columns are only marked.
+    // First start of this release: the text moves (the plaintext wins over a value that does not
+    // open) and the legacy columns are only marked with the release.
     const app = appContext();
-    const first = await encryptInjuryText(app);
+    const first = await encryptInjuryText(app, 'v20');
     expect(first.moved).toBeGreaterThanOrEqual(3);
     expect(first).toMatchObject({ marked: 8, dropped: 0 });
     c = await getInjury(o.admin, o.clientA, injuryId);
@@ -305,8 +305,21 @@ describe('free text encrypted at rest (restructure phase 11, DPIA R-11)', () => 
     expect(row!.mechanism).toBeNull();
     expect(row!.enc).not.toContain('Caída');
 
-    // The next start drops them; from then on the step only reads the catalogue.
-    expect(await encryptInjuryText(app)).toEqual({ moved: 0, marked: 0, dropped: 8 });
+    // Another replica or a restart of the same release, or a start without a release id: the
+    // previous version may still be serving, so nothing is dropped (P-25).
+    const none = { moved: 0, marked: 0, dropped: 0, compacted: 0 };
+    expect(await encryptInjuryText(app, 'v20')).toEqual(none);
+    expect(await encryptInjuryText(app)).toEqual(none);
+    expect(await encryptInjuryText(app, "v21'; drop table injuries; --")).toEqual(none);
+
+    // A different release drops them and rewrites the five tables (P-26); from then on the step
+    // only reads the catalogue.
+    expect(await encryptInjuryText(app, 'v21')).toEqual({
+      moved: 0,
+      marked: 0,
+      dropped: 8,
+      compacted: 5,
+    });
     const [left] = await db.execute<{ n: number }>(
       sql`select count(*)::int as n from information_schema.columns
            where table_schema = 'public' and table_name in
@@ -314,7 +327,7 @@ describe('free text encrypted at rest (restructure phase 11, DPIA R-11)', () => 
              and column_name in ('mechanism', 'professional', 'restrictions', 'notes', 'note', 'review_note', 'rationale')`,
     );
     expect(left!.n).toBe(0);
-    expect(await encryptInjuryText(app)).toEqual({ moved: 0, marked: 0, dropped: 0 });
+    expect(await encryptInjuryText(app, 'v22')).toEqual(none);
     c = await getInjury(o.admin, o.clientA, injuryId);
     expect(c.mechanism).toBe('Caída en el entrenamiento');
   });

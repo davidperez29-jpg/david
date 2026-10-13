@@ -641,18 +641,24 @@ const INJURY_PLAINTEXT: [PgTable, string, AnyPgColumn][] = [
   [s.injuryCriterionChecks, 'note', s.injuryCriterionChecks.noteEnc],
   [s.rtpDecisions, 'rationale', s.rtpDecisions.rationaleEnc],
 ];
-/** Left on a legacy column by the first start of a version that no longer reads it. */
-const RETIRED = 'retired: not read by the application since restructure phase 20';
+/** Left on a legacy column by the first release that no longer reads it, followed by its id. */
+const RETIRED = 'retired: not read since release ';
 
 /**
  * Retires the injury free text written before restructure phase 11 (system step on every start,
  * after the migrations, deploy/start.sh). While a legacy plaintext column exists, its text moves
  * into the encrypted column and the plaintext is emptied; an encrypted value is kept only if it
- * opens. The first start marks the columns; the next one drops them, when no instance of an
- * earlier version (which still read them) can be running (A69). Once they are gone, the step only
- * reads the catalogue.
+ * opens. `release` identifies the running version (APP_VERSION, or the commit on Render): the
+ * first release marks the columns, and they are dropped when a *different* release starts, so no
+ * instance of a version that still read them can be serving (another replica or a restart of the
+ * same release changes nothing; A69, P-25). The dropped tables are then rewritten so the old
+ * text is not left in their files (P-26). Without a release id nothing is marked or dropped.
+ * Once the columns are gone, the step only reads the catalogue.
  */
-export async function encryptInjuryText(app: Pick<AppContext, 'keys'> & { db: Database }) {
+export async function encryptInjuryText(
+  app: Pick<AppContext, 'keys'> & { db: Database },
+  release?: string,
+) {
   const names = INJURY_PLAINTEXT.map(([t, col]) => `${getTableName(t)}.${col}`);
   const present = [
     ...(await app.db.execute<{ name: string; comment: string | null }>(
@@ -690,20 +696,31 @@ export async function encryptInjuryText(app: Pick<AppContext, 'keys'> & { db: Da
       moved++;
     }
   }
-  const retired = legacy.length > 0 && present.every((p) => p.comment === RETIRED);
+  // Only a plain id (commit, version number) goes into the comment.
+  const id = release && /^[\w.-]{1,64}$/.test(release) ? release : null;
+  const markedBy = present
+    .map((p) => (p.comment?.startsWith(RETIRED) ? p.comment.slice(RETIRED.length) : null))
+    .filter((m): m is string => m !== null);
+  const drop = id !== null && markedBy.some((m) => m !== id);
+  let marked = 0;
   for (const [t, col] of legacy) {
-    const target = sql`${sql.identifier(getTableName(t))}.${sql.identifier(col)}`;
-    if (retired)
+    const [table, column] = [sql.identifier(getTableName(t)), sql.identifier(col)];
+    if (drop) await app.db.execute(sql`alter table ${table} drop column if exists ${column}`);
+    else if (id && !present.find((p) => p.name === `${getTableName(t)}.${col}`)?.comment) {
       await app.db.execute(
-        sql`alter table ${sql.identifier(getTableName(t))} drop column if exists ${sql.identifier(col)}`,
+        sql`comment on column ${table}.${column} is ${sql.raw(`'${RETIRED}${id}'`)}`,
       );
-    else await app.db.execute(sql`comment on column ${target} is ${sql.raw(`'${RETIRED}'`)}`);
+      marked++;
+    }
   }
-  return {
-    moved,
-    marked: retired ? 0 : legacy.length,
-    dropped: retired ? legacy.length : 0,
-  };
+  let compacted = 0;
+  if (drop)
+    for (const name of new Set(legacy.map(([t]) => getTableName(t)))) {
+      // Rewrites the table: the bytes of the old plaintext do not stay in its files (P-26).
+      await app.db.execute(sql`vacuum full ${sql.identifier(name)}`);
+      compacted++;
+    }
+  return { moved, marked, dropped: drop ? legacy.length : 0, compacted };
 }
 
 /** Re-encrypts every encrypted column with the current key (after APP_ENCRYPTION_KEY changes). */
