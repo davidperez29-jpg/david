@@ -1851,6 +1851,17 @@ async function resolveExerciseNames_(ctx: RequestContext, input: unknown) {
 
 // ── Duplication (deep copies, §12.2) ──────────────────────────────────────────
 
+/** Items by key, in their order (one pass). */
+function groupBy<T>(items: T[], key: (item: T) => string): Map<string, T[]> {
+  const out = new Map<string, T[]>();
+  for (const item of items) {
+    const list = out.get(key(item));
+    if (list) list.push(item);
+    else out.set(key(item), [item]);
+  }
+  return out;
+}
+
 type CopyTarget = {
   microcycleId: string;
   organizationId: string;
@@ -1910,6 +1921,8 @@ async function copySessionsInto(
         .orderBy(asc(sessionExercises.position))
     : [];
   const source = new Map(sources.map((x) => [x.id, x]));
+  const blocksOf = groupBy(blocks, (b) => b.sessionId);
+  const exercisesOf = groupBy(exercises, (e) => e.blockId);
   const last = new Map(lastPositions.map((x) => [x.microcycleId, x.max]));
   const rows = {
     sessions: [] as (typeof sessions.$inferInsert)[],
@@ -1947,10 +1960,10 @@ async function copySessionsInto(
       createdBy: ctx.actor.userId,
       updatedBy: null,
     });
-    for (const b of blocks.filter((x) => x.sessionId === sourceId)) {
+    for (const b of blocksOf.get(sourceId) ?? []) {
       const blockId = uuidv7();
       rows.blocks.push({ ...b, ...scope, id: blockId, sessionId });
-      for (const e of exercises.filter((x) => x.blockId === b.id)) {
+      for (const e of exercisesOf.get(b.id) ?? []) {
         const { id: _e, createdAt: _ca, updatedAt: _ua, version: _ve, ...erest } = e;
         void _e;
         void _ca;
