@@ -836,4 +836,8 @@ pnpm --filter @tp/web test:e2e -- e2e/perf.spec.ts e2e/perf.mobile.spec.ts
 - **Seguridad**: matriz RLS y acceso cruzado en verde (674 pruebas). `pnpm audit --prod` no encuentra vulnerabilidades.
 - **Unitarias y de integración**: 594 unitarias; 252 de integración y 2 omitidas.
 - **Batería E2E completa** (base de datos nueva con demo y carga): 74 de 74 en verde. En `perf.spec.ts`, p95 de la revisión del banco con 1 000 clientes (ADMIN): resumen 31 ms, cola 21 ms, vídeos 25 ms y `/app/library/revision` 66 ms. El Calendario del ADMIN queda en 154 ms.
+- **Encontrado en CI y corregido** (ejecuciones 103 a 107): `a11y.spec.ts` falló en «Verificar vídeos» con `aria-allowed-attr` y `aria-prohibited-attr` dentro del `iframe` (`#movie_player`, `.ytmVideoInfoVideoTitle`), es decir, en el código del reproductor de YouTube.
+  - Hasta P-27 la página no enviaba el origen a YouTube, porque la app usa `Referrer-Policy: same-origin`, y el CI no encontró nada dentro del vídeo. Desde P-27 lo envía, el reproductor carga y axe analizaba su código.
+  - En local no se ve, porque el proxy bloquea YouTube. Se reprodujo sirviendo un reproductor falso con los mismos errores: falla con el escáner anterior y pasa con el nuevo.
+  - Ahora `scan` y `scanState` excluyen el contenido de los `iframe` de YouTube y Vimeo, que no podemos cambiar, pero siguen comprobando el propio `iframe` (su título).
 

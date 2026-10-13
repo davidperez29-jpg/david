@@ -12,6 +12,15 @@ import { createDb } from '@tp/db';
  */
 const TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
 
+/**
+ * Our pages, not the markup of the embedded YouTube or Vimeo player, which we cannot change: axe
+ * skips everything inside those frames but still checks the frame itself (its title). Where the
+ * player loads (CI, not behind the local proxy), YouTube's own ARIA failed the scan (run 103).
+ */
+const PLAYERS =
+  'iframe[src^="https://www.youtube-nocookie.com/"], iframe[src^="https://player.vimeo.com/"]';
+const axe = (page: Page) => new AxeBuilder({ page }).withTags(TAGS).exclude([PLAYERS, '*']);
+
 const ENV = (k: string) =>
   process.env[k] ??
   readFileSync(path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../.env'), 'utf8')
@@ -78,7 +87,7 @@ export async function scan(page: Page, url: string, found: string[]) {
     await page.waitForLoadState('networkidle');
     if (scheme === 'light' && (await page.getByRole('heading', { name: 'No encontrado' }).count()))
       found.push(`${url}: la página no existe (revisa el id)`);
-    const r = await new AxeBuilder({ page }).withTags(TAGS).analyze();
+    const r = await axe(page).analyze();
     for (const v of r.violations.filter((x) => x.impact === 'serious' || x.impact === 'critical'))
       found.push(
         `${url} [${scheme}] ${v.id} (${v.impact}): ${v.nodes.length} × ${v.nodes
@@ -98,7 +107,7 @@ export async function scanState(page: Page, label: string, found: string[]) {
     await page.waitForFunction(() =>
       document.getAnimations().every((a) => a.playState !== 'running'),
     );
-    const r = await new AxeBuilder({ page }).withTags(TAGS).analyze();
+    const r = await axe(page).analyze();
     for (const v of r.violations.filter((x) => x.impact === 'serious' || x.impact === 'critical'))
       found.push(
         `${label} [${scheme}] ${v.id} (${v.impact}): ${v.nodes.length} × ${v.nodes
