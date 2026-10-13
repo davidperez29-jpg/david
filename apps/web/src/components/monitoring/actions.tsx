@@ -170,7 +170,7 @@ export function RulesEditor({ rules, editable }: { rules: Rule[]; editable: bool
       }}
     >
       {state.map((r) => (
-        <fieldset key={r.key} className="rounded-lg border border-border p-3">
+        <fieldset key={r.key} className="min-w-0 rounded-lg border border-border p-3">
           <legend className="px-1 text-sm font-semibold">{r.name}</legend>
           <p className="text-xs text-muted">
             {r.description} Nivel F: recomendación práctica configurable.
@@ -217,13 +217,13 @@ export function RulesEditor({ rules, editable }: { rules: Rule[]; editable: bool
       ))}
       {editable ? (
         <div className="flex flex-wrap items-end gap-2">
-          <label className="flex flex-col gap-1 text-sm">
+          <label className="flex max-w-full flex-col gap-1 text-sm">
             Motivo del cambio (se audita)
             <input
               value={notes}
               maxLength={500}
               onChange={(e) => setNotes(e.target.value)}
-              className="h-10 w-80 rounded-md border border-border bg-bg px-2"
+              className="h-10 w-80 max-w-full rounded-md border border-border bg-bg px-2"
             />
           </label>
           <Button disabled={a.pending}>Guardar nueva versión</Button>

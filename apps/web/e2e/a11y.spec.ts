@@ -104,6 +104,25 @@ test('interactive states of the engine, rules and calendar meet WCAG 2.2 AA', as
   await expect(save).toHaveCSS('opacity', '1');
   await scanState(page, '/app/settings/decision (fila nueva y errores)', found);
 
+  // Bank review (phase 21): a row selected with «Valor», the archive confirmation, and a result
+  // with the skipped exercises listed (publishing drafts that are not complete).
+  await page.goto('/app/library/revision');
+  await page
+    .getByRole('checkbox', { name: /^Seleccionar «/ })
+    .first()
+    .check();
+  await page.getByLabel('Cambio').selectOption('set_level');
+  await scanState(page, '/app/library/revision (selección y valor)', found);
+  await page.getByLabel('Cambio').selectOption('archive');
+  await page.getByRole('button', { name: 'Aplicar a 1 ejercicio' }).click();
+  await expect(page.getByRole('button', { name: 'Sí, archivar' })).toBeFocused();
+  await scanState(page, '/app/library/revision (confirmar archivo)', found);
+  await page.keyboard.press('Escape');
+  await page.getByLabel('Cambio').selectOption('publish');
+  await page.getByRole('button', { name: 'Aplicar a 1 ejercicio' }).click();
+  await expect(page.getByText(/0 cambiados · 0 ya estaban así · 1 sin cambiar/)).toBeVisible();
+  await scanState(page, '/app/library/revision (resultado con omitidos)', found);
+
   // Calendar, week view: «Mover» open.
   await page.goto('/app/calendar?vista=semana');
   const mover = page.locator('summary', { hasText: 'Mover' }).first();
@@ -113,4 +132,40 @@ test('interactive states of the engine, rules and calendar meet WCAG 2.2 AA', as
   }
   console.log(found.join('\n') || 'Sin infracciones graves.');
   expect(found).toEqual([]);
+});
+
+/** WCAG 1.4.10 Reflow (phase 21): at 320 CSS px only tables scroll sideways, never the page. */
+test('trainer pages reflow at 320 px without horizontal scrolling', async ({ page }) => {
+  test.setTimeout(180_000);
+  await login(page, 'lucia.moreno@example.com');
+  await page.setViewportSize({ width: 320, height: 800 });
+  const wide: string[] = [];
+  for (const url of [
+    '/app',
+    '/app/clients',
+    '/app/alerts',
+    '/app/calendar',
+    '/app/plans',
+    '/app/informes',
+    '/app/groups',
+    '/app/library',
+    '/app/library/revision',
+    '/app/library/revision/videos',
+    '/app/assessments',
+    '/app/science',
+    '/app/science/sources',
+    '/app/science/claims',
+    '/app/admin/users',
+    '/app/admin/privacidad',
+    '/app/settings',
+    '/app/settings/alertas',
+    '/app/settings/decision',
+  ]) {
+    await page.goto(url);
+    const extra = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    );
+    if (extra > 0) wide.push(`${url}: ${extra} px`);
+  }
+  expect(wide).toEqual([]);
 });

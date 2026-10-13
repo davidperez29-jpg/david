@@ -20,7 +20,8 @@ export default async function LibraryPage({ searchParams }: { searchParams: Prom
     `?${new URLSearchParams(Object.entries({ ...clean, ...patch }).filter(([, v]) => v) as [string, string][])}`;
   const next = page.offset + page.limit < page.total ? page.offset + page.limit : null;
   const prev = page.offset > 0 ? Math.max(0, page.offset - page.limit) : null;
-  const sel = 'h-9 rounded-md border border-border bg-bg px-2 text-sm';
+  // min-w-0: a select sizes itself to its longest option, wider than a phone (1.4.10).
+  const sel = 'h-9 min-w-0 max-w-full rounded-md border border-border bg-bg px-2 text-sm';
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-2">

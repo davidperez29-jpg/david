@@ -53,13 +53,13 @@ export default async function AssessmentCatalogPage({
         )}
       </Card>
 
-      <form className="flex gap-2" role="search">
+      <form className="flex flex-wrap gap-2" role="search">
         <input
           name="q"
           defaultValue={q}
           placeholder="Buscar test (sin importar tildes)"
           aria-label="Buscar test"
-          className="h-9 min-w-56 flex-1 rounded-md border border-border bg-bg px-3 text-sm"
+          className="h-9 min-w-0 flex-1 basis-56 rounded-md border border-border bg-bg px-3 text-sm"
         />
         <button className="h-9 rounded-md border border-border bg-bg px-4 text-sm">Buscar</button>
       </form>

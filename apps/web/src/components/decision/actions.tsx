@@ -573,9 +573,9 @@ export function DecisionRulesEditor({
               <fieldset
                 key={r.key}
                 id={`rule-${r.key}`}
-                className="rounded-lg border border-border p-3"
+                className="min-w-0 rounded-lg border border-border p-3"
               >
-                <legend className="px-1 font-mono text-xs">{r.key}</legend>
+                <legend className="px-1 font-mono text-xs break-all">{r.key}</legend>
                 <p className="text-sm">{r.description}</p>
                 <p className="mt-1 text-xs text-muted">
                   Nivel {r.evidenceLevel}
@@ -676,7 +676,7 @@ export function DecisionRulesEditor({
       })}
       {editable ? (
         <div className="flex flex-wrap items-end gap-2">
-          <label className="flex flex-col gap-1 text-sm">
+          <label className="flex max-w-full flex-col gap-1 text-sm">
             Motivo del cambio (se audita)
             <input
               value={notes}
