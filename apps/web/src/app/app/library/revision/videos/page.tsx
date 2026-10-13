@@ -5,6 +5,8 @@ import { VideoVerdict } from '@/components/library/video-verdict';
 import { Card, EmptyState } from '@/components/ui/card';
 import { requireStaff } from '@/server/session';
 
+export const metadata = { title: 'Verificar vídeos' };
+
 /**
  * Videos of the bank waiting for a person (restructure phase 19): one at a time, watched here,
  * marked as correct or broken. Nothing is verified automatically (§28, A68).
@@ -30,7 +32,8 @@ export default async function PendingVideosPage({
         roto. Hasta entonces el cliente ve el aviso de vídeo pendiente.
       </p>
       {!v ? (
-        <Card>
+        // Same heading id as the video card: after the last verdict the focus stays on it.
+        <Card title="Vídeos sin verificar" headingId="video-titulo">
           <EmptyState>
             {page.total ? 'Has saltado todos los que quedan.' : 'No quedan vídeos por verificar.'}{' '}
             {skip ? (

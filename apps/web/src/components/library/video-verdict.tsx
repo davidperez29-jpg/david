@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useEffect, useRef } from 'react';
 import { announce } from '@/components/ui/announcer';
 import { Button } from '@/components/ui/button';
 import { FormError, useApiAction } from '@/components/use-form';
@@ -20,13 +21,22 @@ export function VideoVerdict({
   focusId: string;
 }) {
   const a = useApiAction();
+  // The verdict just given, said again together with the video that takes its place (phase 21,
+  // A-BR-3): a new message replaces the previous one in the live region.
+  const said = useRef<string | null>(null);
+  const shown = useRef(mediaId);
+  useEffect(() => {
+    if (shown.current === mediaId) return;
+    shown.current = mediaId;
+    announce(`${said.current ?? ''} Ahora: vídeo de «${exerciseName}».`.trim());
+    said.current = null;
+  }, [mediaId, exerciseName]);
   const decide = async (status: 'verified' | 'broken') => {
     const r = await a.run(`/exercises/${exerciseId}/media/${mediaId}/verify`, 'POST', { status });
-    if (r !== null)
-      announce(
-        `Vídeo de «${exerciseName}» marcado como ${status === 'verified' ? 'correcto' : 'roto'}. Siguiente vídeo.`,
-        focusId,
-      );
+    if (r === null) return;
+    said.current = `Vídeo de «${exerciseName}» marcado como ${status === 'verified' ? 'correcto' : 'roto'}.`;
+    // The heading stays (the last verdict leaves an empty state with the same id).
+    announce(said.current, focusId);
   };
   return (
     <div className="mt-3 flex flex-col gap-2">

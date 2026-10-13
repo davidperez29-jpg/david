@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { cache } from 'react';
 import {
   getExercise,
   listLibraryTaxonomies,
@@ -31,6 +32,19 @@ const TABS = [
   ['metodos', 'Métodos'],
 ] as const;
 
+/** One read per request, shared by the title and the page. */
+const exerciseOf = cache(async (id: string) =>
+  getExercise(await requireStaff(), id).catch((e) => {
+    if (e instanceof DomainError && e.code === 'not_found') notFound();
+    throw e;
+  }),
+);
+
+/** The exercise's name as the page title: moving to «Siguiente» is announced (phase 21, A-BR-4). */
+export async function generateMetadata({ params }: { params: Promise<{ exerciseId: string }> }) {
+  return { title: (await exerciseOf((await params).exerciseId)).name };
+}
+
 export default async function ExercisePage({
   params,
   searchParams,
@@ -43,13 +57,7 @@ export default async function ExercisePage({
   const { tab = 'ficha', revision } = await searchParams;
   // Opened from the bank review queue (phase 19): the queue's filters travel with the page.
   const keep = revision !== undefined ? `&revision=${encodeURIComponent(revision)}` : '';
-  const [ex, tax] = await Promise.all([
-    getExercise(ctx, exerciseId).catch((e) => {
-      if (e instanceof DomainError && e.code === 'not_found') notFound();
-      throw e;
-    }),
-    listLibraryTaxonomies(ctx),
-  ]);
+  const [ex, tax] = await Promise.all([exerciseOf(exerciseId), listLibraryTaxonomies(ctx)]);
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center gap-3">

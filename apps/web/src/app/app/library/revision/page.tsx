@@ -7,6 +7,8 @@ import { label } from '@/lib/labels';
 import { requireStaff } from '@/server/session';
 
 type SP = Record<string, string | undefined>;
+
+export const metadata = { title: 'Revisión del banco' };
 const FILTERS = ['gap', 'q', 'patternId', 'categoryId', 'status'] as const;
 
 /**
@@ -35,7 +37,8 @@ export default async function BankReviewPage({ searchParams }: { searchParams: P
   const done = ov.published + ov.ready;
   const next = offset + page.limit < page.total ? offset + page.limit : null;
   const prev = offset > 0 ? Math.max(0, offset - page.limit) : null;
-  const sel = 'h-9 rounded-md border border-border bg-bg px-2 text-sm';
+  // min-w-0: a select sizes itself to its longest option, wider than a phone (1.4.10).
+  const sel = 'h-9 min-w-0 max-w-full rounded-md border border-border bg-bg px-2 text-sm';
   return (
     <div className="flex flex-col gap-4">
       <Link href="/app/library" className="text-sm text-muted hover:underline">
@@ -160,6 +163,8 @@ export default async function BankReviewPage({ searchParams }: { searchParams: P
           </EmptyState>
         ) : (
           <ReviewTable
+            // Another page or filter starts with nothing selected and no old result (A-BR-1).
+            key={`${queue}|${offset}`}
             items={page.items}
             queue={queue}
             focusId="cola-titulo"
