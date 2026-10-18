@@ -2,6 +2,7 @@ import { sql } from 'drizzle-orm';
 import {
   bigserial,
   check,
+  customType,
   date,
   index,
   integer,
@@ -208,3 +209,28 @@ export const scheduledJobRuns = pgTable(
   },
   (t) => [primaryKey({ columns: [t.job, t.runOn] })],
 );
+
+const bytea = customType<{ data: Buffer; driverData: Buffer }>({ dataType: () => 'bytea' });
+
+/**
+ * Uploaded files kept in the database itself (FILE_STORAGE=database), for hosts without a
+ * persistent disk or a bucket, such as a free plan (restructure phase 22). The `files` row says
+ * who owns a file; this one only holds its bytes, reached through the storage port.
+ */
+export const storedFiles = pgTable('stored_files', {
+  key: text('key').primaryKey(),
+  contentType: text('content_type').notNull(),
+  bytes: bytea('bytes').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+/**
+ * One-off start-up setup already done (migrations, catalogues, first administrator, demo data):
+ * one row per release and set of start-up settings, so waking a sleeping instance of the same
+ * release skips it (restructure phase 22, packages/db/scripts/startup-gate.mjs).
+ */
+export const appReleases = pgTable('app_releases', {
+  fingerprint: text('fingerprint').primaryKey(),
+  release: text('release').notNull(),
+  finishedAt: timestamp('finished_at', { withTimezone: true }).notNull().defaultNow(),
+});

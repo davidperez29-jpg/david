@@ -9,7 +9,7 @@
 import 'dotenv/config';
 import { createDb, schema } from '@tp/db';
 import { eq } from 'drizzle-orm';
-import { anonymizeClient, LocalDiskStorage } from '../src';
+import { anonymizeClient, storageFromEnv } from '../src';
 
 async function readIds(): Promise<string[]> {
   const args = process.argv.slice(2);
@@ -28,7 +28,7 @@ const { db, close } = createDb(process.env.DATABASE_URL!);
 const app = {
   db,
   now: () => new Date(),
-  storage: new LocalDiskStorage(process.env.FILE_STORAGE_DIR ?? '.data/files'),
+  storage: storageFromEnv(process.env, '.data/files', db),
 };
 let applied = 0;
 let already = 0;

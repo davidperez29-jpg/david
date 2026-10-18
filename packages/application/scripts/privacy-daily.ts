@@ -5,13 +5,13 @@
  */
 import 'dotenv/config';
 import { createDb } from '@tp/db';
-import { applyRetention, LocalDiskStorage } from '../src';
+import { applyRetention, storageFromEnv } from '../src';
 
 const { db, close } = createDb(process.env.DATABASE_URL!);
 const r = await applyRetention({
   db,
   now: () => new Date(),
-  storage: new LocalDiskStorage(process.env.FILE_STORAGE_DIR ?? '.data/files'),
+  storage: storageFromEnv(process.env, '.data/files', db),
 });
 await close();
 console.log(

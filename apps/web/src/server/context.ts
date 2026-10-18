@@ -22,16 +22,18 @@ function singletons() {
   if (!g.__tp) {
     const url = process.env.DATABASE_URL;
     if (!url) throw new Error('DATABASE_URL is not set');
+    const db = createDb(url);
     g.__tp = {
-      db: createDb(url),
+      db,
       keys: keyRingFromBase64(
         process.env.APP_ENCRYPTION_KEY,
         process.env.APP_ENCRYPTION_KEYS_PREVIOUS,
       ),
       // No email provider configured yet (Phase 1): messages are kept in memory and logged in dev.
       mailer: new DevMailer(),
-      // S3-compatible bucket (EU) when S3_BUCKET is set; local disk otherwise (OPERATIONS.md).
-      storage: storageFromEnv(process.env, `${process.cwd()}/.data/files`),
+      // The database with FILE_STORAGE=database (free hosting without a disk), an S3-compatible
+      // bucket (EU) when S3_BUCKET is set, local disk otherwise (OPERATIONS.md).
+      storage: storageFromEnv(process.env, `${process.cwd()}/.data/files`, db.db),
     };
   }
   return g.__tp;

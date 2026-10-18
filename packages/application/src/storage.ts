@@ -1,6 +1,8 @@
 import { createHash, createHmac } from 'node:crypto';
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { eq } from 'drizzle-orm';
+import { schema, type Database } from '@tp/db';
 
 /** Storage port for binary files (silhouettes, images, reports): local disk or S3-compatible. */
 export interface FileStorage {
@@ -53,6 +55,34 @@ export class LocalDiskStorage implements FileStorage {
   }
   async delete(key: string): Promise<void> {
     await rm(this.resolve(key), { force: true });
+  }
+}
+
+/**
+ * Files in the database itself (table `stored_files`), for hosts without a persistent disk or a
+ * bucket, such as a free plan whose disk is wiped on every restart (restructure phase 22). Same
+ * keys and limits as the other adapters. It uses the owner connection, like the daily jobs: the
+ * table is closed to the app role (system_only), and the use cases check access before calling.
+ */
+export class DatabaseStorage implements FileStorage {
+  constructor(private readonly db: Database) {}
+  async put(key: string, bytes: Uint8Array, contentType: string): Promise<void> {
+    assertKey(key);
+    await this.db
+      .insert(schema.storedFiles)
+      .values({ key, contentType, bytes: Buffer.from(bytes) });
+  }
+  async get(key: string): Promise<Uint8Array | null> {
+    assertKey(key);
+    const [row] = await this.db
+      .select({ bytes: schema.storedFiles.bytes })
+      .from(schema.storedFiles)
+      .where(eq(schema.storedFiles.key, key));
+    return row ? new Uint8Array(row.bytes) : null;
+  }
+  async delete(key: string): Promise<void> {
+    assertKey(key);
+    await this.db.delete(schema.storedFiles).where(eq(schema.storedFiles.key, key));
   }
 }
 
@@ -155,11 +185,19 @@ export class S3Storage implements FileStorage {
   }
 }
 
-/** Adapter from the environment: S3 when S3_BUCKET is set, local disk otherwise. */
+/**
+ * Adapter from the environment: the database with FILE_STORAGE=database, S3 when S3_BUCKET is
+ * set, local disk otherwise.
+ */
 export function storageFromEnv(
   env: Record<string, string | undefined>,
   localRoot: string,
+  db?: Database,
 ): FileStorage {
+  if (env.FILE_STORAGE === 'database') {
+    if (!db) throw new Error('FILE_STORAGE=database needs the database connection');
+    return new DatabaseStorage(db);
+  }
   if (!env.S3_BUCKET) return new LocalDiskStorage(env.FILE_STORAGE_DIR || localRoot);
   const need = (k: string) => {
     const v = env[k];

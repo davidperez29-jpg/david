@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
-import { S3Storage, storageFromEnv, LocalDiskStorage } from '../src';
+import { DatabaseStorage, S3Storage, storageFromEnv, LocalDiskStorage } from '../src';
+import { testDb } from './fixtures';
 
 /**
  * Object storage against a real S3-compatible server (CI starts one; locally set S3_TEST_ENDPOINT,
@@ -38,7 +39,35 @@ describe.skipIf(!cfg.endpoint)('S3-compatible storage (signed requests, real ser
   });
 });
 
+describe('files in the database (FILE_STORAGE=database, restructure phase 22)', () => {
+  it('put, get, delete; missing files read as null and delete without error', async () => {
+    const s = new DatabaseStorage(testDb().db);
+    const key = `test/${randomUUID()}.png`;
+    await s.put(key, PNG, 'image/png');
+    expect(Array.from((await s.get(key))!)).toEqual(Array.from(PNG));
+    await expect(s.put(key, PNG, 'image/png')).rejects.toThrow();
+    await s.delete(key);
+    expect(await s.get(key)).toBeNull();
+    await s.delete(key);
+  });
+
+  it('refuses keys the app does not generate', async () => {
+    const s = new DatabaseStorage(testDb().db);
+    await expect(s.get('../etc/passwd.png')).rejects.toThrow(/invalid storage key/);
+    await expect(s.put('x.svg', PNG, 'image/svg+xml')).rejects.toThrow(/invalid storage key/);
+  });
+});
+
 describe('storage selection from the environment', () => {
+  it('the database with FILE_STORAGE=database, which needs the connection', () => {
+    expect(storageFromEnv({ FILE_STORAGE: 'database' }, '/tmp/x', testDb().db)).toBeInstanceOf(
+      DatabaseStorage,
+    );
+    expect(() => storageFromEnv({ FILE_STORAGE: 'database' }, '/tmp/x')).toThrow(
+      /needs the database/,
+    );
+  });
+
   it('S3 when S3_BUCKET is set (and complete), local disk otherwise', () => {
     expect(storageFromEnv({}, '/tmp/x')).toBeInstanceOf(LocalDiskStorage);
     expect(() => storageFromEnv({ S3_BUCKET: 'b' }, '/tmp/x')).toThrow(/S3_ENDPOINT/);
