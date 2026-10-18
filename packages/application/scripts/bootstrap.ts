@@ -7,13 +7,16 @@
  *
  * Optional: ORG_NAME (default «Mi centro»), ADMIN_NAME («Nombre Apellidos»), REQUIRE_ADMIN_2FA
  * (default true).
+ *
+ * Restructure phase 23: changing ADMIN_PASSWORD later replaces that administrator's password
+ * (applyHostAdminPassword), the way back for a single administrator who forgot it.
  */
 import 'dotenv/config';
 import { createDb, schema } from '@tp/db';
 import { DomainError, slugify } from '@tp/domain';
 import { randomBytes } from 'node:crypto';
 import { eq, sql } from 'drizzle-orm';
-import { bootstrapOrganization } from '../src';
+import { applyHostAdminPassword, bootstrapOrganization } from '../src';
 
 const email = process.env.ADMIN_EMAIL?.trim().toLowerCase();
 const password = process.env.ADMIN_PASSWORD ?? '';
@@ -29,7 +32,7 @@ try {
     .from(schema.users)
     .where(eq(sql`lower(${schema.users.email})`, email));
   if (existing) {
-    console.log('Bootstrap: the administrator already exists; nothing to do.');
+    console.log('Bootstrap: the administrator already exists.');
   } else {
     const orgName = process.env.ORG_NAME?.trim() || 'Mi centro';
     const [first, ...rest] = (process.env.ADMIN_NAME?.trim() || email.split('@')[0]!).split(/\s+/);
@@ -46,11 +49,23 @@ try {
         .where(eq(schema.organizations.id, r.organizationId));
     console.log(`Bootstrap: organization «${orgName}» and its administrator created.`);
   }
+  const key = process.env.APP_ENCRYPTION_KEY;
+  if (key) {
+    const r = await applyHostAdminPassword(db, { email, password, key });
+    if (r === 'replaced')
+      console.log(
+        "Bootstrap: ADMIN_PASSWORD changed: it is now the administrator's password, and their sessions were closed.",
+      );
+    if (r === 'not_admin')
+      console.log(
+        'Bootstrap: ADMIN_PASSWORD changed, but ADMIN_EMAIL is not an administrator: no change.',
+      );
+  }
 } catch (e) {
   if (e instanceof DomainError) {
     // Most often the password policy (at least 12 characters, not the email): logged, not fatal.
     console.error(
-      `Bootstrap: the administrator could not be created: ${e.message} ${JSON.stringify(e.details ?? '')}`,
+      `Bootstrap: ADMIN_PASSWORD was not applied: ${e.message} ${JSON.stringify(e.details ?? '')}`,
     );
   } else throw e;
 } finally {

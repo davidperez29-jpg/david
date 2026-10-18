@@ -2,7 +2,8 @@
 # Deployment smoke test (CI, docs/DEPLOY_RENDER.md): the all-in-one image against an empty
 # PostgreSQL whose owner is NOT a superuser (like a managed database), started twice. As on the
 # free plan (restructure phase 22): a connection string as Neon gives it (channel_binding), files
-# in the database, and a release id, so the second start skips the one-off setup.
+# in the database, and a release id, so the second start skips the one-off setup. A third start
+# with another ADMIN_PASSWORD replaces the administrator's password (restructure phase 23).
 # Usage: deploy/smoke-test.sh <image>
 set -eu
 IMAGE=$1
@@ -22,7 +23,7 @@ start() {
   docker run -d --name tp-smoke-app --network "$NET" -p 3190:3000 \
     -e 'DATABASE_URL=postgres://owner:ownerpw@tp-smoke-db:5432/plataforma?channel_binding=require' \
     -e APP_ENCRYPTION_KEY="$KEY" -e APP_VERSION=smoke-1 -e FILE_STORAGE=database \
-    -e ADMIN_EMAIL=admin@example.com -e ADMIN_PASSWORD=clave-de-prueba-larga -e DAILY_JOBS=in-app \
+    -e ADMIN_EMAIL=admin@example.com -e ADMIN_PASSWORD="${1:-clave-de-prueba-larga}" -e DAILY_JOBS=in-app \
     "$IMAGE" >/dev/null
   for i in $(seq 1 150); do curl -sf localhost:3190/api/ready >/dev/null && return 0; sleep 3; done
   docker logs tp-smoke-app; echo "App not ready"; exit 1
@@ -30,7 +31,7 @@ start() {
 login() {
   curl -s -o /dev/null -w '%{http_code}' -X POST localhost:3190/api/v1/auth/login \
     -H 'content-type: application/json' -H 'Origin: http://localhost:3190' \
-    -d '{"email":"admin@example.com","password":"clave-de-prueba-larga"}'
+    -d "{\"email\":\"admin@example.com\",\"password\":\"${1:-clave-de-prueba-larga}\"}"
 }
 start
 [ "$(login)" = 200 ] || { docker logs tp-smoke-app; echo "Login failed"; exit 1; }
@@ -41,4 +42,9 @@ docker logs tp-smoke-app 2>&1 | grep -q 'Start-up setup already done for release
   || { docker logs tp-smoke-app; echo "The second start did not skip the setup"; exit 1; }
 ORGS=$(docker exec tp-smoke-db psql -U root -d plataforma -tAc 'select count(*) from organizations')
 [ "$ORGS" = 1 ] || { echo "Expected 1 organization after two starts, got $ORGS"; exit 1; }
-echo "Deployment smoke test passed: ready, admin login, restart skips the setup and stays idempotent."
+# Forgotten administrator password: a new ADMIN_PASSWORD in the host replaces it.
+docker rm -f tp-smoke-app >/dev/null
+start otra-clave-de-prueba-larga
+[ "$(login otra-clave-de-prueba-larga)" = 200 ] || { docker logs tp-smoke-app; echo "New ADMIN_PASSWORD not applied"; exit 1; }
+[ "$(login)" = 401 ] || { echo "The old administrator password still works"; exit 1; }
+echo "Deployment smoke test passed: ready, admin login, restart skips the setup and stays idempotent, ADMIN_PASSWORD replaces a forgotten password."

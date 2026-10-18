@@ -46,6 +46,7 @@ export const RLS_POLICIES: Record<string, PolicyKind> = {
   // Restructure phase 22: file bytes (reached through the storage port) and start-up setup.
   stored_files: { kind: 'system_only' },
   app_releases: { kind: 'system_only' },
+  app_state: { kind: 'system_only' },
   password_reset_tokens: { kind: 'system_only' },
   organizations: {
     kind: 'custom',

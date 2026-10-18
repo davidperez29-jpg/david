@@ -234,3 +234,14 @@ export const appReleases = pgTable('app_releases', {
   release: text('release').notNull(),
   finishedAt: timestamp('finished_at', { withTimezone: true }).notNull().defaultNow(),
 });
+
+/**
+ * Small system values kept between starts. Today only `host_admin_password`: a keyed fingerprint
+ * of the last ADMIN_PASSWORD seen, so changing it in the host replaces a forgotten administrator
+ * password and a new release never undoes one changed in the app (restructure phase 23).
+ */
+export const appState = pgTable('app_state', {
+  key: text('key').primaryKey(),
+  value: text('value').notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+});

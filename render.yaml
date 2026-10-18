@@ -34,6 +34,8 @@ services:
       - key: APP_ENCRYPTION_KEY
         generateValue: true
       # First administrator, asked for in the Render form (never stored in the repository).
+      # Changing ADMIN_PASSWORD later and deploying replaces that administrator's password: the
+      # way back for a single administrator who forgot it (phase 23).
       - key: ADMIN_EMAIL
         sync: false
       - key: ADMIN_PASSWORD

@@ -5,6 +5,7 @@ export * from './authz';
 export * from './auth-service';
 export * from './invitations';
 export * from './password-links';
+export * from './host-admin-password';
 export * from './organizations';
 export * from './clients';
 export * from './health';
