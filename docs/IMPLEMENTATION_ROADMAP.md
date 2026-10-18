@@ -38,6 +38,7 @@
 | 19 | Revisión del banco: cola para completar el banco importado, cambios en bloque, avance visible y verificación de vídeos (elegida por el responsable) | Biblioteca de ejercicios | ✅ Hecha |
 | 20 | Pendientes técnicos de la fase 18: copia de sesiones en bloque, índices de `client_id`, reglas una vez por centro en el trabajo diario y retirada de las columnas en claro de lesiones (elegida por el responsable) | Planificación, base de datos, seguimiento, lesiones | ✅ Hecha |
 | 21 | Revisión de calidad de las fases 19–20: seguridad, accesibilidad y rendimiento, con correcciones (elegida por el responsable) | Revisión del banco, pendientes técnicos | ✅ Hecha |
+| 22 | Despliegue gratuito sin caducidad: web en Render Free y base en Neon Free, archivos subidos en la base y arranque rápido al despertar (elegida por el responsable) | Despliegue, base de datos, almacenamiento | ✅ Hecha |
 
 ## Por qué el despliegue va primero (decisión A2)
 
@@ -50,7 +51,7 @@ La fase 10 se mantiene para el endurecimiento final.
 ## Fase 0 · Despliegue online
 
 - `render.yaml` (Blueprint):
-  - web Docker en Frankfurt + PostgreSQL 16 en Frankfurt;
+  - web Docker en Frankfurt + PostgreSQL 16 en Frankfurt (desde la fase 22, la base es un proyecto gratuito de Neon en Frankfurt);
   - clave de cifrado generada por Render;
   - email y contraseña del primer administrador pedidos en el formulario de creación.
 - **Arranque del contenedor** (idempotente): migraciones → catálogos → administrador inicial si la base está vacía → datos de ejemplo opcionales (`DEMO_DATA=true`) → servidor.
@@ -456,4 +457,25 @@ Elegida por el responsable: revisar la seguridad, la accesibilidad y el rendimie
 **Queda pendiente**:
 - título propio en el resto de páginas de la aplicación. Hoy solo lo tienen el inicio de sesión, la revisión del banco y la ficha de ejercicio, así que en las demás el cambio de página no se anuncia con su nombre;
 - los efectos tras confirmar (alertas y ajustes) siguen ejecutándose antes de responder. Con mucho volumen, conviene pasarlos a una cola.
+
+## Fase 22 · Despliegue gratuito sin caducidad ✅
+
+Elegida por el responsable: una plataforma gratuita de por vida, aunque fuera más sencilla. La base gratuita de Render caduca a los 30 días; el uso real costaba unos 13 $/mes. No hizo falta quitar ninguna función.
+
+- **Web en Render Free y base en Neon Free**, las dos en Frankfurt. Ninguna caduca (A70). `render.yaml` ya no crea base de Render: pide la cadena de conexión de Neon en el formulario.
+- **La cadena de Neon se acepta tal cual.** Con `channel_binding=require`, que Neon incluye, el servidor rechazaba la conexión («unrecognized configuration parameter»). Ahora se quita y se usa el servidor directo en lugar del «pooled». Las conexiones inactivas se cierran al minuto, para que Neon pueda apagarse y no gaste sus horas gratuitas.
+- **Archivos subidos en la base** (`FILE_STORAGE=database`, tabla `stored_files`). La web gratuita pierde su disco en cada reinicio. De paso, la retención diaria y la reaplicación de supresiones usan el mismo almacenamiento que la web: antes usaban siempre el disco local, también con S3.
+- **Arranque rápido al despertar.** La web gratuita se duerme a los 15 min y despierta desde cero, con 0,1 CPU. La instalación (migraciones, catálogos, cifrado, administrador, demo) gastaba unos 15 s de CPU, unos 2,5 min en cada despertar. Ahora se hace una vez por versión y ajustes (`app_releases`, huella HMAC) y despertar cuesta 0,12 s de CPU.
+- **Menos construcciones**: los cambios de documentación y pruebas no reconstruyen la web (500 minutos gratuitos al mes).
+
+**Criterios**:
+- ✅ una cadena como la de Neon conecta, y la anterior no (`client.unit.test.ts`, comprobado contra PostgreSQL);
+- ✅ los archivos se guardan, se leen y se borran en la base (`storage.int.test.ts`), y el rol de la app no llega a ellos (matriz RLS);
+- ✅ la instalación se salta con la misma versión y ajustes, y se repite con otra versión, otro ajuste u otra clave (`startup-gate.int.test.ts`; prueba de humo de CI con la imagen de Render);
+- ✅ memoria del servidor por debajo de 330 MB y base de 43 MB con la demo, dentro de los límites gratuitos (512 MB y 0,5 GB).
+
+**Queda pendiente**:
+- comprobar el primer despliegue real en los paneles de Neon y Render, bloqueados desde este entorno;
+- copias largas: el plan gratuito de Neon guarda 6 horas, más las ramas manuales (DPIA R-14). Con datos reales, decidir entre un plan de pago de Neon o una copia externa automática;
+- trasladar los datos de una instalación anterior con la base de Render, si la hay (`pg_dump`/`pg_restore`).
 

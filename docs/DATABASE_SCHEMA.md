@@ -36,7 +36,7 @@
 | Seguimiento | `attendance` (completada, parcial, no realizada, reprogramada, cancelada), `set_logs`, `feedback` (RPE de sesión, fatiga, motivación, dolor), `exercise_feedback`, `readiness`, `pain_logs`, `exercise_substitutions`, `exercise_tolerances` |
 | Decisión (oculto) | `rule_sets`, `rules`, `client_rule_overrides`, `recommendations`, `recommendation_evidence`, `alerts`, `manual_overrides`, `decision_runs`, `client_trait_flags` |
 | Ciencia | `evidence_sources` (DOI/PMID verificados), `evidence_findings`, `knowledge_claims`, `claim_evidence`, `methods`, `method_variables`, `method_evidence`, `method_notes`, `evidence_reviews`, `populations`, `outcomes` |
-| Plataforma | `reports`, `files`, `notifications`, `import_jobs`, `import_rows`, `domain_events`, `integration_connections`, `external_measurements`, `privacy_requests`, `audit_logs` |
+| Plataforma | `reports`, `files`, `stored_files`, `notifications`, `import_jobs`, `import_rows`, `domain_events`, `integration_connections`, `external_measurements`, `privacy_requests`, `audit_logs`, `app_releases` |
 
 ## 3. Cambios por fase
 

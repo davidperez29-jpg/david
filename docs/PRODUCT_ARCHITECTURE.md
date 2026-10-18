@@ -134,20 +134,23 @@ db: Drizzle + PostgreSQL 16 con RLS por organización, cliente y rol
 
 ## 5. Despliegue online (§44)
 
-**Decisión: Render, región Frankfurt (UE).** Una sola aplicación web y una base de datos PostgreSQL gestionada.
+**Decisión: web en Render y base de datos en Neon, los dos en Frankfurt (UE) y en sus planes gratuitos, que no caducan (fase 22, A70).** Una sola aplicación web y una base de datos PostgreSQL gestionada.
 
 | Requisito | Cómo se cumple |
 |---|---|
 | El usuario final solo necesita navegador + URL + login | Render publica la app con HTTPS en `https://<nombre>.onrender.com` (dominio propio opcional) |
-| Sin comandos, ni para el administrador | Se crea desde el panel web de Render con el archivo `render.yaml` del repositorio («Blueprint»). Render pide en un formulario el email y la contraseña del primer administrador (variables `sync: false`) y genera la clave de cifrado (`generateValue`). |
+| Sin comandos, ni para el administrador | La base se crea en el panel web de Neon y la web desde el panel de Render con el archivo `render.yaml` del repositorio («Blueprint»). Render pide en un formulario la cadena de conexión de Neon, tal como Neon la muestra, y el email y la contraseña del primer administrador (variables `sync: false`). Genera la clave de cifrado (`generateValue`). |
 | Migraciones y datos iniciales | El contenedor, al arrancar, aplica las migraciones, carga los catálogos y crea el administrador si la base está vacía. Todo es idempotente: no depende del comando previo al despliegue, que el plan gratuito no ofrece. |
 | Trabajos diarios (alertas, retención) | Se ejecutan dentro de la app la primera vez que hay actividad cada día, con un bloqueo en BD; no requieren un *cron* de pago |
-| Datos en la UE (RGPD) | Región Frankfurt para web y base de datos |
-| Copias de seguridad | Las bases de pago de Render incluyen copias y recuperación a un instante *[verificar el detalle de cada plan en el panel de Render]* |
+| Datos en la UE (RGPD) | Región Frankfurt para web (Render) y base de datos (Neon, AWS eu-central-1) |
+| Archivos subidos | En la propia base de datos (`FILE_STORAGE=database`): la web gratuita no tiene disco persistente |
+| Despertar rápido | La instalación (migraciones, catálogos, administrador) se hace una vez por versión; al despertar, la web la salta (`deploy/start.sh`, fase 22) |
+| Copias de seguridad | Neon gratis: historial de 6 horas y ramas manuales como copia mensual. Copias automáticas largas, solo en sus planes de pago *[verificar en el panel de Neon]* |
 
-**Coste orientativo** (búsqueda del 05/10/2026):
-- **Prueba gratuita**: web Free y Postgres Free. La web se duerme tras 15 min sin uso (≈ 30 s en despertar). La base gratuita **caduca a los 30 días** (14 días de gracia para pasar a pago; después se borra). Solo sirve para probar.
-- **Uso real**: web Starter (≈ 7 $/mes) + Postgres Basic-256mb (≈ 6 $/mes) ≈ **13 $/mes**.
+**Coste**: **0 €**, sin fecha de caducidad (búsqueda del 18/10/2026):
+- **Render Free** (web): no caduca. Se duerme tras 15 min sin uso y despierta en torno a 1 min. 750 horas al mes y 500 minutos de construcción.
+- **Neon Free** (base de datos): no caduca. 0,5 GB (la app con catálogos ocupa unos 35 MB y la demo 43 MB), 100 horas de cómputo al mes con apagado tras 5 min sin uso y 5 GB de transferencia.
+- Antes (fases 0–21) la base era la gratuita de Render, que **caduca a los 30 días**. El uso real costaba ≈ 13 $/mes (web Starter + Postgres Basic). Sigue siendo la opción si se quiere la web siempre despierta.
 
 **Alternativas valoradas**:
 
@@ -155,7 +158,9 @@ db: Drizzle + PostgreSQL 16 con RLS por organización, cliente y rol
 |---|---|
 | Railway | Cómodo, pero no pide los datos del primer administrador en un formulario: requiere más pasos manuales |
 | Fly.io | Exige herramienta de línea de comandos |
-| Vercel + Neon | Dos proveedores; los trabajos y el PDF del servidor encajan peor |
+| Vercel + Neon | El plan gratuito de Vercel (Hobby) es solo para uso no comercial; los trabajos y el PDF del servidor encajan peor |
+| Render con su base gratuita | La base gratuita de Render caduca a los 30 días |
+| Supabase (base gratuita) | Pausa los proyectos tras una semana sin uso, y hay que reactivarlos a mano |
 | Scaleway / OVH | Más control y 100 % UE, pero requieren administración de sistemas |
 
 La imagen Docker y `docker-compose.yml` siguen sirviendo para desarrollo, CI y para quien quiera alojarlo en su propio servidor.
@@ -243,3 +248,4 @@ Un cliente **nunca** accede a otros clientes, referencias privadas, notas intern
 | A67 | La revisión del banco permite **cambios en bloque solo de datos de clasificación** (patrón, categoría, músculo principal, nivel, perfil, revisado, publicar, archivar), **nunca de textos**. Cada ejercicio se versiona y audita por separado; se omiten los globales, los archivados, los que alguien cambió mientras tanto y, al publicar, los incompletos | 1 141 borradores no se completan de uno en uno en un tiempo razonable, pero la explicación para el cliente es propia de cada ejercicio. Omitir con motivo, en lugar de fallar todo o sobrescribir, protege el trabajo de otra persona y deja ver qué queda (fase 19) |
 | A68 | Un vídeo solo lo **verifica una persona** que lo ha visto; no hay verificación automática. La cola de revisión se ordena **por nombre**, no por «urgencia» | Que un enlace cargue no dice si muestra el ejercicio con buena técnica (§28). El orden por nombre es estable y predecible: «Siguiente» y la paginación no cambian mientras se trabaja (fase 19) |
 | A69 | Las columnas en claro antiguas de lesiones se **contraen sin ventana de errores**: la versión que deja de leerlas añade `CHECK (columna IS NULL) NOT VALID` (nada nuevo en claro) y el paso de arranque las **marca con la versión que arranca** (`APP_VERSION`, o `RENDER_GIT_COMMIT` en Render) y las **borra cuando arranca una versión distinta**, seguido de `VACUUM FULL` de las tablas. Sin identificador de versión no marca ni borra. Antes de marcar o borrar, mueve el texto que quedara | Borrarlas en la misma migración haría fallar las peticiones de lesiones de la instancia anterior, que aún las lee, mientras arranca la nueva. Cuando arranca otra versión, el despliegue de la que las marcó ya terminó, así que no queda ninguna instancia que las lea. Contar arranques no bastaba: una segunda réplica o un reinicio de la misma versión contaban como «siguiente» (P-25, fase 21). `VACUUM FULL` reescribe las tablas para que el texto borrado no siga en sus páginas (P-26). `NOT VALID` no comprueba las filas viejas, así que la migración nunca falla por texto sin mover (fase 20) |
+| A70 | **Despliegue gratuito sin caducidad**: web en Render Free y base en Neon Free (Frankfurt). Los archivos subidos van en la base (`stored_files`). La instalación de arranque se hace una vez por versión y ajustes (`app_releases`, huella HMAC). La cadena de Neon se acepta tal cual | El responsable pidió una plataforma gratuita de por vida, aunque fuera más sencilla. La base gratuita de Render caduca a los 30 días; la de Neon no. La web gratuita no tiene disco persistente y despierta desde cero, con 0,1 CPU: repetir la instalación costaba unos 2,5 min en cada despertar. No se pierde ninguna función (fase 22) |

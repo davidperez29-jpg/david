@@ -2,6 +2,28 @@
 
 Formato: fecha · cambio · motivo · archivos · impacto.
 
+## 2026-10-18 — Reestructuración, fase 22: despliegue gratuito sin caducidad
+
+- **Cambio:** la plataforma se publica gratis y sin fecha de caducidad. La web va en Render Free y la base de datos en Neon Free, las dos en Frankfurt (A70).
+  - `render.yaml` ya no crea la base de Render, que caduca a los 30 días: pide en el formulario la cadena de conexión de Neon.
+  - Los archivos subidos se guardan en la base de datos (`FILE_STORAGE=database`), porque la web gratuita pierde su disco en cada reinicio.
+  - Al despertar, la web se salta la instalación si no cambió la versión ni ningún ajuste. Pasa de unos 15 s de CPU (≈ 2,5 min con 0,1 CPU) a 0,12 s.
+  - Los cambios de documentación y pruebas no reconstruyen la web.
+- **Corrección:** una cadena de conexión de Neon copiada tal cual no conectaba. postgres.js enviaba `channel_binding` al servidor como parámetro y el servidor rechazaba la conexión. Se quita, y el servidor «pooled» de Neon pasa al directo.
+- **Corrección:** la retención diaria y la reaplicación de supresiones usaban siempre el disco local. Con S3 configurado no habrían borrado las imágenes de un cliente. Ahora eligen el almacenamiento como la web.
+- **Motivo:** el responsable pidió una plataforma gratuita de por vida, aunque fuera más sencilla. No se ha quitado ninguna función.
+- **Archivos:**
+  - `render.yaml`, `deploy/start.sh`, `deploy/smoke-test.sh`;
+  - `packages/db/src/{client.ts,database-url.mjs,schema/platform.ts,rls/policies.ts}`, `packages/db/scripts/startup-gate.mjs`, migraciones `0056_free_tier_storage` y `0057_rls_v20`;
+  - `packages/application/src/storage.ts`, `packages/application/scripts/{privacy-daily,reapply-erasures}.ts`, `apps/web/src/server/context.ts`;
+  - pruebas: `client.unit.test.ts`, `startup-gate.int.test.ts`, `storage.int.test.ts`;
+  - `docs/{DEPLOY_RENDER,PRODUCT_ARCHITECTURE,OPERATIONS,DPIA,DATABASE,DATABASE_SCHEMA,TESTING,IMPLEMENTATION_ROADMAP}.md`.
+- **Impacto:**
+  - 2 migraciones (2 tablas `system_only`);
+  - sin cambios en la API ni en la interfaz;
+  - **despliegue**: crear un proyecto gratuito de Neon en Frankfurt y pegar su cadena en el formulario de Render (`DEPLOY_RENDER.md`). Una instalación anterior con la base de Render necesita copiar sus datos a Neon (`pg_dump`/`pg_restore`);
+  - **copias**: el plan gratuito de Neon guarda 6 horas de historial, más las ramas manuales. Con datos reales, decidir entre un plan de pago o una copia externa (DPIA R-14).
+
 ## 2026-10-13 — Reestructuración, fase 21: revisión de calidad de las fases 19–20
 
 - **Cambio (seguridad):**

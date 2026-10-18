@@ -11,7 +11,7 @@
 |---|---|---|
 | App web + API | Next.js (`apps/web`), imagen `web` del `Dockerfile`: servidor autónomo (`standalone`), ≈ 480 MB | **Sin estado**: varias réplicas detrás de un balanceador |
 | Base de datos | PostgreSQL 16 | Única fuente de verdad: sesiones, límites de peticiones, auditoría, datos |
-| Archivos subidos | Siluetas de ejercicios | **Almacenamiento de objetos S3 compatible** (`S3_*`; bucket privado en la UE) o, sin él, `FILE_STORAGE_DIR` (volumen compartido si hay varias réplicas) |
+| Archivos subidos | Siluetas de ejercicios | **Almacenamiento de objetos S3 compatible** (`S3_*`; bucket privado en la UE), la propia base de datos (`FILE_STORAGE=database`, para alojamientos sin disco persistente como el plan gratuito; fase 22) o `FILE_STORAGE_DIR` (volumen compartido si hay varias réplicas) |
 | Trabajos diarios | `monitor:daily` (alertas) y `privacy:daily` (retención y depuración) | Un *cron* del proveedor, una vez al día, con la imagen `jobs` |
 | Migraciones y trabajos | Imagen `jobs` (todo el *workspace*, ≈ 1,9 GB): `db:migrate` + catálogos (`db:seed`, idempotente), `injuries:encrypt-text` (idempotente, tras las migraciones), `monitor:daily`, `privacy:daily`, `keys:rotate`, `privacy:reapply-erasures` | Trabajos puntuales o programados |
 
@@ -26,7 +26,8 @@
 | `ADMIN_EMAIL` · `ADMIN_PASSWORD` · `ADMIN_NAME` · `ORG_NAME` | Solo en la imagen todo en uno | Primer administrador y su organización; se crean una vez, si no existen. `REQUIRE_ADMIN_2FA=false` desactiva el 2FA obligatorio de esa organización |
 | `DAILY_JOBS` | No | `in-app`: trabajos diarios dentro de la app (sin *cron*) |
 | `DEMO_DATA` | No | `true`: datos de ejemplo; sus usuarios usan la contraseña del administrador |
-| `FILE_STORAGE_DIR` | No | `/data/files` en la imagen; solo si no hay `S3_BUCKET` |
+| `FILE_STORAGE` | No | `database`: los archivos subidos se guardan en la base de datos (tabla `stored_files`). Lo usa `render.yaml`, porque la web gratuita pierde su disco en cada reinicio |
+| `FILE_STORAGE_DIR` | No | `/data/files` en la imagen; solo si no hay `S3_BUCKET` ni `FILE_STORAGE=database` |
 | `S3_ENDPOINT` · `S3_REGION` · `S3_BUCKET` · `S3_ACCESS_KEY_ID` · `S3_SECRET_ACCESS_KEY` · `S3_SSE` | No | Almacenamiento de objetos. Firma AWS SigV4 con URL de tipo *path* (AWS, Scaleway, OVH, MinIO…). Bucket **privado**, en la UE, sin versionado o con caducidad corta de versiones antiguas, para que una supresión RGPD borre de verdad |
 | `PWNED_PASSWORDS_CHECK` | No | `on` = rechazar contraseñas filtradas (k-anonimato) |
 | `LOG_LEVEL` | No | `debug`, `info` (por defecto), `warn` o `error` |
@@ -39,7 +40,8 @@ Los secretos van en el gestor de secretos del proveedor, nunca en el repositorio
 ## 3. Desplegar
 
 **Opción recomendada: Render (UE), sin comandos.** Guía en `DEPLOY_RENDER.md`.
-- `render.yaml` crea la web y PostgreSQL en Frankfurt.
+- `render.yaml` crea la web en Frankfurt, en el plan gratuito. La base de datos es un proyecto gratuito de Neon en Frankfurt, cuya cadena de conexión pide el formulario. Ninguno de los dos caduca (fase 22, A70).
+- El primer arranque de cada versión prepara la base de datos. Los siguientes, por ejemplo al despertar la web gratuita, se lo saltan si no ha cambiado ni la versión ni ningún ajuste de arranque (`packages/db/scripts/startup-gate.mjs`, tabla `app_releases`).
 - `Dockerfile.render` es una imagen todo en uno: al arrancar migra, carga catálogos, crea el primer administrador desde `ADMIN_EMAIL`/`ADMIN_PASSWORD` y sirve la aplicación (`deploy/start.sh`).
 - Con `DAILY_JOBS=in-app`, los trabajos diarios se ejecutan dentro de la app, una vez al día (`scheduled_job_runs`).
 - CI la arranca dos veces sobre una base vacía con un propietario sin privilegios de superusuario (`deploy/smoke-test.sh`).
@@ -132,6 +134,8 @@ Las migraciones son compatibles hacia atrás con la versión anterior durante el
 
 Las copias se cifran en reposo y se guardan en la UE, en otra cuenta o proyecto distinto del de producción.
 
+**En el despliegue gratuito (Neon Free, fase 22)** la política no se cumple: Neon guarda 6 horas de historial y, a mano, ramas como copia mensual. Los archivos subidos van en la misma base, así que esas copias también los incluyen. Para cumplir la política con datos reales hace falta un plan de pago de Neon o una copia externa `[REQUIERE DECISIÓN DEL RESPONSABLE]`.
+
 **Restaurar** (probado en local con `pg_dump`/`pg_restore`, §7):
 
 1. Restaura la copia o el instante en una base nueva y comprueba `/api/ready` contra ella.
@@ -165,7 +169,7 @@ DATABASE_URL=postgres://…/origen scripts/restore-drill.sh --app
 |---|---|---|---|---|---|
 | 06/10/2026 | Local (PostgreSQL 16), con la suite E2E escribiendo a la vez | Demo: 114 tablas, 16 022 filas, 211 políticas, 47 migraciones | 1,6 MB en 0,5 s | 2,5 s | Idéntica al origen |
 | 06/10/2026 | Local, con `--app` | Demo recién cargada: 16 017 filas | 1,6 MB en 0,5 s | 2,6 s (6,0 s en total, con el arranque de la app) | Idéntica; `/api/ready` → `ready`; login y lista de clientes correctos |
-| *[Completar]* | Render (base de pago, recuperación a un instante) | Producción | | | *Pendiente: lo hace el responsable en el panel; ver `DEPLOY_RENDER.md` → «Copias y restauración»* |
+| *[Completar]* | Neon (rama desde un instante) + servicio temporal de Render | Producción | | | *Pendiente: lo hace el responsable en los paneles; ver `DEPLOY_RENDER.md` → «Copias de seguridad»* |
 
 ## 7. Qué se ha probado (Fase 15)
 

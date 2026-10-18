@@ -844,3 +844,28 @@ pnpm --filter @tp/web test:e2e -- e2e/perf.spec.ts e2e/perf.mobile.spec.ts
   - `reports.spec.ts`: el mensaje «1 filas importadas» desaparecía, y era un fallo real. Tras «Importar» la página se refresca; la importación queda «importada» y el control que mostraba el mensaje deja de estar, con el mensaje dentro. La prueba solo lo veía si miraba antes del refresco, y un lector de pantalla podía perderlo igual. Ahora el anunciador global lo dice («1 fila importada.»), el foco pasa al título de la tarjeta y la página guarda el resultado tras el refresco («Estado: importada · 1 fila importada.»);
   - `session-grid.spec.ts` (dos entrenadores en la misma fila): la celda muestra el cambio al pulsar Enter y lo guarda en segundo plano. La prueba recargaba la página del primer entrenador antes de que se guardara el cambio del segundo. Ahora espera a cada guardado del que depende el paso siguiente, como ya hacía la primera prueba del archivo.
 
+## Resultado de la reestructuración, fase 22 (despliegue gratuito sin caducidad)
+
+- **Unitarias** (`client.unit.test.ts`): una cadena de conexión de Neon pierde `channel_binding` y conserva `sslmode` y la contraseña, incluso con caracteres especiales. El servidor «pooled» pasa al directo y otras direcciones no cambian.
+  - Comprobado también contra PostgreSQL: con `channel_binding=require`, postgres.js sin normalizar falla («unrecognized configuration parameter "channel_binding"»), y `createDb` conecta.
+- **Integración**:
+  - `storage.int.test.ts`: guardar, leer y borrar en la base. Una clave repetida falla, una ausente se lee como vacía, y las claves que la app no genera (`../`, `.svg`) se rechazan. `FILE_STORAGE=database` exige la conexión;
+  - `startup-gate.int.test.ts` ejecuta el script como lo hará el arranque:
+    - la instalación corre hasta que se anota y después se salta;
+    - otra versión, la demo, otra contraseña de administrador u otra clave la repiten;
+    - sin identificador de versión no se anota nada;
+    - si la base no responde, la instalación corre y lo dice;
+    - la huella no contiene los ajustes.
+- **Seguridad**: 686 comprobaciones (674 antes). La matriz RLS cubre `stored_files` y `app_releases`, que el rol de la app no puede leer ni escribir.
+- **De punta a punta, en local**, con `FILE_STORAGE=database`:
+  - una silueta subida por la API como entrenadora queda en `stored_files` y se descarga idéntica;
+  - tras reiniciar el servidor, se sigue descargando idéntica.
+- **Arranque**, simulando `deploy/start.sh` sobre una base nueva con una cadena al estilo de Neon:
+  - primer arranque: 15,7 s de CPU (unos 2,5 min con 0,1 CPU);
+  - segundo, sin cambios: 0,12 s y «Start-up setup already done for release sim-1: skipped.».
+- **Límites gratuitos**:
+  - memoria del servidor con 330 MB como máximo, recorriendo las páginas del entrenador y generando PDF (512 MB en Render Free);
+  - pasos de arranque entre 160 y 240 MB;
+  - base con catálogos de 35 MB y con la demo de 43 MB (0,5 GB en Neon Free).
+- **CI**: la prueba de humo arranca la imagen de Render con una cadena con `channel_binding=require`, `FILE_STORAGE=database` y `APP_VERSION`, y comprueba que el segundo arranque se salta la instalación.
+
