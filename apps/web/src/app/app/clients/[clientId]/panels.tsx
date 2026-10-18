@@ -26,6 +26,7 @@ import { Field, Input, Select, Textarea } from '@/components/ui/field';
 import { FormError, useApiAction } from '@/components/use-form';
 import { formatDate, label, LABELS } from '@/lib/labels';
 import { ExercisePicker } from '@/components/library/exercise-picker';
+import { ShareLink } from '@/components/share-link';
 
 const Saved = ({ show }: { show: boolean }) =>
   show ? (
@@ -345,7 +346,33 @@ export function AccountPanel({
   if (hasAccount)
     return (
       <Card title="Acceso del cliente">
-        <p className="text-sm">El cliente tiene cuenta activa.</p>
+        <p className="text-sm">
+          El cliente tiene cuenta. Si olvida su contraseña, crea un enlace para que elija otra.
+        </p>
+        <Button
+          className="mt-3"
+          variant="secondary"
+          disabled={pending}
+          onClick={async () => {
+            const r = await run<{ link: string }>(
+              `/clients/${clientId}/password-link`,
+              'POST',
+              {},
+              { refresh: false },
+            );
+            if (r) setLink(r.link);
+          }}
+        >
+          Crear enlace para nueva contraseña
+        </Button>
+        <FormError error={error} />
+        {link ? (
+          <ShareLink
+            link={link}
+            intro="Enlace creado: vale 24 horas y una sola vez. Mándaselo al cliente."
+            message="Hola, con este enlace puedes crear tu nueva contraseña de la app de entrenamiento:"
+          />
+        ) : null}
       </Card>
     );
   return (
@@ -379,11 +406,11 @@ export function AccountPanel({
       </div>
       <FormError error={error} />
       {link ? (
-        <p className="mt-3 text-sm">
-          Invitación creada (válida 7 días). Mientras no haya proveedor de email configurado,
-          comparte este enlace por un canal seguro:
-          <code className="mt-1 block break-all rounded bg-surface p-2 text-xs">{link}</code>
-        </p>
+        <ShareLink
+          link={link}
+          intro="Invitación creada: vale 7 días. Mándasela al cliente."
+          message="Hola, te invito a la app de entrenamiento. Crea tu cuenta aquí:"
+        />
       ) : null}
     </Card>
   );

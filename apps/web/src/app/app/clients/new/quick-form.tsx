@@ -7,6 +7,7 @@ import type { ProgrammingProfileOption } from '@tp/application';
 import { LEVEL_NAMES, suggestLevel, type ProgrammingLevel } from '@tp/domain';
 import { EquipmentChips } from '@/components/clients/equipment-chips';
 import type { Catalog } from '@/components/clients/types';
+import { ShareLink } from '@/components/share-link';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Field, Input, Select, Textarea } from '@/components/ui/field';
@@ -150,13 +151,11 @@ export function QuickClientForm({
             {firstName} {lastName} ya está dado de alta.
           </p>
           {invited.link ? (
-            <p>
-              Invitación creada para {email} (válida 7 días). Mientras no haya proveedor de email
-              configurado, comparte este enlace por un canal seguro:
-              <code className="mt-1 block break-all rounded bg-surface p-2 text-xs">
-                {invited.link}
-              </code>
-            </p>
+            <ShareLink
+              link={invited.link}
+              intro={`Invitación creada para ${email}: vale 7 días. Mándasela.`}
+              message="Hola, te invito a la app de entrenamiento. Crea tu cuenta aquí:"
+            />
           ) : (
             <>
               <FormError error={error} />

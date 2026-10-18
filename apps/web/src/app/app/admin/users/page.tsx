@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation';
 import { Badge, Card } from '@/components/ui/card';
 import { formatDateTime, label } from '@/lib/labels';
 import { requireStaff } from '@/server/session';
-import { InviteStaffForm, UserStatusButton } from './forms';
+import { InviteStaffForm, PasswordLinkButton, UserStatusButton } from './forms';
 import { TransferClientsForm } from './team';
 
 export default async function UsersPage() {
@@ -80,7 +80,12 @@ export default async function UsersPage() {
                   </td>
                   <td>
                     {u.id !== ctx.actor.userId ? (
-                      <UserStatusButton userId={u.id} active={u.status === 'active'} />
+                      <div className="flex flex-wrap gap-1">
+                        {u.status === 'active' ? (
+                          <PasswordLinkButton userId={u.id} name={u.displayName} />
+                        ) : null}
+                        <UserStatusButton userId={u.id} active={u.status === 'active'} />
+                      </div>
                     ) : null}
                   </td>
                 </tr>

@@ -7,7 +7,8 @@ test('trainer pages meet WCAG 2.2 AA (axe, light and dark)', async ({ page }) =>
   test.setTimeout(600_000);
   const i = await a11yIds();
   const found: string[] = [];
-  for (const url of ['/login', '/forgot-password']) await scan(page, url, found);
+  for (const url of ['/login', '/forgot-password', '/reset-password?token=caducado'])
+    await scan(page, url, found);
   await login(page, 'lucia.moreno@example.com');
   const pages = [
     '/app',

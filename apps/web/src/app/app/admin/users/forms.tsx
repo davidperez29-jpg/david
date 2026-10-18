@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
+import { ShareLink } from '@/components/share-link';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Field, Input, Select } from '@/components/ui/field';
@@ -74,10 +75,11 @@ export function InviteStaffForm() {
         </div>
       </form>
       {link ? (
-        <p className="mt-3 text-sm">
-          Enlace (válido 7 días; compártelo por un canal seguro):{' '}
-          <code className="block break-all rounded bg-surface p-2 text-xs">{link}</code>
-        </p>
+        <ShareLink
+          link={link}
+          intro="Invitación creada: vale 7 días. Mándasela."
+          message="Hola, te invito a la plataforma de entrenamiento. Crea tu cuenta aquí:"
+        />
       ) : null}
     </Card>
   );
@@ -99,6 +101,58 @@ export function UserStatusButton({ userId, active }: { userId: string; active: b
         {active ? 'Desactivar' : 'Reactivar'}
       </Button>
       {error ? <span className="text-xs text-danger">{error.message}</span> : null}
+    </>
+  );
+}
+
+/** A new-password link for another account (restructure phase 23), shown in a dialog. */
+export function PasswordLinkButton({ userId, name }: { userId: string; name: string }) {
+  const { run, pending, error } = useApiAction();
+  const [link, setLink] = useState<string | null>(null);
+  const dialog = useRef<HTMLDialogElement>(null);
+  return (
+    <>
+      <Button
+        size="sm"
+        variant="ghost"
+        disabled={pending}
+        aria-label={`Nueva contraseña para ${name}`}
+        onClick={async () => {
+          const r = await run<{ link: string }>(
+            `/users/${userId}/password-link`,
+            'POST',
+            {},
+            { refresh: false },
+          );
+          if (r) {
+            setLink(r.link);
+            dialog.current?.showModal();
+          }
+        }}
+      >
+        Nueva contraseña
+      </Button>
+      {error ? <span className="text-xs text-danger">{error.message}</span> : null}
+      <dialog
+        ref={dialog}
+        aria-labelledby={`password-link-${userId}`}
+        className="m-auto w-[min(28rem,calc(100%-2rem))] rounded-lg border border-border bg-bg p-5 text-text backdrop:bg-black/40"
+        onClose={() => setLink(null)}
+      >
+        <h2 id={`password-link-${userId}`} className="text-lg font-semibold">
+          Nueva contraseña para {name}
+        </h2>
+        {link ? (
+          <ShareLink
+            link={link}
+            intro="Enlace creado: vale 24 horas y una sola vez. Mándaselo."
+            message="Hola, con este enlace puedes crear tu nueva contraseña de la plataforma de entrenamiento:"
+          />
+        ) : null}
+        <form method="dialog" className="mt-4">
+          <Button variant="secondary">Cerrar</Button>
+        </form>
+      </dialog>
     </>
   );
 }

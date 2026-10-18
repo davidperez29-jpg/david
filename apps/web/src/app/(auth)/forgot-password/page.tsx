@@ -1,49 +1,24 @@
-'use client';
-
 import Link from 'next/link';
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Field, Input } from '@/components/ui/field';
-import { FormError, useApiAction } from '@/components/use-form';
 
+/**
+ * No email provider is configured, so nothing could be sent from here (restructure phase 23):
+ * the trainer or an administrator creates a new-password link instead.
+ */
 export default function ForgotPasswordPage() {
-  const { run, pending, error, done } = useApiAction();
-  const [email, setEmail] = useState('');
-  if (done) {
-    return (
-      <>
-        <h1 className="mb-2 text-xl font-semibold">Revisa tu correo</h1>
-        <p className="text-sm text-muted">
-          Si existe una cuenta con ese email, recibirás un enlace válido durante 1 hora.
-        </p>
-        <Link href="/login" className="mt-4 block text-sm underline">
-          Volver
-        </Link>
-      </>
-    );
-  }
   return (
-    <form
-      className="flex flex-col gap-4"
-      onSubmit={async (e) => {
-        e.preventDefault();
-        await run('/auth/password-reset/request', 'POST', { email }, { refresh: false });
-      }}
-    >
-      <h1 className="text-xl font-semibold">Restablecer contraseña</h1>
-      <Field label="Email" htmlFor="email">
-        <Input
-          id="email"
-          type="email"
-          required
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-      </Field>
-      <FormError error={error} />
-      <Button type="submit" disabled={pending}>
-        Enviar enlace
-      </Button>
-    </form>
+    <>
+      <h1 className="mb-2 text-xl font-semibold">¿Has olvidado tu contraseña?</h1>
+      <p className="text-sm">
+        Pide a tu entrenador un enlace para crear una nueva. Si eres del equipo del centro, pídeselo
+        al administrador.
+      </p>
+      <p className="mt-2 text-sm text-muted">
+        Si eres el administrador y no hay otro, la guía de publicación explica cómo cambiarla desde
+        Render.
+      </p>
+      <Link href="/login" className="mt-4 block text-sm underline">
+        Volver
+      </Link>
+    </>
   );
 }
