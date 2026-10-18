@@ -142,6 +142,8 @@ Las versiones anteriores creaban una base de datos de Render, que caduca a los 3
 | La app deja de cargar datos a final de mes | Se agotaron las horas gratuitas de Neon del mes. Se recuperan el día 1, o pasando a pago |
 | El despliegue falla por otro motivo | Servicio → **Logs**: copia las últimas líneas y envíamelas |
 | Tarda en cargar la primera vez que entras | Se estaba despertando (alrededor de 1 minuto). Es normal en el plan gratuito |
+| Un cliente o alguien del equipo ha olvidado su contraseña | La app no envía correos. Su entrenador (o un administrador) crea un enlace en la app: ficha del cliente → **Crear enlace para nueva contraseña**, o **Usuarios** → **Nueva contraseña**. Se lo mandas por WhatsApp; vale 24 horas y una sola vez |
+| Has olvidado tu contraseña de administrador | En **Environment**, cambia `ADMIN_PASSWORD` por una contraseña nueva (≥ 12 caracteres, distinta del email) y pulsa **Manual Deploy → Deploy latest commit**. Al arrancar, esa pasa a ser tu contraseña y se cierran tus sesiones abiertas. Si tienes la verificación en dos pasos, te seguirá pidiendo el código |
 
 ## Qué está comprobado y qué no
 

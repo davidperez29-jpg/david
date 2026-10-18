@@ -28,7 +28,7 @@
 | Almacenamiento con función lenta y sal | ✅ | argon2id (`auth/password.ts`) |
 | Protección frente a fuerza bruta | ✅ | Bloqueo de cuenta y límites por email e IP, contados en BD (`auth/rate-limit.ts`), válidos con varias réplicas |
 | Sin enumeración de cuentas | ✅ | Mismo mensaje y tiempo similar en el login; la recuperación siempre responde OK |
-| Recuperación por enlace de un solo uso y con caducidad; sin preguntas de seguridad | ✅ | `password_reset_tokens` hasheados. Sin proveedor de correo el enlace no se entrega (pendiente de la fase 22) |
+| Recuperación por enlace de un solo uso y con caducidad; sin preguntas de seguridad | ✅ | `password_reset_tokens` hasheados, usados en la misma transacción que cambia la contraseña. Sin proveedor de correo, el enlace lo crea el entrenador asignado o un administrador (24 h, auditado) y lo comparte a mano (fase 23, A71) |
 | Cambio de contraseña con la contraseña actual; revoca las demás sesiones | ✅ | `changePassword` |
 | Segundo factor (TOTP) y obligatorio para ADMIN | ✅ | `organizations.require_admin_2fa` (activo por defecto); la API bloquea a un ADMIN sin 2FA salvo `/auth/*` |
 | Código TOTP de un solo uso dentro de su ventana | ✅ | `users.totp_last_step` (Fase 13, hallazgo P-1 de `PENTEST.md`) |

@@ -2,6 +2,29 @@
 
 Formato: fecha · cambio · motivo · archivos · impacto.
 
+## 2026-10-18 — Reestructuración, fase 23: contraseña olvidada sin correo
+
+- **Cambio:** quien olvida su contraseña vuelve a entrar sin necesidad de correo (A71).
+  - En la ficha del cliente, el entrenador asignado o un administrador pulsa **Crear enlace para nueva contraseña**. Para el equipo, un administrador lo crea en **Usuarios** → **Nueva contraseña**. El enlace vale 24 horas y una sola vez; solo funciona el último.
+  - El enlace y las invitaciones se copian con un botón o se envían con **Enviar por WhatsApp**.
+  - Al abrirlo, la persona escribe la contraseña dos veces y pulsa **Guardar y entrar**: entra directamente y se cierran sus otras sesiones. Con verificación en dos pasos, se le pide el código.
+  - Un administrador único que olvida la suya cambia `ADMIN_PASSWORD` en Render y vuelve a desplegar.
+  - «He olvidado mi contraseña» explica a quién pedir el enlace.
+- **Corrección (seguridad, P-28):** sin proveedor de correo, cada petición de «He olvidado mi contraseña» guardaba un token y el mensaje en memoria, sin límite. Ya no se guarda nada.
+- **Corrección:** un enlace de restablecimiento enviado dos veces a la vez podía usarse dos veces. Ahora se marca usado en la misma transacción que cambia la contraseña. Las cuentas desactivadas ya no pueden usarlo.
+- **Motivo:** la plataforma no tiene correo, y quien olvidaba la contraseña se quedaba fuera. El responsable pidió la solución «lo más sencilla posible tanto para el entrenador como para el cliente».
+- **Archivos:**
+  - `packages/application/src/{password-links,host-admin-password,auth-service,context,audit}.ts`, `packages/application/scripts/bootstrap.ts`;
+  - `packages/db/src/{schema/platform.ts,rls/policies.ts}`, migraciones `0058_app_state` y `0059_rls_v21`;
+  - rutas `clients/{clientId}/password-link`, `users/{userId}/password-link` y `auth/password-reset`;
+  - pantallas: ficha del cliente, alta rápida, usuarios, `/reset-password`, `/forgot-password`, `components/share-link.tsx`;
+  - pruebas: `password-links.int.test.ts`, `host-admin-password.int.test.ts`, `password-link.spec.ts`, `a11y.spec.ts`;
+  - `docs/{API,DEPLOY_RENDER,OPERATIONS,PRODUCT_ARCHITECTURE,SECURITY,ASVS_L2,PENTEST,DATABASE,DATABASE_SCHEMA,TESTING,IMPLEMENTATION_ROADMAP}.md`, `docs/api/contract.json`, `deploy/smoke-test.sh`, `render.yaml`.
+- **Impacto:**
+  - 2 migraciones (1 tabla `system_only`);
+  - API: 2 rutas nuevas; `POST /auth/password-reset` ahora devuelve `requiresSecondFactor` y abre sesión;
+  - **despliegue**: nada que hacer. `ADMIN_PASSWORD` sigue siendo la contraseña del administrador; cambiarla en Render la sustituye.
+
 ## 2026-10-18 — Reestructuración, fase 22: despliegue gratuito sin caducidad
 
 - **Cambio:** la plataforma se publica gratis y sin fecha de caducidad. La web va en Render Free y la base de datos en Neon Free, las dos en Frankfurt (A70).

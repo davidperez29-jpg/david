@@ -869,3 +869,40 @@ pnpm --filter @tp/web test:e2e -- e2e/perf.spec.ts e2e/perf.mobile.spec.ts
   - base con catálogos de 35 MB y con la demo de 43 MB (0,5 GB en Neon Free).
 - **CI**: la prueba de humo arranca la imagen de Render con una cadena con `channel_binding=require`, `FILE_STORAGE=database` y `APP_VERSION`, y comprueba que el segundo arranque se salta la instalación.
 
+## Resultado de la reestructuración, fase 23 (contraseña olvidada sin correo)
+
+- **Integración**:
+  - `password-links.int.test.ts` (8 pruebas):
+    - el entrenador asignado crea el enlace, válido 24 h;
+    - el enlace abre una sesión del cliente, cierra la anterior y solo funciona una vez;
+    - al crear otro, el anterior deja de valer; dos envíos a la vez del mismo enlace cambian la contraseña una sola vez;
+    - lo rechazan otro entrenador, el propio cliente y otro centro; un cliente sin cuenta da «conflicto»;
+    - un administrador lo crea para cualquier otra cuenta del centro, un entrenador no, y nadie para sí mismo;
+    - una cuenta desactivada no recibe enlace y su enlace pendiente deja de funcionar;
+    - con verificación en dos pasos, la sesión pide el código;
+    - queda auditado con quién lo creó y sin el enlace;
+    - sin proveedor de correo, «He olvidado mi contraseña» no guarda ningún token.
+  - `host-admin-password.int.test.ts` (3 pruebas):
+    - un `ADMIN_PASSWORD` nuevo sustituye la contraseña y cierra las sesiones;
+    - con el mismo valor no se toca una contraseña cambiada en la app;
+    - un valor que no cumple la política no cambia nada y se reintenta en el arranque siguiente;
+    - si `ADMIN_EMAIL` no es administrador, no se toca.
+  - `auth.int.test.ts`: el restablecimiento por correo sigue funcionando cuando hay proveedor.
+- **Seguridad**:
+  - 692 comprobaciones RLS (686 antes): `app_state` no es accesible para el rol de la app;
+  - la matriz de acceso cruzado incluye las 2 rutas nuevas: sin sesión, ADMIN de otro centro, otro cliente y entrenador no asignado no obtienen nunca un enlace.
+- **E2E** (`password-link.spec.ts`):
+  - una entrenadora da de alta a un cliente y lo invita, y el cliente crea su cuenta;
+  - la entrenadora crea el enlace en la ficha; el botón de WhatsApp lleva el enlace;
+  - en otro móvil, el enlace pide la contraseña dos veces, avisa si no coinciden y entra con **Guardar y entrar**;
+  - la sesión anterior queda cerrada y el enlace usado dice «Enlace no válido»;
+  - «He olvidado mi contraseña» explica a quién pedirlo;
+  - el diálogo de administración muestra el enlace;
+  - WCAG 2.2 AA (claro y oscuro) en la ficha con el enlace, la página de contraseña nueva, el diálogo y `/reset-password` con un enlace caducado.
+- **Arranque**: `bootstrap.ts` sobre una base nueva:
+  - crea el administrador;
+  - con el mismo valor no hace nada;
+  - un valor corto no se aplica y lo dice;
+  - un valor nuevo válido sustituye la contraseña y queda auditado.
+- **CI**: la prueba de humo arranca la imagen de Render por tercera vez con otro `ADMIN_PASSWORD`. Entra con el nuevo y el antiguo da 401.
+

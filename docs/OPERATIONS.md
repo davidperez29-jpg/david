@@ -42,6 +42,7 @@ Los secretos van en el gestor de secretos del proveedor, nunca en el repositorio
 **Opción recomendada: Render (UE), sin comandos.** Guía en `DEPLOY_RENDER.md`.
 - `render.yaml` crea la web en Frankfurt, en el plan gratuito. La base de datos es un proyecto gratuito de Neon en Frankfurt, cuya cadena de conexión pide el formulario. Ninguno de los dos caduca (fase 22, A70).
 - El primer arranque de cada versión prepara la base de datos. Los siguientes, por ejemplo al despertar la web gratuita, se lo saltan si no ha cambiado ni la versión ni ningún ajuste de arranque (`packages/db/scripts/startup-gate.mjs`, tabla `app_releases`).
+- Cambiar `ADMIN_PASSWORD` y volver a desplegar sustituye la contraseña de ese administrador, desbloquea la cuenta y cierra sus sesiones (fase 23, A71). Es la vía para un administrador único que la ha olvidado. Un despliegue con el mismo valor no la toca, así que una contraseña cambiada en la app se mantiene (tabla `app_state`).
 - `Dockerfile.render` es una imagen todo en uno: al arrancar migra, carga catálogos, crea el primer administrador desde `ADMIN_EMAIL`/`ADMIN_PASSWORD` y sirve la aplicación (`deploy/start.sh`).
 - Con `DAILY_JOBS=in-app`, los trabajos diarios se ejecutan dentro de la app, una vez al día (`scheduled_job_runs`).
 - CI la arranca dos veces sobre una base vacía con un propietario sin privilegios de superusuario (`deploy/smoke-test.sh`).

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button, buttonClass } from '@/components/ui/button';
 import { announce } from '@/components/ui/announcer';
 
@@ -18,6 +18,8 @@ export function ShareLink({
   message: string;
 }) {
   const [copied, setCopied] = useState(false);
+  // The link appears below the button that created it: screen readers hear that it is there.
+  useEffect(() => announce(intro), [link, intro]);
   return (
     <div className="mt-3 flex flex-col gap-2 text-sm">
       <p>{intro}</p>

@@ -27,8 +27,8 @@ Base: `/api/v1`. JSON. Autenticación por cookie de sesión `tp_session` (httpOn
 | `POST /auth/login` | público | `loginSchema` | Inicia sesión. Devuelve `{requiresSecondFactor}` y fija la cookie. |
 | `POST /auth/2fa/verify` | público (sesión pendiente) | `totpCodeSchema` | Completa el segundo factor. |
 | `POST /auth/logout` | público | — | Revoca la sesión actual. |
-| `POST /auth/password-reset/request` | público | `passwordResetRequestSchema` | Envía enlace (siempre 200). |
-| `POST /auth/password-reset` | público | `passwordResetSchema` | Nueva contraseña con token. |
+| `POST /auth/password-reset/request` | público | `passwordResetRequestSchema` | Envía enlace (siempre 200). Sin proveedor de correo no guarda nada (fase 23). |
+| `POST /auth/password-reset` | público | `passwordResetSchema` | Nueva contraseña con token. Abre sesión: devuelve `{requiresSecondFactor}` y fija la cookie (fase 23). |
 | `POST /invitations/accept` | público | `acceptInvitationSchema` | Crea la cuenta e inicia sesión. |
 | `POST /auth/2fa/enroll` | sesión | — | Devuelve secreto y QR. |
 | `POST /auth/2fa/confirm` | sesión | `totpCodeSchema` | Activa 2FA. |
@@ -37,6 +37,8 @@ Base: `/api/v1`. JSON. Autenticación por cookie de sesión `tp_session` (httpOn
 | `POST /invitations` | `users:manage` (staff) · `invitations:create` (cliente) | `createInvitationSchema` | Devuelve `{invitationId, link, expiresAt}`. |
 | `GET /users` | `users:read` | — | Usuarios e invitaciones pendientes. |
 | `POST /users/{id}/status` | `users:manage` | `{active: boolean}` | Activa/desactiva (revoca sesiones). |
+| `POST /users/{id}/password-link` | `users:manage` | — | Enlace de un solo uso para nueva contraseña de otra cuenta activa del centro (24 h). Devuelve `{link, expiresAt}` (fase 23). |
+| `POST /clients/{id}/password-link` | `invitations:create` (entrenador asignado o ADMIN) | — | Lo mismo para la cuenta de un cliente (fase 23). |
 | `GET /trainers` | `clients:read` | — | Entrenadores activos. |
 | `GET /catalog` | `catalog:read` | — | Objetivos, deportes y material. |
 | `GET /programming-profiles` | `clients:read` | — | Perfiles de programación (globales y propios) con sus 3 niveles, objetivo y batería sugeridos (reestructuración, fase 1). |

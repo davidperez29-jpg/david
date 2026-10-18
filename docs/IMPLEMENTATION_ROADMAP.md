@@ -39,6 +39,7 @@
 | 20 | Pendientes técnicos de la fase 18: copia de sesiones en bloque, índices de `client_id`, reglas una vez por centro en el trabajo diario y retirada de las columnas en claro de lesiones (elegida por el responsable) | Planificación, base de datos, seguimiento, lesiones | ✅ Hecha |
 | 21 | Revisión de calidad de las fases 19–20: seguridad, accesibilidad y rendimiento, con correcciones (elegida por el responsable) | Revisión del banco, pendientes técnicos | ✅ Hecha |
 | 22 | Despliegue gratuito sin caducidad: web en Render Free y base en Neon Free, archivos subidos en la base y arranque rápido al despertar (elegida por el responsable) | Despliegue, base de datos, almacenamiento | ✅ Hecha |
+| 23 | Contraseña olvidada sin correo: enlace de un solo uso que comparte el entrenador o un administrador, y recuperación del administrador desde Render (elegida por el responsable) | Autenticación, ficha del cliente, usuarios, arranque | ✅ Hecha |
 
 ## Por qué el despliegue va primero (decisión A2)
 
@@ -478,5 +479,20 @@ Elegida por el responsable: una plataforma gratuita de por vida, aunque fuera m�
 - comprobar el primer despliegue real en los paneles de Neon y Render, bloqueados desde este entorno;
 - copias largas: el plan gratuito de Neon guarda 6 horas, más las ramas manuales (DPIA R-14). Con datos reales, decidir entre un plan de pago de Neon o una copia externa automática;
 - trasladar los datos de una instalación anterior con la base de Render, si la hay (`pg_dump`/`pg_restore`).
-- recuperar la contraseña online: no hay proveedor de correo, así que el enlace de «He olvidado mi contraseña» no se entrega, y una invitación no sirve para quien ya tiene cuenta. Propuesta: que un administrador genere el enlace de un solo uso y lo comparta, como las invitaciones, o configurar un proveedor de correo gratuito en la UE.
+- ~~recuperar la contraseña online~~: hecho en la fase 23.
 
+## Fase 23 · Contraseña olvidada sin correo ✅
+
+Elegida por el responsable: «lo más sencillo posible tanto para el entrenador como para el cliente». La plataforma no tiene proveedor de correo, así que «He olvidado mi contraseña» no llegaba a nadie, y una invitación no sirve para quien ya tiene cuenta. Quien olvidaba la contraseña se quedaba fuera (A71).
+
+- **Enlace para nueva contraseña.** En la ficha del cliente → **Acceso del cliente**, el entrenador asignado o un administrador pulsa **Crear enlace para nueva contraseña**. Para el equipo, un administrador lo hace en **Usuarios** → **Nueva contraseña**. El enlace vale 24 horas y una sola vez, y solo funciona el último.
+- **Copiar o WhatsApp.** Ese enlace, y también las invitaciones, se copian con un botón o se envían con **Enviar por WhatsApp**.
+- **El cliente entra directamente.** Abre el enlace, escribe la contraseña dos veces y pulsa **Guardar y entrar**. Se cierran sus otras sesiones; si tiene verificación en dos pasos, se le pide el código.
+- **El administrador único** cambia `ADMIN_PASSWORD` en Render y vuelve a desplegar: esa pasa a ser su contraseña. Una versión nueva con el mismo valor no deshace una contraseña cambiada en la app (`app_state`, huella con clave).
+- **«He olvidado mi contraseña»** explica a quién pedir el enlace. Sin proveedor de correo ya no guarda tokens ni mensajes en memoria (P-28).
+
+**Criterios**:
+- ✅ el enlace funciona una vez, también con dos envíos a la vez; el anterior deja de valer al crear otro; las cuentas desactivadas no tienen enlace (`password-links.int.test.ts`);
+- ✅ solo el entrenador asignado o un administrador del centro, nunca otro entrenador, el cliente u otro centro (pruebas de integración y matriz de acceso cruzado de todas las rutas);
+- ✅ la contraseña del administrador cambia con `ADMIN_PASSWORD` y no se deshace con una versión nueva (`host-admin-password.int.test.ts`);
+- ✅ recorrido completo en el navegador: invitación, enlace, contraseña nueva, sesión antigua cerrada y enlace usado (`password-link.spec.ts`), con WCAG 2.2 AA en las pantallas nuevas.
