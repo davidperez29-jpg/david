@@ -16,6 +16,7 @@ export type AuditAction =
   | 'totp_enabled'
   | 'password_changed'
   | 'password_reset'
+  | 'password_link_created'
   | 'invite'
   | 'invitation_accepted'
   | 'assign'

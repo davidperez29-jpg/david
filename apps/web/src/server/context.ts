@@ -29,7 +29,8 @@ function singletons() {
         process.env.APP_ENCRYPTION_KEY,
         process.env.APP_ENCRYPTION_KEYS_PREVIOUS,
       ),
-      // No email provider configured yet (Phase 1): messages are kept in memory and logged in dev.
+      // No email provider configured yet (Phase 1): messages are logged in development and
+      // dropped in production, where links are shared by hand (restructure phase 23).
       mailer: new DevMailer(),
       // The database with FILE_STORAGE=database (free hosting without a disk), an S3-compatible
       // bucket (EU) when S3_BUCKET is set, local disk otherwise (OPERATIONS.md).
@@ -40,11 +41,12 @@ function singletons() {
 }
 
 class DevMailer extends MemoryMailer {
+  override readonly delivers = process.env.NODE_ENV !== 'production';
   override async send(message: { to: string; subject: string; text: string }): Promise<void> {
+    // Kept only where someone reads them: in production they would pile up in memory.
+    if (!this.delivers) return;
     await super.send(message);
-    if (process.env.NODE_ENV !== 'production') {
-      console.info(`[dev-mailer] to=${message.to} subject="${message.subject}"\n${message.text}`);
-    }
+    console.info(`[dev-mailer] to=${message.to} subject="${message.subject}"\n${message.text}`);
   }
 }
 

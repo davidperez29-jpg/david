@@ -330,6 +330,8 @@ const RESET_TTL_MS = 60 * 60_000;
 /** Always succeeds from the caller's perspective (no account enumeration). */
 export async function requestPasswordReset(ctx: AppContext, input: unknown): Promise<void> {
   const { email } = parse(passwordResetRequestSchema, input);
+  // Without an email provider nothing would arrive: no token is stored (restructure phase 23).
+  if (!ctx.mailer.delivers) return;
   const [u] = await ctx.db
     .select()
     .from(users)
@@ -348,9 +350,22 @@ export async function requestPasswordReset(ctx: AppContext, input: unknown): Pro
   });
 }
 
-export async function resetPassword(ctx: AppContext, input: unknown): Promise<void> {
+/**
+ * Sets the new password of a reset link and signs the person in with a fresh session (restructure
+ * phase 23), as accepting an invitation does: every other session is closed, and an account with
+ * two-step verification still has to enter its code.
+ */
+export async function resetPassword(
+  ctx: AppContext,
+  input: unknown,
+  meta: { userAgentHash?: string | null } = {},
+): Promise<LoginResult> {
   const { token, password } = parse(passwordResetSchema, input);
   const now = ctx.now();
+  const invalid = () =>
+    new DomainError('validation', 'El enlace no es válido o ha caducado.', {
+      token: ['invalid'],
+    });
   const [row] = await ctx.db
     .select({ t: passwordResetTokens, u: users })
     .from(passwordResetTokens)
@@ -360,32 +375,41 @@ export async function resetPassword(ctx: AppContext, input: unknown): Promise<vo
         eq(passwordResetTokens.tokenHash, sha256(token)),
         isNull(passwordResetTokens.usedAt),
         gt(passwordResetTokens.expiresAt, now),
+        eq(users.status, 'active'),
       ),
     );
-  if (!row)
-    throw new DomainError('validation', 'El enlace no es válido o ha caducado.', {
-      token: ['invalid'],
-    });
+  if (!row) throw invalid();
   assertPasswordPolicy(password, row.u.email);
   await assertPasswordNotBreached(ctx, password);
   const hash = await hashPassword(password);
   const roles = await rolesOf(ctx.db, row.u.id);
-  await ctx.db.transaction(async (tx) => {
-    await tx
+  const totpEnabled = row.u.totpEnabledAt != null;
+  return ctx.db.transaction(async (tx) => {
+    // Single use even when the form is sent twice at once.
+    const used = await tx
       .update(passwordResetTokens)
       .set({ usedAt: now })
-      .where(eq(passwordResetTokens.id, row.t.id));
+      .where(and(eq(passwordResetTokens.id, row.t.id), isNull(passwordResetTokens.usedAt)))
+      .returning({ id: passwordResetTokens.id });
+    if (!used.length) throw invalid();
     await tx
       .update(users)
-      .set({ passwordHash: hash, failedLoginCount: 0, lockedUntil: null })
+      .set({ passwordHash: hash, failedLoginCount: 0, lockedUntil: null, lastLoginAt: now })
       .where(eq(users.id, row.u.id));
     await revokeAllSessions(tx, row.u.id, now);
+    const s = await createSession(tx, row.u.id, roles, {
+      secondFactorVerified: !totpEnabled,
+      ipHash: ctx.ipHash ?? null,
+      userAgentHash: meta.userAgentHash ?? null,
+      now,
+    });
     await writeAudit(
       tx,
       ctx,
       { action: 'password_reset', entityType: 'user', entityId: row.u.id },
       { userId: row.u.id, organizationId: row.u.organizationId, roles },
     );
+    return { token: s.token, expiresAt: s.expiresAt, requiresSecondFactor: totpEnabled };
   });
 }
 

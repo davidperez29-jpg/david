@@ -76,6 +76,7 @@
     "clients/[clientId]/injuries GET authenticated",
     "clients/[clientId]/injuries POST authenticated",
     "clients/[clientId]/monitoring GET authenticated",
+    "clients/[clientId]/password-link POST authenticated",
     "clients/[clientId]/plan-proposals GET authenticated",
     "clients/[clientId]/plan-proposals POST authenticated",
     "clients/[clientId]/plans/from-template POST authenticated",
@@ -243,6 +244,7 @@
     "trainers GET authenticated",
     "trainers/transfer POST authenticated",
     "trainers/workload GET authenticated",
+    "users/[userId]/password-link POST authenticated",
     "users/[userId]/status POST authenticated",
     "users GET authenticated"
   ],

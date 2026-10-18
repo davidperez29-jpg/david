@@ -4,11 +4,14 @@ import type { Actor } from '@tp/domain';
 import type { FileStorage } from './storage';
 
 export interface Mailer {
+  /** False when nothing reaches the recipient (no email provider): flows offer other ways. */
+  readonly delivers: boolean;
   send(message: { to: string; subject: string; text: string }): Promise<void>;
 }
 
 /** In-memory mailer used in development and tests until an EU email provider is configured. */
 export class MemoryMailer implements Mailer {
+  readonly delivers: boolean = true;
   readonly sent: { to: string; subject: string; text: string }[] = [];
   async send(message: { to: string; subject: string; text: string }): Promise<void> {
     this.sent.push(message);
