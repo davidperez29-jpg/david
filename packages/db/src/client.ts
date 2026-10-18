@@ -1,6 +1,9 @@
 import { drizzle, type PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import * as schema from './schema';
+import { normalizeDatabaseUrl } from './database-url.mjs';
+
+export { normalizeDatabaseUrl };
 
 export type Database = PostgresJsDatabase<typeof schema>;
 /** A database handle or an open transaction — repositories accept either. */
@@ -11,28 +14,6 @@ export interface DbHandle {
   /** Plain SQL text (scripts and test tooling only; never with user input). */
   rawQuery: (text: string) => Promise<Record<string, unknown>[]>;
   close: () => Promise<void>;
-}
-
-/**
- * The connection string as a managed host gives it, made usable by this driver (restructure
- * phase 22, free hosting on Neon):
- * - `channel_binding` is a libpq option: postgres.js would send it to the server as a setting,
- *   and the server refuses the connection (`unrecognized configuration parameter`). SCRAM, which
- *   it protects, still applies.
- * - Neon's pooled host (`ep-…-pooler.…neon.tech`) is turned into the direct one (the same name
- *   without `-pooler`): migrations and start-up steps hold one session, which a transaction
- *   pooler does not keep.
- */
-export function normalizeDatabaseUrl(url: string): string {
-  let u: URL;
-  try {
-    u = new URL(url);
-  } catch {
-    return url;
-  }
-  u.searchParams.delete('channel_binding');
-  if (u.hostname.endsWith('.neon.tech')) u.hostname = u.hostname.replace(/-pooler(?=\.)/, '');
-  return u.toString();
 }
 
 /**

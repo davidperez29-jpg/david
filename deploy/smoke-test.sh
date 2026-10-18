@@ -1,6 +1,8 @@
 #!/bin/sh
 # Deployment smoke test (CI, docs/DEPLOY_RENDER.md): the all-in-one image against an empty
-# PostgreSQL whose owner is NOT a superuser (like a managed database), started twice.
+# PostgreSQL whose owner is NOT a superuser (like a managed database), started twice. As on the
+# free plan (restructure phase 22): a connection string as Neon gives it (channel_binding), files
+# in the database, and a release id, so the second start skips the one-off setup.
 # Usage: deploy/smoke-test.sh <image>
 set -eu
 IMAGE=$1
@@ -18,7 +20,8 @@ docker exec tp-smoke-db psql -U root -d plataforma -c \
 
 start() {
   docker run -d --name tp-smoke-app --network "$NET" -p 3190:3000 \
-    -e DATABASE_URL=postgres://owner:ownerpw@tp-smoke-db:5432/plataforma -e APP_ENCRYPTION_KEY="$KEY" \
+    -e 'DATABASE_URL=postgres://owner:ownerpw@tp-smoke-db:5432/plataforma?channel_binding=require' \
+    -e APP_ENCRYPTION_KEY="$KEY" -e APP_VERSION=smoke-1 -e FILE_STORAGE=database \
     -e ADMIN_EMAIL=admin@example.com -e ADMIN_PASSWORD=clave-de-prueba-larga -e DAILY_JOBS=in-app \
     "$IMAGE" >/dev/null
   for i in $(seq 1 150); do curl -sf localhost:3190/api/ready >/dev/null && return 0; sleep 3; done
@@ -34,6 +37,8 @@ start
 docker rm -f tp-smoke-app >/dev/null
 start
 [ "$(login)" = 200 ] || { echo "Login failed after restart"; exit 1; }
+docker logs tp-smoke-app 2>&1 | grep -q 'Start-up setup already done for release smoke-1: skipped.' \
+  || { docker logs tp-smoke-app; echo "The second start did not skip the setup"; exit 1; }
 ORGS=$(docker exec tp-smoke-db psql -U root -d plataforma -tAc 'select count(*) from organizations')
 [ "$ORGS" = 1 ] || { echo "Expected 1 organization after two starts, got $ORGS"; exit 1; }
-echo "Deployment smoke test passed: ready, admin login, idempotent restart."
+echo "Deployment smoke test passed: ready, admin login, restart skips the setup and stays idempotent."
