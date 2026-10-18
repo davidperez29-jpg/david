@@ -478,4 +478,5 @@ Elegida por el responsable: una plataforma gratuita de por vida, aunque fuera m�
 - comprobar el primer despliegue real en los paneles de Neon y Render, bloqueados desde este entorno;
 - copias largas: el plan gratuito de Neon guarda 6 horas, más las ramas manuales (DPIA R-14). Con datos reales, decidir entre un plan de pago de Neon o una copia externa automática;
 - trasladar los datos de una instalación anterior con la base de Render, si la hay (`pg_dump`/`pg_restore`).
+- recuperar la contraseña online: no hay proveedor de correo, así que el enlace de «He olvidado mi contraseña» no se entrega, y una invitación no sirve para quien ya tiene cuenta. Propuesta: que un administrador genere el enlace de un solo uso y lo comparta, como las invitaciones, o configurar un proveedor de correo gratuito en la UE.
 
