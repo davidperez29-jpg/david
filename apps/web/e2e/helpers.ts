@@ -24,3 +24,18 @@ export async function logoutStaff(page: Page) {
   await menu.getByRole('button', { name: 'Cerrar sesión' }).click();
   await expect(page).toHaveURL(/\/login/);
 }
+
+/** What Chrome or Edge fire when the app can be installed; the test answers «Instalar». */
+export async function offerInstall(page: Page) {
+  await page.evaluate(() => {
+    const e = new Event('beforeinstallprompt', { cancelable: true }) as Event & {
+      prompt: () => Promise<void>;
+      userChoice: Promise<{ outcome: string }>;
+    };
+    e.prompt = async () => {
+      (window as unknown as { __prompted: boolean }).__prompted = true;
+    };
+    e.userChoice = Promise.resolve({ outcome: 'accepted' });
+    window.dispatchEvent(e);
+  });
+}

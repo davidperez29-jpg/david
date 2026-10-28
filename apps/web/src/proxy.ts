@@ -34,6 +34,6 @@ export function proxy(req: NextRequest) {
 export const config = {
   matcher: [
     // Everything except static assets (they run no inline code and are cached).
-    '/((?!_next/static|_next/image|favicon.ico|icon.svg|sw.js|manifest.webmanifest).*)',
+    '/((?!_next/static|_next/image|favicon.ico|icon.svg|icons/|apple-touch-icon.png|sw.js|manifest.webmanifest).*)',
   ],
 };

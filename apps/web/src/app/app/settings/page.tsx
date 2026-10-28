@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { getSecurityStatus } from '@tp/application';
 import { currentSessionId, requireRequestContext } from '@/server/session';
+import { InstallApp } from '@/components/install-app';
 import { SecuritySettings } from '@/components/security-settings';
 import { ThemeSwitch } from '@/components/theme-switch';
 
@@ -22,6 +23,7 @@ export default async function SettingsPage() {
         </Link>
       ) : null}
       <ThemeSwitch />
+      <InstallApp variant="settings" />
       <SecuritySettings status={sec} recommend2fa={ctx.actor.roles.some((r) => r !== 'CLIENT')} />
     </div>
   );

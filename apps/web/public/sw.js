@@ -4,15 +4,16 @@
  *  - Client pages (/me…): network first, falling back to the last cached copy when offline,
  *    so a session opened once can be reopened and logged without connection.
  *  - API calls are never cached: writes go through the IndexedDB queue in the page.
+ *  - The installed app opens at "/" (restructure phase 24), which sends each person to their area.
+ *    Without connection, a client who has opened «Hoy» before is taken to its last copy.
  */
-const VERSION = 'tp-v1';
+const VERSION = 'tp-v2';
+const ICONS = ['/icon.svg', '/icons/icon-192.png', '/icons/icon-512.png', '/apple-touch-icon.png'];
 const STATIC = `${VERSION}-static`;
 const PAGES = `${VERSION}-pages`;
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(STATIC).then((c) => c.addAll(['/icon.svg', '/manifest.webmanifest'])),
-  );
+  event.waitUntil(caches.open(STATIC).then((c) => c.addAll([...ICONS, '/manifest.webmanifest'])));
   self.skipWaiting();
 });
 
@@ -38,7 +39,7 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(req.url);
   if (url.origin !== self.location.origin || url.pathname.startsWith('/api/')) return;
 
-  if (url.pathname.startsWith('/_next/static/') || url.pathname === '/icon.svg') {
+  if (url.pathname.startsWith('/_next/static/') || ICONS.includes(url.pathname)) {
     event.respondWith(
       caches.match(req).then(
         (hit) =>
@@ -55,6 +56,19 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  if (url.pathname === '/' && req.mode === 'navigate') {
+    event.respondWith(
+      fetch(req).catch(() =>
+        caches
+          .match('/me', { ignoreVary: true })
+          .then((hit) =>
+            hit ? Response.redirect(new URL('/me', self.location.origin).href, 302) : offline(),
+          ),
+      ),
+    );
+    return;
+  }
+
   if (url.pathname === '/me' || url.pathname.startsWith('/me/')) {
     event.respondWith(
       fetch(req)
@@ -65,18 +79,14 @@ self.addEventListener('fetch', (event) => {
           }
           return res;
         })
-        .catch(() =>
-          caches
-            .match(req)
-            .then(
-              (hit) =>
-                hit ||
-                new Response(
-                  '<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Sin conexión</title><body style="font-family:system-ui;padding:24px"><h1>Sin conexión</h1><p>Abre la sesión de hoy cuando tengas conexión y podrás registrarla después sin red.</p></body>',
-                  { headers: { 'Content-Type': 'text/html; charset=utf-8' } },
-                ),
-            ),
-        ),
+        .catch(() => caches.match(req).then((hit) => hit || offline())),
     );
   }
 });
+
+function offline() {
+  return new Response(
+    '<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Sin conexión</title><body style="font-family:system-ui;padding:24px"><h1>Sin conexión</h1><p>Abre la sesión de hoy cuando tengas conexión y podrás registrarla después sin red.</p></body>',
+    { headers: { 'Content-Type': 'text/html; charset=utf-8' } },
+  );
+}

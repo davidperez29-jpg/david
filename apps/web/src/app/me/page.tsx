@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { clientDashboard, getClient, getReadiness } from '@tp/application';
+import { InstallApp } from '@/components/install-app';
 import { ReferralBanner } from '@/components/referral-banner';
 import { ReadinessCard } from '@/components/sessions/readiness';
 import { label } from '@/lib/labels';
@@ -98,6 +99,7 @@ export default async function ClientToday() {
             : null
         }
       />
+      <InstallApp variant="card" />
     </div>
   );
 }

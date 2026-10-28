@@ -1,4 +1,5 @@
 import { getSecurityStatus } from '@tp/application';
+import { InstallApp } from '@/components/install-app';
 import { LogoutButton } from '@/components/logout-button';
 import { SecuritySettings } from '@/components/security-settings';
 import { currentSessionId, requireClientUser } from '@/server/session';
@@ -11,6 +12,7 @@ export default async function ClientSettings() {
     <div className="flex flex-col gap-4">
       <h1 className="text-2xl font-bold">Ajustes</h1>
       <ThemeSwitch />
+      <InstallApp variant="settings" />
       <SecuritySettings status={sec} recommend2fa={false} />
       <LogoutButton className="self-start" />
     </div>
