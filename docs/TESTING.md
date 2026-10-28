@@ -906,3 +906,22 @@ pnpm --filter @tp/web test:e2e -- e2e/perf.spec.ts e2e/perf.mobile.spec.ts
   - un valor nuevo válido sustituye la contraseña y queda auditado.
 - **CI**: la prueba de humo arranca la imagen de Render por tercera vez con otro `ADMIN_PASSWORD`. Entra con el nuevo y el antiguo da 401.
 
+## Resultado de la reestructuración, fase 24 (app instalable gratis)
+
+- **Unitarias** (`sw.unit.test.ts`): el service worker se ejecuta con red y caché simuladas.
+  - Con red, `/` va a la red, que lleva a cada persona a su zona.
+  - Sin red, `/` lleva al cliente a la última copia de «Hoy», y esa copia se sirve.
+  - Sin red y sin copia, por ejemplo un entrenador o alguien que cerró sesión, una página explica que no hay conexión.
+  - Los iconos salen de la caché. Las páginas del entrenador y la API nunca pasan por la caché.
+- **E2E**:
+  - `install.spec.ts`:
+    - el manifiesto se abre en `/` a pantalla completa;
+    - los iconos de 192 y 512 (normal y adaptable) y el del iPhone (180) son PNG de ese tamaño;
+    - la página enlaza el icono y el título «Entreno» para el iPhone;
+    - en Ajustes, una entrenadora pulsa **Instalar la app** cuando el navegador lo ofrece, y la tarjeta pasa a «Ya la tienes instalada».
+  - `install.mobile.spec.ts`:
+    - en Android, «Hoy» sugiere **Instalar la app** solo cuando el navegador lo permite, y «Ahora no» se recuerda al recargar;
+    - en el iPhone, «Hoy» muestra los pasos **Compartir** → **Añadir a pantalla de inicio**.
+  - WCAG 2.2 AA, en claro y oscuro, en cada estado nuevo. Siguen en verde las páginas del entrenador y del cliente, el registro sin conexión sin duplicados y el reproductor en el móvil (12 pruebas).
+- **Iconos**: generados desde `icon.svg` con `apps/web/scripts/render-icons.mjs` y revisados a ojo.
+

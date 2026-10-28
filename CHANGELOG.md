@@ -2,6 +2,23 @@
 
 Formato: fecha · cambio · motivo · archivos · impacto.
 
+## 2026-10-28 — Reestructuración, fase 24: app instalable gratis en el móvil y el ordenador
+
+- **Cambio:** la plataforma se instala como una app, gratis y sin tiendas, en Android, iPhone y ordenador (A72).
+  - Iconos PNG de 192 y 512 px, adaptable y de 180 px para el iPhone, generados desde `icon.svg`. Antes el iPhone ponía una captura de la página como icono.
+  - La app instalada se abre en `/`, que lleva a cada persona a su zona, así que también la pueden instalar los entrenadores. Sin conexión, el cliente va a su última copia de «Hoy».
+  - Botón **Instalar la app** en Ajustes y sugerencia en el «Hoy» del cliente («Ahora no» se recuerda). En el iPhone, los pasos: **Compartir** → **Añadir a pantalla de inicio**.
+- **Motivo:** el responsable quería la app en el móvil y gratis. El App Store cuesta 99 $ al año. Google Play cuesta 25 $ y, para cuentas personales nuevas, exige 14 días de prueba cerrada con 12 personas.
+- **Archivos:**
+  - `apps/web/public/{manifest.webmanifest,sw.js,apple-touch-icon.png,icons/*}`, `apps/web/scripts/render-icons.mjs`;
+  - `apps/web/src/{app/layout.tsx,proxy.ts,lib/install.ts,components/install-app.tsx}`, `apps/web/src/app/{me/page.tsx,me/ajustes/page.tsx,app/settings/page.tsx}`;
+  - pruebas: `sw.unit.test.ts`, `install.spec.ts`, `install.mobile.spec.ts`;
+  - `docs/{PRODUCT_ARCHITECTURE,SESSIONS,DEPLOY_RENDER,TESTING,IMPLEMENTATION_ROADMAP}.md`.
+- **Impacto:**
+  - sin migraciones ni cambios en la API;
+  - el service worker pasa a `tp-v2`: los móviles lo actualizan solos en la siguiente visita;
+  - **despliegue**: nada que hacer.
+
 ## 2026-10-18 — Reestructuración, fase 23: contraseña olvidada sin correo
 
 - **Cambio:** quien olvida su contraseña vuelve a entrar sin necesidad de correo (A71).

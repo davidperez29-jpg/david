@@ -40,6 +40,7 @@
 | 21 | Revisión de calidad de las fases 19–20: seguridad, accesibilidad y rendimiento, con correcciones (elegida por el responsable) | Revisión del banco, pendientes técnicos | ✅ Hecha |
 | 22 | Despliegue gratuito sin caducidad: web en Render Free y base en Neon Free, archivos subidos en la base y arranque rápido al despertar (elegida por el responsable) | Despliegue, base de datos, almacenamiento | ✅ Hecha |
 | 23 | Contraseña olvidada sin correo: enlace de un solo uso que comparte el entrenador o un administrador, y recuperación del administrador desde Render (elegida por el responsable) | Autenticación, ficha del cliente, usuarios, arranque | ✅ Hecha |
+| 24 | App instalable gratis en el móvil y el ordenador, sin tiendas (elegida por el responsable) | PWA, service worker, Ajustes, «Hoy» del cliente | ✅ Hecha |
 
 ## Por qué el despliegue va primero (decisión A2)
 
@@ -496,3 +497,20 @@ Elegida por el responsable: «lo más sencillo posible tanto para el entrenador 
 - ✅ solo el entrenador asignado o un administrador del centro, nunca otro entrenador, el cliente u otro centro (pruebas de integración y matriz de acceso cruzado de todas las rutas);
 - ✅ la contraseña del administrador cambia con `ADMIN_PASSWORD` y no se deshace con una versión nueva (`host-admin-password.int.test.ts`);
 - ✅ recorrido completo en el navegador: invitación, enlace, contraseña nueva, sesión antigua cerrada y enlace usado (`password-link.spec.ts`), con WCAG 2.2 AA en las pantallas nuevas.
+
+## Fase 24 · App instalable gratis en el móvil y el ordenador ✅
+
+El responsable preguntó si la app podía verse en el móvil, ser una app descargable gratuita o una web gratuita para el ordenador. Ya era una web gratuita para el ordenador y el móvil, y la zona del cliente era una PWA. Pero en el iPhone el icono salía como una captura, y en Android y en el ordenador había que saber buscar «Instalar» en el menú del navegador. Las tiendas no son gratuitas (A72).
+
+- **Iconos PNG**: 192 y 512 px, uno adaptable (*maskable*) para Android y uno de 180 px para el iPhone, generados desde `icon.svg` (`apps/web/scripts/render-icons.mjs`). La página declara el título «Entreno» y la pantalla completa para el iPhone.
+- **Para todo el equipo**: la app instalada se abre en `/`, que lleva al entrenador a su zona y al cliente a la suya. Antes se abría siempre en la del cliente.
+- **Botón «Instalar la app»** en Ajustes (entrenador y cliente) y como sugerencia en el «Hoy» del cliente, que se puede descartar con «Ahora no». Usa el aviso del propio navegador (Chrome, Edge). En el iPhone muestra los pasos: **Compartir** → **Añadir a pantalla de inicio**.
+- **Sin conexión**: si un cliente abre la app instalada sin red, va a la última copia de su «Hoy», como antes.
+
+**Criterios**:
+- ✅ el manifiesto declara `start_url` `/` y los iconos PNG; cada icono se sirve como PNG con su tamaño real; la página enlaza el icono del iPhone (`install.spec.ts`);
+- ✅ con el aviso del navegador, el botón de Ajustes lo abre y la tarjeta pasa a «Ya la tienes instalada»; en «Hoy», «Ahora no» se recuerda; en el iPhone aparecen los pasos (`install.spec.ts`, `install.mobile.spec.ts`), con WCAG 2.2 AA en cada estado;
+- ✅ el service worker, con red y sin ella: `/` va a la red; sin conexión lleva a la última copia de «Hoy» o explica que no hay conexión; las páginas del entrenador y la API nunca se guardan (`sw.unit.test.ts`).
+
+**Queda pendiente**: publicar en Google Play empaquetando la misma web, si el responsable lo decide (25 $ y la prueba cerrada de 14 días).
+

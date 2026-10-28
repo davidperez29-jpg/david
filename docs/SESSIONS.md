@@ -42,8 +42,8 @@ Una sola página (`/me/sesion/{id}`), pensada para una mano y la pantalla del m�
 
 | Pieza | Implementación |
 |---|---|
-| Instalación | PWA: `public/manifest.webmanifest` e `icon.svg`. |
-| Service worker | `public/sw.js`, escrito a mano para que sea pequeño y auditable. Los recursos estáticos (con hash) van primero a caché. Las páginas `/me…` van primero a red y, sin conexión, se sirve la última copia. La API **nunca** se guarda en caché. Al cerrar sesión, se borran las páginas cacheadas. |
+| Instalación | PWA: `public/manifest.webmanifest`, `icon.svg` y PNG de 192, 512 (también adaptable) y 180 para el iPhone (`apps/web/scripts/render-icons.mjs`). Desde la fase 24 (A72) se abre en `/`, que lleva a cada persona a su zona. Hay un botón **Instalar la app** donde el navegador lo permite, y los pasos para el iPhone (`components/install-app.tsx`). |
+| Service worker | `public/sw.js`, escrito a mano para que sea pequeño y auditable. Los recursos estáticos (con hash) van primero a caché. Las páginas `/me…` van primero a red y, sin conexión, se sirve la última copia. Sin conexión, `/` lleva al cliente a su última copia de «Hoy». La API **nunca** se guarda en caché. Al cerrar sesión, se borran las páginas cacheadas. |
 | Cola | `apps/web/src/lib/offline-queue.ts`: cada acción se escribe **primero en IndexedDB** (con memoria como respaldo) y después se envía en orden a `POST /sync`. Se reintenta al recuperar la conexión y al volver a primer plano. |
 | Idempotencia | Cada mutación lleva un `clientMutationId` generado en el dispositivo, único en `set_logs` y `exercise_substitutions`. Reenviar la misma mutación devuelve `duplicate` y no crea nada. El cierre de sesión es un *upsert* por sesión; el dolor no se duplica. |
 | Corregir una serie | Volver a registrar la misma serie (mismo ejercicio, número y lado) **actualiza** el registro en lugar de añadir otro. |

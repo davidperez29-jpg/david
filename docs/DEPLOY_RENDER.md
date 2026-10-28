@@ -73,7 +73,8 @@ El repositorio incluye un archivo (`render.yaml`) que le dice a Render qué crea
    - instala en el móvil una app de códigos: Google Authenticator, Microsoft Authenticator o similar;
    - escanea el código QR que aparece;
    - guarda los códigos de recuperación.
-3. **Guarda la dirección en favoritos**: es tu aplicación. Para tus clientes, invítales desde su ficha y ellos entran en la misma dirección.
+3. **Guarda la dirección en favoritos**: es tu aplicación, en el ordenador y en el móvil. Para tus clientes, invítales desde su ficha y ellos entran en la misma dirección.
+4. **Tenla como una app**, gratis y sin tienda: en **Ajustes** → **App en el móvil y el ordenador**. En Chrome o Edge hay un botón **Instalar la app**. En el iPhone: **Compartir** → **Añadir a pantalla de inicio**.
 
 ## Qué incluye el plan gratuito y qué límites tiene
 
