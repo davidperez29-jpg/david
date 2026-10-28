@@ -28,6 +28,17 @@ describe('response contract rules', () => {
     ]);
   });
 
+  it('an optional field the API leaves out when it does not apply is not removed', () => {
+    const block = (tone?: string) => ({
+      blocks: [{ kind: 'text', text: 't', ...(tone ? { tone } : {}) }],
+    });
+    expect(diff(block('warn'), block())).toEqual([]);
+    expect(diff(block('warn'), { blocks: [{ kind: 'text' }] })).toEqual([
+      'r.blocks[].text: campo eliminado',
+    ]);
+    expect(diff({ tone: 'warn' }, {})).toEqual(['r.tone: campo eliminado']);
+  });
+
   it('merging samples keeps the union of keys and types', () => {
     expect(mergeShapes(shapeOf({ a: null }), shapeOf({ a: 'x', b: 1 }))).toEqual({
       a: 'string',

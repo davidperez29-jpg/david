@@ -23,6 +23,13 @@ const OPEN_MAPS = new Set([
   'testIds',
 ]);
 
+/**
+ * Fields the API types declare optional and leave out when they do not apply, as path endings:
+ * a sample without them is not a removed field. `tone?` marks a report text block as muted or a
+ * warning; whether the demo report has one depends on the day it is generated.
+ */
+const OPTIONAL_FIELDS = ['.blocks[].tone'];
+
 /** Keys that are data, not fields: dates and ids (e.g. totals per day). */
 const DATA_KEY =
   /^(\d{4}-\d{2}-\d{2}|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i;
@@ -93,8 +100,10 @@ export function breakingDiff(before: Shape, after: Shape, where: string, out: st
     if (!isObj(after)) return void out.push(`${where}: era un objeto`);
     for (const k of Object.keys(before))
       if (!(k in after)) {
-        // An empty map today is not a removed field.
-        if (k !== MAP_KEY) out.push(`${where}.${k}: campo eliminado`);
+        // An empty map today, or an optional field that does not apply, is not a removed field.
+        const path = `${where}.${k}`;
+        if (k !== MAP_KEY && !OPTIONAL_FIELDS.some((f) => path.endsWith(f)))
+          out.push(`${path}: campo eliminado`);
       } else breakingDiff(before[k]!, after[k]!, `${where}.${k}`, out);
     return;
   }
