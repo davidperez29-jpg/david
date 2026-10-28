@@ -2,6 +2,14 @@
 
 Formato: fecha · cambio · motivo · archivos · impacto.
 
+## 2026-10-28 — Seguridad: Next.js 16.4.3 y zod 4.6.7
+
+- **Cambio:** `next` pasa de 16.3.8 a 16.4.3 y `zod` de 4.6.5 a 4.6.7.
+- **Motivo:** avisos nuevos (P-29). Next.js hasta 16.4.0 tenía dos fallos críticos de ejecución remota de código y uno alto de denegación de servicio, en funciones que la app no usa. zod tenía uno alto de consumo de memoria. La auditoría de dependencias de CI los detectó.
+- **Corrección (pruebas):** el contrato de respuestas daba por eliminado el campo opcional `tone` de los bloques de texto de un informe si ese día el informe de demo no tenía ninguno, así que la prueba fallaba según la fecha. Ahora los campos que el tipo declara opcionales no cuentan como eliminados.
+- **Archivos:** `apps/web/package.json`, `packages/{application,contracts}/package.json`, `pnpm-lock.yaml`, `apps/web/test/{contract/shape.ts,response-shape.unit.test.ts}`, `docs/PENTEST.md`.
+- **Impacto:** sin cambios de comportamiento. Pasan los tipos, lint, unitarias, integración, seguridad (692) y las 81 pruebas E2E. **Despliegue**: Render reconstruye la app con la versión nueva.
+
 ## 2026-10-28 — Reestructuración, fase 24: app instalable gratis en el móvil y el ordenador
 
 - **Cambio:** la plataforma se instala como una app, gratis y sin tiendas, en Android, iPhone y ordenador (A72).
