@@ -1,0 +1,109 @@
+@import 'tailwindcss';
+
+/*
+ * Identidad TrainPro (ver docs/DESIGN_SYSTEM.md).
+ * Amarillo cálido para acentos y acciones, crema como fondo y blanco para las superficies.
+ * El texto usa tonos tinta cálidos (nunca negro puro) con contraste AA sobre crema y blanco.
+ */
+@theme {
+  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-bricolage), var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+
+  --color-cream-50: #fffdf8;
+  --color-cream-100: #fff8ea;
+  --color-cream-200: #fcefd3;
+  --color-cream-300: #f6e1b5;
+
+  --color-sun-100: #fff3c4;
+  --color-sun-200: #ffe9a0;
+  --color-sun-300: #ffdf6e;
+  --color-sun-400: #ffd23f;
+  --color-sun-500: #f5b800;
+  --color-sun-700: #8a5a00;
+  --color-sun-800: #6e4700;
+
+  --color-ink-900: #2b2116;
+  --color-ink-700: #4b3d2c;
+  --color-ink-500: #6b5c48;
+  --color-ink-300: #b9aa92;
+  --color-line: #ecdfc6;
+
+  --color-leaf-100: #dcf2e4;
+  --color-leaf-500: #3aa872;
+  --color-leaf-700: #1b6646;
+  --color-sky-100: #e2ecfa;
+  --color-sky-500: #4a86d8;
+  --color-sky-700: #24548f;
+  --color-coral-100: #fde6df;
+  --color-coral-500: #ef7356;
+  --color-coral-700: #a3402b;
+  --color-plum-100: #efe5f7;
+  --color-plum-700: #6b3f8f;
+
+  /* Marcas de gráficos: ámbar validado (contraste ≥ 3:1 sobre blanco; ver docs/DESIGN_SYSTEM.md). */
+  --color-chart-amber: #c27c0e;
+  --color-chart-grid: #efe6d6;
+
+  --shadow-soft: 0 1px 2px rgb(92 64 20 / 0.06), 0 10px 30px -14px rgb(92 64 20 / 0.22);
+  --shadow-lift: 0 2px 4px rgb(92 64 20 / 0.08), 0 18px 40px -16px rgb(92 64 20 / 0.32);
+}
+
+@layer base {
+  html {
+    color-scheme: light;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    background-color: var(--color-cream-100);
+    color: var(--color-ink-900);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    letter-spacing: -0.015em;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--color-ink-900);
+    outline-offset: 2px;
+  }
+
+  /* Elimina la flecha de los <details> y usa la nuestra. */
+  summary {
+    list-style: none;
+  }
+  summary::-webkit-details-marker {
+    display: none;
+  }
+
+  input[type='number']::-webkit-inner-spin-button,
+  input[type='number']::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type='number'] {
+    -moz-appearance: textfield;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

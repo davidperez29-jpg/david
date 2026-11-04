@@ -1,0 +1,25 @@
+# Dependencias y builds
+node_modules/
+.next/
+out/
+build/
+coverage/
+*.tsbuildinfo
+next-env.d.ts
+
+# Pruebas
+test-results/
+playwright-report/
+blob-report/
+
+# Variables de entorno: nunca se suben (solo la plantilla)
+.env
+.env.*
+!.env.example
+
+# Sistema y editores
+.DS_Store
+*.log
+.vscode/*
+!.vscode/extensions.json
+.idea/
