@@ -4,7 +4,7 @@ Cada decisión indica su estado: **Aprobada** (por el responsable del producto),
 
 ## ADR-01 · Proyecto nuevo en una rama sin historial · Aprobada
 
-El repositorio contenía otro proyecto. TrainPro se creó en la rama `claude/vigilant-bardeen-qfycp4`, reiniciada como rama huérfana: no comparte archivos, dependencias, configuración ni historial con el proyecto anterior, que sigue intacto en `claude/training-platform-system-hm10nq`. Más adelante se puede mover a un repositorio propio (`git push <nuevo-remoto> claude/vigilant-bardeen-qfycp4:main`).
+El repositorio contenía otro proyecto. TrainPro se creó como **rama huérfana** `claude/vigilant-bardeen-qfycp4`: no comparte archivos, dependencias, configuración ni historial con el proyecto anterior. Esa rama no existía todavía en GitHub, así que se publicó como rama nueva y **no hubo que sobrescribir nada**. El proyecto anterior sigue intacto en la rama por defecto, `claude/training-platform-system-hm10nq`. Más adelante se puede mover a un repositorio propio (`git push <nuevo-remoto> claude/vigilant-bardeen-qfycp4:main`).
 
 ## ADR-02 · Next.js 16 + React 19 + TypeScript estricto + Tailwind CSS 4 · Aprobada
 
