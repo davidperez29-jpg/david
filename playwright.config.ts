@@ -24,7 +24,11 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
       testIgnore: /client-.*\.spec\.ts/,
     },
-    { name: 'movil', use: { ...devices['Pixel 7'] }, testMatch: /client-.*\.spec\.ts/ },
+    {
+      name: 'movil',
+      use: { ...devices['Pixel 7'] },
+      testMatch: /(client-.*|responsive)\.spec\.ts/,
+    },
   ],
   webServer: {
     command: `pnpm exec next start --port ${PORT}`,

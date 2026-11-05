@@ -33,6 +33,7 @@ import {
 } from '@/domain/training/prescription';
 import {
   completedSetCount,
+  effectiveSetRecords,
   plannedSetCount,
   type PlannedSession,
   type SessionLog,
@@ -52,7 +53,7 @@ export function toSessionCard(
     estimatedMinutes: session.estimatedMinutes,
     exerciseCount: session.exercises.length,
     plannedSets: plannedSetCount(session),
-    completedSets: completedSetCount(log),
+    completedSets: completedSetCount(session, log),
     status: sessionStatus(session, log, today),
   };
 }
@@ -185,6 +186,11 @@ export function toRehabCaseVM(rehabCase: RehabCase, clientName: string): RehabCa
         })),
       })),
   };
+}
+
+/** Series registradas de una sesión, sin duplicados ni registros ajenos a lo prescrito. */
+export function loggedSets(session: PlannedSession, log: SessionLog | undefined) {
+  return log ? effectiveSetRecords(session, log.sets) : [];
 }
 
 export function indexBy<T extends { id: string }>(items: readonly T[]): Map<string, T> {

@@ -7,7 +7,10 @@ import { type Client } from './people';
  * autenticación real saldrá de la sesión verificada en el servidor.
  */
 export type Actor =
-  { role: 'trainer'; trainerId: string } | { role: 'client'; clientId: string; trainerId: string };
+  | { role: 'trainer'; trainerId: string }
+  | { role: 'client'; clientId: string; trainerId: string }
+  /** Administración del catálogo global de TrainPro (futuro). No accede a datos de clientes. */
+  | { role: 'admin'; adminId: string };
 
 export type TrainerActor = Extract<Actor, { role: 'trainer' }>;
 export type ClientActor = Extract<Actor, { role: 'client' }>;
@@ -47,6 +50,7 @@ type ClientRef = Pick<Client, 'id' | 'trainerId'>;
 
 /** Un entrenador accede solo a sus clientes; un cliente, solo a sí mismo. */
 export function canAccessClient(actor: Actor, client: ClientRef): boolean {
+  if (actor.role === 'admin') return false;
   if (actor.role === 'trainer') return client.trainerId === actor.trainerId;
   return client.id === actor.clientId && client.trainerId === actor.trainerId;
 }
@@ -106,17 +110,27 @@ type OwnedExercise = { owner: Owner; visibility: Visibility };
  * las sesiones que tienen asignadas.
  */
 export function canViewExercise(actor: Actor, exercise: OwnedExercise): boolean {
-  if (actor.role !== 'trainer') return false;
+  if (actor.role === 'client') return false;
   if (exercise.visibility === 'global') return true;
+  if (actor.role === 'admin') return false; // la administración no ve lo personal de los entrenadores
   return exercise.owner.kind === 'trainer' && exercise.owner.trainerId === actor.trainerId;
 }
 
-/** Solo el entrenador propietario edita; el catálogo global no se modifica (se anota aparte). */
+/**
+ * El catálogo global solo lo edita la administración. Un ejercicio personalizado o privado, solo
+ * su entrenador propietario. Un entrenador que quiera cambiar un ejercicio global lo adapta (copia).
+ */
 export function canEditExercise(actor: Actor, exercise: OwnedExercise): boolean {
+  if (actor.role === 'admin') return exercise.visibility === 'global';
   return (
     actor.role === 'trainer' &&
     exercise.visibility !== 'global' &&
     exercise.owner.kind === 'trainer' &&
     exercise.owner.trainerId === actor.trainerId
   );
+}
+
+/** Un entrenador puede adaptar un ejercicio del catálogo global: se crea su copia personalizada. */
+export function canAdaptExercise(actor: Actor, exercise: OwnedExercise): boolean {
+  return actor.role === 'trainer' && exercise.visibility === 'global';
 }

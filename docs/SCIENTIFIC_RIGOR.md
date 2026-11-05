@@ -78,9 +78,13 @@ Son notaciones de la aplicación, no afirmaciones científicas:
 - **Carácter del esfuerzo**: repeticiones realizadas (realizables), por ejemplo `6 (12)`.
 - **Esfuerzo percibido de la sesión** (pantalla final del cliente): de 0 a 10, marcado como autodeclarado. La escala y sus anclajes se definirán y documentarán en la fase de seguimiento de carga, antes de usarlo para cualquier cálculo de carga interna.
 
+## Estado de las sesiones y cálculos sin duplicados
+
+Una sesión solo está **completada** si se han hecho todas las series prescritas. Terminarla antes la deja como **parcial o interrumpida**. Las series repetidas (por ejemplo, un reenvío) o ajenas a la prescripción **no cuentan**: series, repeticiones y tonelaje se calculan sobre las series efectivas (`effectiveSetRecords`). El esfuerzo percibido de la sesión se valida como entero de 0 a 10 y se marca como autodeclarado.
+
 ## Clasificación de los ejercicios
 
-Las etiquetas de la biblioteca (fuerza máxima, potencia, isométrico…) describen **usos de programación**, no propiedades fijas del ejercicio. No se asignan por el nombre: dependen de la variante, la carga, la intención, la velocidad, el rango y el tipo de contracción. Por eso cada variante tiene su propia clasificación y, cuando hace falta, una nota que explica por qué (`classificationNote`). Las asignaciones del catálogo demo son ejemplos editables, no afirmaciones científicas.
+Las etiquetas se organizan en cuatro dimensiones independientes (ver `TAXONOMY.md`) y describen **usos de programación**, no propiedades fijas del ejercicio. No se asignan por el nombre: dependen de la variante, la carga, la intención, la velocidad, el rango y el tipo de contracción. Por eso cada variante tiene su propia clasificación y, cuando hace falta, una nota que explica por qué (`classificationNote`). Las asignaciones del catálogo demo son ejemplos editables, no afirmaciones científicas.
 
 ## Readaptación
 

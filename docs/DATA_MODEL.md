@@ -47,14 +47,15 @@ erDiagram
 
 **Estado:** conceptual. En la Fase 1 el actor es fijo (`Actor` en `src/domain/access.ts`).
 
-| Entidad          | Campos principales                                                                                      | Notas                                                                    |
-| ---------------- | ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| `user_account`   | id, email (único), estado, created_at                                                                   | Lo gestiona el proveedor de autenticación (pendiente de elegir).         |
-| `trainer`        | id, user_id, display_name                                                                               | Rol de entrenador.                                                       |
-| `client`         | id, user_id (opcional mientras no haya invitación), display_name, population, sport, started_on, status | Datos mínimos; la salud va aparte.                                       |
-| `trainer_client` | trainer_id, client_id, status, started_at, ended_at                                                     | Hoy, un cliente tiene un único entrenador responsable.                   |
-| `consent`        | id, client_id, type, text_version, granted_at, revoked_at                                               | Necesario antes de tratar datos de salud.                                |
-| `team` (futuro)  | id, name; `team_member` (team_id, trainer_id, role)                                                     | Para compartir ejercicios con visibilidad `trainer` dentro de un equipo. |
+| Entidad          | Campos principales                                                                                      | Notas                                                                                                     |
+| ---------------- | ------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `user_account`   | id, email (único), estado, created_at                                                                   | Lo gestiona el proveedor de autenticación (pendiente de elegir).                                          |
+| `trainer`        | id, user_id, display_name                                                                               | Rol de entrenador.                                                                                        |
+| `catalog_admin`  | id, user_id                                                                                             | Administración del catálogo global de ejercicios. No accede a datos de clientes ni a ejercicios privados. |
+| `client`         | id, user_id (opcional mientras no haya invitación), display_name, population, sport, started_on, status | Datos mínimos; la salud va aparte.                                                                        |
+| `trainer_client` | trainer_id, client_id, status, started_at, ended_at                                                     | Hoy, un cliente tiene un único entrenador responsable.                                                    |
+| `consent`        | id, client_id, type, text_version, granted_at, revoked_at                                               | Necesario antes de tratar datos de salud.                                                                 |
+| `team` (futuro)  | id, name; `team_member` (team_id, trainer_id, role)                                                     | Para compartir ejercicios con visibilidad `trainer` dentro de un equipo.                                  |
 
 ## 2. Cliente: objetivos, métricas visibles y compartición
 
@@ -71,7 +72,7 @@ erDiagram
 
 ## 3. Biblioteca de ejercicios (multidimensional)
 
-**Estado:** implementada en el dominio (`src/domain/library/`) y en los datos demo. Incluye la taxonomía del sistema, las variantes con clasificación propia, las progresiones, las etiquetas personales, los favoritos, las notas y la búsqueda Y/O con jerarquías. La persistencia queda para la Fase 4.
+**Estado:** implementada en el dominio (`src/domain/library/`) y en los datos demo (26 ejercicios principales, 44 variantes). La taxonomía completa está en `TAXONOMY.md`. Incluye la taxonomía del sistema, las variantes con clasificación propia, las progresiones, las etiquetas personales, los favoritos, las notas y la búsqueda Y/O con jerarquías. La persistencia queda para la Fase 4.
 
 ```mermaid
 erDiagram
@@ -91,6 +92,7 @@ erDiagram
   EXERCISE_VARIANT ||--o{ VARIANT_PROGRESSION : "desde"
   EXERCISE_VARIANT ||--o{ VARIANT_PROGRESSION : "hacia"
   EXERCISE_VARIANT ||--o{ FAVORITE : ""
+  EXERCISE_VARIANT ||--o{ EXERCISE_VARIANT : "copia adaptada de"
   EXERCISE_VARIANT ||--o{ TRAINER_EXERCISE_NOTE : ""
   EXERCISE_VARIANT ||--o{ MEDIA_ASSET : ""
   TRAINER ||--o{ FAVORITE : ""
@@ -115,6 +117,8 @@ erDiagram
     text complexity
     text silhouette
     text classification_note
+    uuid derived_from_variant_id
+    uuid shared_with_team_id
     text owner_type
     uuid owner_trainer_id
     text visibility
@@ -134,6 +138,11 @@ erDiagram
     uuid tag_id
     uuid assigned_by_trainer_id
   }
+  VARIANT_PATTERN {
+    uuid variant_id
+    uuid pattern_id
+    text role
+  }
   MOVEMENT_PATTERN {
     uuid id
     text key
@@ -145,28 +154,28 @@ erDiagram
 
 ### Entidades
 
-| Entidad                                                                    | Contenido                                                                                                                                                                                           | Reglas                                                                                                                                                                                                          |
-| -------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `exercise`                                                                 | Ejercicio principal (p. ej., «Sentadilla»)                                                                                                                                                          | Agrupa variantes; tiene su propio propietario y visibilidad.                                                                                                                                                    |
-| `exercise_variant`                                                         | Variante concreta y prescribible (p. ej., «Sentadilla frontal»): descripción, objetivo y aplicaciones, ejecución (bilateral, unilateral o alternante), complejidad, silueta y nota de clasificación | Cada principal tiene **exactamente una** variante de referencia (`is_primary`). La variante **no hereda** etiquetas, patrones ni material. Si no tiene instrucciones propias, se muestran las de la referencia. |
-| `variant_step`, `variant_cue`, `variant_mistake`, `variant_technical_note` | Instrucciones, puntos clave, errores frecuentes y consideraciones técnicas, ordenados                                                                                                               | Tablas hijas con `ordinal` (en el dominio son listas).                                                                                                                                                          |
-| `tag_category` / `tag`                                                     | Categorías (Capacidades y objetivos, Métodos y contracciones, Control y estabilidad) y etiquetas                                                                                                    | Globales (`owner_type = system`) o personales del entrenador. Índice único en (`owner`, `normalized_name`) y comprobación frente a las globales: **no hay duplicados**. Se archivan, no se borran.              |
-| `variant_tag`                                                              | Relación variante–etiqueta                                                                                                                                                                          | `assigned_by_trainer_id` nulo = asignación del catálogo, visible para todos. Si tiene valor, es una **etiqueta personal** sobre cualquier variante (también global) y solo la ve ese entrenador.                |
-| `movement_pattern`                                                         | Árbol de patrones: Empuje, Tracción, Tren inferior, Core y tronco (anti-movimiento y movimiento dinámico) y sus subtipos                                                                            | `parent_id` + `path` (ruta materializada) para filtrar un grupo con todos sus subtipos. Se amplía añadiendo nodos.                                                                                              |
-| `variant_pattern`                                                          | Relación variante–patrón (cero, uno o varios)                                                                                                                                                       | Varios patrones solo si está biomecánicamente justificado.                                                                                                                                                      |
-| `equipment`, `body_region`, `environment`                                  | Material, región corporal (con subregiones: hombro, cadera, rodilla, tobillo…) y entorno                                                                                                            | Jerárquicos cuando procede; cada uno con su tabla intermedia (`variant_equipment`, `variant_region`, `variant_environment`).                                                                                    |
-| `variant_progression`                                                      | Arista dirigida: `to` es una progresión de `from` (y `from`, una regresión de `to`)                                                                                                                 | Sin autoenlaces, duplicados ni ciclos de dos nodos. Tiene propietario: las relaciones de un entrenador no las ven otros.                                                                                        |
-| `favorite`                                                                 | (trainer_id, variant_id)                                                                                                                                                                            | Único por par.                                                                                                                                                                                                  |
-| `trainer_exercise_note`                                                    | Observaciones personales del entrenador sobre una variante                                                                                                                                          | Información personalizada, separada del catálogo global.                                                                                                                                                        |
-| `media_asset`                                                              | Imagen o vídeo: tipo, URL `https` o clave de almacenamiento, propietario                                                                                                                            | Sin medios, se muestra la silueta.                                                                                                                                                                              |
+| Entidad                                                                    | Contenido                                                                                                                                                                                           | Reglas                                                                                                                                                                                                                         |
+| -------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `exercise`                                                                 | Ejercicio principal (p. ej., «Sentadilla»)                                                                                                                                                          | Agrupa variantes; tiene su propio propietario y visibilidad.                                                                                                                                                                   |
+| `exercise_variant`                                                         | Variante concreta y prescribible (p. ej., «Sentadilla frontal»): descripción, objetivo y aplicaciones, ejecución (bilateral, unilateral o alternante), complejidad, silueta y nota de clasificación | Cada principal tiene **exactamente una** variante de referencia (`is_primary`). La variante **no hereda** etiquetas, patrones ni material. Si no tiene instrucciones propias, se muestran las de la referencia.                |
+| `variant_step`, `variant_cue`, `variant_mistake`, `variant_technical_note` | Instrucciones, puntos clave, errores frecuentes y consideraciones técnicas, ordenados                                                                                                               | Tablas hijas con `ordinal` (en el dominio son listas).                                                                                                                                                                         |
+| `tag_category` / `tag`                                                     | Cuatro dimensiones: Cualidades y objetivos, Métodos y formas de entrenamiento, Acciones musculares y ejecución, Aplicaciones y evaluación (ver `TAXONOMY.md`)                                       | Globales (`owner_type = system`) o personales del entrenador. Índice único en (`owner`, `normalized_name`) y comprobación frente a las globales: **sin duplicados**. Se archivan (`archived_at`, `replaced_by`), no se borran. |
+| `variant_tag`                                                              | Relación variante–etiqueta                                                                                                                                                                          | `assigned_by_trainer_id` nulo = asignación del catálogo, visible para todos. Si tiene valor, es una **etiqueta personal** sobre cualquier variante (también global) y solo la ve ese entrenador.                               |
+| `movement_pattern`                                                         | Árbol de patrones: Empuje, Tracción, Tren inferior, Core y tronco (anti-movimiento y movimiento dinámico) y sus subtipos                                                                            | `parent_id` + `path` (ruta materializada) para filtrar un grupo con todos sus subtipos. Se amplía añadiendo nodos.                                                                                                             |
+| `variant_pattern`                                                          | Relación variante–patrón con `role` (`primary` o `secondary`)                                                                                                                                       | Exactamente un principal si hay patrones; solo subtipos (hojas), no grupos; varios patrones solo si está biomecánicamente justificado.                                                                                         |
+| `equipment`, `body_region`, `environment`                                  | Material, región corporal (con subregiones: hombro, cadera, rodilla, tobillo…) y entorno                                                                                                            | Jerárquicos cuando procede; cada uno con su tabla intermedia (`variant_equipment`, `variant_region`, `variant_environment`).                                                                                                   |
+| `variant_progression`                                                      | Arista dirigida: `to` es una progresión de `from` (y `from`, una regresión de `to`)                                                                                                                 | Sin autoenlaces, duplicados ni ciclos de dos nodos. Tiene propietario: las relaciones de un entrenador no las ven otros.                                                                                                       |
+| `favorite`                                                                 | (trainer_id, variant_id)                                                                                                                                                                            | Único por par.                                                                                                                                                                                                                 |
+| `trainer_exercise_note`                                                    | Observaciones personales del entrenador sobre una variante                                                                                                                                          | Información personalizada, separada del catálogo global.                                                                                                                                                                       |
+| `media_asset`                                                              | Imagen o vídeo: tipo, URL `https` o clave de almacenamiento, propietario                                                                                                                            | Sin medios, se muestra la silueta.                                                                                                                                                                                             |
 
 ### Visibilidad
 
-| `visibility` | Quién la ve                                 | Quién la edita                                                                                  |
-| ------------ | ------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| `global`     | Todos los entrenadores                      | Solo administración del catálogo (futuro); los entrenadores añaden notas y etiquetas personales |
-| `trainer`    | El propietario (y, en el futuro, su equipo) | El propietario                                                                                  |
-| `private`    | Solo el propietario                         | El propietario                                                                                  |
+| `visibility`              | Quién la ve                                                                                              | Quién la edita                                                                                                                                      |
+| ------------------------- | -------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `global`                  | Todos los entrenadores                                                                                   | Solo la administración del catálogo. Un entrenador lo **adapta**: se crea una copia `trainer` con `derived_from_variant_id` y el original no cambia |
+| `trainer` (personalizado) | El propietario y sus clientes, a través de las sesiones; en el futuro, su equipo (`shared_with_team_id`) | El propietario                                                                                                                                      |
+| `private`                 | Solo el propietario                                                                                      | El propietario                                                                                                                                      |
 
 Los clientes no navegan por la biblioteca: ven los ejercicios a través de las sesiones que tienen prescritas.
 
@@ -194,12 +203,22 @@ Los clientes no navegan por la biblioteca: ven los ejercicios a través de las s
 
 **Estado:** implementado en el dominio (`SessionLog`, `SetRecord`, `ExerciseFeedback`) con datos demo; el portal del cliente registra en pantalla, sin guardar.
 
-| Entidad             | Campos principales                                                                                                                      |
-| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| `session_log`       | id, session_id, client_id, started_at, completed_at, perceived_effort (0–10, autodeclarado), comment (observaciones para el entrenador) |
-| `set_log`           | id, session_log_id, session_item_id, set_number, reps, load_kg, duration_s, distance_m, completed                                       |
-| `exercise_feedback` | session_log_id, session_item_id, rir, rpe, note (autodeclarados)                                                                        |
-| `message` (futuro)  | id, client_id, author, body, created_at, read_at: comunicación con el entrenador                                                        |
+| Entidad             | Campos principales                                                                                                                                                                                   |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `session_log`       | id, session_id, client_id, started_at, finished_at (el cliente pulsó «Terminar»), perceived_effort (0–10, autodeclarado), comment (observaciones para el entrenador)                                 |
+| `set_log`           | id, session_log_id, session_item_id, set_number, reps, load_kg, duration_s, distance_m, completed. **Único (session_log_id, session_item_id, set_number)**: una serie no puede registrarse dos veces |
+| `exercise_feedback` | session_log_id, session_item_id, rir, rpe, note (autodeclarados)                                                                                                                                     |
+| `message` (futuro)  | id, client_id, author, body, created_at, read_at: comunicación con el entrenador                                                                                                                     |
+
+**El estado de la sesión no se guarda: se deduce** (`sessionStatus` en `src/domain/training/session.ts`) de las series efectivas (sin duplicados ni registros ajenos a lo prescrito) y de si la sesión ha terminado:
+
+- `completed`: todas las series prescritas están hechas.
+- `partial`: se terminó o se interrumpió con parte de las series hechas.
+- `in_progress`: empezada hoy y sin terminar.
+- `pending`: sin empezar.
+- `missed`: pasó el día, o se terminó, sin ninguna serie.
+
+Pulsar «Terminar» **no** convierte una sesión en completada.
 
 ## 6. Volumen y carga
 
@@ -264,11 +283,12 @@ Los valores importados se registran como `imported` con `import_batch_id`, y el 
 
 **Estado:** conceptual.
 
-| Entidad            | Campos principales                                                                                      |
-| ------------------ | ------------------------------------------------------------------------------------------------------- |
-| `audit_event`      | id, actor_id, action, entity_type, entity_id, occurred_at, metadata mínima (**sin contenido de salud**) |
-| `retention_policy` | entity_type, period, action (`delete`, `anonymize`), legal_basis_note                                   |
-| `erasure_request`  | id, client_id, requested_at, completed_at, scope                                                        |
+| Entidad            | Campos principales                                                                                                                                                             |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `audit_event`      | id, actor_id, action, entity_type, entity_id, occurred_at, metadata mínima (**sin contenido de salud**)                                                                        |
+| `retention_policy` | entity_type, period, action (`delete`, `anonymize`), legal_basis_note                                                                                                          |
+| `data_request`     | id, client_id, type (`access`, `export`, `rectification`, `erasure`, `restriction`, `objection`), requested_at, due_at, status, resolved_at, handled_by (ver `DATA_RIGHTS.md`) |
+| `erasure_job`      | id, data_request_id, scope, executed_at, pending_backup_expiry_at                                                                                                              |
 
 Se auditan: accesos a datos de salud, cambios de lo compartido, exportaciones, importaciones, borrados y cambios de permisos.
 

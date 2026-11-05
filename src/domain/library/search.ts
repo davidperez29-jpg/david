@@ -50,6 +50,8 @@ export interface LibraryQuery {
   filters: readonly FacetFilter[];
   mode: MatchMode;
   sort?: SortOrder;
+  /** `primary`: los filtros de patrón solo cuentan el patrón principal del ejercicio. */
+  patternRole?: 'any' | 'primary';
 }
 
 /** ¿Cumple la variante un filtro concreto? Las dimensiones jerárquicas incluyen los subtipos. */
@@ -57,12 +59,17 @@ export function matchesFilter(
   variant: ExerciseVariant,
   filter: FacetFilter,
   taxonomy: Taxonomy,
+  patternRole: LibraryQuery['patternRole'] = 'any',
 ): boolean {
   switch (filter.facet) {
     case 'tag':
       return variant.tagIds.includes(filter.id);
     case 'pattern':
-      return variant.patternIds.some((id) => isWithin(taxonomy.patterns, id, filter.id));
+      return variant.patterns.some(
+        (p) =>
+          (patternRole === 'any' || p.role === 'primary') &&
+          isWithin(taxonomy.patterns, p.id, filter.id),
+      );
     case 'equipment':
       return variant.equipmentIds.some((id) => isWithin(taxonomy.equipment, id, filter.id));
     case 'region':
@@ -113,7 +120,12 @@ function searchableText(
     variant.name,
     exercise?.name ?? '',
     ...names(variant.tagIds, taxonomy.tags),
-    ...names(variant.patternIds, taxonomy.patterns),
+    ...names(
+      variant.patterns.map((p) => p.id),
+      taxonomy.patterns,
+    ),
+    LATERALITY_LABELS[variant.laterality],
+    ...names(variant.environmentIds, taxonomy.environments),
     ...names(variant.equipmentIds, taxonomy.equipment),
     ...names(variant.regionIds, taxonomy.regions),
   ];
@@ -126,15 +138,22 @@ export function searchLibrary(
   taxonomy: Taxonomy,
 ): ExerciseVariant[] {
   const exerciseById = new Map(exercises.map((e) => [e.id, e]));
-  const needle = normalizeForSearch(query.text ?? '');
+  // Búsqueda por palabras: cada palabra debe aparecer en algún dato del ejercicio
+  // («salto unilateral» encuentra saltos con ejecución unilateral).
+  const words = normalizeForSearch(query.text ?? '')
+    .split(' ')
+    .filter(Boolean);
 
   const results = variants.filter((variant) => {
-    if (needle !== '') {
-      const text = searchableText(variant, exerciseById.get(variant.exerciseId), taxonomy);
-      if (!text.some((value) => normalizeForSearch(value).includes(needle))) return false;
+    if (words.length > 0) {
+      const text = searchableText(variant, exerciseById.get(variant.exerciseId), taxonomy).map(
+        normalizeForSearch,
+      );
+      if (!words.every((word) => text.some((value) => value.includes(word)))) return false;
     }
     if (query.filters.length === 0) return true;
-    const check = (filter: FacetFilter) => matchesFilter(variant, filter, taxonomy);
+    const check = (filter: FacetFilter) =>
+      matchesFilter(variant, filter, taxonomy, query.patternRole);
     return query.mode === 'all' ? query.filters.every(check) : query.filters.some(check);
   });
 

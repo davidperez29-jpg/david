@@ -3,6 +3,7 @@ import {
   ArrowDownRight,
   ArrowUpRight,
   CircleAlert,
+  Copy,
   ExternalLink,
   Lightbulb,
   Lock,
@@ -14,12 +15,13 @@ import { type Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { type VariantRefVM } from '@/contracts/trainer';
-import { VISIBILITY_LABELS } from '@/domain/library/exercise';
+import { PATTERN_ROLE_LABELS, VISIBILITY_LABELS } from '@/domain/library/exercise';
 import { COMPLEXITY_LABELS, LATERALITY_LABELS } from '@/domain/library/taxonomy';
 import { isSafeExternalUrl } from '@/domain/text';
 import { ExercisePictogram } from '@/features/brand/pictogram';
 import { Badge } from '@/ui/badge';
 import { Card, CardHeader } from '@/ui/card';
+import { Notice } from '@/ui/notice';
 import { getTrainerContext } from '@/server/context';
 import { getVariantDetail } from '@/server/services/library';
 
@@ -114,6 +116,43 @@ export default async function ExerciseDetailPage(
           </div>
         </div>
       </header>
+
+      {detail.derivedFrom ? (
+        <Notice className="mt-6" icon={<Copy />} title="Copia personalizada">
+          Adaptada de{' '}
+          <Link
+            href={`/entrenador/ejercicios/${detail.derivedFrom.id}`}
+            className="font-semibold text-sun-700 underline-offset-2 hover:underline"
+          >
+            {detail.derivedFrom.name}
+          </Link>{' '}
+          ({VISIBILITY_LABELS[detail.derivedFrom.visibility].toLowerCase()}). El original no se ha
+          modificado.
+        </Notice>
+      ) : null}
+      {detail.canAdapt ? (
+        <Notice className="mt-6" icon={<Copy />} title="Ejercicio del catálogo global">
+          Lo gestiona la administración de TrainPro. Si necesitas cambiarlo, podrás adaptarlo: se
+          creará una copia personalizada en tu biblioteca y el original seguirá igual (disponible en
+          la Fase 4).
+          {detail.adaptations.length > 0 ? (
+            <span className="mt-1 block">
+              Tus adaptaciones:{' '}
+              {detail.adaptations.map((a, i) => (
+                <span key={a.id}>
+                  {i > 0 ? ', ' : ''}
+                  <Link
+                    href={`/entrenador/ejercicios/${a.id}`}
+                    className="font-semibold text-sun-700 underline-offset-2 hover:underline"
+                  >
+                    {a.name}
+                  </Link>
+                </span>
+              ))}
+            </span>
+          ) : null}
+        </Notice>
+      ) : null}
 
       <div className="mt-6 grid items-start gap-6 lg:grid-cols-[1.4fr_1fr]">
         <div className="space-y-6">
@@ -260,7 +299,28 @@ export default async function ExerciseDetailPage(
               </p>
             ) : null}
             <dl className="mt-4 space-y-2">
-              <Classification label="Patrones de movimiento" values={detail.patterns} />
+              <div className="border-t border-line pt-2">
+                <dt className="text-xs font-semibold text-ink-500">Patrones de movimiento</dt>
+                <dd className="mt-1">
+                  {detail.patterns.length ? (
+                    <ul className="space-y-1">
+                      {detail.patterns.map((pattern) => (
+                        <li
+                          key={pattern.id}
+                          className="flex items-center justify-between gap-2 text-sm"
+                        >
+                          <span className="font-semibold text-ink-900">{pattern.name}</span>
+                          <Badge tone={pattern.role === 'primary' ? 'sun' : 'outline'}>
+                            {PATTERN_ROLE_LABELS[pattern.role]}
+                          </Badge>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <span className="text-sm text-ink-500">Sin patrón asignado</span>
+                  )}
+                </dd>
+              </div>
               <Classification label="Región corporal" values={detail.regions} />
               <Classification label="Material" values={detail.equipment} />
               <Classification label="Ejecución" values={[LATERALITY_LABELS[variant.laterality]]} />

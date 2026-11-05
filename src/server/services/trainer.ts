@@ -21,7 +21,7 @@ import { sessionStatus } from '@/domain/training/session';
 import { VOLUME_FORMULAS, weeklyVolume } from '@/domain/training/volume';
 import { type TrainerContext } from '../context';
 import { loadSessionVariants } from './library';
-import { toAssessmentSeries, toPreview, toRehabCaseVM, toSessionCard } from './mappers';
+import { loggedSets, toAssessmentSeries, toPreview, toRehabCaseVM, toSessionCard } from './mappers';
 import { ownClients, sessionsAndLogs, summarize } from './trainer-access';
 
 export async function listTrainerClients(ctx: TrainerContext): Promise<ClientSummaryVM[]> {
@@ -39,7 +39,7 @@ export async function getTrainerDashboard(ctx: TrainerContext): Promise<TrainerD
   ]);
   const active = clients.filter((client) => client.status === 'active');
   const weekStart = startOfIsoWeek(ctx.today);
-  const week = { planned: 0, completed: 0, missed: 0 };
+  const week = { planned: 0, completed: 0, partial: 0, inProgress: 0, missed: 0 };
   const todaySessions: TrainerDashboardVM['todaySessions'] = [];
   const attention: TrainerDashboardVM['attention'] = [];
   const recentAssessments: TrainerDashboardVM['recentAssessments'] = [];
@@ -57,6 +57,8 @@ export async function getTrainerDashboard(ctx: TrainerContext): Promise<TrainerD
       if (session.date >= weekStart) {
         week.planned += 1;
         if (status === 'completed') week.completed += 1;
+        if (status === 'partial') week.partial += 1;
+        if (status === 'in_progress') week.inProgress += 1;
         if (status === 'missed') week.missed += 1;
       }
       if (session.date === ctx.today) {
@@ -150,7 +152,7 @@ export async function getLoadOverview(ctx: TrainerContext): Promise<LoadOverview
       const { sessions, logs } = await sessionsAndLogs(ctx, client.id, range);
       const entries = sessions.flatMap((s) => {
         const log = logs.get(s.id);
-        return log ? [{ date: s.date, sets: log.sets }] : [];
+        return log ? [{ date: s.date, sets: loggedSets(s, log) }] : [];
       });
       return {
         id: client.id,

@@ -16,6 +16,7 @@ Reglas en `src/domain/access.ts`, aplicadas por los casos de uso de `src/server/
 
 - **Privacidad por defecto**: un cliente nuevo no tiene nada compartido (`defaultSharing`).
 - **Biblioteca**: el catálogo global lo ven todos los entrenadores y no se edita. Los ejercicios propios y privados, las etiquetas personales (también las aplicadas a ejercicios globales), los favoritos, las notas y las progresiones de un entrenador solo los ve ese entrenador. Los clientes no navegan por la biblioteca: ven los ejercicios a través de sus sesiones.
+- **Administración del catálogo** (rol `admin`, futuro): edita el catálogo global de ejercicios, pero no accede a datos de clientes ni a los ejercicios privados o personalizados de los entrenadores. Un entrenador no edita un ejercicio global: lo **adapta**, y se crea una copia personalizada.
 - **Ficha del cliente**: cada pestaña llama a su propio caso de uso, que comprueba que el cliente pertenece al entrenador antes de devolver nada.
 - La compartición es **granular**: por módulo (evaluaciones, volumen, readaptación, informes) y, en evaluaciones, por prueba.
 - Una configuración de compartición que pertenezca a otro cliente se ignora.
@@ -62,6 +63,10 @@ La ficha del cliente solo contiene lo necesario para entrenar (nombre, objetivo,
 | Derechos de los usuarios | Acceso, rectificación, supresión y portabilidad (exportación)                                                              |
 | Proveedores              | Contratos de encargo de tratamiento (DPA) y región UE                                                                      |
 | Legal                    | DPIA, registro de actividades de tratamiento, textos informativos y revisión por un profesional                            |
+
+### Derechos del cliente
+
+El diseño de acceso, exportación, rectificación y supresión (con datos de salud y obligaciones de conservación) está en `DATA_RIGHTS.md`.
 
 ### Matiz importante sobre «el cliente solo ve lo que el entrenador comparte»
 

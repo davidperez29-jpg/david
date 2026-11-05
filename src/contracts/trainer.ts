@@ -38,7 +38,7 @@ export interface TrainerDashboardVM {
     initials: string;
     session: SessionCardVM;
   }[];
-  week: { planned: number; completed: number; missed: number };
+  week: { planned: number; completed: number; partial: number; inProgress: number; missed: number };
   activeRehabCases: number;
   recentAssessments: {
     clientId: string;
@@ -165,7 +165,7 @@ export interface VariantDetailVM {
     personal: boolean;
     tags: { id: string; name: string; personal: boolean }[];
   }[];
-  patterns: string[];
+  patterns: { id: string; name: string; role: 'primary' | 'secondary' }[];
   equipment: string[];
   regions: string[];
   environments: string[];
@@ -177,4 +177,10 @@ export interface VariantDetailVM {
   trainerNote: string | null;
   isFavorite: boolean;
   canEdit: boolean;
+  /** Puede adaptarlo (copia personalizada): solo ejercicios del catálogo global. */
+  canAdapt: boolean;
+  /** Variante original si esta es una copia adaptada. */
+  derivedFrom: VariantRefVM | null;
+  /** Copias personalizadas que el entrenador ha hecho de esta variante. */
+  adaptations: VariantRefVM[];
 }

@@ -4,11 +4,12 @@ import { type SessionDetailVM } from '@/contracts/shared';
 import { canAccessClient, canReadResource, visibleAssessmentTestIds } from '@/domain/access';
 import { firstName } from '@/domain/text';
 import { addDays, startOfIsoWeek } from '@/domain/time';
-import { sortSessions } from '@/domain/training/session';
+import { sessionStatus, sortSessions } from '@/domain/training/session';
 import { weeklyVolume } from '@/domain/training/volume';
 import { type ClientContext } from '../context';
 import { loadSessionVariants } from './library';
 import {
+  loggedSets,
   logsBySession,
   toAssessmentSeries,
   toPreview,
@@ -56,7 +57,9 @@ export async function getClientHome(ctx: ClientContext): Promise<ClientHomeVM> {
     nextSession: next ? toSessionCard(next, logIndex.get(next.id), ctx.today) : null,
     week: {
       planned: thisWeek.length,
-      completed: thisWeek.filter((s) => logIndex.get(s.id)?.completedAt).length,
+      completed: thisWeek.filter(
+        (s) => sessionStatus(s, logIndex.get(s.id), ctx.today) === 'completed',
+      ).length,
     },
   };
 }
@@ -122,11 +125,12 @@ export async function getClientProgress(ctx: ClientContext): Promise<ClientProgr
       ctx.repos.sessions.listByClient(client.id, range),
       ctx.repos.logs.listByClient(client.id, range),
     ]);
-    const sessionIds = new Set(sessions.map((s) => s.id));
+    const byId = new Map(sessions.map((s) => [s.id, s]));
     volume = weeklyVolume(
-      logs
-        .filter((log) => sessionIds.has(log.sessionId))
-        .map((log) => ({ date: log.date, sets: log.sets })),
+      logs.flatMap((log) => {
+        const session = byId.get(log.sessionId);
+        return session ? [{ date: log.date, sets: loggedSets(session, log) }] : [];
+      }),
       range,
     );
   }

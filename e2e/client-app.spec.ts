@@ -56,17 +56,46 @@ test.describe('app del cliente (móvil)', () => {
     await page.getByRole('button', { name: 'Marcar todas como hechas' }).first().click();
     await expect(page.getByText('4 de 16 series')).toBeVisible();
 
+    // Mientras se entrena, la sesión está «En curso».
+    await expect(page.getByText('En curso').first()).toBeVisible();
+
+    // Terminar con series pendientes pide confirmación y no la da por completada.
     await page.getByRole('button', { name: 'Terminar sesión' }).click();
-    const notes = page.getByLabel('Observaciones para tu entrenador');
-    await notes.fill('La última serie me ha costado.');
-    await expect(page.getByText('30/500')).toBeVisible();
-    await expect(page.getByRole('heading', { name: '¡Sesión terminada!' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Te faltan 12 series' })).toBeVisible();
+    await page.getByRole('button', { name: 'Seguir entrenando' }).click();
+    await page.getByRole('button', { name: 'Terminar sesión' }).click();
+    await page.getByRole('button', { name: 'Terminar igualmente' }).click();
+
+    await expect(
+      page.getByRole('heading', { name: 'Sesión terminada parcialmente' }),
+    ).toBeVisible();
+    await expect(page.getByText('Parcial o interrumpida').first()).toBeVisible();
+    await expect(page.getByRole('heading', { name: '¡Sesión completada!' })).toHaveCount(0);
     await expect(
       page.getByText('Has completado 4 de 16 series y 1 de 5 ejercicios.'),
     ).toBeVisible();
+    await expect(page.getByText('4/4 series')).toBeVisible();
+    await expect(page.getByText('0/3 series').first()).toBeVisible();
+    const notes = page.getByLabel('Observaciones para tu entrenador');
+    await notes.fill('La última serie me ha costado.');
+    await expect(page.getByText('30/500')).toBeVisible();
     // 6 + 8 + 6 + 6 repeticiones (las series sin editar usan el mínimo del rango prescrito: 6).
-    await expect(page.locator('dd').nth(1)).toHaveText('26');
+    await expect(page.locator('dl dd').nth(1)).toHaveText('26');
     await expectNoSeriousA11yIssues(page);
+  });
+
+  test('solo se da por completada si están hechas todas las series', async ({ page }) => {
+    await page.goto('/cliente');
+    await page.getByRole('link', { name: /Empezar sesión/ }).click();
+    await expect(page.getByText('Pendiente').first()).toBeVisible();
+    const completeAll = page.getByRole('button', { name: 'Marcar todas como hechas' });
+    while ((await completeAll.count()) > 0) await completeAll.first().click();
+    await expect(page.getByText('16 de 16 series')).toBeVisible();
+    await page.getByRole('button', { name: 'Terminar sesión' }).click(); // sin confirmación: no falta nada
+    await expect(page.getByRole('heading', { name: '¡Sesión completada!' })).toBeVisible();
+    await expect(
+      page.getByText('Has completado 16 de 16 series y 5 de 5 ejercicios.'),
+    ).toBeVisible();
   });
 
   test('el cliente no puede abrir la sesión de otro cliente', async ({ page }) => {

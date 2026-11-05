@@ -1,6 +1,6 @@
 import 'server-only';
 import { type LibraryVM, type VariantDetailVM, type VariantRefVM } from '@/contracts/trainer';
-import { canEditExercise, canViewExercise } from '@/domain/access';
+import { canAdaptExercise, canEditExercise, canViewExercise } from '@/domain/access';
 import {
   effectiveSteps,
   type ExerciseVariant,
@@ -17,10 +17,11 @@ async function taxonomyFor(ctx: TrainerContext): Promise<Taxonomy> {
   ]);
   return {
     ...SYSTEM_TAXONOMY,
+    // Las categorías archivadas (p. ej., «Control y estabilidad») no se ofrecen.
     tagCategories: [
       ...SYSTEM_TAXONOMY.tagCategories,
       ...visibleTo(categories, ctx.actor.trainerId),
-    ],
+    ].filter((category) => !category.archived),
     tags: [
       ...SYSTEM_TAXONOMY.tags,
       ...visibleTo(tags, ctx.actor.trainerId).filter((t) => !t.archived),
@@ -123,7 +124,13 @@ export async function getVariantDetail(
     variant,
     exercise,
     tagGroups,
-    patterns: names(variant.patternIds, taxonomy.patterns),
+    patterns: [...variant.patterns]
+      .sort((a, b) => (a.role === b.role ? 0 : a.role === 'primary' ? -1 : 1))
+      .map((p) => ({
+        id: p.id,
+        role: p.role,
+        name: taxonomy.patterns.find((n) => n.id === p.id)?.name ?? p.id,
+      })),
     equipment: names(variant.equipmentIds, taxonomy.equipment),
     regions: names(variant.regionIds, taxonomy.regions),
     environments: names(variant.environmentIds, taxonomy.environments),
@@ -149,6 +156,12 @@ export async function getVariantDetail(
     trainerNote: notes.find((n) => n.variantId === variant.id)?.text ?? null,
     isFavorite: favorites.some((f) => f.variantId === variant.id),
     canEdit: canEditExercise(ctx.actor, variant),
+    canAdapt: canAdaptExercise(ctx.actor, variant),
+    derivedFrom:
+      variant.derivedFrom && byId.get(variant.derivedFrom.variantId)
+        ? ref(byId.get(variant.derivedFrom.variantId)!)
+        : null,
+    adaptations: variants.filter((v) => v.derivedFrom?.variantId === variant.id).map((v) => ref(v)),
   };
 }
 

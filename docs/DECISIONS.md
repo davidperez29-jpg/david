@@ -100,18 +100,50 @@ Se eligió separar `exercise` (principal) de `exercise_variant` (prescribible) e
 
 Detalle completo en `DATA_MODEL.md`.
 
+## ADR-16 · Estado de la sesión deducido de lo realizado · Adoptada (revisión de la Fase 1)
+
+Corrige un error detectado en la revisión: pulsar «Terminar» marcaba la sesión como completada aunque faltaran series. Ahora:
+
+- Hay una única función de dominio (`summarizeExecution` + `deriveSessionStatus`) que usan el servidor y el portal del cliente.
+- Estados: pendiente, en curso, completada (todas las series), parcial o interrumpida, y no realizada.
+- Las series se **deduplican** por (ejercicio, número de serie) y se descartan los registros ajenos a lo prescrito. Series, repeticiones y tonelaje se calculan sobre esas series efectivas.
+- Al terminar con series pendientes, el cliente ve una confirmación, y el resumen muestra lo prescrito frente a lo realizado, ejercicio a ejercicio.
+- En base de datos se añadirá la restricción única en `set_log` como segunda barrera.
+
+## ADR-17 · Taxonomía v2: cuatro dimensiones de etiquetas y patrones con rol · Adoptada (revisión de la Fase 1)
+
+- **Etiquetas:** Cualidades y objetivos, Métodos y formas de entrenamiento, Acciones musculares y ejecución, y Aplicaciones y evaluación. «1RM» se archiva y se sustituye por «Test o evaluación de 1RM» y «Trabajo con porcentajes de 1RM». Los ids se conservan.
+- **Patrones:** se añaden flexión y extensión de cadera, locomoción, saltos, aterrizajes y transporte de cargas, con **patrón principal y secundarios**.
+- Detalle en `TAXONOMY.md`.
+
+## ADR-18 · Unilateral/bilateral como dimensión «Ejecución», no como patrón · Propuesta (P-12)
+
+Los saltos y aterrizajes se clasifican por dirección (patrón). La ejecución unilateral o bilateral se toma de la dimensión independiente «Ejecución». Así no se guarda el mismo dato en dos sitios ni se mezclan ejes biomecánicos distintos. La búsqueda combina ambos, y el texto «salto unilateral» funciona. Si prefieres patrones explícitos «Salto unilateral» o «Aterrizaje bilateral», se pueden añadir sin romper nada.
+
+## ADR-19 · Niveles global, personalizado y privado; adaptar = copiar · Adoptada (definición del responsable del producto)
+
+- **Global:** lo gestiona la administración del catálogo (`admin`, rol nuevo que no accede a datos de clientes).
+- **Personalizado:** del entrenador, utilizable con sus clientes y preparado para compartirse con su equipo.
+- **Privado:** solo su autor.
+- Adaptar un ejercicio global crea una **copia personalizada** con `derivedFrom` (`adaptVariant`) y el original no cambia.
+- Tres relaciones distintas: variante de, copia adaptada de, y progresión o regresión.
+
 ## Pendientes de aprobación
 
-| Id   | Decisión                                                                                                    | Notas                                                                                                                                                                                    |
-| ---- | ----------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| P-01 | **Base de datos**: Supabase (PostgreSQL gestionado + Auth + almacenamiento) o PostgreSQL propio             | Ambas compatibles con los puertos actuales. Hay que revisar las condiciones del plan gratuito, la región UE y el contrato de encargo de tratamiento (DPA) antes de elegir.               |
-| P-02 | **Autenticación**: proveedor y método (correo + contraseña, enlace mágico, 2FA para entrenadores)           | El envío de correos suele requerir un servicio externo.                                                                                                                                  |
-| P-03 | **Alojamiento** y región (preferiblemente UE)                                                               | Sin despliegue hasta aprobarlo.                                                                                                                                                          |
-| P-04 | **CI en GitHub Actions** (lint, tipos, tests, build y E2E)                                                  | Consume minutos de Actions: gratis en repositorios públicos, con un cupo mensual gratuito en los privados.                                                                               |
-| P-05 | **Licencia** del código                                                                                     | Ahora `UNLICENSED` (privado).                                                                                                                                                            |
-| P-06 | **Repositorio propio** para TrainPro                                                                        | Recomendado a medio plazo.                                                                                                                                                               |
-| P-07 | **Modo oscuro**                                                                                             | No incluido: la identidad pedida es clara (amarillo, crema y blanco).                                                                                                                    |
-| P-08 | **Significado de «personalizado» frente a «privado»** en la biblioteca                                      | Interpretación actual: `trainer` = ejercicio propio que se podrá compartir con un equipo; `private` = solo su autor. Confirmar.                                                          |
-| P-09 | **Ampliar el catálogo de patrones** con locomoción (carrera, desplazamientos), salto y transporte de cargas | Algunos ejercicios demo (aceleraciones, paseo del granjero, saltos de tobillo) quedan sin patrón porque no encajan en los cinco grupos iniciales. La estructura ya admite añadir grupos. |
-| P-10 | **Quién mantiene el catálogo global** de ejercicios y sus etiquetas                                         | Propuesta: un rol de administración del catálogo; los entrenadores añaden notas, etiquetas personales y ejercicios propios.                                                              |
-| P-11 | **Zod** para validar entradas (Fase 2) y **librería de gráficos** (Fase 5)                                  | Ver ADR-13 y ADR-12.                                                                                                                                                                     |
+| Id   | Decisión                                                                                                         | Notas                                                                                                                                                                                                                |
+| ---- | ---------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| P-01 | **Base de datos**: PostgreSQL con **Supabase** y Supabase Auth (opción preferida)                                | Comparativa en `INFRASTRUCTURE.md`. **No autorizado conectar**: la Fase 2 puede desarrollarse con Supabase local (Docker), sin cuenta. Antes de usar datos reales: plan Pro en región UE, DPA y decisión sobre PITR. |
+| P-02 | **Autenticación**: Supabase Auth con 2FA por aplicación (TOTP) para entrenadores                                 | El 2FA por SMS es de pago. Falta decidir el proveedor de correo para producción.                                                                                                                                     |
+| P-03 | **Alojamiento** y región UE                                                                                      | Opciones y límites en `INFRASTRUCTURE.md` (Vercel Hobby no admite uso comercial). Sin despliegue hasta aprobarlo.                                                                                                    |
+| P-04 | **CI en GitHub Actions**                                                                                         | Unos 6–8 min por ejecución; cabe en los 2.000 min/mes del plan Free con límite de gasto 0.                                                                                                                           |
+| P-05 | ~~Licencia~~                                                                                                     | **Resuelta:** repositorio privado, sin licencia abierta (`UNLICENSED`).                                                                                                                                              |
+| P-06 | **Repositorio propio** para TrainPro                                                                             | Recomendado a medio plazo.                                                                                                                                                                                           |
+| P-07 | **Modo oscuro**                                                                                                  | No incluido: la identidad pedida es clara (amarillo, crema y blanco).                                                                                                                                                |
+| P-08 | ~~Personalizado frente a privado~~                                                                               | **Resuelta** por el responsable del producto (ADR-19).                                                                                                                                                               |
+| P-09 | ~~Ampliar patrones~~                                                                                             | **Resuelta** (ADR-17).                                                                                                                                                                                               |
+| P-10 | ~~Quién mantiene el catálogo global~~                                                                            | **Resuelta:** administración de TrainPro (rol `admin`, ADR-19). Falta definir quién la ejerce en la práctica.                                                                                                        |
+| P-11 | **Zod** para validar entradas (Fase 2) y **librería de gráficos** (Fase 5)                                       | Ver ADR-13 y ADR-12.                                                                                                                                                                                                 |
+| P-12 | **Unilateral/bilateral en saltos y aterrizajes**: como dimensión «Ejecución» (actual) o como patrones explícitos | Ver ADR-18.                                                                                                                                                                                                          |
+| P-13 | **Notas privadas del entrenador** frente al derecho de acceso del cliente                                        | Ver `DATA_RIGHTS.md`; requiere asesoría jurídica.                                                                                                                                                                    |
+| P-14 | **Roles del tratamiento** (entrenador responsable, TrainPro encargado) y contrato de encargo                     | Ver `DATA_RIGHTS.md`.                                                                                                                                                                                                |
+| P-15 | **Plazos de conservación** e inactividad                                                                         | Propuesta inicial en `DATA_RIGHTS.md`, para validar.                                                                                                                                                                 |

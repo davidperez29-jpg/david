@@ -14,10 +14,12 @@ import { formatNumber } from '@/domain/format';
 import { GOAL_AREA_LABELS, GOAL_STATUS_LABELS } from '@/domain/goals';
 import { addDays, startOfIsoWeek } from '@/domain/time';
 import { formatLoad, formatSetsAndReps } from '@/domain/training/prescription';
+import { sessionStatus } from '@/domain/training/session';
 import { weeklyVolume } from '@/domain/training/volume';
 import { type TrainerContext } from '../context';
 import { loadSessionVariants } from './library';
 import {
+  loggedSets,
   toAssessmentSeries,
   toPreview,
   toRehabCaseVM,
@@ -96,7 +98,10 @@ export async function getClientPlan(
     ctx,
     sessions.flatMap((s) => s.exercises.map((rx) => rx.variantId)),
   );
-  const next = sessions.find((s) => s.date >= ctx.today && !logs.get(s.id)?.completedAt) ?? null;
+  const next =
+    sessions.find(
+      (s) => s.date >= ctx.today && sessionStatus(s, logs.get(s.id), ctx.today) !== 'completed',
+    ) ?? null;
   const weekEnd = addDays(weekStart, 6);
   return {
     nextSession: next
@@ -169,7 +174,7 @@ export async function getClientTrainingLog(
             name: item.name,
             prescribed: `${formatSetsAndReps(rx.sets, rx.reps)} · ${formatLoad(rx.load)}`,
             repUnit: item.repUnit,
-            sets: log.sets
+            sets: loggedSets(session, log)
               .filter((set) => set.prescriptionId === rx.id)
               .map(({ setNumber, reps, loadKg, completed }) => ({
                 setNumber,
@@ -213,7 +218,7 @@ export async function getClientResults(
     weeklyVolume: weeklyVolume(
       sessions.flatMap((s) => {
         const log = logs.get(s.id);
-        return log ? [{ date: s.date, sets: log.sets }] : [];
+        return log ? [{ date: s.date, sets: loggedSets(s, log) }] : [];
       }),
       range,
     ),

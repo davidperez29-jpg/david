@@ -15,8 +15,12 @@ export const SYSTEM: Owner = { kind: 'system' };
 export interface TagCategory {
   id: string;
   name: string;
+  /** Qué agrupa la dimensión (se muestra como ayuda). */
+  description?: string;
   owner: Owner;
   order: number;
+  /** Las categorías archivadas dejan de mostrarse, pero su id no se reutiliza. */
+  archived?: boolean;
 }
 
 export interface Tag {
@@ -26,6 +30,8 @@ export interface Tag {
   owner: Owner;
   /** Las etiquetas archivadas dejan de ofrecerse, pero conservan su id en los datos históricos. */
   archived?: boolean;
+  /** Si se archivó por haberse dividido o renombrado, etiquetas que la sustituyen. */
+  replacedBy?: string[];
 }
 
 /** Elemento de una dimensión jerárquica (patrones, material, regiones). */
@@ -54,10 +60,41 @@ export const COMPLEXITY_LABELS: Record<Complexity, string> = {
   advanced: 'Avanzada',
 };
 
+/**
+ * Cuatro dimensiones independientes y combinables. Un ejercicio puede tener varias etiquetas de
+ * cada una. Los ids son estables: «capacity» y «method» conservan su id aunque cambie su nombre,
+ * y «control» se archivó al integrarse sus etiquetas en «Cualidades y objetivos».
+ */
 export const SYSTEM_TAG_CATEGORIES: readonly TagCategory[] = [
-  { id: 'capacity', name: 'Capacidades y objetivos', owner: SYSTEM, order: 1 },
-  { id: 'method', name: 'Métodos y contracciones', owner: SYSTEM, order: 2 },
-  { id: 'control', name: 'Control y estabilidad', owner: SYSTEM, order: 3 },
+  {
+    id: 'capacity',
+    name: 'Cualidades y objetivos',
+    description: 'Qué cualidad se desarrolla o qué objetivo persigue el ejercicio.',
+    owner: SYSTEM,
+    order: 1,
+  },
+  {
+    id: 'method',
+    name: 'Métodos y formas de entrenamiento',
+    description: 'Cómo se organiza o se ejecuta el entrenamiento.',
+    owner: SYSTEM,
+    order: 2,
+  },
+  {
+    id: 'muscle-action',
+    name: 'Acciones musculares y ejecución',
+    description: 'Tipo de acción muscular que se enfatiza.',
+    owner: SYSTEM,
+    order: 3,
+  },
+  {
+    id: 'application',
+    name: 'Aplicaciones y evaluación',
+    description: 'Usos concretos del ejercicio, como la evaluación o la programación por %1RM.',
+    owner: SYSTEM,
+    order: 4,
+  },
+  { id: 'control', name: 'Control y estabilidad', owner: SYSTEM, order: 99, archived: true },
 ];
 
 const tag = (categoryId: string, id: string, name: string): Tag => ({
@@ -68,25 +105,38 @@ const tag = (categoryId: string, id: string, name: string): Tag => ({
 });
 
 export const SYSTEM_TAGS: readonly Tag[] = [
-  tag('capacity', 'max-strength', 'Fuerza máxima'),
-  tag('capacity', 'one-rm', '1RM'),
+  // A. Cualidades y objetivos
   tag('capacity', 'power', 'Potencia'),
   tag('capacity', 'explosive-strength', 'Fuerza explosiva'),
+  tag('capacity', 'max-strength', 'Fuerza máxima'),
   tag('capacity', 'hypertrophy', 'Hipertrofia'),
   tag('capacity', 'strength-endurance', 'Fuerza-resistencia'),
   tag('capacity', 'general-strength', 'Fuerza general'),
+  tag('capacity', 'stability', 'Estabilidad'),
+  tag('capacity', 'core', 'Core'),
+  tag('capacity', 'coordination', 'Coordinación'),
+  tag('capacity', 'balance', 'Equilibrio'),
+  tag('capacity', 'motor-control', 'Control motor'),
+  // B. Métodos y formas de entrenamiento
   tag('method', 'plyometric', 'Pliometría'),
-  tag('method', 'eccentric', 'Excéntrico'),
-  tag('method', 'concentric', 'Concéntrico'),
-  tag('method', 'isometric', 'Isométrico'),
-  tag('method', 'oscillatory', 'Oscilatorio'),
   tag('method', 'contrast', 'Contraste'),
+  tag('method', 'oscillatory', 'Entrenamiento oscilatorio'),
   tag('method', 'ballistic', 'Balístico'),
-  tag('control', 'stability', 'Estabilidad'),
-  tag('control', 'core', 'Core'),
-  tag('control', 'motor-control', 'Control motor'),
-  tag('control', 'balance', 'Equilibrio'),
-  tag('control', 'coordination', 'Coordinación'),
+  tag('method', 'max-velocity-intent', 'Intención de máxima velocidad'),
+  // C. Acciones musculares y características de ejecución
+  tag('muscle-action', 'concentric', 'Concéntrico'),
+  tag('muscle-action', 'eccentric', 'Excéntrico'),
+  tag('muscle-action', 'isometric', 'Isométrico'),
+  tag('muscle-action', 'ssc', 'Ciclo estiramiento-acortamiento'),
+  // D. Aplicaciones y evaluación
+  tag('application', 'one-rm-test', 'Test o evaluación de 1RM'),
+  tag('application', 'percent-1rm', 'Trabajo con porcentajes de 1RM'),
+  // Archivada: «1RM» mezclaba evaluación y programación; se dividió en las dos anteriores.
+  {
+    ...tag('application', 'one-rm', '1RM'),
+    archived: true,
+    replacedBy: ['one-rm-test', 'percent-1rm'],
+  },
 ];
 
 const node = (
@@ -102,7 +152,15 @@ const node = (
   owner: SYSTEM,
 });
 
-/** Patrones de movimiento: cinco grupos con sus subtipos. Ampliable con nuevos nodos. */
+/**
+ * Patrones de movimiento. Cada ejercicio se asocia a subtipos (hojas), con un patrón principal y,
+ * si procede, secundarios. Se distinguen conceptos biomecánicamente distintos:
+ * - «Dominante de cadera» (tren inferior) es un patrón global bajo carga (bisagra, puente);
+ *   «Flexión/extensión de cadera» es el movimiento de la articulación con el tronco estable.
+ * - Los movimientos de tronco (flexión, extensión…) no equivalen a los de cadera.
+ * - La ejecución unilateral o bilateral NO es un patrón: es la dimensión «Ejecución», que se
+ *   combina con los saltos y los aterrizajes (p. ej., «Salto vertical» + «Unilateral»).
+ */
 export const SYSTEM_PATTERNS: readonly TaxonomyNode[] = [
   node('push', null, 'Empuje'),
   node('push.horizontal', 'push', 'Empuje horizontal', 'Horizontal'),
@@ -119,10 +177,9 @@ export const SYSTEM_PATTERNS: readonly TaxonomyNode[] = [
   node('trunk-anti', null, 'Core y tronco: anti-movimiento'),
   node('trunk-anti.extension', 'trunk-anti', 'Anti-extensión'),
   node('trunk-anti.rotation', 'trunk-anti', 'Anti-rotación'),
-  node('trunk-anti.flexion', 'trunk-anti', 'Anti-flexión'),
   node('trunk-anti.lateral-flexion', 'trunk-anti', 'Anti-flexión lateral'),
-  node('trunk-dynamic', null, 'Core y tronco: movimiento dinámico'),
-  node('trunk-dynamic.flexion', 'trunk-dynamic', 'Flexión de tronco', 'Flexión'),
+  node('trunk-anti.flexion', 'trunk-anti', 'Anti-flexión'),
+  node('trunk-dynamic', null, 'Core y tronco: movimiento'),
   node('trunk-dynamic.extension', 'trunk-dynamic', 'Extensión de tronco', 'Extensión'),
   node('trunk-dynamic.rotation', 'trunk-dynamic', 'Rotación de tronco', 'Rotación'),
   node(
@@ -130,6 +187,36 @@ export const SYSTEM_PATTERNS: readonly TaxonomyNode[] = [
     'trunk-dynamic',
     'Flexión lateral de tronco',
     'Flexión lateral',
+  ),
+  node('trunk-dynamic.flexion', 'trunk-dynamic', 'Flexión de tronco', 'Flexión'),
+  node('hip-motion', null, 'Cadera: flexión y extensión'),
+  node('hip-motion.flexion', 'hip-motion', 'Flexión de cadera', 'Flexión'),
+  node('hip-motion.extension', 'hip-motion', 'Extensión de cadera', 'Extensión'),
+  node('locomotion', null, 'Locomoción'),
+  node('locomotion.running', 'locomotion', 'Carrera'),
+  node('locomotion.acceleration', 'locomotion', 'Aceleración'),
+  node('locomotion.deceleration', 'locomotion', 'Desaceleración'),
+  node('locomotion.change-of-direction', 'locomotion', 'Cambio de dirección'),
+  node('locomotion.lateral', 'locomotion', 'Desplazamiento lateral'),
+  node('locomotion.multidirectional', 'locomotion', 'Desplazamiento multidireccional'),
+  node('jump', null, 'Saltos'),
+  node('jump.vertical', 'jump', 'Salto vertical', 'Vertical'),
+  node('jump.horizontal', 'jump', 'Salto horizontal', 'Horizontal'),
+  node('jump.lateral', 'jump', 'Salto lateral', 'Lateral'),
+  node('landing', null, 'Aterrizajes'),
+  node('landing.vertical', 'landing', 'Aterrizaje en el sitio', 'En el sitio'),
+  node('landing.forward', 'landing', 'Aterrizaje hacia delante', 'Hacia delante'),
+  node('landing.lateral', 'landing', 'Aterrizaje lateral', 'Lateral'),
+  node('landing.multidirectional', 'landing', 'Aterrizaje multidireccional', 'Multidireccional'),
+  node('carry', null, 'Transporte de cargas'),
+  node('carry.farmer', 'carry', 'Farmer carry (carga a ambos lados)', 'Farmer carry'),
+  node('carry.suitcase', 'carry', 'Suitcase carry (carga a un lado)', 'Suitcase carry'),
+  node('carry.front-rack', 'carry', 'Front rack carry (carga delante)', 'Front rack carry'),
+  node(
+    'carry.overhead',
+    'carry',
+    'Overhead carry (carga por encima de la cabeza)',
+    'Overhead carry',
   ),
 ];
 
@@ -187,6 +274,11 @@ export const SYSTEM_TAXONOMY: Taxonomy = {
   regions: SYSTEM_REGIONS,
   environments: SYSTEM_ENVIRONMENTS,
 };
+
+/** ¿Es una hoja (sin subtipos)? A los ejercicios se les asignan hojas, no grupos. */
+export function isLeaf(nodes: readonly TaxonomyNode[], id: string): boolean {
+  return nodes.some((n) => n.id === id) && !nodes.some((n) => n.parentId === id);
+}
 
 /** ¿`id` es `ancestorId` o uno de sus descendientes? (p. ej., «pull.horizontal» está en «pull»). */
 export function isWithin(nodes: readonly TaxonomyNode[], id: string, ancestorId: string): boolean {

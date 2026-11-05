@@ -2,6 +2,9 @@
 
 import {
   Check,
+  CircleCheck,
+  CircleDashed,
+  CircleMinus,
   ChevronDown,
   Clock,
   PartyPopper,
@@ -15,10 +18,20 @@ import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { type ExerciseInSessionVM, type SessionDetailVM } from '@/contracts/shared';
 import { formatClock, formatNumber } from '@/domain/format';
+import {
+  deriveSessionStatus,
+  effectiveSetRecords,
+  type ExecutionSummary,
+  isValidPerceivedEffort,
+  type SessionStatus,
+  type SetRecord,
+  summarizeExecution,
+} from '@/domain/training/session';
 import { summarizeVolume, VOLUME_FORMULAS } from '@/domain/training/volume';
 import { ExercisePictogram } from '@/features/brand/pictogram';
 import { OriginBadge } from '@/features/shared/provenance';
 import { PrescriptionChips } from '@/features/shared/prescription';
+import { SessionStatusBadge } from '@/features/shared/status-badge';
 import { cn } from '@/ui/cn';
 import { Meter } from '@/ui/meter';
 
@@ -68,17 +81,38 @@ export function SessionPlayer({ session }: { session: SessionDetailVM }) {
   // Tiempos en la escala de performance.now() / event.timeStamp (mismo origen).
   const [now, setNow] = useState(0);
   const [finished, setFinished] = useState(false);
+  const [started, setStarted] = useState(false);
+  const [confirming, setConfirming] = useState(false);
   const [effort, setEffort] = useState<number | null>(null);
   const [feedback, setFeedback] = useState<Record<string, number | null>>({});
   const [note, setNote] = useState('');
-  const doneExercises = session.exercises.filter((e) =>
-    records[e.prescriptionId]!.every((set) => set.done),
-  ).length;
-
-  const totalSets = session.exercises.reduce((sum, exercise) => sum + exercise.sets, 0);
-  const doneSets = Object.values(records)
-    .flat()
-    .filter((set) => set.done).length;
+  // Lo registrado, en el formato del dominio: una entrada por serie (ejercicio + número de serie).
+  const prescribed = useMemo(
+    () => ({ exercises: session.exercises.map((e) => ({ id: e.prescriptionId, sets: e.sets })) }),
+    [session.exercises],
+  );
+  const loggedRecords = useMemo<SetRecord[]>(
+    () =>
+      session.exercises.flatMap((exercise) =>
+        records[exercise.prescriptionId]!.map((set, index) => ({
+          prescriptionId: exercise.prescriptionId,
+          setNumber: index + 1,
+          completed: set.done,
+          reps: exercise.repUnit === 'reps' && set.done ? parseNumber(set.reps) : 0,
+          loadKg:
+            exercise.tracksLoadKg && set.done && set.kg.trim() !== '' ? parseNumber(set.kg) : null,
+        })),
+      ),
+    [records, session.exercises],
+  );
+  // Misma lógica que el servidor: series sin duplicados y estado según lo realizado.
+  const execution = useMemo(
+    () => summarizeExecution(prescribed, loggedRecords),
+    [prescribed, loggedRecords],
+  );
+  const status = deriveSessionStatus(execution, { started, finished, dayPassed: false });
+  const totalSets = execution.plannedSets;
+  const doneSets = execution.completedSets;
 
   useEffect(() => {
     if (!rest) return;
@@ -97,6 +131,7 @@ export function SessionPlayer({ session }: { session: SessionDetailVM }) {
   }, [rest, remaining]);
 
   function updateSet(prescriptionId: string, index: number, patch: Partial<SetState>) {
+    if (patch.done) setStarted(true);
     setRecords((current) => ({
       ...current,
       [prescriptionId]: current[prescriptionId]!.map((set, i) =>
@@ -107,6 +142,7 @@ export function SessionPlayer({ session }: { session: SessionDetailVM }) {
 
   /** Un toque: da por hechas todas las series del ejercicio con los valores escritos. */
   function completeExercise(exercise: ExerciseInSessionVM) {
+    setStarted(true);
     setRecords((current) => ({
       ...current,
       [exercise.prescriptionId]: current[exercise.prescriptionId]!.map((set) => {
@@ -128,34 +164,29 @@ export function SessionPlayer({ session }: { session: SessionDetailVM }) {
     }
   }
 
-  const summary = useMemo(
-    () =>
-      summarizeVolume(
-        session.exercises.flatMap((exercise) =>
-          records[exercise.prescriptionId]!.map((set) => ({
-            completed: set.done,
-            reps: exercise.repUnit === 'reps' && set.done ? parseNumber(set.reps) : 0,
-            loadKg:
-              exercise.tracksLoadKg && set.done && set.kg.trim() !== ''
-                ? parseNumber(set.kg)
-                : null,
-          })),
-        ),
-      ),
-    [records, session.exercises],
+  const volume = useMemo(
+    () => summarizeVolume(effectiveSetRecords(prescribed, loggedRecords)),
+    [prescribed, loggedRecords],
   );
+
+  function finish() {
+    setRest(null);
+    setConfirming(false);
+    setFinished(true);
+    window.scrollTo({ top: 0 });
+  }
 
   if (finished) {
     return (
       <SessionSummary
-        summary={summary}
-        totalSets={totalSets}
+        status={status}
+        execution={execution}
+        volume={volume}
+        exercises={session.exercises}
         effort={effort}
         onEffort={setEffort}
         note={note}
         onNote={setNote}
-        doneExercises={doneExercises}
-        totalExercises={session.exercises.length}
         onBack={() => setFinished(false)}
       />
     );
@@ -165,7 +196,9 @@ export function SessionPlayer({ session }: { session: SessionDetailVM }) {
     <>
       <div className="sticky top-0 z-20 -mx-4 bg-cream-100/95 px-4 py-3 backdrop-blur">
         <div className="flex items-center justify-between text-sm font-semibold">
-          <span className="text-ink-700">Progreso</span>
+          <span className="flex items-center gap-2 text-ink-700">
+            Progreso <SessionStatusBadge status={status} />
+          </span>
           <span className="text-ink-900 tabular-nums" aria-live="polite">
             {doneSets} de {totalSets} series
           </span>
@@ -197,17 +230,47 @@ export function SessionPlayer({ session }: { session: SessionDetailVM }) {
         ))}
       </ol>
 
-      <button
-        type="button"
-        onClick={() => {
-          setRest(null);
-          setFinished(true);
-          window.scrollTo({ top: 0 });
-        }}
-        className="mt-6 flex h-16 w-full items-center justify-center gap-2 rounded-3xl bg-ink-900 text-lg font-bold text-cream-50 hover:bg-ink-700"
-      >
-        <Check aria-hidden className="size-5" /> Terminar sesión
-      </button>
+      {confirming ? (
+        <section
+          aria-labelledby="confirmar-fin"
+          className="mt-6 rounded-3xl border-2 border-sun-400 bg-sun-100 p-5"
+        >
+          <h2 id="confirmar-fin" className="text-lg font-bold text-ink-900">
+            {doneSets === 0
+              ? 'No has registrado ninguna serie'
+              : `Te faltan ${totalSets - doneSets} series`}
+          </h2>
+          <p className="mt-1 text-sm text-ink-700">
+            {doneSets === 0
+              ? 'Si terminas ahora, la sesión quedará como «No realizada».'
+              : `Has hecho ${doneSets} de ${totalSets} series y has completado ${execution.completedExercises} de ${execution.plannedExercises} ejercicios. Si terminas ahora, la sesión quedará como «Parcial o interrumpida».`}
+          </p>
+          <div className="mt-4 grid gap-2 sm:grid-cols-2">
+            <button
+              type="button"
+              onClick={() => setConfirming(false)}
+              className="h-12 rounded-2xl border border-line bg-white font-semibold text-ink-900 hover:border-ink-300"
+            >
+              Seguir entrenando
+            </button>
+            <button
+              type="button"
+              onClick={finish}
+              className="h-12 rounded-2xl bg-ink-900 font-bold text-cream-50 hover:bg-ink-700"
+            >
+              Terminar igualmente
+            </button>
+          </div>
+        </section>
+      ) : (
+        <button
+          type="button"
+          onClick={() => (doneSets >= totalSets && totalSets > 0 ? finish() : setConfirming(true))}
+          className="mt-6 flex h-16 w-full items-center justify-center gap-2 rounded-3xl bg-ink-900 text-lg font-bold text-cream-50 hover:bg-ink-700"
+        >
+          <Check aria-hidden className="size-5" /> Terminar sesión
+        </button>
+      )}
       <p className="mt-3 text-center text-xs text-ink-500">
         Demostración: lo que registres no se guarda al salir.
       </p>
@@ -480,38 +543,95 @@ function EffortFeedback({
   );
 }
 
+const SUMMARY_HEADINGS: Record<
+  'completed' | 'partial' | 'missed',
+  { title: string; tone: string }
+> = {
+  completed: { title: '¡Sesión completada!', tone: 'bg-sun-400' },
+  partial: { title: 'Sesión terminada parcialmente', tone: 'bg-sun-100 ring-2 ring-sun-300' },
+  missed: {
+    title: 'Sesión terminada sin series registradas',
+    tone: 'bg-cream-50 ring-1 ring-line',
+  },
+};
+
 function SessionSummary({
-  summary,
-  totalSets,
+  status,
+  execution,
+  volume,
+  exercises,
   effort,
   onEffort,
   note,
   onNote,
-  doneExercises,
-  totalExercises,
   onBack,
 }: {
-  summary: ReturnType<typeof summarizeVolume>;
-  totalSets: number;
+  status: SessionStatus;
+  execution: ExecutionSummary;
+  volume: ReturnType<typeof summarizeVolume>;
+  exercises: ExerciseInSessionVM[];
   effort: number | null;
   onEffort: (value: number) => void;
   note: string;
   onNote: (value: string) => void;
-  doneExercises: number;
-  totalExercises: number;
   onBack: () => void;
 }) {
+  const heading =
+    SUMMARY_HEADINGS[
+      status === 'completed' ? 'completed' : status === 'missed' ? 'missed' : 'partial'
+    ];
   return (
     <section aria-labelledby="resumen" className="space-y-4">
-      <div className="rounded-[2rem] bg-sun-400 p-6 text-center shadow-lift">
-        <PartyPopper aria-hidden className="mx-auto size-10 text-ink-900" />
+      <div className={cn('rounded-[2rem] p-6 text-center shadow-lift', heading.tone)}>
+        {status === 'completed' ? (
+          <PartyPopper aria-hidden className="mx-auto size-10 text-ink-900" />
+        ) : (
+          <CircleDashed aria-hidden className="mx-auto size-10 text-sun-800" />
+        )}
         <h2 id="resumen" className="mt-2 text-2xl font-extrabold text-ink-900">
-          ¡Sesión terminada!
+          {heading.title}
         </h2>
-        <p className="mt-1 text-ink-700">
-          Has completado {summary.completedSets} de {totalSets} series y {doneExercises} de{' '}
-          {totalExercises} ejercicios.
+        <div className="mt-2 flex justify-center">
+          <SessionStatusBadge status={status} />
+        </div>
+        <p className="mt-2 text-ink-700">
+          Has completado {execution.completedSets} de {execution.plannedSets} series y{' '}
+          {execution.completedExercises} de {execution.plannedExercises} ejercicios
+          {execution.startedExercises > 0 ? ` (${execution.startedExercises} a medias)` : ''}.
         </p>
+      </div>
+
+      <div className="rounded-3xl bg-white p-5 shadow-soft">
+        <h3 className="font-bold text-ink-900">Ejercicio a ejercicio</h3>
+        <ul className="mt-2 divide-y divide-line">
+          {execution.byExercise.map((item) => {
+            const exercise = exercises.find((e) => e.prescriptionId === item.prescriptionId);
+            const complete = item.completed >= item.planned;
+            return (
+              <li
+                key={item.prescriptionId}
+                className="flex items-center justify-between gap-3 py-2 text-sm"
+              >
+                <span className="flex min-w-0 items-center gap-2">
+                  {complete ? (
+                    <CircleCheck aria-hidden className="size-4 shrink-0 text-leaf-700" />
+                  ) : item.completed > 0 ? (
+                    <CircleDashed aria-hidden className="size-4 shrink-0 text-sun-700" />
+                  ) : (
+                    <CircleMinus aria-hidden className="size-4 shrink-0 text-ink-300" />
+                  )}
+                  <span className="truncate text-ink-900">
+                    <span className="font-semibold text-sun-700">{exercise?.slot}</span>{' '}
+                    {exercise?.name}
+                  </span>
+                </span>
+                <span className="shrink-0 font-semibold text-ink-700 tabular-nums">
+                  {item.completed}/{item.planned} series
+                </span>
+              </li>
+            );
+          })}
+        </ul>
       </div>
 
       <div className="rounded-3xl bg-white p-5 shadow-soft">
@@ -521,9 +641,9 @@ function SessionSummary({
         </div>
         <dl className="mt-3 grid grid-cols-3 gap-2 text-center">
           {[
-            ['Series', formatNumber(summary.completedSets)],
-            ['Repeticiones', formatNumber(summary.totalReps)],
-            ['Tonelaje', `${formatNumber(summary.volumeLoadKg, 0)} kg`],
+            ['Series', formatNumber(volume.completedSets)],
+            ['Repeticiones', formatNumber(volume.totalReps)],
+            ['Tonelaje', `${formatNumber(volume.volumeLoadKg, 0)} kg`],
           ].map(([label, value]) => (
             <div key={label} className="rounded-2xl bg-cream-50 p-3">
               <dt className="text-xs font-semibold text-ink-500">{label}</dt>
@@ -535,8 +655,8 @@ function SessionSummary({
         </dl>
         <p className="mt-3 text-xs text-ink-500">
           Calculado con {VOLUME_FORMULAS.volumeLoad.id} v{VOLUME_FORMULAS.volumeLoad.version}.
-          {summary.setsWithoutExternalLoad > 0
-            ? ` ${summary.setsWithoutExternalLoad} series sin carga externa no suman tonelaje.`
+          {volume.setsWithoutExternalLoad > 0
+            ? ` ${volume.setsWithoutExternalLoad} series sin carga externa no suman tonelaje.`
             : ''}
         </p>
       </div>
@@ -564,7 +684,7 @@ function SessionSummary({
                 name="esfuerzo"
                 value={value}
                 checked={effort === value}
-                onChange={() => onEffort(value)}
+                onChange={() => isValidPerceivedEffort(value) && onEffort(value)}
                 className="sr-only"
               />
               {value}

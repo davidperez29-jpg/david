@@ -1,9 +1,10 @@
-import { type Complexity, type Laterality, type Owner, type Taxonomy } from './taxonomy';
+import { type Complexity, isLeaf, type Laterality, type Owner, type Taxonomy } from './taxonomy';
 
 /**
  * Visibilidad de un ejercicio:
- * - `global`: catálogo de TrainPro, visible para todos los entrenadores; no editable.
- * - `trainer`: creado por un entrenador para su trabajo; se podrá compartir con su equipo.
+ * - `global`: catálogo de TrainPro, gestionado por administradores y disponible para todos.
+ * - `trainer` (personalizado): creado o adaptado por un entrenador para su biblioteca y utilizable
+ *   con sus clientes. Preparado para compartirse en el futuro con su equipo.
  * - `private`: solo lo ve el entrenador que lo creó.
  * Los clientes nunca navegan por la biblioteca: ven los ejercicios a través de sus sesiones.
  */
@@ -11,7 +12,7 @@ export type Visibility = 'global' | 'trainer' | 'private';
 
 export const VISIBILITY_LABELS: Record<Visibility, string> = {
   global: 'Catálogo global',
-  trainer: 'Mis ejercicios',
+  trainer: 'Personalizado',
   private: 'Privado',
 };
 
@@ -32,6 +33,8 @@ export const SILHOUETTES = [
   'sprint',
   'calf-raise',
   'mobility',
+  'shuffle',
+  'med-ball',
 ] as const;
 export type Silhouette = (typeof SILHOUETTES)[number];
 
@@ -71,7 +74,8 @@ export interface ExerciseVariant {
   commonMistakes: string[];
   technicalNotes: string[];
   tagIds: string[];
-  patternIds: string[];
+  /** Patrones de movimiento: exactamente uno principal (si hay alguno) y, si procede, secundarios. */
+  patterns: PatternAssignment[];
   regionIds: string[];
   equipmentIds: string[];
   environmentIds: string[];
@@ -84,6 +88,62 @@ export interface ExerciseVariant {
    * Las etiquetas describen usos de programación; no se deducen del nombre del ejercicio.
    */
   classificationNote?: string;
+  /** Si es una copia personalizada de otra variante (normalmente del catálogo global). */
+  derivedFrom?: { variantId: string };
+  /** Reservado: equipo con el que se comparte un ejercicio personalizado (futuro). */
+  sharedWithTeamId?: string;
+}
+
+export type PatternRole = 'primary' | 'secondary';
+
+export interface PatternAssignment {
+  id: string;
+  role: PatternRole;
+}
+
+export const PATTERN_ROLE_LABELS: Record<PatternRole, string> = {
+  primary: 'Principal',
+  secondary: 'Secundario',
+};
+
+export function primaryPatternId(variant: Pick<ExerciseVariant, 'patterns'>): string | null {
+  return variant.patterns.find((p) => p.role === 'primary')?.id ?? null;
+}
+
+/**
+ * Adaptar un ejercicio: crea una copia personalizada del entrenador y deja intacto el original.
+ * La copia recuerda de dónde procede (`derivedFrom`) y no es la variante de referencia.
+ */
+export function adaptVariant(
+  original: ExerciseVariant,
+  trainerId: string,
+  newId: string,
+  changes: Partial<
+    Omit<ExerciseVariant, 'id' | 'owner' | 'visibility' | 'isPrimary' | 'derivedFrom'>
+  > = {},
+): ExerciseVariant {
+  if (newId === original.id) throw new Error('La copia necesita un id propio.');
+  const copy: ExerciseVariant = {
+    ...original,
+    steps: [...original.steps],
+    cues: [...original.cues],
+    commonMistakes: [...original.commonMistakes],
+    technicalNotes: [...original.technicalNotes],
+    tagIds: [...original.tagIds],
+    patterns: original.patterns.map((p) => ({ ...p })),
+    regionIds: [...original.regionIds],
+    equipmentIds: [...original.equipmentIds],
+    environmentIds: [...original.environmentIds],
+    media: { ...original.media, links: original.media.links.map((l) => ({ ...l })) },
+    ...changes,
+    id: newId,
+    owner: { kind: 'trainer', trainerId },
+    visibility: 'trainer',
+    isPrimary: false,
+    derivedFrom: { variantId: original.id },
+  };
+  delete copy.sharedWithTeamId;
+  return copy;
 }
 
 /** Relación dirigida: `toVariantId` es una progresión de `fromVariantId` (y esta, su regresión). */
@@ -163,7 +223,29 @@ export function libraryIssues(library: Library, taxonomy: Taxonomy): string[] {
         .filter((id) => !valid.has(id))
         .forEach((id) => issues.push(`${v.id}: valor desconocido en ${label} «${id}».`));
     check('etiquetas', v.tagIds, tags);
-    check('patrones', v.patternIds, patterns);
+    check(
+      'patrones',
+      v.patterns.map((p) => p.id),
+      patterns,
+    );
+    for (const id of v.tagIds) {
+      if (taxonomy.tags.find((t) => t.id === id)?.archived)
+        issues.push(`${v.id}: usa la etiqueta archivada «${id}».`);
+    }
+    for (const p of v.patterns) {
+      if (patterns.has(p.id) && !isLeaf(taxonomy.patterns, p.id))
+        issues.push(`${v.id}: asigna el grupo «${p.id}»; usa un subtipo.`);
+    }
+    const primaries = v.patterns.filter((p) => p.role === 'primary').length;
+    if (v.patterns.length > 0 && primaries !== 1)
+      issues.push(`${v.id}: debe tener exactamente un patrón principal (tiene ${primaries}).`);
+    if (new Set(v.patterns.map((p) => p.id)).size !== v.patterns.length)
+      issues.push(`${v.id}: patrón repetido.`);
+    if (v.derivedFrom && !library.variants.some((o) => o.id === v.derivedFrom!.variantId)) {
+      issues.push(`${v.id}: procede de una variante inexistente.`);
+    }
+    if (v.derivedFrom && v.owner.kind !== 'trainer')
+      issues.push(`${v.id}: una copia adaptada debe pertenecer a un entrenador.`);
     check('regiones', v.regionIds, regions);
     check('material', v.equipmentIds, equipment);
     check('entornos', v.environmentIds, environments);

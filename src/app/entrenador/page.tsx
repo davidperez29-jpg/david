@@ -56,8 +56,9 @@ export default async function TrainerDashboardPage() {
             tone="leaf"
           />
           <p className="mt-2 text-sm text-ink-500">
-            {week.missed} no realizadas · {week.planned - week.completed - week.missed} pendientes o
-            a medias
+            {week.inProgress} en curso · {week.partial} parciales · {week.missed} no realizadas ·{' '}
+            {week.planned - week.completed - week.partial - week.inProgress - week.missed}{' '}
+            pendientes
           </p>
         </div>
         <Stat

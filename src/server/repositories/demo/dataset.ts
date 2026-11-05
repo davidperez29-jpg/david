@@ -23,6 +23,7 @@ import {
   type ExerciseFeedback,
   type PlannedSession,
   type SessionLog,
+  type SetRecord,
 } from '@/domain/training/session';
 import {
   DEMO_EXERCISES,
@@ -499,12 +500,10 @@ function buildSession(
   };
 }
 
-/** Registro simulado de una sesión pasada: completa, a medias o no realizada. */
-function buildLog(session: PlannedSession): SessionLog | null {
-  const seed = hash(session.id);
-  if (seed % 8 === 0) return null; // no realizada
-  const partial = seed % 8 === 1;
-  const sets = session.exercises.flatMap((rx, rxIndex) =>
+type LogScenario = 'completed' | 'interrupted' | 'finished_early' | 'completed_with_resend';
+
+function setRecords(session: PlannedSession, seed: number, doneExercises: number): SetRecord[] {
+  return session.exercises.flatMap((rx, rxIndex) =>
     Array.from({ length: rx.sets }, (_, setIndex) => {
       const reps =
         rx.reps.kind === 'fixed'
@@ -517,39 +516,82 @@ function buildLog(session: PlannedSession): SessionLog | null {
         setNumber: setIndex + 1,
         reps,
         loadKg: rx.load.kind === 'kg' ? rx.load.kg : null,
-        completed: partial ? rxIndex < 2 : true,
+        completed: rxIndex < doneExercises,
       };
     }),
   );
-  // Valoración autodeclarada de los ejercicios con objetivo de esfuerzo (RIR real cerca del prescrito).
-  const exerciseFeedback: ExerciseFeedback[] = partial
-    ? []
-    : session.exercises.flatMap((rx, index): ExerciseFeedback[] => {
-        if (rx.effort.kind === 'rir')
-          return [
-            { prescriptionId: rx.id, rir: Math.max(0, rx.effort.rir - ((seed + index) % 2)) },
-          ];
-        if (rx.effort.kind === 'rpe')
-          return [
-            { prescriptionId: rx.id, rpe: Math.min(10, rx.effort.rpe + ((seed + index) % 2)) },
-          ];
-        return [];
-      });
+}
+
+/** Valoración autodeclarada de los ejercicios hechos con objetivo de esfuerzo (cerca de lo prescrito). */
+function feedbackFor(
+  session: PlannedSession,
+  seed: number,
+  doneExercises: number,
+): ExerciseFeedback[] {
+  return session.exercises.slice(0, doneExercises).flatMap((rx, index): ExerciseFeedback[] => {
+    if (rx.effort.kind === 'rir')
+      return [{ prescriptionId: rx.id, rir: Math.max(0, rx.effort.rir - ((seed + index) % 2)) }];
+    if (rx.effort.kind === 'rpe')
+      return [{ prescriptionId: rx.id, rpe: Math.min(10, rx.effort.rpe + ((seed + index) % 2)) }];
+    return [];
+  });
+}
+
+/**
+ * Registro simulado de una sesión pasada. Escenarios: completa; interrumpida (se empezó y no se
+ * terminó); terminada antes de tiempo; o completa con una serie reenviada por duplicado (para
+ * comprobar que los cálculos no la cuentan dos veces). `null` = no realizada.
+ */
+function buildLog(session: PlannedSession): SessionLog | null {
+  const seed = hash(session.id);
+  const kind = seed % 8;
+  if (kind === 0) return null;
+  const scenario: LogScenario =
+    kind === 1
+      ? 'interrupted'
+      : kind === 2
+        ? 'finished_early'
+        : kind === 3
+          ? 'completed_with_resend'
+          : 'completed';
+
+  const all = session.exercises.length;
+  const doneExercises =
+    scenario === 'interrupted' ? 2 : scenario === 'finished_early' ? Math.min(3, all - 1) : all;
+  const sets = setRecords(session, seed, doneExercises);
+  if (scenario === 'completed_with_resend' && sets[0]) sets.push({ ...sets[0] });
   const comment = DEMO_COMMENTS[seed % DEMO_COMMENTS.length];
+  const base = {
+    id: `l-${session.id}`,
+    sessionId: session.id,
+    clientId: session.clientId,
+    date: session.date,
+    startedAt: `${session.date}T18:00:00.000Z`,
+    sets,
+    exerciseFeedback: feedbackFor(session, seed, doneExercises),
+  };
+  if (scenario === 'interrupted') return base;
+  return {
+    ...base,
+    finishedAt: `${session.date}T19:00:00.000Z`,
+    perceivedEffort: 5 + (seed % 4),
+    ...(scenario === 'finished_early'
+      ? { comment: 'He tenido que terminar antes: me he quedado sin tiempo.' }
+      : comment
+        ? { comment }
+        : {}),
+  };
+}
+
+/** Sesión de hoy empezada y sin terminar (para mostrar el estado «En curso»). */
+function buildInProgressLog(session: PlannedSession): SessionLog {
   return {
     id: `l-${session.id}`,
     sessionId: session.id,
     clientId: session.clientId,
     date: session.date,
-    ...(partial
-      ? { comment: 'Hoy no he podido terminar: me he quedado sin tiempo.' }
-      : {
-          completedAt: `${session.date}T19:00:00.000Z`,
-          perceivedEffort: 5 + (seed % 4),
-          exerciseFeedback,
-          ...(comment ? { comment } : {}),
-        }),
-    sets,
+    startedAt: `${session.date}T08:00:00.000Z`,
+    sets: setRecords(session, hash(session.id), 1),
   };
 }
 
@@ -686,6 +728,11 @@ export function buildDemoDataset(today: IsoDate): DemoDataset {
     .filter((session) => session.date < today)
     .map(buildLog)
     .filter((log): log is SessionLog => log !== null);
+  // Una sesión de hoy de otro cliente (no la de Marta) queda «en curso».
+  const inProgress = sessions.find(
+    (session) => session.date === today && session.clientId !== DEMO_CLIENT_ID,
+  );
+  if (inProgress) logs.push(buildInProgressLog(inProgress));
 
   const single = (
     clientId: string,

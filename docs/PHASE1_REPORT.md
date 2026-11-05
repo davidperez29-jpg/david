@@ -1,15 +1,66 @@
 # Informe de la Fase 1 · Fundamentos
 
-Fecha: 5 de noviembre de 2026 · Rama: `claude/vigilant-bardeen-qfycp4` · Especificación de referencia: «Prompt maestro de desarrollo desde cero».
+Fecha: 5 de noviembre de 2026 (revisión 2 incluida) · Rama: `claude/vigilant-bardeen-qfycp4` · Especificación de referencia: «Prompt maestro de desarrollo desde cero».
 
 > **Resumen.** TrainPro es un proyecto nuevo, sin código ni historial del proyecto anterior. Incluye:
 >
 > - una arquitectura por capas;
 > - una interfaz navegable del entrenador (21 rutas) y del cliente (4 rutas, para móvil);
 > - el modelo conceptual de datos completo, con la biblioteca multidimensional de ejercicios;
-> - 84 tests unitarios y de integración y 30 pruebas E2E, todos superados.
+> - 110 tests unitarios y de integración y 85 pruebas E2E en escritorio y móvil, todos superados (tras la revisión 2).
 >
 > Todo funciona con **datos ficticios en memoria**: no hay base de datos, no hay inicio de sesión real y nada se guarda.
+
+## Revisión 2 (5 de noviembre de 2026): correcciones solicitadas
+
+Se conserva el diseño visual, la estructura y lo que ya funcionaba. Todos los cambios están dentro del alcance de la Fase 1: no se ha conectado ningún servicio, no hay credenciales ni despliegues, y no se ha borrado nada del proyecto anterior.
+
+### Cambios realizados
+
+1. **Estados de sesión**, error corregido. Antes, pulsar «Terminar» daba la sesión por completada aunque faltaran series. Ahora:
+   - El estado se deduce de lo realizado: **pendiente, en curso, completada, parcial o interrumpida, y no realizada**.
+   - Servidor y cliente usan la misma función, y las series se **deduplican**: un reenvío no cuenta dos veces.
+   - Al terminar con series pendientes se pide confirmación, y el resumen muestra lo prescrito frente a lo realizado, ejercicio a ejercicio, con un título acorde («¡Sesión completada!» o «Sesión terminada parcialmente»).
+   - El panel del entrenador desglosa las sesiones por estado.
+   - Los datos demo incluyen sesiones completas, interrumpidas, terminadas antes de tiempo, una en curso hoy y una serie reenviada por duplicado.
+2. **Etiquetas en cuatro dimensiones** (A cualidades y objetivos, B métodos, C acciones musculares, D aplicaciones y evaluación):
+   - 1RM se separa en «Test o evaluación de 1RM» y «Trabajo con porcentajes de 1RM»; la antigua etiqueta queda archivada y sustituida.
+   - Todo el catálogo se ha reclasificado según las características reales de cada variante.
+3. **Patrones ampliados**: flexión y extensión de cadera (distintas del tronco), locomoción (6 subtipos), saltos, aterrizajes y transporte de cargas (4 subtipos). Cada variante tiene un **patrón principal y, si procede, secundarios**.
+   - Unilateral y bilateral se resuelven con la dimensión «Ejecución» (P-12).
+   - El catálogo pasa de 30 a **44 variantes** (26 ejercicios principales), con siluetas nuevas.
+4. **Búsqueda**:
+   - Texto por palabras («salto unilateral»).
+   - Interruptor «Solo patrón principal».
+   - Filtros plegables en móvil.
+   - Ejemplos verificados con tests: potencia + pliometría + salto vertical, y fuerza máxima + dominante de rodilla, en modo Y y en modo O.
+5. **Niveles global, personalizado y privado**:
+   - Rol de **administración del catálogo**, que no accede a datos de clientes.
+   - Adaptar un ejercicio global crea una **copia personalizada** (`derivedFrom`) sin modificar el original.
+   - La ficha muestra de dónde procede cada copia y qué adaptaciones existen.
+6. **Comparativa de infraestructura** (`INFRASTRUCTURE.md`): Supabase Free y Pro, Neon y PostgreSQL propio; alojamiento; GitHub Actions; costes y riesgos, con las fuentes indicadas.
+7. **Repositorio privado sin licencia abierta.** Diseño de los **derechos del cliente** (`DATA_RIGHTS.md`).
+8. **Validación en escritorio y móvil** de las 25 pantallas (`SCREEN_INVENTORY.md`).
+9. **Documentación actualizada**: `TAXONOMY.md` (nuevo), `DATA_MODEL.md`, `ARCHITECTURE.md`, `DECISIONS.md` (ADR-16 a ADR-19 y pendientes), `SCIENTIFIC_RIGOR.md` y `SECURITY_PRIVACY.md`.
+
+### Pruebas de esta revisión
+
+| Comprobación                                       | Resultado                                                                                                                                                                                                                                                       |
+| -------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm format:check`, `pnpm lint`, `pnpm typecheck` | Sin errores                                                                                                                                                                                                                                                     |
+| `pnpm test`                                        | **110/110** en 10 archivos (antes 84), con nuevas pruebas de estados, duplicados, taxonomía, adaptación, permisos de administración y búsquedas de ejemplo                                                                                                      |
+| `pnpm build`                                       | Correcto                                                                                                                                                                                                                                                        |
+| `pnpm test:e2e`                                    | **85/85 superadas** y 2 omitidas a propósito (pruebas exclusivas de móvil, que no se ejecutan en escritorio). Todas las pantallas en escritorio y móvil sin desplazamiento horizontal, axe en móvil, flujo de sesión parcial con confirmación y sesión completa |
+| `pnpm audit --prod`                                | Sin vulnerabilidades conocidas                                                                                                                                                                                                                                  |
+
+### Qué quedaría preparado para la Fase 2
+
+- **Modelo y permisos**: actores `trainer`, `client` y `admin`; políticas probadas; puertos de repositorio, a falta de implementar el adaptador PostgreSQL.
+- **Esquema conceptual** completo, con las restricciones necesarias: unicidad de series, roles de patrón, copias adaptadas y solicitudes de derechos.
+- **Supabase local** (Docker) como entorno sin coste ni cuenta; Supabase Pro en la UE solo cuando haya datos reales y lo autorices.
+- **Puntos de cambio únicos** para la autenticación (`getTrainerContext` / `getClientContext`) y la validación de entradas con Zod (propuesta).
+
+---
 
 ## 1. Entorno y preservación del proyecto anterior
 

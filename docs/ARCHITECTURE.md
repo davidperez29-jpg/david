@@ -32,7 +32,7 @@ TrainPro es un **monolito modular** en una única aplicación Next.js (App Route
 | `features`  | `domain`, `contracts`, `ui`            | `server`, `app`                       |
 | `app`       | todo                                   | —                                     |
 
-Estas reglas **se comprueban automáticamente** con ESLint (`no-restricted-imports` en `eslint.config.mjs`); `pnpm lint` falla si alguien se las salta. Además, cada módulo de `src/server` importa `server-only`: si un componente de cliente lo importara por error, la compilación fallaría y ese código nunca llegaría al navegador.
+Actores: `trainer`, `client` y `admin` (administración del catálogo de ejercicios; no accede a datos de clientes). Estas reglas **se comprueban automáticamente** con ESLint (`no-restricted-imports` en `eslint.config.mjs`); `pnpm lint` falla si alguien se las salta. Además, cada módulo de `src/server` importa `server-only`: si un componente de cliente lo importara por error, la compilación fallaría y ese código nunca llegaría al navegador.
 
 ## Flujo de una petición
 
@@ -42,6 +42,10 @@ Estas reglas **se comprueban automáticamente** con ESLint (`no-restricted-impor
 4. La ruta pasa ese modelo a los componentes de `src/features`. Los componentes interactivos (`'use client'`) solo reciben datos ya filtrados.
 
 Todas las páginas con datos se renderizan en cada petición (`await connection()` en el contexto). Así «hoy» nunca queda congelado en el momento de compilar y la autenticación real encajará sin cambios estructurales.
+
+## Lógica compartida entre servidor y cliente
+
+Algunas reglas del dominio se ejecutan también en el navegador, siempre con **la misma función**. Por ejemplo, el reproductor de sesión usa `summarizeExecution` y `deriveSessionStatus` (`src/domain/training/session.ts`), igual que el servidor, para que el estado y los cálculos coincidan. El dominio no depende de React ni de Next, así que puede importarse en componentes de cliente.
 
 ## Datos: puertos y adaptadores
 

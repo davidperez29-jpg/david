@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { type ClientActor, type TrainerActor } from '@/domain/access';
 import { findAssessmentTest, resultIssues } from '@/domain/assessment';
 import { libraryIssues } from '@/domain/library/exercise';
+import { searchLibrary } from '@/domain/library/search';
 import { SYSTEM_TAXONOMY } from '@/domain/library/taxonomy';
 import { isRegisteredFormula } from '@/domain/formulas';
 import { measurementIssues } from '@/domain/measurement';
@@ -17,6 +18,7 @@ import {
   getClientTrainingLog,
 } from './client-file';
 import { getLibrary, getVariantDetail } from './library';
+import { toSessionCard } from './mappers';
 import {
   getLoadOverview,
   getPlanningOverview,
@@ -81,7 +83,8 @@ describe('integridad de los datos de demostración', () => {
     for (const log of data.logs) {
       const session = sessions.get(log.sessionId);
       expect(session?.clientId).toBe(log.clientId);
-      expect(log.date < TODAY).toBe(true);
+      // Solo puede haber registros de hoy si la sesión está en curso (sin terminar).
+      expect(log.date < TODAY || (log.date === TODAY && !log.finishedAt)).toBe(true);
     }
   });
 
@@ -161,6 +164,39 @@ describe('experiencia del entrenador', () => {
       dashboard.week.completed + dashboard.week.missed,
     );
     expect(dashboard.activeRehabCases).toBe(1);
+  });
+
+  it('el panel distingue en curso, completadas, parciales y no realizadas', async () => {
+    const dashboard = await getTrainerDashboard(trainerCtx());
+    const diego = dashboard.todaySessions.find((s) => s.clientName === 'Diego Alonso');
+    expect(diego?.session.status).toBe('in_progress');
+    expect(diego?.session.completedSets).toBeLessThan(diego!.session.plannedSets);
+    const { week } = dashboard;
+    expect(week.inProgress).toBe(1);
+    expect(week.completed + week.partial + week.inProgress + week.missed).toBeLessThanOrEqual(
+      week.planned,
+    );
+  });
+
+  it('una serie reenviada por duplicado no se cuenta dos veces en el volumen', async () => {
+    const duplicated = data.logs.find((log) => {
+      const session = data.sessions.find((s) => s.id === log.sessionId)!;
+      return log.sets.length > session.exercises.reduce((n, e) => n + e.sets, 0);
+    });
+    expect(duplicated, 'los datos demo incluyen un reenvío duplicado').toBeDefined();
+    const session = data.sessions.find((s) => s.id === duplicated!.sessionId)!;
+    const card = toSessionCard(session, duplicated, TODAY);
+    expect(card.completedSets).toBe(card.plannedSets);
+    expect(card.status).toBe('completed');
+  });
+
+  it('una sesión terminada antes de tiempo queda como parcial, no como completada', () => {
+    const early = data.logs.find(
+      (log) => log.finishedAt && log.comment?.startsWith('He tenido que terminar antes'),
+    );
+    expect(early).toBeDefined();
+    const session = data.sessions.find((s) => s.id === early!.sessionId)!;
+    expect(toSessionCard(session, early, TODAY).status).toBe('partial');
   });
 
   it('la ficha y sus pestañas solo son accesibles para el entrenador responsable', async () => {
@@ -249,6 +285,64 @@ describe('biblioteca de ejercicios', () => {
     expect(detail?.siblings.length).toBe(7);
     expect(detail?.canEdit).toBe(false);
     expect((await getVariantDetail(trainerCtx(), 'ex-band-row'))?.canEdit).toBe(true);
+  });
+
+  it('ejemplos reales Y/O: potencia + pliometría + salto vertical; fuerza máxima + dominante de rodilla', async () => {
+    const library = await getLibrary(trainerCtx());
+    const run = (filters: { facet: 'tag' | 'pattern'; id: string }[], mode: 'all' | 'any') =>
+      searchLibrary(library.variants, library.exercises, { filters, mode }, library.taxonomy).map(
+        (v) => v.id,
+      );
+
+    const powerPlyoJump = [
+      { facet: 'tag' as const, id: 'power' },
+      { facet: 'tag' as const, id: 'plyometric' },
+      { facet: 'pattern' as const, id: 'jump.vertical' },
+    ];
+    expect(run(powerPlyoJump, 'all')).toEqual(['ex-drop-jump', 'ex-repeated-cmj']);
+    const anyOf = run(powerPlyoJump, 'any');
+    expect(anyOf).toEqual(
+      expect.arrayContaining([
+        'ex-drop-jump',
+        'ex-repeated-cmj',
+        'ex-pogo',
+        'ex-broad-jump',
+        'ex-cmj',
+      ]),
+    );
+    expect(anyOf.length).toBeGreaterThan(2);
+
+    const maxKnee = [
+      { facet: 'tag' as const, id: 'max-strength' },
+      { facet: 'pattern' as const, id: 'lower.knee' },
+    ];
+    expect(run(maxKnee, 'all')).toEqual(['ex-front-squat', 'ex-back-squat']);
+    expect(run(maxKnee, 'any')).toEqual(
+      expect.arrayContaining(['ex-pullup', 'ex-bench-press', 'ex-goblet-squat']),
+    );
+  });
+
+  it('la copia adaptada recuerda su original; otro entrenador no la ve', async () => {
+    const copy = await getVariantDetail(trainerCtx(), 'ex-split-squat-pause');
+    expect(copy?.derivedFrom?.id).toBe('ex-split-squat');
+    expect(copy?.canAdapt).toBe(false);
+    const original = await getVariantDetail(trainerCtx(), 'ex-split-squat');
+    expect(original?.canAdapt).toBe(true);
+    expect(original?.adaptations.map((a) => a.id)).toEqual(['ex-split-squat-pause']);
+    expect((await getVariantDetail(trainerCtx('t-otro'), 'ex-split-squat'))?.adaptations).toEqual(
+      [],
+    );
+  });
+
+  it('los patrones se muestran con su rol (principal primero)', async () => {
+    const cmj = await getVariantDetail(trainerCtx(), 'ex-cmj');
+    expect(cmj?.patterns[0]).toMatchObject({ id: 'jump.vertical', role: 'primary' });
+    expect(cmj?.patterns.slice(1).every((p) => p.role === 'secondary')).toBe(true);
+  });
+
+  it('la categoría archivada no se ofrece como filtro', async () => {
+    const library = await getLibrary(trainerCtx());
+    expect(library.taxonomy.tagCategories.map((c) => c.id)).not.toContain('control');
   });
 
   it('los clientes no acceden a la biblioteca, solo a sus sesiones', async () => {

@@ -102,7 +102,27 @@ test.describe('área del entrenador', () => {
     await page.goto('/entrenador/ejercicios');
     const filters = page.getByRole('complementary', { name: 'Filtros' });
     const count = page.getByText(/^\d+ ejercicios?$/);
-    await expect(count).toHaveText('30 ejercicios');
+    await expect(count).toHaveText('44 ejercicios');
+
+    // Ejemplo: Potencia Y Pliometría Y Salto vertical → drop jump y saltos verticales continuos.
+    await filters.getByRole('button', { name: 'Potencia', exact: true }).click();
+    await filters.getByRole('button', { name: 'Pliometría', exact: true }).click();
+    await filters
+      .getByRole('group', { name: 'Saltos' })
+      .getByRole('button', { name: 'Vertical', exact: true })
+      .click();
+    await expect(count).toHaveText('2 ejercicios');
+    await expect(page.getByRole('link', { name: /Drop jump/ })).toBeVisible();
+    await expect(page.getByRole('link', { name: /Saltos verticales continuos/ })).toBeVisible();
+    await expect(page.getByLabel('Filtros activos')).toContainText('Cumple todos:');
+    await page.getByRole('button', { name: 'Quitar todos' }).click();
+    await expect(count).toHaveText('44 ejercicios');
+
+    // Ejemplo: Fuerza máxima Y Dominante de rodilla → sentadillas trasera y frontal.
+    await filters.getByRole('button', { name: 'Fuerza máxima', exact: true }).click();
+    await filters.getByRole('button', { name: 'Dominante de rodilla', exact: true }).click();
+    await expect(count).toHaveText('2 ejercicios');
+    await page.getByRole('button', { name: 'Quitar todos' }).click();
 
     // Potencia Y Dominante de rodilla → solo la sentadilla con intención máxima de velocidad.
     await filters.getByRole('button', { name: 'Potencia', exact: true }).click();
@@ -132,6 +152,23 @@ test.describe('área del entrenador', () => {
     await filters.getByRole('button', { name: 'Unilateral', exact: true }).click();
     await expect(count).toHaveText('1 ejercicio');
     await expect(page.getByRole('link', { name: /Remo con mancuerna a una mano/ })).toBeVisible();
+  });
+
+  test('la búsqueda por palabras combina datos distintos («salto unilateral»)', async ({
+    page,
+  }) => {
+    await page.goto('/entrenador/ejercicios');
+    await page.getByRole('searchbox', { name: 'Buscar ejercicios' }).fill('salto unilateral');
+    await expect(page.getByRole('link', { name: /Salto vertical a una pierna/ })).toBeVisible();
+    await expect(page.getByRole('link', { name: /Salto horizontal a pies juntos/ })).toHaveCount(0);
+  });
+
+  test('una copia personalizada indica su original, que no cambia', async ({ page }) => {
+    await page.goto('/entrenador/ejercicios/ex-split-squat-pause');
+    await expect(page.getByText('Copia personalizada', { exact: true })).toBeVisible();
+    await page.getByRole('link', { name: 'Sentadilla búlgara', exact: true }).first().click();
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Sentadilla búlgara');
+    await expect(page.getByText('Ejercicio del catálogo global')).toBeVisible();
   });
 
   test('la ficha de ejercicio muestra clasificación, variantes y progresiones', async ({

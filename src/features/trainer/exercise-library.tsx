@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronDown, Search, Star, X } from 'lucide-react';
+import { ChevronDown, Search, SlidersHorizontal, Star, X } from 'lucide-react';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { type LibraryVM } from '@/contracts/trainer';
@@ -27,7 +27,7 @@ import { Badge } from '@/ui/badge';
 import { cn } from '@/ui/cn';
 
 type Option = { id: string; label: string };
-type Group = { title?: string; personal?: boolean; options: Option[] };
+type Group = { title?: string; help?: string; personal?: boolean; options: Option[] };
 
 const flat = (nodes: readonly TaxonomyNode[]): Group[] => [
   { options: nodes.filter((n) => n.parentId === null).map((n) => ({ id: n.id, label: n.name })) },
@@ -54,6 +54,8 @@ export function ExerciseLibrary({ library }: { library: LibraryVM }) {
   const [mode, setMode] = useState<MatchMode>('all');
   const [sort, setSort] = useState<SortOrder>('name');
   const [favoritesOnly, setFavoritesOnly] = useState(false);
+  const [primaryOnly, setPrimaryOnly] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
 
   const exerciseName = useMemo(
     () => new Map(library.exercises.map((e) => [e.id, e.name])),
@@ -65,8 +67,14 @@ export function ExerciseLibrary({ library }: { library: LibraryVM }) {
     const pool = favoritesOnly
       ? library.variants.filter((v) => favorites.has(v.id))
       : library.variants;
-    return searchLibrary(pool, library.exercises, { text, filters, mode, sort }, taxonomy);
-  }, [library, favorites, favoritesOnly, text, filters, mode, sort, taxonomy]);
+    const patternRole = primaryOnly ? 'primary' : 'any';
+    return searchLibrary(
+      pool,
+      library.exercises,
+      { text, filters, mode, sort, patternRole },
+      taxonomy,
+    );
+  }, [library, favorites, favoritesOnly, primaryOnly, text, filters, mode, sort, taxonomy]);
 
   const facets: { facet: Facet; groups: Group[]; open?: boolean }[] = [
     {
@@ -76,6 +84,7 @@ export function ExerciseLibrary({ library }: { library: LibraryVM }) {
         .sort((a, b) => a.order - b.order)
         .map((category) => ({
           title: category.name,
+          help: category.description,
           personal: category.owner.kind === 'trainer',
           options: taxonomy.tags
             .filter((t) => t.categoryId === category.id)
@@ -122,9 +131,35 @@ export function ExerciseLibrary({ library }: { library: LibraryVM }) {
 
   return (
     <div className="grid items-start gap-6 lg:grid-cols-[19rem_1fr]">
+      {/* En pantallas estrechas los filtros se pliegan para que los resultados se vean enseguida. */}
+      <button
+        type="button"
+        onClick={() => setShowFilters((value) => !value)}
+        aria-expanded={showFilters}
+        aria-controls="filtros-biblioteca"
+        className="flex h-12 items-center justify-between rounded-2xl border border-line bg-white px-4 font-semibold text-ink-900 lg:hidden"
+      >
+        <span className="flex items-center gap-2">
+          <SlidersHorizontal aria-hidden className="size-4" />
+          {showFilters ? 'Ocultar filtros' : 'Mostrar filtros'}
+          {filters.length > 0 ? (
+            <span className="rounded-full bg-ink-900 px-2 py-0.5 text-xs text-cream-50">
+              {filters.length}
+            </span>
+          ) : null}
+        </span>
+        <ChevronDown
+          aria-hidden
+          className={cn('size-4 transition-transform', showFilters && 'rotate-180')}
+        />
+      </button>
       <aside
+        id="filtros-biblioteca"
         aria-label="Filtros"
-        className="rounded-3xl border border-line/70 bg-white p-4 shadow-soft lg:sticky lg:top-6 lg:max-h-[calc(100dvh-3rem)] lg:overflow-y-auto"
+        className={cn(
+          'rounded-3xl border border-line/70 bg-white p-4 shadow-soft lg:sticky lg:top-6 lg:block lg:max-h-[calc(100dvh-3rem)] lg:overflow-y-auto',
+          showFilters ? 'block' : 'hidden',
+        )}
       >
         <fieldset>
           <legend className="text-sm font-bold text-ink-900">Coincidencia</legend>
@@ -192,6 +227,17 @@ export function ExerciseLibrary({ library }: { library: LibraryVM }) {
                   />
                 </summary>
                 <div className="space-y-3 px-3 pb-3">
+                  {facet === 'pattern' ? (
+                    <label className="flex cursor-pointer items-center gap-2 rounded-xl bg-white px-2.5 py-2 text-xs font-semibold text-ink-700 ring-1 ring-line">
+                      <input
+                        type="checkbox"
+                        checked={primaryOnly}
+                        onChange={(event) => setPrimaryOnly(event.target.checked)}
+                        className="size-4 accent-[#2b2116]"
+                      />
+                      Solo patrón principal (sin contar los secundarios)
+                    </label>
+                  ) : null}
                   {groups.map((group, index) => (
                     <div
                       key={group.title ?? index}
@@ -202,6 +248,9 @@ export function ExerciseLibrary({ library }: { library: LibraryVM }) {
                         <p className="mb-1.5 text-xs font-semibold text-ink-500">
                           {group.title}
                           {group.personal ? ' · personal' : ''}
+                          {group.help ? (
+                            <span className="block font-normal">{group.help}</span>
+                          ) : null}
                         </p>
                       ) : null}
                       <div className="flex flex-wrap gap-1.5">
@@ -250,7 +299,7 @@ export function ExerciseLibrary({ library }: { library: LibraryVM }) {
               type="search"
               value={text}
               onChange={(event) => setText(event.target.value)}
-              placeholder="Buscar por nombre, etiqueta, patrón o material"
+              placeholder="Buscar: nombre, etiqueta, patrón, material, ejecución…"
               className="h-12 w-full rounded-2xl border border-line bg-white pr-4 pl-12 text-ink-900 placeholder:text-ink-500 focus:border-ink-300"
             />
           </label>
@@ -308,9 +357,11 @@ export function ExerciseLibrary({ library }: { library: LibraryVM }) {
               const tagNames = variant.tagIds
                 .map((id) => taxonomy.tags.find((t) => t.id === id)?.name)
                 .filter(Boolean) as string[];
-              const patternNames = variant.patternIds.map(
-                (id) => taxonomy.patterns.find((p) => p.id === id)?.name ?? id,
-              );
+              const primary = variant.patterns.find((p) => p.role === 'primary');
+              const secondaryCount = variant.patterns.filter((p) => p.role === 'secondary').length;
+              const primaryName = primary
+                ? (taxonomy.patterns.find((p) => p.id === primary.id)?.name ?? primary.id)
+                : null;
               return (
                 <li key={variant.id}>
                   <Link
@@ -349,7 +400,16 @@ export function ExerciseLibrary({ library }: { library: LibraryVM }) {
                         ) : null}
                       </span>
                       <span className="mt-2 block text-xs text-ink-700">
-                        {patternNames.length ? patternNames.join(' · ') : 'Sin patrón asignado'}
+                        {primaryName ? (
+                          <>
+                            <span className="font-semibold">{primaryName}</span>
+                            {secondaryCount > 0
+                              ? ` · +${secondaryCount} ${secondaryCount === 1 ? 'secundario' : 'secundarios'}`
+                              : ''}
+                          </>
+                        ) : (
+                          'Sin patrón asignado'
+                        )}
                       </span>
                       <span className="mt-1 block text-xs text-ink-500">
                         {COMPLEXITY_LABELS[variant.complexity]} ·{' '}

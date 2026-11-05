@@ -151,6 +151,38 @@ const FIGURES: Record<Silhouette, Figure> = {
     ],
     gear: <rect x="26" y="56" width="28" height="5" rx="2" fill={SUN} />,
   },
+  shuffle: {
+    head: [32, 14],
+    lines: [
+      'M32 21 L32 35',
+      'M32 35 L22 45 L18 55',
+      'M32 35 L42 45 L46 55',
+      'M32 23 L23 31',
+      'M32 23 L41 31',
+    ],
+    gear: (
+      <g fill="none" stroke={SUN} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M9 38 L4 43 L9 48" />
+        <path d="M55 38 L60 43 L55 48" />
+      </g>
+    ),
+  },
+  'med-ball': {
+    head: [28, 12],
+    lines: ['M28 19 L31 37', 'M31 37 L23 56', 'M31 37 L39 56', 'M29 22 L42 25', 'M29 25 L42 30'],
+    gear: (
+      <>
+        <circle cx="48" cy="28" r="6" fill={SUN} />
+        <path
+          d="M14 20 Q8 30 14 40"
+          fill="none"
+          stroke={SUN}
+          strokeWidth="4"
+          strokeLinecap="round"
+        />
+      </>
+    ),
+  },
   mobility: {
     head: [32, 11],
     lines: ['M32 18 L32 36', 'M32 21 L18 13', 'M32 21 L46 13', 'M32 36 L21 54', 'M32 36 L43 54'],

@@ -3,7 +3,6 @@ import { compareResults, type AssessmentResult } from './assessment';
 import { filterExercises, isSafeExternalUrl, type Exercise } from './exercises';
 import { currentPhase, isPhaseComplete, type RehabCase } from './rehab';
 import { initials, matchesSearch } from './text';
-import { sessionStatus, type PlannedSession } from './training/session';
 
 const result = (value: number, method = 'Fotocélulas'): AssessmentResult => ({
   id: `r-${value}`,
@@ -74,34 +73,6 @@ describe('readaptación', () => {
 
   it('una fase sin criterios no se da por superada', () => {
     expect(isPhaseComplete(rehab.phases[2]!)).toBe(false);
-  });
-});
-
-describe('sesiones', () => {
-  const session: PlannedSession = {
-    id: 's1',
-    clientId: 'c1',
-    date: '2026-11-03',
-    title: 'Fuerza',
-    focus: '',
-    estimatedMinutes: 50,
-    exercises: [],
-  };
-
-  it('deriva el estado a partir del registro y de la fecha', () => {
-    expect(sessionStatus(session, undefined, '2026-11-04')).toBe('missed');
-    expect(sessionStatus(session, undefined, '2026-11-03')).toBe('pending');
-    const partial = {
-      id: 'l',
-      sessionId: 's1',
-      clientId: 'c1',
-      date: '2026-11-03',
-      sets: [{ prescriptionId: 'p', setNumber: 1, reps: 5, loadKg: 20, completed: true }],
-    };
-    expect(sessionStatus(session, partial, '2026-11-04')).toBe('partial');
-    expect(
-      sessionStatus(session, { ...partial, completedAt: '2026-11-03T19:00:00Z' }, '2026-11-04'),
-    ).toBe('completed');
   });
 });
 

@@ -4,7 +4,7 @@ import { canAccessClient } from '@/domain/access';
 import { type Client, POPULATION_LABELS } from '@/domain/people';
 import { initials } from '@/domain/text';
 import { addDays } from '@/domain/time';
-import { sortSessions } from '@/domain/training/session';
+import { sessionStatus, sortSessions } from '@/domain/training/session';
 import { type TrainerContext } from '../context';
 import { type DateRange } from '../repositories/ports';
 import { logsBySession } from './mappers';
@@ -34,7 +34,9 @@ export async function summarize(ctx: TrainerContext, client: Client): Promise<Cl
     from: addDays(ctx.today, -6),
     to: addDays(ctx.today, 30),
   });
-  const next = sessions.find((s) => s.date >= ctx.today && !logs.get(s.id)?.completedAt);
+  const next = sessions.find(
+    (s) => s.date >= ctx.today && sessionStatus(s, logs.get(s.id), ctx.today) !== 'completed',
+  );
   const past = sessions.filter((s) => s.date <= ctx.today);
   return {
     id: client.id,
@@ -47,7 +49,8 @@ export async function summarize(ctx: TrainerContext, client: Client): Promise<Cl
     nextSession: next ? { date: next.date, title: next.title } : null,
     last7Days: {
       planned: past.length,
-      completed: past.filter((s) => logs.get(s.id)?.completedAt).length,
+      completed: past.filter((s) => sessionStatus(s, logs.get(s.id), ctx.today) === 'completed')
+        .length,
     },
   };
 }

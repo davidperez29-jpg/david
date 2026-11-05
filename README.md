@@ -64,18 +64,26 @@ scripts/       Utilidades de mantenimiento
 
 ## Documentación
 
-| Documento                                              | Contenido                                                           |
-| ------------------------------------------------------ | ------------------------------------------------------------------- |
-| [`docs/PHASE1_REPORT.md`](docs/PHASE1_REPORT.md)       | Informe de revisión de la Fase 1                                    |
-| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)         | Arquitectura, capas, flujo de datos y cómo ampliar                  |
-| [`docs/DATA_MODEL.md`](docs/DATA_MODEL.md)             | Modelo conceptual de datos, incluida la biblioteca multidimensional |
-| [`docs/DECISIONS.md`](docs/DECISIONS.md)               | Decisiones técnicas justificadas (ADR) y las pendientes de aprobar  |
-| [`docs/SECURITY_PRIVACY.md`](docs/SECURITY_PRIVACY.md) | Modelo de permisos, privacidad, RGPD y pendientes                   |
-| [`docs/SCIENTIFIC_RIGOR.md`](docs/SCIENTIFIC_RIGOR.md) | Procedencia de los datos, registro de fórmulas y convenciones       |
-| [`docs/DESIGN_SYSTEM.md`](docs/DESIGN_SYSTEM.md)       | Identidad visual, tokens, componentes y accesibilidad               |
-| [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md)           | Desarrollo y mantenimiento del día a día                            |
-| [`docs/ROADMAP.md`](docs/ROADMAP.md)                   | Fases propuestas                                                    |
+| Documento                                              | Contenido                                                                              |
+| ------------------------------------------------------ | -------------------------------------------------------------------------------------- |
+| [`docs/PHASE1_REPORT.md`](docs/PHASE1_REPORT.md)       | Informe de revisión de la Fase 1                                                       |
+| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)         | Arquitectura, capas, flujo de datos y cómo ampliar                                     |
+| [`docs/DATA_MODEL.md`](docs/DATA_MODEL.md)             | Modelo conceptual de datos, incluida la biblioteca multidimensional                    |
+| [`docs/TAXONOMY.md`](docs/TAXONOMY.md)                 | Taxonomía de la biblioteca: dimensiones de etiquetas, patrones y niveles de ejercicios |
+| [`docs/INFRASTRUCTURE.md`](docs/INFRASTRUCTURE.md)     | Comparativa de base de datos, autenticación, alojamiento y CI, con costes y riesgos    |
+| [`docs/DATA_RIGHTS.md`](docs/DATA_RIGHTS.md)           | Diseño de los derechos del cliente: acceso, exportación, rectificación y supresión     |
+| [`docs/SCREEN_INVENTORY.md`](docs/SCREEN_INVENTORY.md) | Qué es funcional, qué usa datos ficticios y qué es solo visual en cada pantalla        |
+| [`docs/DECISIONS.md`](docs/DECISIONS.md)               | Decisiones técnicas justificadas (ADR) y las pendientes de aprobar                     |
+| [`docs/SECURITY_PRIVACY.md`](docs/SECURITY_PRIVACY.md) | Modelo de permisos, privacidad, RGPD y pendientes                                      |
+| [`docs/SCIENTIFIC_RIGOR.md`](docs/SCIENTIFIC_RIGOR.md) | Procedencia de los datos, registro de fórmulas y convenciones                          |
+| [`docs/DESIGN_SYSTEM.md`](docs/DESIGN_SYSTEM.md)       | Identidad visual, tokens, componentes y accesibilidad                                  |
+| [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md)           | Desarrollo y mantenimiento del día a día                                               |
+| [`docs/ROADMAP.md`](docs/ROADMAP.md)                   | Fases propuestas                                                                       |
 
 ## Costes
 
 La Fase 1 no usa ningún servicio de pago ni externo: todo se ejecuta en local y las dependencias tienen licencias abiertas. Las fuentes tipográficas se descargan al compilar y se sirven desde el propio dominio. Cualquier servicio externo futuro (base de datos, alojamiento, correo) se propondrá antes de conectarlo, con sus condiciones, límites y posibles costes.
+
+## Licencia
+
+Repositorio **privado**. Todos los derechos reservados; no se publica ninguna licencia abierta (`"license": "UNLICENSED"`).
