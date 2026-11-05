@@ -40,7 +40,8 @@ export interface Tempo {
 
 export interface ExercisePrescription {
   id: string;
-  exerciseId: string;
+  /** Variante concreta de la biblioteca (p. ej., «Sentadilla frontal»). */
+  variantId: string;
   /** Bloque de la sesión (A, B, C…). Los ejercicios del mismo bloque pueden alternarse. */
   block: string;
   order: number;

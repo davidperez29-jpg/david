@@ -30,7 +30,17 @@ export interface SessionLog {
   sets: SetRecord[];
   /** Esfuerzo percibido de la sesión (0–10), autodeclarado por el cliente. */
   perceivedEffort?: number;
+  /** Valoración de cada ejercicio (RIR o RPE real y observaciones), autodeclarada. */
+  exerciseFeedback?: ExerciseFeedback[];
+  /** Observaciones del cliente para su entrenador. */
   comment?: string;
+}
+
+export interface ExerciseFeedback {
+  prescriptionId: string;
+  rir?: number;
+  rpe?: number;
+  note?: string;
 }
 
 export type SessionStatus = 'completed' | 'partial' | 'pending' | 'missed';

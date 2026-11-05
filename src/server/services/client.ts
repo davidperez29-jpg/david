@@ -7,8 +7,8 @@ import { addDays, startOfIsoWeek } from '@/domain/time';
 import { sortSessions } from '@/domain/training/session';
 import { weeklyVolume } from '@/domain/training/volume';
 import { type ClientContext } from '../context';
+import { loadSessionVariants } from './library';
 import {
-  indexBy,
   logsBySession,
   toAssessmentSeries,
   toPreview,
@@ -38,8 +38,9 @@ export async function getClientHome(ctx: ClientContext): Promise<ClientHomeVM> {
   const todays = ordered.find((s) => s.date === ctx.today) ?? null;
   const next = ordered.find((s) => s.date > ctx.today) ?? null;
   const thisWeek = ordered.filter((s) => s.date <= addDays(weekStart, 6));
-  const exercises = indexBy(
-    await ctx.repos.exercises.getMany(todays ? todays.exercises.map((rx) => rx.exerciseId) : []),
+  const { byId: variants } = await loadSessionVariants(
+    ctx,
+    todays ? todays.exercises.map((rx) => rx.variantId) : [],
   );
 
   return {
@@ -49,7 +50,7 @@ export async function getClientHome(ctx: ClientContext): Promise<ClientHomeVM> {
       ? {
           ...toSessionCard(todays, logIndex.get(todays.id), ctx.today),
           coachNote: todays.coachNote ?? null,
-          preview: toPreview(todays, exercises),
+          preview: toPreview(todays, variants),
         }
       : null,
     nextSession: next ? toSessionCard(next, logIndex.get(next.id), ctx.today) : null,
@@ -70,14 +71,18 @@ export async function getClientSession(
   const client = await loadSelf(ctx);
   if (!canReadResource(ctx.actor, client, 'plan', null)) return null;
 
-  const [logs, exercises] = await Promise.all([
+  const [logs, variants] = await Promise.all([
     ctx.repos.logs.listByClient(client.id, { from: session.date, to: session.date }),
-    ctx.repos.exercises.getMany(session.exercises.map((rx) => rx.exerciseId)),
+    loadSessionVariants(
+      ctx,
+      session.exercises.map((rx) => rx.variantId),
+    ),
   ]);
   return toSessionDetail(
     session,
     logsBySession(logs).get(session.id),
-    indexBy(exercises),
+    variants.byId,
+    variants.stepsOf,
     ctx.today,
   );
 }

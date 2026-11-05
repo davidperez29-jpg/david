@@ -128,3 +128,57 @@ describe('búsqueda y textos', () => {
     expect(isSafeExternalUrl('javascript:alert(1)')).toBe(false);
   });
 });
+
+describe('intentos de evaluación', async () => {
+  const { aggregateAttempts, resultIssues, compareResults } = await import('./assessment');
+  const prov = (origin: 'imported' | 'calculated', formula?: { id: string; version: string }) => ({
+    origin,
+    method: 'Aplicación de salto',
+    measuredAt: '2026-11-01T10:00:00Z',
+    recordedAt: '2026-11-01T10:00:00Z',
+    recordedBy: 'device' as const,
+    ...(formula ? { formula } : {}),
+    ...(origin === 'imported' ? { importedFrom: 'CSV' } : {}),
+  });
+
+  it('el mejor intento depende del sentido de la prueba', () => {
+    expect(aggregateAttempts([30.1, 31.4, 30.8], 'best', 'higher')).toBe(31.4);
+    expect(aggregateAttempts([3.71, 3.65], 'best', 'lower')).toBe(3.65);
+    expect(aggregateAttempts([30, 31, 32], 'mean', 'higher')).toBe(31);
+    expect(() => aggregateAttempts([], 'best', 'higher')).toThrow(RangeError);
+  });
+
+  it('un resultado agregado debe coincidir con sus intentos y ser «calculado»', () => {
+    const attempts = [30.1, 31.4].map((value) => ({
+      value,
+      unit: 'cm' as const,
+      provenance: prov('imported'),
+    }));
+    const good = {
+      id: 'r',
+      clientId: 'c',
+      testId: 'cmj',
+      date: '2026-11-01',
+      attempts,
+      aggregation: 'best' as const,
+      measurement: {
+        value: 31.4,
+        unit: 'cm' as const,
+        provenance: prov('calculated', { id: 'assessment.best-attempt', version: '1.0.0' }),
+      },
+    };
+    expect(resultIssues(good)).toEqual([]);
+    expect(resultIssues({ ...good, measurement: { ...good.measurement, value: 30.1 } })[0]).toMatch(
+      /no coincide/,
+    );
+    expect(
+      resultIssues({ ...good, measurement: { ...good.measurement, provenance: prov('imported') } }),
+    ).toContain('Un resultado agregado debe ser «calculado» con la fórmula de su regla.');
+    // No se comparan resultados obtenidos con reglas distintas.
+    const mean = { ...good, aggregation: 'mean' as const };
+    expect(compareResults(good, mean, 'higher')).toEqual({
+      comparable: false,
+      reason: 'La regla de agregación de intentos no coincide.',
+    });
+  });
+});

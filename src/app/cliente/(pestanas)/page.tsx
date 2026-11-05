@@ -1,7 +1,7 @@
 import { ArrowRight, CalendarDays, Clock, Dumbbell, Layers, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
 import { formatDate, formatRelativeDay } from '@/domain/format';
-import { PatternPictogram } from '@/features/brand/pictogram';
+import { ExercisePictogram } from '@/features/brand/pictogram';
 import { RestIllustration } from '@/features/brand/illustrations';
 import { SessionStatusBadge } from '@/features/shared/status-badge';
 import { Meter } from '@/ui/meter';
@@ -25,8 +25,8 @@ export default async function ClientTodayPage() {
           className="mt-5 overflow-hidden rounded-[2rem] bg-sun-400 shadow-lift"
         >
           <div className="relative p-6 pb-5">
-            <PatternPictogram
-              pattern={session.preview[0]?.pattern ?? 'squat'}
+            <ExercisePictogram
+              silhouette={session.preview[0]?.silhouette ?? 'squat'}
               className="absolute -top-2 -right-3 size-36 opacity-15"
             />
             <p className="text-sm font-bold tracking-wide text-ink-900/70 uppercase">Hoy toca</p>

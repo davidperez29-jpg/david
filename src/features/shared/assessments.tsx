@@ -64,11 +64,19 @@ export function AssessmentSeriesList({
             </div>
             <ol className="mt-4 space-y-1.5 border-t border-line pt-3 text-sm">
               {[...item.points].reverse().map((point) => (
-                <li key={point.date} className="flex justify-between gap-3 tabular-nums">
-                  <span className="text-ink-500">{formatDate(point.date, 'dayMonth')}</span>
-                  <span className="font-semibold text-ink-900">
-                    {formatNumber(point.value, 2)} {item.unit}
+                <li key={point.date} className="tabular-nums">
+                  <span className="flex justify-between gap-3">
+                    <span className="text-ink-500">{formatDate(point.date, 'dayMonth')}</span>
+                    <span className="font-semibold text-ink-900">
+                      {formatNumber(point.value, 2)} {item.unit}
+                    </span>
                   </span>
+                  {point.attempts ? (
+                    <span className="block text-right text-xs text-ink-500">
+                      {point.aggregationLabel} de {point.attempts.length}:{' '}
+                      {point.attempts.map((attempt) => formatNumber(attempt, 2)).join(' · ')}
+                    </span>
+                  ) : null}
                 </li>
               ))}
             </ol>

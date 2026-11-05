@@ -65,19 +65,28 @@ src/app/
   not-found.tsx, error.tsx       Páginas de error propias
   entrenador/                    Área del entrenador (layout con barra lateral)
     page.tsx                     Panel
-    clientes/, clientes/[clientId]/   Lista y ficha individual
-    evaluaciones/, planificacion/, ejercicios/, ejercicios/[exerciseId]/
-    carga/, readaptacion/, informes/, configuracion/
-  cliente/                       App del cliente (columna móvil)
+    clientes/                    Lista de clientes
+    clientes/[clientId]/         Ficha con pestañas horizontales (layout + una ruta por pestaña):
+      page.tsx                   Información
+      objetivos/ evaluaciones/ resultados/ planificacion/ sesiones/
+      registro/ informes/ salud/ compartido/
+    evaluaciones/, analisis/     Catálogo y últimos resultados · evolución y comparaciones
+    planificacion/, carga/, readaptacion/, informes/, configuracion/
+    ejercicios/, ejercicios/[exerciseId]/   Biblioteca (buscador avanzado) y ficha de variante
+  cliente/                       Portal del cliente (columna móvil)
     (pestanas)/                  Grupo con navegación inferior: Hoy, Semana, Progreso
     sesion/[sessionId]/          Reproductor de sesión a pantalla completa
-src/domain/                      access, measurement, formulas, assessment, exercises, people,
-                                 rehab, time, text, format, training/{prescription,session,volume}
-src/server/                      env, context, repositories/{ports, demo/}, services/{trainer, client, mappers}
+src/domain/                      access, measurement, formulas, assessment, goals, people, rehab,
+                                 time, text, format, training/{prescription,session,volume},
+                                 library/{taxonomy, exercise, search}
+src/server/                      env, context, repositories/{ports, demo/{dataset, library, index}},
+                                 services/{trainer, trainer-access, client-file, client, library, mappers}
 src/contracts/                   shared, trainer, client
 src/features/                    brand/, shared/, trainer/, client/
 src/ui/                          button, card, badge, avatar, stat, meter, notice, page-header, empty-state, cn
 ```
+
+El modelo de datos completo (también lo que aún es conceptual) está en `DATA_MODEL.md`.
 
 ## Cómo ampliar
 

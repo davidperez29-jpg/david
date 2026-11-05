@@ -10,6 +10,7 @@ import {
   LayoutDashboard,
   Menu,
   Settings,
+  TrendingUp,
   Users,
   X,
 } from 'lucide-react';
@@ -23,8 +24,9 @@ export const TRAINER_NAV = [
   { href: '/entrenador', label: 'Panel', icon: LayoutDashboard },
   { href: '/entrenador/clientes', label: 'Clientes', icon: Users },
   { href: '/entrenador/evaluaciones', label: 'Evaluaciones', icon: ClipboardCheck },
+  { href: '/entrenador/analisis', label: 'Análisis de resultados', icon: TrendingUp },
   { href: '/entrenador/planificacion', label: 'Planificación', icon: CalendarDays },
-  { href: '/entrenador/ejercicios', label: 'Ejercicios', icon: Dumbbell },
+  { href: '/entrenador/ejercicios', label: 'Biblioteca de ejercicios', icon: Dumbbell },
   { href: '/entrenador/carga', label: 'Carga y volumen', icon: ChartColumn },
   { href: '/entrenador/readaptacion', label: 'Readaptación', icon: HeartPulse },
   { href: '/entrenador/informes', label: 'Informes', icon: FileText },

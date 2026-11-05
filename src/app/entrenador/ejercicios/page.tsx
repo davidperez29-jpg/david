@@ -1,34 +1,36 @@
 import { type Metadata } from 'next';
 import { ExerciseLibrary } from '@/features/trainer/exercise-library';
-import { PageHeader } from '@/ui/page-header';
 import { PendingFeature } from '@/features/shared/pending-feature';
+import { PageHeader } from '@/ui/page-header';
 import { getTrainerContext } from '@/server/context';
-import { listExerciseLibrary } from '@/server/services/trainer';
+import { getLibrary } from '@/server/services/library';
 
-export const metadata: Metadata = { title: 'Ejercicios' };
+export const metadata: Metadata = { title: 'Biblioteca de ejercicios' };
 
 export default async function ExercisesPage() {
-  const exercises = await listExerciseLibrary(await getTrainerContext());
+  const library = await getLibrary(await getTrainerContext());
   return (
     <>
       <PageHeader
         title="Biblioteca de ejercicios"
-        description="Explicación, clasificación y puntos clave de cada ejercicio."
+        description="Clasificación multidimensional: etiquetas, patrones de movimiento, material, región, ejecución, entorno y complejidad. Combina filtros con «Todos» o «Alguno»."
       />
-      <ExerciseLibrary exercises={exercises} />
+      <ExerciseLibrary library={library} />
       <div className="mt-10">
         <PendingFeature
-          title="Ejercicios propios, imágenes y vídeos"
-          phase="fase de biblioteca"
+          title="Gestión de la biblioteca"
+          phase="Fase 4"
           items={[
-            'Crear y editar ejercicios propios',
-            'Subir imágenes y vídeos, o enlazarlos (solo https)',
-            'Clasificación por grupos musculares y objetivos',
-            'Variantes y progresiones entre ejercicios',
+            'Crear y editar ejercicios, variantes y etiquetas propias',
+            'Relacionar progresiones y regresiones',
+            'Guardar y quitar favoritos',
+            'Añadir un ejercicio a una sesión desde los resultados (Fase 6)',
+            'Subir imágenes y vídeos o enlazarlos (solo https)',
+            'Archivar etiquetas conservando sus identificadores',
           ]}
         >
-          Mientras un ejercicio no tenga imagen o vídeo propio, se muestra la silueta de su patrón
-          de movimiento.
+          En esta fase la biblioteca se puede buscar y consultar con datos de ejemplo. Los favoritos
+          que ves están precargados; aún no se pueden cambiar.
         </PendingFeature>
       </div>
     </>

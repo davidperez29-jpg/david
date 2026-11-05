@@ -1,83 +1,28 @@
 import 'server-only';
 import {
   type AssessmentsOverviewVM,
-  type ClientOverviewVM,
   type ClientSummaryVM,
-  type ExerciseLibraryVM,
   type LoadOverviewVM,
   type PlanningVM,
   type TrainerDashboardVM,
 } from '@/contracts/trainer';
 import { type RehabCaseVM } from '@/contracts/shared';
-import { canAccessClient, defaultSharing } from '@/domain/access';
 import {
   ASSESSMENT_CATALOG,
   ASSESSMENT_CATEGORY_LABELS,
   findAssessmentTest,
 } from '@/domain/assessment';
-import { type Exercise } from '@/domain/exercises';
 import { formatNumber } from '@/domain/format';
 import { FORMULA_REGISTRY } from '@/domain/formulas';
 import { UNIT_SYMBOLS } from '@/domain/measurement';
-import { type Client, POPULATION_LABELS } from '@/domain/people';
 import { initials } from '@/domain/text';
 import { addDays, startOfIsoWeek } from '@/domain/time';
-import { sessionStatus, sortSessions } from '@/domain/training/session';
+import { sessionStatus } from '@/domain/training/session';
 import { VOLUME_FORMULAS, weeklyVolume } from '@/domain/training/volume';
 import { type TrainerContext } from '../context';
-import { type DateRange } from '../repositories/ports';
-import {
-  indexBy,
-  logsBySession,
-  toAssessmentSeries,
-  toPreview,
-  toRehabCaseVM,
-  toSessionCard,
-  toSessionDetail,
-} from './mappers';
-
-/** Clientes del entrenador que hace la petición (nunca los de otro entrenador). */
-async function ownClients(ctx: TrainerContext): Promise<Client[]> {
-  const clients = await ctx.repos.clients.listByTrainer(ctx.actor.trainerId);
-  return clients.filter((client) => canAccessClient(ctx.actor, client));
-}
-
-/** Un cliente concreto, o `null` si no existe o pertenece a otro entrenador. */
-async function ownClient(ctx: TrainerContext, clientId: string): Promise<Client | null> {
-  const client = await ctx.repos.clients.getById(clientId);
-  return client && canAccessClient(ctx.actor, client) ? client : null;
-}
-
-async function sessionsAndLogs(ctx: TrainerContext, clientId: string, range: DateRange) {
-  const [sessions, logs] = await Promise.all([
-    ctx.repos.sessions.listByClient(clientId, range),
-    ctx.repos.logs.listByClient(clientId, range),
-  ]);
-  return { sessions: sortSessions(sessions), logs: logsBySession(logs) };
-}
-
-async function summarize(ctx: TrainerContext, client: Client): Promise<ClientSummaryVM> {
-  const { sessions, logs } = await sessionsAndLogs(ctx, client.id, {
-    from: addDays(ctx.today, -6),
-    to: addDays(ctx.today, 30),
-  });
-  const next = sessions.find((s) => s.date >= ctx.today && !logs.get(s.id)?.completedAt);
-  const past = sessions.filter((s) => s.date <= ctx.today);
-  return {
-    id: client.id,
-    name: client.displayName,
-    initials: initials(client.displayName),
-    status: client.status,
-    populationLabel: POPULATION_LABELS[client.population],
-    goal: client.goal,
-    sport: client.sport ?? null,
-    nextSession: next ? { date: next.date, title: next.title } : null,
-    last7Days: {
-      planned: past.length,
-      completed: past.filter((s) => logs.get(s.id)?.completedAt).length,
-    },
-  };
-}
+import { loadSessionVariants } from './library';
+import { toAssessmentSeries, toPreview, toRehabCaseVM, toSessionCard } from './mappers';
+import { ownClients, sessionsAndLogs, summarize } from './trainer-access';
 
 export async function listTrainerClients(ctx: TrainerContext): Promise<ClientSummaryVM[]> {
   const clients = await ownClients(ctx);
@@ -165,73 +110,27 @@ export async function getTrainerDashboard(ctx: TrainerContext): Promise<TrainerD
   };
 }
 
-export async function getClientOverview(
-  ctx: TrainerContext,
-  clientId: string,
-): Promise<ClientOverviewVM | null> {
-  const client = await ownClient(ctx, clientId);
-  if (!client) return null;
-
-  const volumeRange = { from: startOfIsoWeek(addDays(ctx.today, -21)), to: ctx.today };
-  const [summary, sharing, { sessions, logs }, assessments, rehab] = await Promise.all([
-    summarize(ctx, client),
-    ctx.repos.sharing.getForClient(client.id),
-    sessionsAndLogs(ctx, client.id, { from: volumeRange.from, to: addDays(ctx.today, 7) }),
-    ctx.repos.assessments.listByClient(client.id),
-    ctx.repos.rehab.listByClient(client.id),
-  ]);
-
-  const upcoming = sessions.filter((s) => s.date >= ctx.today);
-  const nextSession = upcoming.find((s) => !logs.get(s.id)?.completedAt) ?? null;
-  const exercises = indexBy(
-    await ctx.repos.exercises.getMany(
-      nextSession ? nextSession.exercises.map((rx) => rx.exerciseId) : [],
-    ),
-  );
-  const activeRehab = rehab.find((r) => r.status === 'active');
-
-  return {
-    client: { ...summary, startedOn: client.startedOn },
-    sharing: sharing ?? defaultSharing(client.id),
-    upcoming: upcoming.map((s) => toSessionCard(s, logs.get(s.id), ctx.today)),
-    recent: sessions
-      .filter((s) => s.date < ctx.today)
-      .reverse()
-      .slice(0, 6)
-      .map((s) => toSessionCard(s, logs.get(s.id), ctx.today)),
-    nextSessionDetail: nextSession
-      ? toSessionDetail(nextSession, logs.get(nextSession.id), exercises, ctx.today)
-      : null,
-    weeklyVolume: weeklyVolume(
-      sessions.flatMap((s) => {
-        const log = logs.get(s.id);
-        return log && s.date <= ctx.today ? [{ date: s.date, sets: log.sets }] : [];
-      }),
-      volumeRange,
-    ),
-    assessments: toAssessmentSeries(assessments),
-    rehab: activeRehab ? toRehabCaseVM(activeRehab, client.displayName) : null,
-  };
-}
-
 export async function getPlanningOverview(ctx: TrainerContext): Promise<PlanningVM> {
   const weekStart = startOfIsoWeek(ctx.today);
   const range = { from: weekStart, to: addDays(weekStart, 6) };
-  const [clients, exercises] = await Promise.all([ownClients(ctx), ctx.repos.exercises.list()]);
-  const exerciseIndex = indexBy(exercises);
+  const clients = await ownClients(ctx);
 
   const rows = await Promise.all(
     clients
       .filter((client) => client.status === 'active')
       .map(async (client) => {
         const { sessions, logs } = await sessionsAndLogs(ctx, client.id, range);
+        const { byId } = await loadSessionVariants(
+          ctx,
+          sessions.flatMap((s) => s.exercises.map((rx) => rx.variantId)),
+        );
         return {
           id: client.id,
           name: client.displayName,
           initials: initials(client.displayName),
           sessions: sessions.map((s) => ({
             ...toSessionCard(s, logs.get(s.id), ctx.today),
-            preview: toPreview(s, exerciseIndex),
+            preview: toPreview(s, byId),
           })),
         };
       }),
@@ -298,13 +197,4 @@ export async function getRehabOverview(ctx: TrainerContext): Promise<RehabCaseVM
     ),
   );
   return cases.flat();
-}
-
-export async function listExerciseLibrary(ctx: TrainerContext): Promise<ExerciseLibraryVM> {
-  const exercises = await ctx.repos.exercises.list();
-  return exercises.sort((a, b) => a.name.localeCompare(b.name, 'es'));
-}
-
-export async function getExerciseDetail(ctx: TrainerContext, id: string): Promise<Exercise | null> {
-  return ctx.repos.exercises.getById(id);
 }

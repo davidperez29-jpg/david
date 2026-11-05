@@ -1,7 +1,9 @@
 import { FlaskConical } from 'lucide-react';
 import { type Metadata } from 'next';
-import { AssessmentSeriesList } from '@/features/shared/assessments';
-import { OriginLegend } from '@/features/shared/provenance';
+import Link from 'next/link';
+import { formatDate, formatNumber } from '@/domain/format';
+import { OriginBadge, OriginLegend } from '@/features/shared/provenance';
+import { PendingFeature } from '@/features/shared/pending-feature';
 import { Badge } from '@/ui/badge';
 import { Card, CardHeader } from '@/ui/card';
 import { Notice } from '@/ui/notice';
@@ -14,36 +16,92 @@ export const metadata: Metadata = { title: 'Evaluaciones' };
 export default async function AssessmentsPage() {
   const overview = await getAssessmentsOverview(await getTrainerContext());
   const categories = [...new Set(overview.catalog.map((test) => test.categoryLabel))];
+  const latest = overview.byClient.flatMap((row) =>
+    row.series.map((series) => ({
+      clientId: row.clientId,
+      clientName: row.clientName,
+      series,
+      point: series.points.at(-1)!,
+    })),
+  );
 
   return (
     <>
       <PageHeader
         title="Evaluaciones"
-        description="Resultados de tus clientes con el origen de cada dato y el catálogo de pruebas previsto."
+        description="Últimos resultados de tus clientes, con el origen de cada dato, y catálogo de pruebas previsto."
       />
 
       <Notice tone="sun" icon={<FlaskConical />} title="Aún no se interpreta ningún resultado">
         Los protocolos, las fórmulas y los valores de referencia de cada prueba se incorporarán uno
-        a uno en la fase de evaluación, después de verificar sus fuentes primarias. Hasta entonces,
-        TrainPro solo muestra los valores y compara resultados obtenidos con el mismo método e
-        instrumento.
+        a uno en la fase de evaluaciones, tras verificar sus fuentes primarias. TrainPro no deduce
+        variables que el instrumento no mide (por ejemplo, fuerza pico, RFD o impulso a partir de
+        una altura de salto).
       </Notice>
 
-      <section aria-labelledby="resultados" className="mt-8">
-        <h2 id="resultados" className="mb-4 text-2xl font-bold text-ink-900">
-          Resultados por cliente
-        </h2>
-        <div className="space-y-8">
-          {overview.byClient.map((row) => (
-            <div key={row.clientId}>
-              <h3 className="mb-3 text-lg font-bold text-ink-700">{row.clientName}</h3>
-              <AssessmentSeriesList series={row.series} />
-            </div>
-          ))}
-        </div>
+      <section aria-labelledby="ultimas" className="mt-8">
+        <Card>
+          <CardHeader
+            as="h2"
+            title={<span id="ultimas">Últimos resultados</span>}
+            description="El análisis de la evolución está en «Análisis de resultados»."
+          />
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[40rem] text-left text-sm tabular-nums">
+              <thead className="text-xs text-ink-500">
+                <tr>
+                  <th scope="col" className="py-2 pr-3 font-semibold">
+                    Cliente
+                  </th>
+                  <th scope="col" className="py-2 pr-3 font-semibold">
+                    Prueba
+                  </th>
+                  <th scope="col" className="py-2 pr-3 font-semibold">
+                    Fecha
+                  </th>
+                  <th scope="col" className="py-2 pr-3 text-right font-semibold">
+                    Resultado
+                  </th>
+                  <th scope="col" className="py-2 font-semibold">
+                    Origen
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-line">
+                {latest.map(({ clientId, clientName, series, point }) => (
+                  <tr key={`${clientId}-${series.testId}`}>
+                    <td className="py-2.5 pr-3">
+                      <Link
+                        href={`/entrenador/clientes/${clientId}/evaluaciones`}
+                        className="font-semibold text-ink-900 hover:underline"
+                      >
+                        {clientName}
+                      </Link>
+                    </td>
+                    <td className="py-2.5 pr-3 text-ink-700">{series.testName}</td>
+                    <td className="py-2.5 pr-3 text-ink-500">{formatDate(point.date, 'short')}</td>
+                    <td className="py-2.5 pr-3 text-right">
+                      <span className="font-bold text-ink-900">
+                        {formatNumber(point.value, 2)} {series.unit}
+                      </span>
+                      {point.attempts ? (
+                        <span className="block text-xs text-ink-500">
+                          {point.aggregationLabel} de {point.attempts.length}
+                        </span>
+                      ) : null}
+                    </td>
+                    <td className="py-2.5">
+                      <OriginBadge origin={point.provenance.origin} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Card>
       </section>
 
-      <section aria-labelledby="origen" className="mt-10">
+      <section aria-labelledby="origen" className="mt-8">
         <Card>
           <CardHeader
             as="h2"
@@ -54,7 +112,7 @@ export default async function AssessmentsPage() {
         </Card>
       </section>
 
-      <section aria-labelledby="catalogo" className="mt-10">
+      <section aria-labelledby="catalogo" className="mt-8">
         <h2 id="catalogo" className="mb-4 text-2xl font-bold text-ink-900">
           Catálogo de pruebas
         </h2>
@@ -85,6 +143,19 @@ export default async function AssessmentsPage() {
           ))}
         </div>
       </section>
+
+      <div className="mt-8">
+        <PendingFeature
+          title="Registro de evaluaciones"
+          phase="Fase 5"
+          items={[
+            'Pruebas configurables por población y objetivo',
+            'Registro de intentos y regla: mejor intento o promedio',
+            'Importación manual de archivos con su procedencia',
+            'Informes y comparación con referencias verificadas',
+          ]}
+        />
+      </div>
     </>
   );
 }

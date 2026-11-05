@@ -15,6 +15,8 @@ Reglas en `src/domain/access.ts`, aplicadas por los casos de uso de `src/server/
 | Cliente (notas privadas) | Nunca, aunque haya una configuración de compartición.                                                        |
 
 - **Privacidad por defecto**: un cliente nuevo no tiene nada compartido (`defaultSharing`).
+- **Biblioteca**: el catálogo global lo ven todos los entrenadores y no se edita. Los ejercicios propios y privados, las etiquetas personales (también las aplicadas a ejercicios globales), los favoritos, las notas y las progresiones de un entrenador solo los ve ese entrenador. Los clientes no navegan por la biblioteca: ven los ejercicios a través de sus sesiones.
+- **Ficha del cliente**: cada pestaña llama a su propio caso de uso, que comprueba que el cliente pertenece al entrenador antes de devolver nada.
 - La compartición es **granular**: por módulo (evaluaciones, volumen, readaptación, informes) y, en evaluaciones, por prueba.
 - Una configuración de compartición que pertenezca a otro cliente se ignora.
 - Hay tests de todas estas reglas: `src/domain/access.test.ts`, `src/server/services/services.test.ts` y `e2e/client-app.spec.ts`.
@@ -54,7 +56,7 @@ La ficha del cliente solo contiene lo necesario para entrenar (nombre, objetivo,
 | CSP estricta             | Pasar a CSP con _nonce_ y quitar `'unsafe-inline'` en scripts (requiere `proxy.ts`)                                        |
 | HSTS                     | Al desplegar con HTTPS y dominio definitivo                                                                                |
 | Base de datos            | Row Level Security como segunda barrera, cifrado en reposo, mínimo privilegio                                              |
-| Auditoría                | Registro de quién accede a datos de salud y de cada cambio en lo que se comparte                                           |
+| Auditoría                | Registro de quién accede a datos de salud y de cada cambio en lo que se comparte (`audit_event`, ver `DATA_MODEL.md`)      |
 | Copias de seguridad      | Frecuencia, cifrado, región y prueba periódica de restauración                                                             |
 | Conservación             | Plazos por tipo de dato, borrado y anonimización al dar de baja a un cliente                                               |
 | Derechos de los usuarios | Acceso, rectificación, supresión y portabilidad (exportación)                                                              |
@@ -68,5 +70,5 @@ Es una regla **de la interfaz de la app**, coherente con el producto. Pero el RG
 ## Dependencias
 
 - `pnpm audit --prod`: sin vulnerabilidades conocidas en las dependencias de producción (comprobado el 4 de noviembre de 2026).
-- `pnpm audit` (incluye desarrollo): 2 avisos moderados en `minimatch` (ReDoS, GHSA-g3hv-75wg-m249), a través de ESLint y de un plugin suyo. No existe parche para las ramas 10.x y 3.x que usan, y forzar la 11.x rompería los plugins. Solo afecta a herramientas de desarrollo y requiere patrones _glob_ controlados por un atacante. **Riesgo aceptado**, a revisar cuando ESLint actualice.
+- `pnpm audit` (incluye desarrollo, comprobado el 5 de noviembre de 2026): 1 aviso moderado en `minimatch` (ReDoS, GHSA-g3hv-75wg-m249), a través de ESLint. Solo hay parche en la rama 11.x, que ESLint no usa todavía. Afecta únicamente a herramientas de desarrollo y requiere patrones _glob_ controlados por un atacante. **Riesgo aceptado**, a revisar cuando ESLint actualice.
 - Licencias de producción: MIT, Apache-2.0, ISC, BSD, 0BSD y CC-BY-4.0. Los binarios opcionales de `sharp` (optimización de imágenes de Next, que no se usa por ahora) incluyen libvips con licencia LGPL-3.0-or-later.

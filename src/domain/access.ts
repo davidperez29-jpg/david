@@ -1,3 +1,5 @@
+import { type Visibility } from './library/exercise';
+import { type Owner } from './library/taxonomy';
 import { type Client } from './people';
 
 /**
@@ -92,4 +94,29 @@ export function visibleAssessmentTestIds(
   if (!canReadResource(actor, client, 'assessments', sharing)) return new Set();
   if (actor.role === 'trainer') return 'all';
   return new Set(sharing?.assessments.testIds ?? []);
+}
+
+// ── Biblioteca de ejercicios ──────────────────────────────────────────────────
+
+type OwnedExercise = { owner: Owner; visibility: Visibility };
+
+/**
+ * El catálogo global lo ven todos los entrenadores; los ejercicios propios o privados, solo
+ * su propietario. Los clientes no navegan por la biblioteca: ven los ejercicios a través de
+ * las sesiones que tienen asignadas.
+ */
+export function canViewExercise(actor: Actor, exercise: OwnedExercise): boolean {
+  if (actor.role !== 'trainer') return false;
+  if (exercise.visibility === 'global') return true;
+  return exercise.owner.kind === 'trainer' && exercise.owner.trainerId === actor.trainerId;
+}
+
+/** Solo el entrenador propietario edita; el catálogo global no se modifica (se anota aparte). */
+export function canEditExercise(actor: Actor, exercise: OwnedExercise): boolean {
+  return (
+    actor.role === 'trainer' &&
+    exercise.visibility !== 'global' &&
+    exercise.owner.kind === 'trainer' &&
+    exercise.owner.trainerId === actor.trainerId
+  );
 }

@@ -47,11 +47,25 @@ test.describe('app del cliente (móvil)', () => {
       .click();
     await expect(page.getByText('2 de 16 series')).toBeVisible();
 
+    // RIR real del ejercicio (prescrito con RIR) y un toque para completar el resto de series.
+    await page
+      .getByRole('group', { name: /Repeticiones en reserva de Sentadilla trasera/ })
+      .getByText('2', { exact: true })
+      .click();
+    await expect(page.getByRole('radio', { name: '2' }).first()).toBeChecked();
+    await page.getByRole('button', { name: 'Marcar todas como hechas' }).first().click();
+    await expect(page.getByText('4 de 16 series')).toBeVisible();
+
     await page.getByRole('button', { name: 'Terminar sesión' }).click();
+    const notes = page.getByLabel('Observaciones para tu entrenador');
+    await notes.fill('La última serie me ha costado.');
+    await expect(page.getByText('30/500')).toBeVisible();
     await expect(page.getByRole('heading', { name: '¡Sesión terminada!' })).toBeVisible();
-    await expect(page.getByText('Has completado 2 de 16 series.')).toBeVisible();
-    // 6 + 8 repeticiones (la primera serie usa el mínimo del rango prescrito: 6).
-    await expect(page.locator('dd').nth(1)).toHaveText('14');
+    await expect(
+      page.getByText('Has completado 4 de 16 series y 1 de 5 ejercicios.'),
+    ).toBeVisible();
+    // 6 + 8 + 6 + 6 repeticiones (las series sin editar usan el mínimo del rango prescrito: 6).
+    await expect(page.locator('dd').nth(1)).toHaveText('26');
     await expectNoSeriousA11yIssues(page);
   });
 

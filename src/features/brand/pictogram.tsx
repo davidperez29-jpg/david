@@ -1,16 +1,16 @@
-import { type MovementPattern } from '@/domain/exercises';
+import { type Silhouette } from '@/domain/library/exercise';
 import { cn } from '@/ui/cn';
 
 /**
- * Pictogramas propios por patrón de movimiento (estilo silueta, trazo redondeado).
- * Sirven de imagen por defecto mientras un ejercicio no tenga foto o vídeo propio.
+ * Siluetas propias (trazo redondeado). Se muestran mientras un ejercicio no tenga imagen o
+ * vídeo propio. La silueta es un dato visual de cada variante, independiente de su clasificación.
  */
 const INK = '#2B2116';
 const SUN = '#F5B800';
 
 type Figure = { head: [number, number]; lines: string[]; gear?: React.ReactNode };
 
-const FIGURES: Record<MovementPattern, Figure> = {
+const FIGURES: Record<Silhouette, Figure> = {
   squat: {
     head: [35, 13],
     lines: ['M33 20 L25 34', 'M25 34 L40 37 L37 52 L44 52', 'M32 22 L40 25'],
@@ -32,7 +32,7 @@ const FIGURES: Record<MovementPattern, Figure> = {
     lines: ['M32 18 L32 32', 'M32 32 L44 39 L44 53', 'M32 32 L25 48 L14 46', 'M32 20 L37 33'],
     gear: <rect x="34" y="33" width="7" height="5" rx="2" fill={SUN} />,
   },
-  push: {
+  'press-overhead': {
     head: [32, 17],
     lines: [
       'M32 24 L32 40',
@@ -48,7 +48,19 @@ const FIGURES: Record<MovementPattern, Figure> = {
       </>
     ),
   },
-  pull: {
+  'press-bench': {
+    head: [13, 36],
+    lines: ['M19 39 L40 39', 'M40 39 L47 47 L47 55', 'M23 39 L23 22'],
+    gear: (
+      <>
+        <rect x="14" y="42" width="30" height="5" rx="2.5" fill={SUN} />
+        <rect x="9" y="17" width="28" height="3.5" rx="1.75" fill={INK} />
+        <rect x="9" y="12" width="5" height="13" rx="2" fill={SUN} />
+        <rect x="32" y="12" width="5" height="13" rx="2" fill={SUN} />
+      </>
+    ),
+  },
+  'pull-up': {
     head: [32, 19],
     lines: [
       'M32 26 L32 43',
@@ -58,6 +70,21 @@ const FIGURES: Record<MovementPattern, Figure> = {
       'M36 26 L43 19 L42 8',
     ],
     gear: <rect x="10" y="4" width="44" height="4.5" rx="2.25" fill={SUN} />,
+  },
+  row: {
+    head: [24, 12],
+    lines: ['M24 19 L24 38', 'M24 38 L18 55', 'M24 38 L30 55', 'M24 22 L16 29 L28 29'],
+    gear: <path d="M30 29 H60" stroke={SUN} strokeWidth="4" strokeLinecap="round" />,
+  },
+  pallof: {
+    head: [32, 11],
+    lines: ['M32 18 L32 38', 'M32 38 L26 55', 'M32 38 L38 55', 'M26 22 L32 29', 'M38 22 L32 29'],
+    gear: (
+      <>
+        <path d="M4 29 H28" stroke={SUN} strokeWidth="4" strokeLinecap="round" />
+        <circle cx="32" cy="29" r="4" fill={SUN} />
+      </>
+    ),
   },
   carry: {
     head: [32, 10],
@@ -69,10 +96,15 @@ const FIGURES: Record<MovementPattern, Figure> = {
       </>
     ),
   },
-  core: {
+  plank: {
     head: [11, 31],
     lines: ['M17 34 L36 38 L55 43', 'M17 34 L17 45 L28 45'],
     gear: <rect x="6" y="48" width="52" height="3" rx="1.5" fill={SUN} opacity="0.7" />,
+  },
+  'dead-bug': {
+    head: [10, 40],
+    lines: ['M16 42 L37 42', 'M21 42 L21 25', 'M37 42 L37 29 L50 29', 'M19 42 L8 30'],
+    gear: <rect x="4" y="47" width="54" height="3" rx="1.5" fill={SUN} opacity="0.7" />,
   },
   jump: {
     head: [32, 10],
@@ -109,7 +141,7 @@ const FIGURES: Record<MovementPattern, Figure> = {
       </>
     ),
   },
-  accessory: {
+  'calf-raise': {
     head: [30, 10],
     lines: [
       'M30 17 L30 37',
@@ -134,16 +166,16 @@ const FIGURES: Record<MovementPattern, Figure> = {
   },
 };
 
-export function PatternPictogram({
-  pattern,
+export function ExercisePictogram({
+  silhouette,
   className,
   title,
 }: {
-  pattern: MovementPattern;
+  silhouette: Silhouette;
   className?: string;
   title?: string;
 }) {
-  const figure = FIGURES[pattern];
+  const figure = FIGURES[silhouette];
   return (
     <svg
       viewBox="0 0 64 64"

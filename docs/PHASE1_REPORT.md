@@ -1,154 +1,212 @@
-# Informe de revisión · Fase 1 (fundamentos)
+# Informe de la Fase 1 · Fundamentos
 
-Fecha: 4 de noviembre de 2026 · Rama: `claude/vigilant-bardeen-qfycp4`
+Fecha: 5 de noviembre de 2026 · Rama: `claude/vigilant-bardeen-qfycp4` · Especificación de referencia: «Prompt maestro de desarrollo desde cero».
 
-## 1. Qué se ha creado
+> **Resumen.** TrainPro es un proyecto nuevo, sin código ni historial del proyecto anterior. Incluye:
+>
+> - una arquitectura por capas;
+> - una interfaz navegable del entrenador (21 rutas) y del cliente (4 rutas, para móvil);
+> - el modelo conceptual de datos completo, con la biblioteca multidimensional de ejercicios;
+> - 84 tests unitarios y de integración y 30 pruebas E2E, todos superados.
+>
+> Todo funciona con **datos ficticios en memoria**: no hay base de datos, no hay inicio de sesión real y nada se guarda.
 
-Un proyecto nuevo, **sin código, configuración, dependencias ni historial del proyecto anterior**. El proyecto anterior sigue intacto en `claude/training-platform-system-hm10nq`.
+## 1. Entorno y preservación del proyecto anterior
 
-- Aplicación Next.js con dos experiencias diferenciadas:
-  - **Entrenador**: 11 pantallas.
-  - **Cliente**: 4 pantallas pensadas para el móvil.
-  - Además: portada, página 404 y página de error.
-- Una **capa de dominio** en TypeScript puro: permisos, procedencia de los datos, registro de fórmulas versionadas, volumen de entrenamiento, prescripción, sesiones, evaluaciones, readaptación y fechas.
-- Una **capa de servidor** con contexto de petición, casos de uso con control de acceso, puertos de repositorio y un adaptador demo en memoria con datos ficticios.
-- Un **sistema de diseño** propio (amarillo, crema y blanco) con logotipo, pictogramas deportivos e ilustraciones en SVG propio.
-- Una **PWA básica**: manifiesto, iconos, service worker sin datos personales y página sin conexión.
-- **Pruebas**: 59 tests unitarios y de integración, y 25 pruebas E2E con análisis de accesibilidad.
-- **Documentación**: README, arquitectura, decisiones (ADR), seguridad y privacidad, rigor científico, sistema de diseño, desarrollo, hoja de ruta y este informe.
+- El repositorio `davidperez29-jpg/david` contenía otro proyecto (`training-platform`). Sigue **intacto** en la rama por defecto `claude/training-platform-system-hm10nq` (commit `ff080be`).
+- TrainPro vive en la rama huérfana `claude/vigilant-bardeen-qfycp4`. No comparte archivos, dependencias, configuración ni historial con el proyecto anterior.
+- Nunca se ha hecho push a la rama por defecto ni push forzado, y no se ha migrado ni conectado nada del proyecto anterior.
 
 ## 2. Tecnologías y versiones
 
-| Pieza                       | Versión                       | Licencia                  |
-| --------------------------- | ----------------------------- | ------------------------- |
-| Node.js                     | ≥ 22.13 (probado con 22.23.4) | MIT                       |
-| pnpm                        | 10.28.0                       | MIT                       |
-| Next.js                     | 16.4.5                        | MIT                       |
-| React / React DOM           | 19.3.1                        | MIT                       |
-| TypeScript                  | 6.0.3                         | Apache-2.0                |
-| Tailwind CSS                | 4.3.4                         | MIT                       |
-| lucide-react                | 1.65.0                        | ISC                       |
-| server-only                 | 0.0.1                         | MIT                       |
-| ESLint + eslint-config-next | 10.13.0 + 16.4.5              | MIT                       |
-| Prettier                    | 3.9.10                        | MIT                       |
-| Vitest                      | 5.0.5                         | MIT                       |
-| Playwright                  | 1.63.0                        | Apache-2.0                |
-| @axe-core/playwright        | 4.14.0                        | MPL-2.0 (solo desarrollo) |
+| Pieza                             | Versión                       | Licencia             | Motivo                                                   |
+| --------------------------------- | ----------------------------- | -------------------- | -------------------------------------------------------- |
+| Node.js                           | ≥ 22.13 (probado con 22.23.4) | MIT                  | Entorno de ejecución                                     |
+| pnpm                              | 10.28.0                       | MIT                  | npm 10.9 falla al instalar (ADR-03)                      |
+| Next.js                           | 16.4.5                        | MIT                  | Dos experiencias en un proyecto, servidor y PWA (ADR-02) |
+| React / React DOM                 | 19.3.1                        | MIT                  | Interfaz                                                 |
+| TypeScript                        | 6.0.3 (estricto)              | Apache-2.0           | Errores en compilación                                   |
+| Tailwind CSS                      | 4.3.4                         | MIT                  | Sistema de diseño con _tokens_                           |
+| lucide-react                      | 1.65.0                        | ISC                  | Iconos                                                   |
+| server-only                       | 0.0.1                         | MIT                  | Impide que el código de servidor llegue al navegador     |
+| ESLint + eslint-config-next       | 10.13.0 + 16.4.5              | MIT                  | Calidad y límites entre capas                            |
+| Prettier                          | 3.9.10                        | MIT                  | Formato                                                  |
+| Vitest                            | 5.0.5                         | MIT                  | Tests unitarios y de integración                         |
+| Playwright + @axe-core/playwright | 1.63.0 + 4.14.0               | Apache-2.0 / MPL-2.0 | E2E y accesibilidad (solo desarrollo)                    |
 
-Fuentes: Plus Jakarta Sans y Bricolage Grotesque (OFL), autoalojadas. Justificación de cada elección en `DECISIONS.md`.
+**Evaluadas y no adoptadas todavía**, con la justificación en `DECISIONS.md`:
 
-## 3. Estructura
+- **Gráficos:** propios ahora; Recharts o visx en la Fase 5 (ADR-12).
+- **Validación:** Zod en la Fase 2 (ADR-13).
+- **Datos:** PostgreSQL, con Supabase o un servidor propio a decidir (P-01).
 
-Explicada en `ARCHITECTURE.md`. En resumen:
+Ningún servicio externo ni de pago.
 
-- `src/domain`: reglas puras.
-- `src/contracts`: tipos que el servidor entrega a la interfaz.
-- `src/server`: contexto, casos de uso y repositorios.
-- `src/features`: pantallas por área.
-- `src/ui`: componentes genéricos.
+## 3. Arquitectura
+
+Monolito modular en Next.js con capas comprobadas por ESLint (`ARCHITECTURE.md`):
+
+- `src/domain`: TypeScript puro. Modelo, reglas, permisos, procedencia, fórmulas versionadas, volumen, evaluaciones con intentos, objetivos, readaptación y biblioteca (taxonomía, variantes y búsqueda Y/O).
+- `src/contracts`: tipos de los datos que el servidor entrega a la interfaz, ya filtrados por permisos.
+- `src/server`: contexto de la petición, casos de uso con control de acceso, puertos de repositorio y adaptador demo en memoria.
+- `src/features` y `src/ui`: pantallas y componentes del sistema de diseño.
 - `src/app`: rutas.
 
-ESLint impide saltarse las capas (verificado con archivos que incumplían las reglas a propósito).
+**Modelo conceptual de datos:** `DATA_MODEL.md`, con diagramas entidad-relación de todos los módulos y detalle de la biblioteca multidimensional (ejercicio principal y variantes, etiquetas globales y personales por categoría, patrones jerárquicos, material, región, ejecución, entorno, complejidad, progresiones y regresiones, favoritos, notas, propietario y visibilidad).
 
-## 4. Qué funciona de verdad y qué no
+## 4. Estructura y archivos creados
 
-### Funciona (lógica real, ejecutada sobre datos ficticios)
+Archivos versionados por zona:
 
-| Funcionalidad                        | Notas                                                                                                                                                                                                                                                                              |
-| ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Navegación completa por las 18 rutas | Barra lateral y menú móvil del entrenador; navegación inferior del cliente                                                                                                                                                                                                         |
-| **Control de acceso en el servidor** | Cada entrenador ve solo sus clientes. Cada cliente ve solo lo suyo y lo que se le comparte; las notas privadas, nunca. Las sesiones ajenas responden 404. Probado en unitarios, integración y E2E                                                                                  |
-| Cálculo de volumen semanal           | Series, repeticiones y tonelaje, a partir de los registros y con fórmulas versionadas                                                                                                                                                                                              |
-| Estado de cada sesión                | Completada, a medias, pendiente o no realizada, deducido de los registros y de la fecha                                                                                                                                                                                            |
-| Panel del entrenador                 | Sesiones de hoy, semana, readaptaciones activas, evaluaciones recientes con su origen y avisos factuales («1 sesión no realizada en los últimos 7 días»)                                                                                                                           |
-| Comparación de evaluaciones          | Solo si coinciden prueba, unidad, método e instrumento; en caso contrario explica por qué no se compara                                                                                                                                                                            |
-| Etiqueta de procedencia en cada dato | Medición directa, cálculo, estimación, importado o autodeclarado, con su detalle                                                                                                                                                                                                   |
-| Fases de readaptación                | Fase actual y avance por criterios                                                                                                                                                                                                                                                 |
-| Búsqueda y filtros                   | Clientes sin distinguir tildes; ejercicios por patrón de movimiento                                                                                                                                                                                                                |
-| Gráficos                             | _Tooltip_ con ratón y teclado, tabla de datos y selector de métrica                                                                                                                                                                                                                |
-| Reproductor de sesión del cliente    | Prescripción completa (series, repeticiones, carga, descanso, tempo con explicación y RIR/RPE/carácter), un toque por serie, validación de lo escrito, temporizador de descanso, resumen calculado y esfuerzo percibido autodeclarado. **Funciona en pantalla, pero no se guarda** |
-| Cabeceras de seguridad               | CSP base, protección frente a _clickjacking_, `nosniff` y similares; verificado en E2E                                                                                                                                                                                             |
-| PWA                                  | El manifiesto y los iconos se sirven bien y el service worker muestra la página sin conexión al perder la red (verificado en E2E con Chromium)                                                                                                                                     |
-| Configuración validada al arrancar   | Valores de `TRAINPRO_DATA_SOURCE` y `TRAINPRO_TIME_ZONE`                                                                                                                                                                                                                           |
+| Zona                   | Contenido                                                                                                                                                                                                                                                                                                                                                           |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Raíz                   | `package.json`, `pnpm-lock.yaml`, `tsconfig.json`, `next.config.ts` (cabeceras de seguridad), `eslint.config.mjs` (límites entre capas), `vitest.config.mts`, `playwright.config.ts`, `postcss.config.mjs`, `.env.example`, `.gitignore`, `.prettierrc.json`, `.npmrc`, `.nvmrc`, `README.md`, `AGENTS.md`                                                          |
+| `src/domain` (+ tests) | `access`, `measurement`, `formulas`, `assessment`, `goals`, `people`, `rehab`, `time`, `text`, `format`, `training/{prescription,session,volume}`, `library/{taxonomy,exercise,search}`                                                                                                                                                                             |
+| `src/server` (+ tests) | `env`, `context`, `repositories/{ports, demo/{dataset, library, index}}`, `services/{trainer, trainer-access, client-file, client, library, mappers}`                                                                                                                                                                                                               |
+| `src/contracts`        | `shared`, `trainer`, `client`                                                                                                                                                                                                                                                                                                                                       |
+| `src/features`         | `brand/` (logotipo, 15 siluetas, ilustraciones), `shared/` (procedencia, estados, gráfico de volumen, evaluaciones, readaptación, prescripción, funcionalidad pendiente, aviso de demo, service worker), `trainer/` (shell, navegación, pestañas de la ficha, lista de clientes, buscador de la biblioteca), `client/` (navegación inferior, reproductor de sesión) |
+| `src/ui`               | `button`, `card`, `badge`, `avatar`, `stat`, `meter`, `notice`, `page-header`, `empty-state`, `cn`                                                                                                                                                                                                                                                                  |
+| `src/app`              | 27 páginas (ver §5), `layout`, `manifest`, `icon.svg`, `apple-icon.png`, `not-found`, `error`, `globals.css`                                                                                                                                                                                                                                                        |
+| `public/`              | `sw.js`, `offline.html`, `icons/` (192, 512, adaptable, Apple)                                                                                                                                                                                                                                                                                                      |
+| `e2e/`                 | `helpers`, `platform`, `trainer`, `client-app`                                                                                                                                                                                                                                                                                                                      |
+| `docs/`                | `ARCHITECTURE`, `DATA_MODEL`, `DECISIONS`, `SECURITY_PRIVACY`, `SCIENTIFIC_RIGOR`, `DESIGN_SYSTEM`, `DEVELOPMENT`, `ROADMAP`, `PHASE1_REPORT`                                                                                                                                                                                                                       |
+| `scripts/`             | `generate-icons.mjs`                                                                                                                                                                                                                                                                                                                                                |
 
-### Solo visual, simulado o inexistente (no debe considerarse hecho)
+## 5. Pantallas implementadas
 
-- **Autenticación**: no existe. La sesión es fija (Alex o Marta).
-- **Persistencia**: no hay base de datos y nada se guarda. Los datos se regeneran cada día a partir de la fecha actual.
-- **Datos**: todos ficticios.
-- **Evaluaciones**: el catálogo no tiene protocolos, fórmulas ni referencias; no se interpreta ningún resultado.
-- **Informes**: solo una pantalla que indica lo previsto.
-- **Configuración** y **compartición con el cliente**: solo se pueden consultar.
-- **Sin editar**: plan (no hay editor), clientes (no hay alta ni edición) y biblioteca de ejercicios.
-- **Vídeos de ejercicios**: el campo existe, pero no hay ninguno. Se muestra la silueta del patrón.
-- **Instalación real de la PWA en un móvil**: no probada, porque necesita HTTPS y un despliegue.
+**Área del entrenador**
 
-## 5. Pruebas ejecutadas y resultados
+1. **Panel**: sesiones de hoy, clientes activos, semana, readaptaciones, avisos basados en hechos y evaluaciones recientes con el origen del dato.
+2. **Clientes**: lista con búsqueda sin distinguir tildes.
+3. **Ficha del cliente con 10 pestañas horizontales** (cada una es una ruta):
+   - Información.
+   - Objetivos, enlazados con pruebas.
+   - Evaluaciones (historial con intentos).
+   - Resultados y evolución.
+   - Planificación (semana y próxima sesión con la prescripción completa).
+   - Sesiones.
+   - Registro de entrenamiento: lo realizado serie a serie, RIR/RPE real y observaciones del cliente.
+   - Informes.
+   - Salud y readaptación, con acceso restringido.
+   - Información compartida.
+4. **Evaluaciones**: últimos resultados, leyenda de procedencias y catálogo de pruebas.
+5. **Análisis de resultados**: evolución y comparaciones, solo cuando son comparables.
+6. **Planificación**: semana de todos los clientes activos.
+7. **Biblioteca de ejercicios**:
+   - Buscador con texto y 8 dimensiones de filtro combinables, en modo Todos (Y) o Alguno (O).
+   - Grupos de patrones que incluyen sus subtipos.
+   - Chips activos con botón para quitarlos, orden, solo favoritos y resultados al instante.
+8. **Ficha de ejercicio**: todos los campos del apartado 8.5 de la especificación. Las variantes se relacionan entre sí, las progresiones y regresiones son enlaces, y las instrucciones se heredan de la variante de referencia si faltan.
+9. **Carga y volumen**: series, repeticiones y tonelaje por semana, con las definiciones versionadas y sus limitaciones.
+10. **Readaptación**: fases y criterios definidos por el profesional.
+11. **Informes** y **Configuración**: solo indican lo previsto o se consultan.
 
-Todas ejecutadas en este entorno el 4 de noviembre de 2026:
+**Portal del cliente (móvil)**
 
-| Comprobación                                                             | Resultado                                                                                       |
-| ------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------- |
-| `pnpm format:check`                                                      | Todos los archivos con formato correcto                                                         |
-| `pnpm lint`                                                              | 0 errores, 0 avisos                                                                             |
-| `pnpm typecheck`                                                         | 0 errores                                                                                       |
-| `pnpm test` (Vitest)                                                     | **59/59 superados** en 8 archivos                                                               |
-| `pnpm build`                                                             | Compilación correcta; páginas con datos dinámicas y portada, 404, iconos y manifiesto estáticos |
-| `pnpm test:e2e` (Playwright, Chromium de escritorio + emulación Pixel 7) | **25/25 superados**, en dos ejecuciones seguidas                                                |
-| axe (WCAG 2.1 A/AA) en todas las pantallas principales                   | Sin incidencias graves ni críticas                                                              |
-| `pnpm audit --prod`                                                      | Sin vulnerabilidades conocidas                                                                  |
-| `pnpm audit` (con desarrollo)                                            | 2 moderadas en `minimatch` dentro de ESLint (riesgo aceptado, ver `SECURITY_PRIVACY.md`)        |
+1. **Hoy**: la sesión del día es la protagonista y el botón «Empezar sesión» se ve sin hacer scroll. El progreso no ocupa la pantalla principal.
+2. **Sesión**:
+   - Prescripción completa con silueta, «Cómo se hace» y explicación del tempo.
+   - Un toque por serie o «Marcar todas como hechas».
+   - Validación de lo que se escribe y temporizador de descanso.
+   - RIR o RPE real por ejercicio.
+   - Resumen calculado, esfuerzo de la sesión y observaciones para el entrenador.
+3. **Semana**.
+4. **Progreso**: apartado independiente que solo muestra lo compartido.
 
-Errores reales que encontraron las pruebas y se corrigieron:
+Además: portada, 404 propio, página de error y página sin conexión.
 
-- Un enlace cuyo nombre accesible no incluía su texto visible (WCAG 2.5.3).
-- Texto con contraste insuficiente en las fases futuras de readaptación (había una opacidad del 80 %).
-- Una regla de pureza de React en el temporizador.
-- Series por tiempo o distancia que sumaban repeticiones en los datos demo.
-- Etiquetas de bloque mal numeradas (B3 en lugar de B1).
+## 6. Funcionalidades realmente operativas
 
-## 6. Limitaciones y errores pendientes
+Lógica real, probada, ejecutada sobre datos ficticios:
 
-- **No se ha probado en dispositivos reales** (Safari de iOS, Android) ni con lectores de pantalla. Solo Chromium y emulación móvil.
-- La CSP aún permite `'unsafe-inline'` en scripts. La versión estricta con _nonce_ llegará con la autenticación.
-- **Telemetría de Next.js**: se envía por defecto. Se desactiva con `next telemetry disable` o con una variable del sistema; **no** sirve ponerla en `.env.local` (comprobado).
-- Los pictogramas son por patrón de movimiento, no por ejercicio. Por ejemplo, el press de banca muestra la silueta genérica de «empuje».
-- `next/font` necesita internet al compilar.
-- El servidor de desarrollo dejó de detectar cambios en algunos momentos en este entorno. La solución es reiniciarlo; producción no se ve afectada.
-- Avisos de _peer dependencies_ de tres plugins de ESLint con ESLint 10. Son esperados y el lint funciona.
-- No hay CI ni modo oscuro (pendientes de decisión).
-- En la demo, Marta siempre tiene sesión «hoy» a propósito, para que la pantalla principal muestre su caso típico. La versión sin sesión (día de descanso) está implementada, pero no aparece con los datos demo.
+- **Permisos en el servidor**:
+  - Cada entrenador solo ve sus clientes, en todas las pestañas.
+  - Un cliente solo ve lo suyo y lo que se le comparte.
+  - Las sesiones ajenas responden 404.
+  - Los ejercicios privados y propios, las etiquetas personales, los favoritos, las notas y las progresiones son solo de su autor.
+- **Biblioteca**:
+  - Taxonomía completa de la especificación (19 etiquetas en 3 categorías, 22 patrones en 5 grupos, material, regiones, entornos, ejecución y complejidad).
+  - Detección de etiquetas duplicadas e integridad del catálogo.
+  - Búsqueda Y/O con jerarquías.
+  - Catálogo demo de 17 ejercicios principales y 30 variantes, entre ellas las 7 variantes de sentadilla de la especificación.
+- **Trazabilidad**: procedencia validada en cada dato; resultados de evaluación obtenidos de sus intentos con una regla registrada (mejor intento o promedio); comparaciones solo si coinciden unidad, método, instrumento y regla.
+- **Cálculo de volumen** con fórmulas versionadas (series, repeticiones, tonelaje), excluyendo del tonelaje las series sin carga externa.
+- **Estado de las sesiones** deducido de los registros; objetivos enlazados con pruebas; fases de readaptación según sus criterios.
+- **Reproductor de sesión**: funciona por completo en pantalla, pero **no guarda nada**.
+- **Plataforma**: cabeceras de seguridad, PWA (manifiesto, iconos y página sin conexión verificada) y configuración validada al arrancar.
 
-## 7. Riesgos técnicos y decisiones que necesitan aprobación
+**Solo visual, simulado o pendiente** (no debe darse por hecho):
 
-**Riesgos**
+- Autenticación y persistencia (Fase 2).
+- Alta y edición de clientes y objetivos (Fase 3).
+- Gestión de la biblioteca: crear, editar, cambiar favoritos y relaciones, subir medios (Fase 4).
+- Registro de evaluaciones, protocolos y referencias (Fase 5).
+- Editor de planes y añadir ejercicios a una sesión (Fase 6).
+- Envío al entrenador de registros y observaciones del cliente (Fase 7).
+- Volumen por patrón o etiqueta, carga interna y estimación de RM (Fase 8).
+- Informes, lesiones y antecedentes (Fase 9).
+- Edición de lo compartido.
+- Métricas visibles configurables por población y objetivo.
+- Vídeos.
+- Instalación real de la PWA en un móvil (requiere HTTPS y despliegue).
 
-- **Next.js publica versiones de parche con mucha frecuencia** (16.4.3, 16.4.4 y 16.4.5 en menos de dos semanas). Hará falta una rutina de actualización con `pnpm audit`.
-- **Planes gratuitos**: ningún proveedor garantiza que sigan siendo gratuitos. Pueden tener límites, pausas por inactividad o cambios de condiciones. Hay que revisarlo en el momento de elegir.
-- **Datos de salud**: tratarlos exige base jurídica, consentimiento, medidas reforzadas y revisión legal antes de usar datos reales.
-- **Dependencia del proveedor**: elegir Supabase acopla autenticación y almacenamiento al proveedor. Los puertos actuales lo limitan a la capa de datos.
+## 7. Pruebas realizadas y resultados
 
-**Decisiones pendientes** (detalle en `DECISIONS.md`):
+Todas ejecutadas en este entorno el 5 de noviembre de 2026:
 
-| Id   | Decisión                                                                                           |
-| ---- | -------------------------------------------------------------------------------------------------- |
-| P-01 | Base de datos: Supabase o PostgreSQL propio                                                        |
-| P-02 | Autenticación: proveedor y método; 2FA para entrenadores                                           |
-| P-03 | Alojamiento y región (preferiblemente UE)                                                          |
-| P-04 | CI en GitHub Actions (consume minutos; gratis en repositorios públicos, cupo gratuito en privados) |
-| P-05 | Licencia del código                                                                                |
-| P-06 | Mover TrainPro a un repositorio propio                                                             |
-| P-07 | Modo oscuro                                                                                        |
+| Comprobación                                                      | Resultado                                                    |
+| ----------------------------------------------------------------- | ------------------------------------------------------------ |
+| `pnpm format:check`                                               | Todo con formato correcto                                    |
+| `pnpm lint` (incluye límites entre capas)                         | 0 errores, 0 avisos                                          |
+| `pnpm typecheck`                                                  | 0 errores                                                    |
+| `pnpm test` (Vitest)                                              | **84/84 superados** en 9 archivos                            |
+| `pnpm build`                                                      | Correcto: 30 entradas (las páginas con datos, dinámicas)     |
+| `pnpm test:e2e` (Chromium de escritorio + emulación Pixel 7)      | **30/30 superados**                                          |
+| axe (WCAG 2.1 A/AA) en todas las pantallas principales y pestañas | Sin incidencias graves ni críticas                           |
+| `pnpm audit --prod`                                               | Sin vulnerabilidades conocidas                               |
+| `pnpm audit` (con desarrollo)                                     | 1 moderada en `minimatch` dentro de ESLint (riesgo aceptado) |
 
-Hay además una decisión de producto: el RGPD reconoce el derecho de acceso del cliente a sus datos, con independencia de lo que el entrenador comparta en la app. Hay que definir cómo atenderlo (ver `SECURITY_PRIVACY.md`).
+Errores reales que las pruebas detectaron en esta fase y que ya están corregidos:
 
-## 8. Pantallas principales
+- Un test de E2E daba por abierto un grupo de filtros que empieza plegado.
+- Dos tests suponían que el primer ejercicio siempre tiene RIR.
+- En fases previas de esta misma Fase 1: el nombre accesible del logotipo, el contraste de las fases futuras de readaptación, la pureza del temporizador, las series por tiempo que sumaban repeticiones y la numeración de bloques.
 
-1. **Portada** (`/`): titular «Entrena con criterio. Acompaña con cercanía.», ilustración de una persona saltando ante un sol, dos tarjetas grandes para entrar como entrenador (amarilla) o como cliente (blanca), el ciclo de trabajo en 7 pasos y tres principios (rigor, privacidad, móvil).
-2. **Panel del entrenador** (`/entrenador`): saludo con fecha, cuatro indicadores (sesiones de hoy destacada en amarillo, clientes activos, semana con barra de progreso y readaptaciones), «Entrenan hoy» con el estado de cada sesión, «Requiere atención» con hechos y «Evaluaciones recientes» con el origen de cada dato.
-3. **Ficha de cliente** (`/entrenador/clientes/c-diego`): cabecera amarilla con objetivo y población; navegación por secciones. Incluye la próxima sesión con la prescripción completa y siluetas, sesiones recientes, gráfico de volumen con selector, evaluaciones, readaptación por fases con criterios y aviso de datos de salud, y lo que ve el cliente.
-4. **Carga y volumen** (`/entrenador/carga`): un selector de métrica para todos los gráficos, una tarjeta por cliente (esta semana y la anterior) y las tres definiciones con su versión y limitaciones.
-5. **Biblioteca de ejercicios** (`/entrenador/ejercicios`): búsqueda, filtros por patrón y tarjetas con silueta, material, patrón y nivel; el detalle incluye pasos, puntos clave y errores frecuentes.
-6. **Cliente · Hoy** (`/cliente`, móvil): tarjeta amarilla protagonista «Hoy toca» con duración, ejercicios, series y el botón «Empezar sesión» visible sin scroll; nota del entrenador; lista de la sesión; y, en segundo plano, «Esta semana: X de Y».
-7. **Cliente · Sesión**: barra de progreso fija, una tarjeta por ejercicio (A1, A2…) con la prescripción, «Cómo se hace» desplegable y filas de series con repeticiones y kg rellenados y botón ✓. Al marcar una serie aparece el temporizador de descanso abajo. Al final, un resumen calculado y el esfuerzo percibido.
-8. **Cliente · Progreso**: solo lo compartido. En la demo, el volumen semanal (series o tonelaje) y dos evaluaciones (CMJ y sprint de 20 m).
+## 8. Errores y limitaciones
+
+- **No probado en dispositivos reales** (iOS, Android) ni con lectores de pantalla: solo Chromium con emulación móvil.
+- La CSP aún admite `'unsafe-inline'` en scripts; la versión estricta con _nonce_ llegará con la autenticación.
+- La telemetría de Next.js viene activada. Se desactiva con `pnpm exec next telemetry disable`; ponerla en `.env.local` **no** funciona (comprobado).
+- **Patrones**: algunos ejercicios demo no tienen patrón (aceleraciones, paseo del granjero, saltos de tobillo, elevación de talones, movilidad), porque no encajan en los cinco grupos iniciales (P-09).
+- **Biblioteca**: los favoritos se muestran, pero aún no se pueden cambiar; las etiquetas personales y las notas son datos de ejemplo.
+- **Filtros**: en la biblioteca no muestran cuántos resultados tendría cada opción.
+- **Volumen unilateral**: las repeticiones de ejercicios unilaterales cuentan tal como se prescriben (por ejemplo, por pierna); está documentado en la fórmula.
+- **Entorno**: el servidor de desarrollo dejó de detectar cambios en algunos momentos de este entorno (se resuelve reiniciándolo; producción no se ve afectada). ESLint 10 muestra avisos de _peer dependencies_ de tres plugins.
+
+## 9. Decisiones pendientes
+
+| Id          | Decisión                                                               | Recomendación                                                                           |
+| ----------- | ---------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| P-01        | Base de datos                                                          | PostgreSQL. Supabase o propio, tras revisar condiciones, límites, región UE y DPA       |
+| P-02        | Autenticación                                                          | Proveedor con 2FA para entrenadores; definir cómo se envían los correos                 |
+| P-03        | Alojamiento y región                                                   | UE; sin despliegue hasta autorizarlo                                                    |
+| P-04        | CI en GitHub Actions                                                   | Recomendado (consume minutos; gratis en repositorios públicos)                          |
+| P-05 / P-06 | Licencia y repositorio propio                                          | Decidir antes de abrir el código o invitar a otras personas                             |
+| P-07        | Modo oscuro                                                            | No prioritario                                                                          |
+| P-08        | «Personalizado» frente a «privado» en la biblioteca                    | Confirmar la interpretación: propio y compartible con el equipo, frente a solo el autor |
+| P-09        | Ampliar patrones (locomoción, salto, transporte)                       | Recomendado                                                                             |
+| P-10        | Quién mantiene el catálogo global                                      | Un rol de administración del catálogo                                                   |
+| P-11        | Zod (Fase 2) y librería de gráficos (Fase 5)                           | Ver ADR-12 y ADR-13                                                                     |
+| —           | Procedimiento para el derecho de acceso del cliente a sus datos (RGPD) | Definirlo con asesoría jurídica                                                         |
+
+## 10. Cómo ejecutarlo
+
+```bash
+corepack enable            # una vez por equipo (activa pnpm)
+pnpm install               # instala las dependencias
+pnpm dev                   # abre http://localhost:3000
+```
+
+- **Entrenador:** `/entrenador`. **Cliente:** `/cliente` (mejor en un móvil o con la ventana estrecha).
+- **Comprobar que todo está bien:** `pnpm check`. **Pruebas E2E:** `pnpm exec playwright install chromium` (una vez) y después `pnpm test:e2e`.
+- **Requisitos:** Node.js 22.13 o superior y conexión a internet al instalar y al compilar (para descargar las fuentes).

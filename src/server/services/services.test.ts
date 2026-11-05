@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { type ClientActor, type TrainerActor } from '@/domain/access';
-import { findAssessmentTest } from '@/domain/assessment';
+import { findAssessmentTest, resultIssues } from '@/domain/assessment';
+import { libraryIssues } from '@/domain/library/exercise';
+import { SYSTEM_TAXONOMY } from '@/domain/library/taxonomy';
 import { isRegisteredFormula } from '@/domain/formulas';
 import { measurementIssues } from '@/domain/measurement';
 import { prescriptionIssues } from '@/domain/training/prescription';
@@ -9,7 +11,13 @@ import { createDemoRepositories } from '../repositories/demo';
 import { buildDemoDataset, DEMO_CLIENT_ID, DEMO_TRAINER_ID } from '../repositories/demo/dataset';
 import { getClientHome, getClientProgress, getClientSession, getClientWeek } from './client';
 import {
-  getClientOverview,
+  getClientGoals,
+  getClientHealth,
+  getClientProfile,
+  getClientTrainingLog,
+} from './client-file';
+import { getLibrary, getVariantDetail } from './library';
+import {
   getLoadOverview,
   getPlanningOverview,
   getTrainerDashboard,
@@ -33,11 +41,11 @@ const clientCtx = (clientId = DEMO_CLIENT_ID): ClientContext => ({
 
 describe('integridad de los datos de demostración', () => {
   it('todas las prescripciones son válidas y usan ejercicios existentes', () => {
-    const exerciseIds = new Set(data.exercises.map((e) => e.id));
+    const variantIds = new Set(data.library.variants.map((v) => v.id));
     for (const session of data.sessions) {
       for (const rx of session.exercises) {
         expect(prescriptionIssues(rx), rx.id).toEqual([]);
-        expect(exerciseIds.has(rx.exerciseId), rx.exerciseId).toBe(true);
+        expect(variantIds.has(rx.variantId), rx.variantId).toBe(true);
       }
     }
   });
@@ -45,8 +53,27 @@ describe('integridad de los datos de demostración', () => {
   it('todas las mediciones tienen una procedencia completa y pruebas del catálogo', () => {
     for (const result of data.assessments) {
       expect(measurementIssues(result.measurement, isRegisteredFormula), result.id).toEqual([]);
+      expect(resultIssues(result), result.id).toEqual([]);
       expect(findAssessmentTest(result.testId), result.testId).toBeDefined();
     }
+  });
+
+  it('la biblioteca es coherente con la taxonomía (ids, variantes de referencia, progresiones)', () => {
+    const taxonomy = {
+      ...SYSTEM_TAXONOMY,
+      tags: [...SYSTEM_TAXONOMY.tags, ...data.library.tags],
+      tagCategories: [...SYSTEM_TAXONOMY.tagCategories, ...data.library.tagCategories],
+    };
+    expect(
+      libraryIssues(
+        {
+          exercises: data.library.exercises,
+          variants: data.library.variants,
+          links: data.library.progressions,
+        },
+        taxonomy,
+      ),
+    ).toEqual([]);
   });
 
   it('los registros corresponden a sesiones pasadas del mismo cliente', () => {
@@ -118,7 +145,7 @@ describe('experiencia del entrenador', () => {
 
   it('otro entrenador no ve ni puede abrir los clientes ajenos', async () => {
     expect(await listTrainerClients(trainerCtx('t-otro'))).toEqual([]);
-    expect(await getClientOverview(trainerCtx('t-otro'), DEMO_CLIENT_ID)).toBeNull();
+    expect(await getClientProfile(trainerCtx('t-otro'), DEMO_CLIENT_ID)).toBeNull();
   });
 
   it('el panel cuenta las sesiones de hoy y de la semana', async () => {
@@ -136,14 +163,34 @@ describe('experiencia del entrenador', () => {
     expect(dashboard.activeRehabCases).toBe(1);
   });
 
-  it('la ficha incluye datos de salud solo para el entrenador responsable', async () => {
-    const overview = await getClientOverview(trainerCtx(), 'c-diego');
-    expect(overview?.rehab?.phases.map((p) => p.state)).toEqual([
+  it('la ficha y sus pestañas solo son accesibles para el entrenador responsable', async () => {
+    expect((await getClientProfile(trainerCtx(), 'c-diego'))?.hasActiveRehab).toBe(true);
+    const health = await getClientHealth(trainerCtx(), 'c-diego');
+    expect(health?.rehab?.phases.map((p) => p.state)).toEqual([
       'done',
       'current',
       'upcoming',
       'upcoming',
     ]);
+    for (const read of [getClientProfile, getClientHealth, getClientGoals, getClientTrainingLog]) {
+      expect(await read(trainerCtx('t-otro'), 'c-diego')).toBeNull();
+    }
+  });
+
+  it('los objetivos enlazan con sus pruebas de evaluación', async () => {
+    const goals = await getClientGoals(trainerCtx(), 'c-nerea');
+    const jump = goals?.find((g) => g.id === 'g-nerea-jump');
+    expect(jump?.linkedTests.map((t) => t.testId)).toEqual(['cmj']);
+    expect(jump?.linkedTests[0]?.comparison).toMatchObject({ comparable: true, improved: true });
+  });
+
+  it('el registro muestra lo que hizo el cliente, con su valoración y observaciones', async () => {
+    const log = await getClientTrainingLog(trainerCtx(), DEMO_CLIENT_ID);
+    expect(log?.length).toBeGreaterThan(0);
+    const completed = log!.find((entry) => entry.status === 'completed')!;
+    // Los ejercicios con objetivo de RIR/RPE llevan la valoración autodeclarada; los demás, no.
+    expect(completed.exercises.some((e) => /^(RIR|RPE) real \d/.test(e.feedback ?? ''))).toBe(true);
+    expect(completed.exercises.every((e) => e.sets.length > 0)).toBe(true);
   });
 
   it('la carga semanal cubre 4 semanas por cliente activo y declara sus fórmulas', async () => {
@@ -159,5 +206,56 @@ describe('experiencia del entrenador', () => {
     expect(planning.clients.find((c) => c.id === DEMO_CLIENT_ID)?.sessions.length).toBeGreaterThan(
       0,
     );
+  });
+});
+
+describe('biblioteca de ejercicios', () => {
+  it('el entrenador ve el catálogo global y lo suyo, con sus etiquetas personales', async () => {
+    const library = await getLibrary(trainerCtx());
+    const ids = library.variants.map((v) => v.id);
+    expect(ids).toContain('ex-band-row'); // privado de Alex
+    expect(ids).toContain('ex-split-squat-pause'); // propio de Alex
+    expect(library.taxonomy.tags.some((t) => t.id === 't-alex.warm-up')).toBe(true);
+    expect(library.variants.find((v) => v.id === 'ex-dead-bug')?.tagIds).toContain(
+      't-alex.warm-up',
+    );
+    expect(library.favoriteIds).toContain('ex-back-squat');
+  });
+
+  it('otro entrenador no ve ejercicios privados ni etiquetas personales ajenas', async () => {
+    const library = await getLibrary(trainerCtx('t-otro'));
+    const ids = library.variants.map((v) => v.id);
+    expect(ids).not.toContain('ex-band-row');
+    expect(ids).not.toContain('ex-split-squat-pause');
+    expect(library.taxonomy.tags.some((t) => t.id === 't-alex.warm-up')).toBe(false);
+    expect(library.variants.find((v) => v.id === 'ex-dead-bug')?.tagIds).not.toContain(
+      't-alex.warm-up',
+    );
+    expect(library.favoriteIds).toEqual([]);
+    expect(await getVariantDetail(trainerCtx('t-otro'), 'ex-band-row')).toBeNull();
+  });
+
+  it('una progresión hacia un ejercicio ajeno no se muestra', async () => {
+    const own = await getVariantDetail(trainerCtx(), 'ex-split-squat');
+    expect(own?.progressions.map((p) => p.id)).toEqual(['ex-split-squat-pause']);
+    const foreign = await getVariantDetail(trainerCtx('t-otro'), 'ex-split-squat');
+    expect(foreign?.progressions).toEqual([]);
+  });
+
+  it('la ficha de una variante hereda las instrucciones de la referencia si no tiene propias', async () => {
+    const detail = await getVariantDetail(trainerCtx(), 'ex-pause-squat');
+    expect(detail?.stepsInheritedFrom?.id).toBe('ex-back-squat');
+    expect(detail?.steps.length).toBeGreaterThan(0);
+    expect(detail?.siblings.length).toBe(7);
+    expect(detail?.canEdit).toBe(false);
+    expect((await getVariantDetail(trainerCtx(), 'ex-band-row'))?.canEdit).toBe(true);
+  });
+
+  it('los clientes no acceden a la biblioteca, solo a sus sesiones', async () => {
+    const session = await getClientSession(
+      clientCtx(),
+      (await getClientHome(clientCtx())).todaySession!.id,
+    );
+    expect(session?.exercises[0]?.silhouette).toBe('squat');
   });
 });

@@ -31,7 +31,7 @@ export default async function RehabPage() {
           <section key={rehab.id} aria-labelledby={`caso-${rehab.id}`}>
             <h2 id={`caso-${rehab.id}`} className="text-2xl font-bold text-ink-900">
               <Link
-                href={`/entrenador/clientes/${rehab.clientId}#readaptacion`}
+                href={`/entrenador/clientes/${rehab.clientId}/salud`}
                 className="hover:underline"
               >
                 {rehab.clientName}

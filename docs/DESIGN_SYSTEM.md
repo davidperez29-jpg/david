@@ -53,6 +53,7 @@ Las columnas de volumen semanal siguen estas reglas:
 ## Patrones de experiencia
 
 - **Cliente**: una columna pensada para el móvil. La sesión de hoy ocupa la pantalla principal y el botón «Empezar sesión» se ve sin hacer scroll (comprobado en E2E). Las series se confirman con un toque, porque los valores prescritos vienen ya rellenos. Botones de 48 px o más y descanso automático con +15 s y «Saltar». El progreso vive en su propia pestaña.
-- **Entrenador**: barra lateral en escritorio y menú desplegable en móvil, panel con hechos (sin interpretaciones automáticas) y ficha con navegación por secciones.
+- **Entrenador**: barra lateral en escritorio y menú desplegable en móvil, panel con hechos (sin interpretaciones automáticas) y ficha del cliente con **pestañas horizontales**. Cada pestaña es una ruta enlazable; en pantallas estrechas se desplazan en horizontal y la activa se marca con `aria-current`.
+- **Biblioteca**: panel de filtros por dimensión (plegable), selector «Todos (Y) / Alguno (O)», chips de filtros activos con botón para quitarlos y resultados que se actualizan al momento. Las siluetas son un campo visual de cada variante (15 tipos), independiente de su clasificación.
 - **Honestidad**: lo que aún no existe se marca con `PendingFeature` o `Notice`, nunca como si funcionara. El aviso de demostración está siempre visible.
 - **Accesibilidad**: `lang="es"`, enlace «Saltar al contenido», foco visible, `aria-current` en la navegación, estados con texto (no solo color) y respeto de `prefers-reduced-motion`.

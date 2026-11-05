@@ -5,7 +5,7 @@
 import { type SharingSettings } from '@/domain/access';
 import { type AssessmentTest, type Comparison } from '@/domain/assessment';
 import { type DataOrigin } from '@/domain/measurement';
-import { type MovementPattern } from '@/domain/exercises';
+import { type Silhouette } from '@/domain/library/exercise';
 import { type CriterionStatus } from '@/domain/rehab';
 import { type IsoDate } from '@/domain/time';
 import { type SessionStatus } from '@/domain/training/session';
@@ -26,7 +26,14 @@ export interface AssessmentSeriesVM {
   outcomeName: string;
   unit: string | null;
   betterWhen: AssessmentTest['betterWhen'];
-  points: { date: IsoDate; value: number; provenance: ProvenanceVM }[];
+  points: {
+    date: IsoDate;
+    value: number;
+    provenance: ProvenanceVM;
+    /** Intentos individuales y regla usada para obtener el resultado, si los hay. */
+    attempts: number[] | null;
+    aggregationLabel: string | null;
+  }[];
   /** Comparación entre los dos últimos resultados, si los hay. */
   comparison: Comparison | null;
 }
@@ -45,7 +52,7 @@ export interface SessionCardVM {
 
 export interface SessionPreviewItemVM {
   name: string;
-  pattern: MovementPattern;
+  silhouette: Silhouette;
   setsAndReps: string;
 }
 
@@ -54,9 +61,9 @@ export interface ExerciseInSessionVM {
   /** Posición dentro de la sesión: A1, A2, B1… (bloque + orden dentro del bloque). */
   slot: string;
   order: number;
-  exerciseId: string;
+  variantId: string;
   name: string;
-  pattern: MovementPattern;
+  silhouette: Silhouette;
   summary: string;
   steps: string[];
   cues: string[];
@@ -68,6 +75,8 @@ export interface ExerciseInSessionVM {
   repUnit: 'reps' | 'seconds' | 'meters';
   loadLabel: string;
   effortLabel: string | null;
+  /** Qué esfuerzo real se pide al cliente al terminar el ejercicio (autodeclarado). */
+  effortFeedback: 'rir' | 'rpe' | null;
   restSeconds: number;
   restLabel: string;
   tempo: { code: string; description: string[] } | null;

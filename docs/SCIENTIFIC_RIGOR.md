@@ -27,11 +27,13 @@ Cada fórmula tiene `id`, `version` (semver), tipo, expresión legible, unidad d
 
 ### Fórmulas registradas en la Fase 1
 
-| Id                        | Versión | Tipo                 | Definición                                                                         |
-| ------------------------- | ------- | -------------------- | ---------------------------------------------------------------------------------- |
-| `training.completed-sets` | 1.0.0   | Definición operativa | Número de series registradas como completadas                                      |
-| `training.total-reps`     | 1.0.0   | Definición operativa | Suma de repeticiones de las series completadas                                     |
-| `training.volume-load`    | 1.0.0   | Definición operativa | Σ (repeticiones × carga externa en kg) de las series completadas con carga externa |
+| Id                         | Versión | Tipo                 | Definición                                                                         |
+| -------------------------- | ------- | -------------------- | ---------------------------------------------------------------------------------- |
+| `training.completed-sets`  | 1.0.0   | Definición operativa | Número de series registradas como completadas                                      |
+| `training.total-reps`      | 1.0.0   | Definición operativa | Suma de repeticiones de las series completadas                                     |
+| `training.volume-load`     | 1.0.0   | Definición operativa | Σ (repeticiones × carga externa en kg) de las series completadas con carga externa |
+| `assessment.best-attempt`  | 1.0.0   | Definición operativa | Mejor intento válido según el sentido de la prueba (mayor o menor)                 |
+| `assessment.mean-attempts` | 1.0.0   | Definición operativa | Media aritmética de los intentos válidos                                           |
 
 Las limitaciones están escritas en el registro y se muestran en la pantalla «Carga y volumen». Por ejemplo, el tonelaje no es trabajo mecánico, excluye el peso corporal y las series por tiempo o distancia no suman repeticiones.
 
@@ -45,9 +47,20 @@ Las limitaciones están escritas en el registro y se muestran en la pantalla «C
 4. Implementar el cálculo en el dominio, con tests que reproduzcan **ejemplos numéricos publicados** cuando existan.
 5. Si cambia la ecuación, se crea **una versión nueva**. Los resultados antiguos conservan la versión con la que se calcularon.
 
+## Intentos y resultado de una prueba
+
+Una evaluación puede registrar varios **intentos**. El resultado se obtiene con una regla explícita, el **mejor intento** o el **promedio**, y por eso es un valor `calculated` con la fórmula y la versión de esa regla. Cada intento conserva su procedencia original (por ejemplo, `imported` desde la aplicación de salto). `resultIssues()` comprueba que el resultado coincide con sus intentos y con la regla declarada.
+
+## Lo que TrainPro no deduce
+
+- **No se infieren variables que el instrumento no mide.** A partir de una altura de salto no se calculan fuerza pico, RFD, impulso, curvas fuerza-tiempo ni estrategia de aterrizaje.
+- **No se atribuyen a una prueba capacidades que no mide.**
+- **Estimación de RM**: el sistema está preparado para guardarla como `estimated`, con la fórmula versionada y su error, nunca como medición directa. **Ninguna ecuación está incorporada todavía**: se elegirá tras verificar su fuente primaria, su población y su rango de validez, y se documentarán sus limitaciones (por ejemplo, que pierde precisión con muchas repeticiones o con RIR declarado).
+- **Volumen**: series, repeticiones y tonelaje solo donde corresponde. Las series por tiempo o distancia no se convierten a tonelaje. El volumen por patrón o por etiqueta se definirá como fórmula registrada antes de mostrarse.
+
 ## Comparación de resultados
 
-`compareResults()` solo compara dos resultados de la **misma prueba**, con la **misma unidad**, el **mismo método** y el **mismo instrumento**. Si no coinciden, la interfaz muestra «No comparable» y el motivo. Muestra el cambio absoluto y el porcentual, y si va en la dirección deseada según la prueba (en un sprint, menos tiempo es mejor).
+`compareResults()` solo compara dos resultados de la **misma prueba**, con la **misma unidad**, el **mismo método**, el **mismo instrumento** y la **misma regla de intentos**. Si no coinciden, la interfaz muestra «No comparable» y el motivo. Muestra el cambio absoluto y el porcentual, y si va en la dirección deseada según la prueba (en un sprint, menos tiempo es mejor).
 
 **Lo que todavía no hace:** decidir si un cambio es **relevante**. Eso exige datos de fiabilidad del protocolo (como el error típico o el cambio mínimo detectable) que se incorporarán con su referencia en la fase de evaluación.
 
@@ -64,6 +77,10 @@ Son notaciones de la aplicación, no afirmaciones científicas:
 - **RPE**: esfuerzo percibido de 1 a 10, en pasos de 0,5.
 - **Carácter del esfuerzo**: repeticiones realizadas (realizables), por ejemplo `6 (12)`.
 - **Esfuerzo percibido de la sesión** (pantalla final del cliente): de 0 a 10, marcado como autodeclarado. La escala y sus anclajes se definirán y documentarán en la fase de seguimiento de carga, antes de usarlo para cualquier cálculo de carga interna.
+
+## Clasificación de los ejercicios
+
+Las etiquetas de la biblioteca (fuerza máxima, potencia, isométrico…) describen **usos de programación**, no propiedades fijas del ejercicio. No se asignan por el nombre: dependen de la variante, la carga, la intención, la velocidad, el rango y el tipo de contracción. Por eso cada variante tiene su propia clasificación y, cuando hace falta, una nota que explica por qué (`classificationNote`). Las asignaciones del catálogo demo son ejemplos editables, no afirmaciones científicas.
 
 ## Readaptación
 

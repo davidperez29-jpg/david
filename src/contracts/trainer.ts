@@ -1,12 +1,13 @@
 import { type AssessmentCategory } from '@/domain/assessment';
-import { type Exercise } from '@/domain/exercises';
+import { type Exercise, type ExerciseVariant, type Visibility } from '@/domain/library/exercise';
+import { type Taxonomy } from '@/domain/library/taxonomy';
 import { type FormulaDefinition } from '@/domain/formulas';
 import { type DataOrigin } from '@/domain/measurement';
+import { type GoalStatus } from '@/domain/goals';
 import { type ClientStatus } from '@/domain/people';
 import { type IsoDate } from '@/domain/time';
 import {
   type AssessmentSeriesVM,
-  type RehabCaseVM,
   type SessionCardVM,
   type SessionDetailVM,
   type SessionPreviewItemVM,
@@ -50,15 +51,63 @@ export interface TrainerDashboardVM {
   attention: { clientId: string; clientName: string; reason: string }[];
 }
 
-export interface ClientOverviewVM {
+/** Cabecera y datos básicos de la ficha (los usan todas las pestañas). */
+export interface ClientProfileVM {
   client: ClientSummaryVM & { startedOn: IsoDate };
   sharing: SharingSettings;
+  hasActiveRehab: boolean;
+}
+
+export interface GoalVM {
+  id: string;
+  title: string;
+  areaLabel: string;
+  status: GoalStatus;
+  statusLabel: string;
+  startedOn: IsoDate;
+  targetDate: IsoDate | null;
+  notes: string | null;
+  /** Pruebas enlazadas con su último resultado y la comparación con el anterior (si es comparable). */
+  linkedTests: AssessmentSeriesVM[];
+  unlinkedTestNames: string[];
+}
+
+export interface ClientPlanVM {
+  nextSession: SessionDetailVM | null;
+  weekStart: IsoDate;
+  days: IsoDate[];
+  weekSessions: (SessionCardVM & { preview: SessionPreviewItemVM[] })[];
+}
+
+export interface ClientSessionsVM {
   upcoming: SessionCardVM[];
-  recent: SessionCardVM[];
-  nextSessionDetail: SessionDetailVM | null;
+  past: SessionCardVM[];
+}
+
+/** Lo que el cliente registró en una sesión, serie a serie, con su valoración y observaciones. */
+export interface TrainingLogEntryVM {
+  sessionId: string;
+  date: IsoDate;
+  title: string;
+  status: SessionCardVM['status'];
+  completedSets: number;
+  plannedSets: number;
+  perceivedEffort: number | null;
+  comment: string | null;
+  exercises: {
+    prescriptionId: string;
+    slot: string;
+    name: string;
+    prescribed: string;
+    repUnit: 'reps' | 'seconds' | 'meters';
+    sets: { setNumber: number; reps: number; loadKg: number | null; completed: boolean }[];
+    feedback: string | null;
+  }[];
+}
+
+export interface ClientResultsVM {
   weeklyVolume: WeeklyVolume[];
   assessments: AssessmentSeriesVM[];
-  rehab: RehabCaseVM | null;
 }
 
 export interface PlanningVM {
@@ -91,4 +140,41 @@ export interface AssessmentsOverviewVM {
   byClient: { clientId: string; clientName: string; series: AssessmentSeriesVM[] }[];
 }
 
-export type ExerciseLibraryVM = Exercise[];
+/** Biblioteca visible para el entrenador: catálogo global + lo suyo; etiquetas personales ya fusionadas. */
+export interface LibraryVM {
+  taxonomy: Taxonomy;
+  exercises: Exercise[];
+  variants: ExerciseVariant[];
+  favoriteIds: string[];
+}
+
+export interface VariantRefVM {
+  id: string;
+  name: string;
+  isPrimary: boolean;
+  visibility: Visibility;
+  note?: string;
+}
+
+/** Ficha de una variante con su clasificación ya traducida a nombres. */
+export interface VariantDetailVM {
+  variant: ExerciseVariant;
+  exercise: Exercise;
+  tagGroups: {
+    category: string;
+    personal: boolean;
+    tags: { id: string; name: string; personal: boolean }[];
+  }[];
+  patterns: string[];
+  equipment: string[];
+  regions: string[];
+  environments: string[];
+  steps: string[];
+  stepsInheritedFrom: { id: string; name: string } | null;
+  siblings: VariantRefVM[];
+  progressions: VariantRefVM[];
+  regressions: VariantRefVM[];
+  trainerNote: string | null;
+  isFavorite: boolean;
+  canEdit: boolean;
+}

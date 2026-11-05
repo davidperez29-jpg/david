@@ -23,3 +23,12 @@ export function initials(name: string): string {
 export function firstName(name: string): string {
   return name.trim().split(/\s+/)[0] ?? '';
 }
+
+/** Solo se aceptan enlaces https para vídeos y recursos externos. */
+export function isSafeExternalUrl(url: string): boolean {
+  try {
+    return new URL(url).protocol === 'https:';
+  } catch {
+    return false;
+  }
+}

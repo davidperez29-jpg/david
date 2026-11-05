@@ -1,6 +1,14 @@
 import { type SharingSettings } from '@/domain/access';
 import { type AssessmentResult } from '@/domain/assessment';
-import { type Exercise } from '@/domain/exercises';
+import {
+  type Exercise,
+  type ExerciseVariant,
+  type Favorite,
+  type ProgressionLink,
+  type TrainerExerciseNote,
+} from '@/domain/library/exercise';
+import { type Tag, type TagCategory } from '@/domain/library/taxonomy';
+import { type Goal } from '@/domain/goals';
 import { type Client, type Trainer } from '@/domain/people';
 import { type RehabCase } from '@/domain/rehab';
 import { type IsoDate } from '@/domain/time';
@@ -26,10 +34,24 @@ export interface ClientRepository {
   getById(id: string): Promise<Client | null>;
 }
 
-export interface ExerciseRepository {
-  list(): Promise<Exercise[]>;
-  getById(id: string): Promise<Exercise | null>;
-  getMany(ids: readonly string[]): Promise<Exercise[]>;
+/**
+ * Biblioteca de ejercicios. Devuelve también elementos de otros propietarios: los casos de uso
+ * filtran con `canViewExercise` y `visibleTo` (con PostgreSQL, además, RLS por propietario).
+ */
+export interface LibraryRepository {
+  /** Categorías y etiquetas personalizadas de los entrenadores (las del sistema están en el dominio). */
+  customTagCategories(): Promise<TagCategory[]>;
+  customTags(): Promise<Tag[]>;
+  /** Etiquetas personales que un entrenador ha aplicado a variantes (también globales). */
+  personalTagging(trainerId: string): Promise<{ variantId: string; tagId: string }[]>;
+  exercises(): Promise<Exercise[]>;
+  variants(): Promise<ExerciseVariant[]>;
+  getVariants(ids: readonly string[]): Promise<ExerciseVariant[]>;
+  /** Variantes de referencia de los ejercicios principales indicados. */
+  primaryVariants(exerciseIds: readonly string[]): Promise<ExerciseVariant[]>;
+  progressions(): Promise<ProgressionLink[]>;
+  notes(trainerId: string): Promise<TrainerExerciseNote[]>;
+  favorites(trainerId: string): Promise<Favorite[]>;
 }
 
 export interface SessionRepository {
@@ -45,6 +67,10 @@ export interface AssessmentRepository {
   listByClient(clientId: string): Promise<AssessmentResult[]>;
 }
 
+export interface GoalRepository {
+  listByClient(clientId: string): Promise<Goal[]>;
+}
+
 export interface RehabRepository {
   listByClient(clientId: string): Promise<RehabCase[]>;
 }
@@ -56,10 +82,11 @@ export interface SharingRepository {
 export interface Repositories {
   trainers: TrainerRepository;
   clients: ClientRepository;
-  exercises: ExerciseRepository;
+  library: LibraryRepository;
   sessions: SessionRepository;
   logs: SessionLogRepository;
   assessments: AssessmentRepository;
+  goals: GoalRepository;
   rehab: RehabRepository;
   sharing: SharingRepository;
 }

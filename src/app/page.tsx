@@ -86,7 +86,7 @@ export default function HomePage() {
               <EntryCard
                 href="/entrenador"
                 title="Soy entrenador"
-                text="Panel, clientes, evaluaciones, planificación, biblioteca de ejercicios, carga, readaptación e informes."
+                text="Panel, clientes con ficha por pestañas, evaluaciones, análisis, planificación, biblioteca de ejercicios, carga, readaptación e informes."
                 tone="bg-sun-400"
                 cta="Entrar como Alex, entrenador"
               />

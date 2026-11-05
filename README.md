@@ -25,11 +25,11 @@ No hace falta configurar nada: todas las variables de entorno tienen un valor po
 
 Entradas de la demo:
 
-| Ruta          | Experiencia                                                                |
-| ------------- | -------------------------------------------------------------------------- |
-| `/`           | Portada: elegir entre entrenador y cliente                                 |
-| `/entrenador` | Área del entrenador (Alex, ficticio)                                       |
-| `/cliente`    | App del cliente, pensada para el móvil (Marta, ficticia): la sesión de hoy |
+| Ruta          | Experiencia                                                                               |
+| ------------- | ----------------------------------------------------------------------------------------- |
+| `/`           | Portada: elegir entre entrenador y cliente                                                |
+| `/entrenador` | Área del entrenador (Alex, ficticio): panel, clientes con ficha por pestañas, biblioteca… |
+| `/cliente`    | Portal del cliente, pensado para el móvil (Marta, ficticia): la sesión de hoy             |
 
 ## Scripts
 
@@ -64,16 +64,17 @@ scripts/       Utilidades de mantenimiento
 
 ## Documentación
 
-| Documento                                              | Contenido                                                          |
-| ------------------------------------------------------ | ------------------------------------------------------------------ |
-| [`docs/PHASE1_REPORT.md`](docs/PHASE1_REPORT.md)       | Informe de revisión de la Fase 1                                   |
-| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)         | Arquitectura, capas, flujo de datos y cómo ampliar                 |
-| [`docs/DECISIONS.md`](docs/DECISIONS.md)               | Decisiones técnicas justificadas (ADR) y las pendientes de aprobar |
-| [`docs/SECURITY_PRIVACY.md`](docs/SECURITY_PRIVACY.md) | Modelo de permisos, privacidad, RGPD y pendientes                  |
-| [`docs/SCIENTIFIC_RIGOR.md`](docs/SCIENTIFIC_RIGOR.md) | Procedencia de los datos, registro de fórmulas y convenciones      |
-| [`docs/DESIGN_SYSTEM.md`](docs/DESIGN_SYSTEM.md)       | Identidad visual, tokens, componentes y accesibilidad              |
-| [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md)           | Desarrollo y mantenimiento del día a día                           |
-| [`docs/ROADMAP.md`](docs/ROADMAP.md)                   | Fases propuestas                                                   |
+| Documento                                              | Contenido                                                           |
+| ------------------------------------------------------ | ------------------------------------------------------------------- |
+| [`docs/PHASE1_REPORT.md`](docs/PHASE1_REPORT.md)       | Informe de revisión de la Fase 1                                    |
+| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)         | Arquitectura, capas, flujo de datos y cómo ampliar                  |
+| [`docs/DATA_MODEL.md`](docs/DATA_MODEL.md)             | Modelo conceptual de datos, incluida la biblioteca multidimensional |
+| [`docs/DECISIONS.md`](docs/DECISIONS.md)               | Decisiones técnicas justificadas (ADR) y las pendientes de aprobar  |
+| [`docs/SECURITY_PRIVACY.md`](docs/SECURITY_PRIVACY.md) | Modelo de permisos, privacidad, RGPD y pendientes                   |
+| [`docs/SCIENTIFIC_RIGOR.md`](docs/SCIENTIFIC_RIGOR.md) | Procedencia de los datos, registro de fórmulas y convenciones       |
+| [`docs/DESIGN_SYSTEM.md`](docs/DESIGN_SYSTEM.md)       | Identidad visual, tokens, componentes y accesibilidad               |
+| [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md)           | Desarrollo y mantenimiento del día a día                            |
+| [`docs/ROADMAP.md`](docs/ROADMAP.md)                   | Fases propuestas                                                    |
 
 ## Costes
 

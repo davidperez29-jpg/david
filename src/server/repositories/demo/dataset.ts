@@ -1,13 +1,39 @@
 import { defaultSharing, type SharingSettings } from '@/domain/access';
-import { type AssessmentResult } from '@/domain/assessment';
-import { type Exercise } from '@/domain/exercises';
+import {
+  aggregateAttempts,
+  AGGREGATION_FORMULAS,
+  type AssessmentResult,
+  findAssessmentTest,
+} from '@/domain/assessment';
+import { type Goal } from '@/domain/goals';
+import {
+  type Exercise,
+  type ExerciseVariant,
+  type Favorite,
+  type ProgressionLink,
+  type TrainerExerciseNote,
+} from '@/domain/library/exercise';
+import { type Tag, type TagCategory } from '@/domain/library/taxonomy';
 import { type Provenance } from '@/domain/measurement';
 import { type Client, type Trainer } from '@/domain/people';
 import { type RehabCase } from '@/domain/rehab';
 import { addDays, daysBetween, type IsoDate, isoWeekday } from '@/domain/time';
 import { type ExercisePrescription } from '@/domain/training/prescription';
-import { type PlannedSession, type SessionLog } from '@/domain/training/session';
-import { DEMO_EXERCISES } from './exercises';
+import {
+  type ExerciseFeedback,
+  type PlannedSession,
+  type SessionLog,
+} from '@/domain/training/session';
+import {
+  DEMO_EXERCISES,
+  DEMO_FAVORITES,
+  DEMO_PERSONAL_TAGGING,
+  DEMO_PROGRESSIONS,
+  DEMO_TRAINER_NOTES,
+  DEMO_TRAINER_TAG_CATEGORIES,
+  DEMO_TRAINER_TAGS,
+  DEMO_VARIANTS,
+} from './library';
 
 /**
  * Datos de demostración: TODOS son ficticios. Se generan a partir de la fecha de hoy y son
@@ -16,10 +42,20 @@ import { DEMO_EXERCISES } from './exercises';
 export interface DemoDataset {
   trainers: Trainer[];
   clients: Client[];
-  exercises: Exercise[];
+  library: {
+    exercises: Exercise[];
+    variants: ExerciseVariant[];
+    progressions: ProgressionLink[];
+    tagCategories: TagCategory[];
+    tags: Tag[];
+    personalTagging: { trainerId: string; variantId: string; tagId: string }[];
+    notes: TrainerExerciseNote[];
+    favorites: Favorite[];
+  };
   sessions: PlannedSession[];
   logs: SessionLog[];
   assessments: AssessmentResult[];
+  goals: Goal[];
   rehab: RehabCase[];
   sharing: SharingSettings[];
 }
@@ -64,7 +100,7 @@ const TEMPLATES = {
     build: (w) => [
       {
         slot: 'A1',
-        exerciseId: 'ex-back-squat',
+        variantId: 'ex-back-squat',
         sets: 4,
         reps: range(6, 8),
         load: kg(45, 2.5, w),
@@ -74,7 +110,7 @@ const TEMPLATES = {
       },
       {
         slot: 'A2',
-        exerciseId: 'ex-rdl',
+        variantId: 'ex-rdl',
         sets: 3,
         reps: fixed(8),
         load: kg(40, 2.5, w),
@@ -84,7 +120,7 @@ const TEMPLATES = {
       },
       {
         slot: 'B1',
-        exerciseId: 'ex-split-squat',
+        variantId: 'ex-split-squat',
         sets: 3,
         reps: range(8, 10),
         load: kg(20, 0, w),
@@ -94,7 +130,7 @@ const TEMPLATES = {
       },
       {
         slot: 'B2',
-        exerciseId: 'ex-dead-bug',
+        variantId: 'ex-dead-bug',
         sets: 3,
         reps: fixed(10),
         load: bw,
@@ -104,7 +140,7 @@ const TEMPLATES = {
       },
       {
         slot: 'C1',
-        exerciseId: 'ex-side-plank',
+        variantId: 'ex-side-plank',
         sets: 3,
         reps: { kind: 'seconds', seconds: 30 },
         load: bw,
@@ -121,7 +157,7 @@ const TEMPLATES = {
     build: (w) => [
       {
         slot: 'A1',
-        exerciseId: 'ex-bench-press',
+        variantId: 'ex-bench-press',
         sets: 4,
         reps: range(6, 8),
         load: kg(30, 1.25, w),
@@ -131,7 +167,7 @@ const TEMPLATES = {
       },
       {
         slot: 'A2',
-        exerciseId: 'ex-db-row',
+        variantId: 'ex-db-row',
         sets: 4,
         reps: fixed(10),
         load: kg(16, 0, w),
@@ -141,7 +177,7 @@ const TEMPLATES = {
       },
       {
         slot: 'B1',
-        exerciseId: 'ex-db-press',
+        variantId: 'ex-db-press',
         sets: 3,
         reps: fixed(10),
         load: kg(16, 0, w),
@@ -151,7 +187,7 @@ const TEMPLATES = {
       },
       {
         slot: 'B2',
-        exerciseId: 'ex-farmer-carry',
+        variantId: 'ex-farmer-carry',
         sets: 3,
         reps: { kind: 'meters', meters: 30 },
         load: { kind: 'text', text: '2 × 16 kg' },
@@ -167,7 +203,7 @@ const TEMPLATES = {
     build: (w) => [
       {
         slot: 'A1',
-        exerciseId: 'ex-cmj',
+        variantId: 'ex-cmj',
         sets: 4,
         reps: fixed(5),
         load: bw,
@@ -177,7 +213,7 @@ const TEMPLATES = {
       },
       {
         slot: 'A2',
-        exerciseId: 'ex-hip-thrust',
+        variantId: 'ex-hip-thrust',
         sets: 4,
         reps: range(8, 10),
         load: kg(50, 5, w),
@@ -186,7 +222,7 @@ const TEMPLATES = {
       },
       {
         slot: 'B1',
-        exerciseId: 'ex-goblet-squat',
+        variantId: 'ex-goblet-squat',
         sets: 3,
         reps: fixed(10),
         load: kg(16, 0, w),
@@ -195,7 +231,7 @@ const TEMPLATES = {
       },
       {
         slot: 'B2',
-        exerciseId: 'ex-calf-raise',
+        variantId: 'ex-calf-raise',
         sets: 3,
         reps: fixed(12),
         load: bw,
@@ -214,7 +250,7 @@ const TEMPLATES = {
     build: (w) => [
       {
         slot: 'A1',
-        exerciseId: 'ex-ankle-mobility',
+        variantId: 'ex-ankle-mobility',
         sets: 2,
         reps: fixed(10),
         load: bw,
@@ -224,7 +260,7 @@ const TEMPLATES = {
       },
       {
         slot: 'A2',
-        exerciseId: 'ex-calf-raise',
+        variantId: 'ex-calf-raise',
         sets: 4,
         reps: fixed(12),
         load: bw,
@@ -235,7 +271,7 @@ const TEMPLATES = {
       },
       {
         slot: 'B1',
-        exerciseId: 'ex-split-squat',
+        variantId: 'ex-split-squat',
         sets: 3,
         reps: fixed(8),
         load: kg(16, 2, w),
@@ -244,7 +280,7 @@ const TEMPLATES = {
       },
       {
         slot: 'B2',
-        exerciseId: 'ex-pogo',
+        variantId: 'ex-pogo',
         sets: 3,
         reps: fixed(20),
         load: bw,
@@ -254,7 +290,7 @@ const TEMPLATES = {
       },
       {
         slot: 'C1',
-        exerciseId: 'ex-side-plank',
+        variantId: 'ex-side-plank',
         sets: 3,
         reps: { kind: 'seconds', seconds: 30 },
         load: bw,
@@ -270,7 +306,7 @@ const TEMPLATES = {
     build: (w) => [
       {
         slot: 'A1',
-        exerciseId: 'ex-goblet-squat',
+        variantId: 'ex-goblet-squat',
         sets: 3,
         reps: fixed(10),
         load: kg(8, 1, w),
@@ -280,7 +316,7 @@ const TEMPLATES = {
       },
       {
         slot: 'A2',
-        exerciseId: 'ex-db-row',
+        variantId: 'ex-db-row',
         sets: 3,
         reps: fixed(10),
         load: kg(8, 0, w),
@@ -289,7 +325,7 @@ const TEMPLATES = {
       },
       {
         slot: 'B1',
-        exerciseId: 'ex-farmer-carry',
+        variantId: 'ex-farmer-carry',
         sets: 3,
         reps: { kind: 'meters', meters: 20 },
         load: { kind: 'text', text: '2 × 6 kg' },
@@ -298,7 +334,7 @@ const TEMPLATES = {
       },
       {
         slot: 'B2',
-        exerciseId: 'ex-calf-raise',
+        variantId: 'ex-calf-raise',
         sets: 2,
         reps: fixed(10),
         load: bw,
@@ -315,7 +351,7 @@ const TEMPLATES = {
     build: (w) => [
       {
         slot: 'A1',
-        exerciseId: 'ex-cmj',
+        variantId: 'ex-cmj',
         sets: 4,
         reps: fixed(4),
         load: bw,
@@ -324,7 +360,7 @@ const TEMPLATES = {
       },
       {
         slot: 'A2',
-        exerciseId: 'ex-acceleration',
+        variantId: 'ex-acceleration',
         sets: 6,
         reps: { kind: 'meters', meters: 10 },
         load: bw,
@@ -334,7 +370,7 @@ const TEMPLATES = {
       },
       {
         slot: 'B1',
-        exerciseId: 'ex-hip-thrust',
+        variantId: 'ex-hip-thrust',
         sets: 3,
         reps: fixed(6),
         load: kg(70, 5, w),
@@ -343,7 +379,7 @@ const TEMPLATES = {
       },
       {
         slot: 'B2',
-        exerciseId: 'ex-pogo',
+        variantId: 'ex-pogo',
         sets: 3,
         reps: fixed(15),
         load: bw,
@@ -359,7 +395,7 @@ const TEMPLATES = {
     build: (w) => [
       {
         slot: 'A1',
-        exerciseId: 'ex-back-squat',
+        variantId: 'ex-back-squat',
         sets: 5,
         reps: range(4, 6),
         load: kg(60, 2.5, w),
@@ -369,7 +405,7 @@ const TEMPLATES = {
       },
       {
         slot: 'A2',
-        exerciseId: 'ex-rdl',
+        variantId: 'ex-rdl',
         sets: 3,
         reps: fixed(6),
         load: kg(55, 2.5, w),
@@ -378,7 +414,7 @@ const TEMPLATES = {
       },
       {
         slot: 'B1',
-        exerciseId: 'ex-split-squat',
+        variantId: 'ex-split-squat',
         sets: 3,
         reps: fixed(6),
         load: kg(24, 0, w),
@@ -387,7 +423,7 @@ const TEMPLATES = {
       },
       {
         slot: 'B2',
-        exerciseId: 'ex-pullup',
+        variantId: 'ex-pullup',
         sets: 3,
         reps: fixed(5),
         load: bw,
@@ -403,7 +439,7 @@ const TEMPLATES = {
     build: (w) => [
       {
         slot: 'A1',
-        exerciseId: 'ex-goblet-squat',
+        variantId: 'ex-goblet-squat',
         sets: 3,
         reps: fixed(10),
         load: kg(20, 2, w),
@@ -412,7 +448,7 @@ const TEMPLATES = {
       },
       {
         slot: 'A2',
-        exerciseId: 'ex-db-row',
+        variantId: 'ex-db-row',
         sets: 3,
         reps: fixed(10),
         load: kg(20, 0, w),
@@ -421,7 +457,7 @@ const TEMPLATES = {
       },
       {
         slot: 'B1',
-        exerciseId: 'ex-db-press',
+        variantId: 'ex-db-press',
         sets: 3,
         reps: fixed(10),
         load: kg(20, 0, w),
@@ -485,17 +521,47 @@ function buildLog(session: PlannedSession): SessionLog | null {
       };
     }),
   );
+  // Valoración autodeclarada de los ejercicios con objetivo de esfuerzo (RIR real cerca del prescrito).
+  const exerciseFeedback: ExerciseFeedback[] = partial
+    ? []
+    : session.exercises.flatMap((rx, index): ExerciseFeedback[] => {
+        if (rx.effort.kind === 'rir')
+          return [
+            { prescriptionId: rx.id, rir: Math.max(0, rx.effort.rir - ((seed + index) % 2)) },
+          ];
+        if (rx.effort.kind === 'rpe')
+          return [
+            { prescriptionId: rx.id, rpe: Math.min(10, rx.effort.rpe + ((seed + index) % 2)) },
+          ];
+        return [];
+      });
+  const comment = DEMO_COMMENTS[seed % DEMO_COMMENTS.length];
   return {
     id: `l-${session.id}`,
     sessionId: session.id,
     clientId: session.clientId,
     date: session.date,
     ...(partial
-      ? {}
-      : { completedAt: `${session.date}T19:00:00.000Z`, perceivedEffort: 5 + (seed % 4) }),
+      ? { comment: 'Hoy no he podido terminar: me he quedado sin tiempo.' }
+      : {
+          completedAt: `${session.date}T19:00:00.000Z`,
+          perceivedEffort: 5 + (seed % 4),
+          exerciseFeedback,
+          ...(comment ? { comment } : {}),
+        }),
     sets,
   };
 }
+
+/** Observaciones ficticias del cliente (huecos vacíos = sin comentario). */
+const DEMO_COMMENTS: (string | undefined)[] = [
+  'Me he encontrado con mucha energía.',
+  undefined,
+  'La última serie de sentadilla me ha costado más de lo esperado.',
+  undefined,
+  'Molestia leve en la rodilla izquierda al final; ha desaparecido al estirar.',
+  undefined,
+];
 
 function provenance(
   date: IsoDate,
@@ -621,7 +687,7 @@ export function buildDemoDataset(today: IsoDate): DemoDataset {
     .map(buildLog)
     .filter((log): log is SessionLog => log !== null);
 
-  const result = (
+  const single = (
     clientId: string,
     testId: string,
     daysAgo: number,
@@ -639,17 +705,139 @@ export function buildDemoDataset(today: IsoDate): DemoDataset {
     };
   };
 
+  /** Resultado a partir de varios intentos: el valor final es un cálculo (mejor intento). */
+  const bestOf = (
+    clientId: string,
+    testId: string,
+    daysAgo: number,
+    values: number[],
+    unit: AssessmentResult['measurement']['unit'],
+    source: (date: IsoDate) => Provenance,
+  ): AssessmentResult => {
+    const date = addDays(today, -daysAgo);
+    const attemptSource = source(date);
+    const test = findAssessmentTest(testId)!;
+    const value = aggregateAttempts(values, 'best', test.betterWhen);
+    return {
+      id: `a-${clientId.slice(2)}-${testId}-${daysAgo}`,
+      clientId,
+      testId,
+      date,
+      attempts: values.map((v) => ({ value: v, unit, provenance: attemptSource })),
+      aggregation: 'best',
+      measurement: {
+        value,
+        unit,
+        provenance: {
+          origin: 'calculated',
+          method: attemptSource.method,
+          ...(attemptSource.instrument ? { instrument: attemptSource.instrument } : {}),
+          formula: AGGREGATION_FORMULAS.best,
+          measuredAt: attemptSource.measuredAt,
+          recordedAt: attemptSource.recordedAt,
+          recordedBy: 'system',
+        },
+      },
+    };
+  };
+
   const assessments: AssessmentResult[] = [
-    result(DEMO_CLIENT_ID, 'cmj', 49, 24.8, 'cm', jumpApp),
-    result(DEMO_CLIENT_ID, 'cmj', 7, 26.9, 'cm', jumpApp),
-    result(DEMO_CLIENT_ID, 'sprint-20', 49, 3.71, 's', photocells),
-    result(DEMO_CLIENT_ID, 'sprint-20', 7, 3.64, 's', photocells),
-    result('c-nerea', 'cmj', 42, 33.5, 'cm', jumpApp),
-    result('c-nerea', 'cmj', 6, 35.1, 'cm', jumpApp),
-    result('c-nerea', 'cod-505', 42, 2.52, 's', photocells),
-    result('c-nerea', 'cod-505', 6, 2.47, 's', photocells),
-    result('c-carmen', 'chair-stand-30', 60, 12, 'reps', counted),
-    result('c-carmen', 'chair-stand-30', 10, 14, 'reps', counted),
+    bestOf(DEMO_CLIENT_ID, 'cmj', 49, [24.1, 24.8, 23.9], 'cm', jumpApp),
+    bestOf(DEMO_CLIENT_ID, 'cmj', 7, [26.2, 26.9, 26.5], 'cm', jumpApp),
+    bestOf(DEMO_CLIENT_ID, 'sprint-20', 49, [3.74, 3.71], 's', photocells),
+    bestOf(DEMO_CLIENT_ID, 'sprint-20', 7, [3.64, 3.68], 's', photocells),
+    bestOf('c-nerea', 'cmj', 42, [33.0, 33.5, 32.8], 'cm', jumpApp),
+    bestOf('c-nerea', 'cmj', 6, [34.6, 35.1, 34.9], 'cm', jumpApp),
+    bestOf('c-nerea', 'cod-505', 42, [2.55, 2.52], 's', photocells),
+    bestOf('c-nerea', 'cod-505', 6, [2.47, 2.5], 's', photocells),
+    single('c-carmen', 'chair-stand-30', 60, 12, 'reps', counted),
+    single('c-carmen', 'chair-stand-30', 10, 14, 'reps', counted),
+  ];
+
+  const goals: Goal[] = [
+    {
+      id: 'g-marta-10k',
+      clientId: DEMO_CLIENT_ID,
+      title: 'Completar una carrera de 10 km',
+      area: 'performance',
+      status: 'active',
+      startedOn: addDays(today, -120),
+      targetDate: addDays(today, 60),
+      linkedTestIds: [],
+    },
+    {
+      id: 'g-marta-sprint',
+      clientId: DEMO_CLIENT_ID,
+      title: 'Mejorar la aceleración',
+      area: 'performance',
+      status: 'active',
+      startedOn: addDays(today, -60),
+      linkedTestIds: ['sprint-20'],
+    },
+    {
+      id: 'g-marta-jump',
+      clientId: DEMO_CLIENT_ID,
+      title: 'Mejorar el salto vertical',
+      area: 'strength',
+      status: 'active',
+      startedOn: addDays(today, -60),
+      linkedTestIds: ['cmj'],
+    },
+    {
+      id: 'g-diego-team',
+      clientId: 'c-diego',
+      title: 'Volver a entrenar con el equipo',
+      area: 'return_to_sport',
+      status: 'active',
+      startedOn: addDays(today, -30),
+      linkedTestIds: [],
+      notes: 'Coordinado con la fisioterapeuta.',
+    },
+    {
+      id: 'g-carmen-autonomy',
+      clientId: 'c-carmen',
+      title: 'Mantener la autonomía en la vida diaria',
+      area: 'health',
+      status: 'active',
+      startedOn: addDays(today, -200),
+      linkedTestIds: ['chair-stand-30'],
+    },
+    {
+      id: 'g-carmen-balance',
+      clientId: 'c-carmen',
+      title: 'Sentirse más segura al caminar por la calle',
+      area: 'health',
+      status: 'achieved',
+      startedOn: addDays(today, -200),
+      linkedTestIds: [],
+    },
+    {
+      id: 'g-nerea-jump',
+      clientId: 'c-nerea',
+      title: 'Mejorar el salto vertical',
+      area: 'performance',
+      status: 'active',
+      startedOn: addDays(today, -90),
+      linkedTestIds: ['cmj'],
+    },
+    {
+      id: 'g-nerea-cod',
+      clientId: 'c-nerea',
+      title: 'Mejorar los cambios de dirección',
+      area: 'performance',
+      status: 'active',
+      startedOn: addDays(today, -90),
+      linkedTestIds: ['cod-505'],
+    },
+    {
+      id: 'g-javier-habit',
+      clientId: 'c-javier',
+      title: 'Retomar el hábito de entrenar dos días por semana',
+      area: 'habit',
+      status: 'paused',
+      startedOn: addDays(today, -150),
+      linkedTestIds: [],
+    },
   ];
 
   const rehab: RehabCase[] = [
@@ -764,10 +952,20 @@ export function buildDemoDataset(today: IsoDate): DemoDataset {
   return {
     trainers: [{ id: DEMO_TRAINER_ID, displayName: 'Alex Navarro' }],
     clients,
-    exercises: DEMO_EXERCISES,
+    library: {
+      exercises: DEMO_EXERCISES,
+      variants: DEMO_VARIANTS,
+      progressions: DEMO_PROGRESSIONS,
+      tagCategories: DEMO_TRAINER_TAG_CATEGORIES,
+      tags: DEMO_TRAINER_TAGS,
+      personalTagging: DEMO_PERSONAL_TAGGING,
+      notes: DEMO_TRAINER_NOTES,
+      favorites: DEMO_FAVORITES,
+    },
     sessions,
     logs,
     assessments,
+    goals,
     rehab,
     sharing,
   };

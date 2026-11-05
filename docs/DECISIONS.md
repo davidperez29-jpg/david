@@ -61,14 +61,57 @@ Incluye un manifiesto con iconos (también uno adaptable para Android) y un serv
 
 Todas las páginas con datos se renderizan en cada petición. Es coherente con la autenticación futura, que dependerá de la cookie, y evita que «hoy» quede congelado al compilar.
 
+## ADR-12 · Gráficos: componentes propios ahora, librería cuando haga falta · Adoptada (revisable en la Fase 5)
+
+Alternativas evaluadas, todas con licencia abierta y sin coste:
+
+| Opción                         | Licencia   | A favor                                                                                                 | En contra                                                            |
+| ------------------------------ | ---------- | ------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| Componentes propios (HTML/SVG) | —          | Cero dependencias, control total de la accesibilidad (teclado, tabla de datos) y de la identidad visual | Más trabajo para gráficos complejos (líneas con muchas series, zoom) |
+| Recharts                       | MIT        | Muy usada en React, declarativa, SVG                                                                    | Hay que reforzar la accesibilidad; aumenta el tamaño del JavaScript  |
+| visx                           | MIT        | Piezas de bajo nivel muy flexibles                                                                      | Más código propio por gráfico                                        |
+| Chart.js                       | MIT        | Madura, ligera                                                                                          | Dibuja en _canvas_: la accesibilidad depende de alternativas aparte  |
+| Apache ECharts                 | Apache-2.0 | Muy completa                                                                                            | Pesada para lo que necesitamos ahora                                 |
+
+**Decisión:** en la Fase 1 solo hay columnas de volumen semanal, y se hacen con componentes propios accesibles (`src/features/shared/volume.tsx`). Cuando lleguen los gráficos de evolución y comparación (Fases 5 y 9), se propondrá **Recharts** o **visx**, con justificación y prueba de accesibilidad, antes de añadir la dependencia.
+
+## ADR-13 · Validación de datos · Adoptada (Zod propuesto para la Fase 2)
+
+- **Hoy:** la validación de dominio está en funciones puras con tests (`prescriptionIssues`, `measurementIssues`, `provenanceIssues`, `resultIssues`, `libraryIssues`, `taxonomyIssues`), y la del entorno en `src/server/env.ts`. No hay formularios que envíen datos al servidor.
+- **Propuesta:** adoptar **Zod** (MIT) en la Fase 2 para validar las entradas de formularios y _Server Actions_ en el borde del servidor. Los esquemas delegarán en las reglas del dominio para no duplicarlas. Alternativa considerada: Valibot (MIT, más ligera), con menor adopción.
+- Regla: **todo dato que entre al servidor se valida en el servidor**, aunque el formulario también valide en el navegador.
+
+## ADR-14 · Pruebas automatizadas · Adoptada
+
+- **Vitest** (MIT): reglas del dominio y casos de uso con el adaptador demo, incluidos los intentos de acceso no autorizado.
+- **Playwright** (Apache-2.0): pruebas E2E contra la compilación de producción, en escritorio y móvil emulado.
+- **axe-core** (MPL-2.0, solo desarrollo): análisis WCAG 2.1 A/AA en todas las pantallas principales.
+- Pendiente: pruebas de integración con PostgreSQL real (Fase 2/3), pruebas en dispositivos reales y con lectores de pantalla (Fase 10).
+
+## ADR-15 · Biblioteca: ejercicio principal + variantes con clasificación propia · Adoptada
+
+Se eligió separar `exercise` (principal) de `exercise_variant` (prescribible) en lugar de una única tabla con autorreferencia:
+
+- La especificación pide entidades independientes para ejercicios y variantes.
+- Las sesiones siempre prescriben una **variante** concreta. Cada principal tiene una variante de referencia.
+- Las variantes **no heredan** clasificación (etiquetas, patrones, material). Solo, para presentación, las instrucciones de la referencia cuando no tienen las suyas.
+- Patrones, material y región son **árboles ampliables**. Filtrar por un grupo incluye sus subtipos.
+- Las etiquetas personales sobre ejercicios globales se guardan con su autor y solo las ve él.
+
+Detalle completo en `DATA_MODEL.md`.
+
 ## Pendientes de aprobación
 
-| Id   | Decisión                                                                                          | Notas                                                                                                                                                                      |
-| ---- | ------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| P-01 | **Base de datos**: Supabase (PostgreSQL gestionado + Auth + almacenamiento) o PostgreSQL propio   | Ambas compatibles con los puertos actuales. Hay que revisar las condiciones del plan gratuito, la región UE y el contrato de encargo de tratamiento (DPA) antes de elegir. |
-| P-02 | **Autenticación**: proveedor y método (correo + contraseña, enlace mágico, 2FA para entrenadores) | El envío de correos suele requerir un servicio externo.                                                                                                                    |
-| P-03 | **Alojamiento** y región (preferiblemente UE)                                                     | Sin despliegue hasta aprobarlo.                                                                                                                                            |
-| P-04 | **CI en GitHub Actions** (lint, tipos, tests, build y E2E)                                        | Consume minutos de Actions: gratis en repositorios públicos, con un cupo mensual gratuito en los privados.                                                                 |
-| P-05 | **Licencia** del código                                                                           | Ahora `UNLICENSED` (privado).                                                                                                                                              |
-| P-06 | **Repositorio propio** para TrainPro                                                              | Recomendado a medio plazo.                                                                                                                                                 |
-| P-07 | **Modo oscuro**                                                                                   | No incluido: la identidad pedida es clara (amarillo, crema y blanco).                                                                                                      |
+| Id   | Decisión                                                                                                    | Notas                                                                                                                                                                                    |
+| ---- | ----------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| P-01 | **Base de datos**: Supabase (PostgreSQL gestionado + Auth + almacenamiento) o PostgreSQL propio             | Ambas compatibles con los puertos actuales. Hay que revisar las condiciones del plan gratuito, la región UE y el contrato de encargo de tratamiento (DPA) antes de elegir.               |
+| P-02 | **Autenticación**: proveedor y método (correo + contraseña, enlace mágico, 2FA para entrenadores)           | El envío de correos suele requerir un servicio externo.                                                                                                                                  |
+| P-03 | **Alojamiento** y región (preferiblemente UE)                                                               | Sin despliegue hasta aprobarlo.                                                                                                                                                          |
+| P-04 | **CI en GitHub Actions** (lint, tipos, tests, build y E2E)                                                  | Consume minutos de Actions: gratis en repositorios públicos, con un cupo mensual gratuito en los privados.                                                                               |
+| P-05 | **Licencia** del código                                                                                     | Ahora `UNLICENSED` (privado).                                                                                                                                                            |
+| P-06 | **Repositorio propio** para TrainPro                                                                        | Recomendado a medio plazo.                                                                                                                                                               |
+| P-07 | **Modo oscuro**                                                                                             | No incluido: la identidad pedida es clara (amarillo, crema y blanco).                                                                                                                    |
+| P-08 | **Significado de «personalizado» frente a «privado»** en la biblioteca                                      | Interpretación actual: `trainer` = ejercicio propio que se podrá compartir con un equipo; `private` = solo su autor. Confirmar.                                                          |
+| P-09 | **Ampliar el catálogo de patrones** con locomoción (carrera, desplazamientos), salto y transporte de cargas | Algunos ejercicios demo (aceleraciones, paseo del granjero, saltos de tobillo) quedan sin patrón porque no encajan en los cinco grupos iniciales. La estructura ya admite añadir grupos. |
+| P-10 | **Quién mantiene el catálogo global** de ejercicios y sus etiquetas                                         | Propuesta: un rol de administración del catálogo; los entrenadores añaden notas, etiquetas personales y ejercicios propios.                                                              |
+| P-11 | **Zod** para validar entradas (Fase 2) y **librería de gráficos** (Fase 5)                                  | Ver ADR-13 y ADR-12.                                                                                                                                                                     |

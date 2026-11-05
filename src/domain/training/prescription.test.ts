@@ -12,7 +12,7 @@ import {
 
 const valid: ExercisePrescription = {
   id: 'p1',
-  exerciseId: 'e1',
+  variantId: 'e1',
   block: 'A',
   order: 1,
   sets: 4,

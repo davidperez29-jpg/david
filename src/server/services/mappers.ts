@@ -9,12 +9,14 @@ import {
   type SessionPreviewItemVM,
 } from '@/contracts/shared';
 import {
+  AGGREGATION_LABELS,
   compareResults,
   findAssessmentTest,
   groupByTest,
   type AssessmentResult,
 } from '@/domain/assessment';
-import { type Exercise, isSafeExternalUrl } from '@/domain/exercises';
+import { type ExerciseVariant } from '@/domain/library/exercise';
+import { isSafeExternalUrl } from '@/domain/text';
 import { formatSeconds } from '@/domain/format';
 import { type Provenance, UNIT_SYMBOLS } from '@/domain/measurement';
 import { currentPhase, isPhaseComplete, phaseProgress, type RehabCase } from '@/domain/rehab';
@@ -57,11 +59,11 @@ export function toSessionCard(
 
 export function toPreview(
   session: PlannedSession,
-  exercises: ReadonlyMap<string, Exercise>,
+  variants: ReadonlyMap<string, ExerciseVariant>,
 ): SessionPreviewItemVM[] {
   return session.exercises.map((rx) => ({
-    name: exercises.get(rx.exerciseId)?.name ?? 'Ejercicio',
-    pattern: exercises.get(rx.exerciseId)?.pattern ?? 'accessory',
+    name: variants.get(rx.variantId)?.name ?? 'Ejercicio',
+    silhouette: variants.get(rx.variantId)?.silhouette ?? 'squat',
     setsAndReps: formatSetsAndReps(rx.sets, rx.reps),
   }));
 }
@@ -69,12 +71,13 @@ export function toPreview(
 export function toSessionDetail(
   session: PlannedSession,
   log: SessionLog | undefined,
-  exercises: ReadonlyMap<string, Exercise>,
+  variants: ReadonlyMap<string, ExerciseVariant>,
+  stepsOf: (variant: ExerciseVariant) => string[],
   today: IsoDate,
 ): SessionDetailVM {
   const ordered = [...session.exercises].sort((a, b) => a.order - b.order);
   const items: ExerciseInSessionVM[] = ordered.map((rx) => {
-    const exercise = exercises.get(rx.exerciseId);
+    const exercise = variants.get(rx.variantId);
     const positionInBlock = ordered.filter(
       (other) => other.block === rx.block && other.order <= rx.order,
     ).length;
@@ -83,11 +86,11 @@ export function toSessionDetail(
       prescriptionId: rx.id,
       slot: `${rx.block}${positionInBlock}`,
       order: rx.order,
-      exerciseId: rx.exerciseId,
+      variantId: rx.variantId,
       name: exercise?.name ?? 'Ejercicio',
-      pattern: exercise?.pattern ?? 'accessory',
-      summary: exercise?.summary ?? '',
-      steps: exercise?.steps ?? [],
+      silhouette: exercise?.silhouette ?? 'squat',
+      summary: exercise?.description ?? '',
+      steps: exercise ? stepsOf(exercise) : [],
       cues: exercise?.cues ?? [],
       videoUrl: videoUrl && isSafeExternalUrl(videoUrl) ? videoUrl : null,
       sets: rx.sets,
@@ -97,6 +100,7 @@ export function toSessionDetail(
         rx.reps.kind === 'seconds' ? 'seconds' : rx.reps.kind === 'meters' ? 'meters' : 'reps',
       loadLabel: formatLoad(rx.load),
       effortLabel: formatEffort(rx.effort),
+      effortFeedback: rx.effort.kind === 'rpe' ? 'rpe' : rx.effort.kind === 'none' ? null : 'rir',
       restSeconds: rx.restSeconds,
       restLabel: formatSeconds(rx.restSeconds),
       tempo: rx.tempo
@@ -147,6 +151,8 @@ export function toAssessmentSeries(results: readonly AssessmentResult[]): Assess
         date: point.date,
         value: point.measurement.value,
         provenance: toProvenanceVM(point.measurement.provenance),
+        attempts: point.attempts?.map((attempt) => attempt.value) ?? null,
+        aggregationLabel: point.aggregation ? AGGREGATION_LABELS[point.aggregation] : null,
       })),
       comparison: previous && last ? compareResults(previous, last, betterWhen) : null,
     };

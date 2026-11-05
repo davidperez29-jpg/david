@@ -8,6 +8,7 @@ import {
   Plus,
   SkipForward,
   VideoOff,
+  ListChecks,
   ExternalLink,
 } from 'lucide-react';
 import Link from 'next/link';
@@ -15,7 +16,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { type ExerciseInSessionVM, type SessionDetailVM } from '@/contracts/shared';
 import { formatClock, formatNumber } from '@/domain/format';
 import { summarizeVolume, VOLUME_FORMULAS } from '@/domain/training/volume';
-import { PatternPictogram } from '@/features/brand/pictogram';
+import { ExercisePictogram } from '@/features/brand/pictogram';
 import { OriginBadge } from '@/features/shared/provenance';
 import { PrescriptionChips } from '@/features/shared/prescription';
 import { cn } from '@/ui/cn';
@@ -68,6 +69,11 @@ export function SessionPlayer({ session }: { session: SessionDetailVM }) {
   const [now, setNow] = useState(0);
   const [finished, setFinished] = useState(false);
   const [effort, setEffort] = useState<number | null>(null);
+  const [feedback, setFeedback] = useState<Record<string, number | null>>({});
+  const [note, setNote] = useState('');
+  const doneExercises = session.exercises.filter((e) =>
+    records[e.prescriptionId]!.every((set) => set.done),
+  ).length;
 
   const totalSets = session.exercises.reduce((sum, exercise) => sum + exercise.sets, 0);
   const doneSets = Object.values(records)
@@ -96,6 +102,18 @@ export function SessionPlayer({ session }: { session: SessionDetailVM }) {
       [prescriptionId]: current[prescriptionId]!.map((set, i) =>
         i === index ? { ...set, ...patch } : set,
       ),
+    }));
+  }
+
+  /** Un toque: da por hechas todas las series del ejercicio con los valores escritos. */
+  function completeExercise(exercise: ExerciseInSessionVM) {
+    setRecords((current) => ({
+      ...current,
+      [exercise.prescriptionId]: current[exercise.prescriptionId]!.map((set) => {
+        if (set.done) return set;
+        const error = validateSet(exercise, set);
+        return { ...set, done: !error, error };
+      }),
     }));
   }
 
@@ -134,6 +152,10 @@ export function SessionPlayer({ session }: { session: SessionDetailVM }) {
         totalSets={totalSets}
         effort={effort}
         onEffort={setEffort}
+        note={note}
+        onNote={setNote}
+        doneExercises={doneExercises}
+        totalExercises={session.exercises.length}
         onBack={() => setFinished(false)}
       />
     );
@@ -165,6 +187,11 @@ export function SessionPlayer({ session }: { session: SessionDetailVM }) {
               sets={records[exercise.prescriptionId]!}
               onChange={(index, patch) => updateSet(exercise.prescriptionId, index, patch)}
               onToggle={(index, at) => toggleSet(exercise, index, at)}
+              onCompleteAll={() => completeExercise(exercise)}
+              feedback={feedback[exercise.prescriptionId] ?? null}
+              onFeedback={(value) =>
+                setFeedback((current) => ({ ...current, [exercise.prescriptionId]: value }))
+              }
             />
           </li>
         ))}
@@ -228,11 +255,17 @@ function ExerciseCard({
   sets,
   onChange,
   onToggle,
+  onCompleteAll,
+  feedback,
+  onFeedback,
 }: {
   exercise: ExerciseInSessionVM;
   sets: SetState[];
   onChange: (index: number, patch: Partial<SetState>) => void;
   onToggle: (index: number, at: number) => void;
+  onCompleteAll: () => void;
+  feedback: number | null;
+  onFeedback: (value: number | null) => void;
 }) {
   const allDone = sets.every((set) => set.done);
   const headingId = `ejercicio-${exercise.prescriptionId}`;
@@ -246,7 +279,7 @@ function ExerciseCard({
     >
       <div className="flex gap-3">
         <span className="grid size-16 shrink-0 place-items-center rounded-2xl bg-cream-100">
-          <PatternPictogram pattern={exercise.pattern} className="size-12" />
+          <ExercisePictogram silhouette={exercise.silhouette} className="size-12" />
         </span>
         <div className="min-w-0">
           <p className="text-xs font-bold text-sun-700">{exercise.slot}</p>
@@ -375,8 +408,75 @@ function ExerciseCard({
             </li>
           ))}
         </ul>
+        {!allDone ? (
+          <button
+            type="button"
+            onClick={onCompleteAll}
+            className="mt-2 flex h-11 w-full items-center justify-center gap-1.5 rounded-2xl border border-line bg-white text-sm font-semibold text-ink-700 hover:border-ink-300 hover:text-ink-900"
+          >
+            <ListChecks aria-hidden className="size-4" /> Marcar todas como hechas
+          </button>
+        ) : null}
       </div>
+
+      {exercise.effortFeedback ? (
+        <EffortFeedback exercise={exercise} value={feedback} onChange={onFeedback} />
+      ) : null}
     </article>
+  );
+}
+
+/** RIR o RPE real del ejercicio, según lo prescrito. Opcional y autodeclarado. */
+function EffortFeedback({
+  exercise,
+  value,
+  onChange,
+}: {
+  exercise: ExerciseInSessionVM;
+  value: number | null;
+  onChange: (value: number | null) => void;
+}) {
+  const isRir = exercise.effortFeedback === 'rir';
+  const options = isRir ? [0, 1, 2, 3, 4, 5] : [5, 6, 7, 8, 9, 10];
+  return (
+    <fieldset className="mt-3 rounded-2xl bg-cream-50 p-3 ring-1 ring-line">
+      <legend className="sr-only">
+        {isRir ? 'Repeticiones en reserva' : 'Esfuerzo percibido'} de {exercise.name}
+      </legend>
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-sm font-semibold text-ink-900">
+          {isRir ? '¿Cuántas repeticiones te quedaban? (RIR)' : '¿Cómo de duro ha sido? (RPE)'}
+        </p>
+        <OriginBadge origin="self_reported" />
+      </div>
+      <p className="mt-0.5 text-xs text-ink-500">
+        Objetivo: {exercise.effortLabel}. {isRir ? '5 significa «5 o más».' : 'De 1 a 10.'}{' '}
+        Opcional.
+      </p>
+      <div className="mt-2 grid grid-cols-6 gap-1.5">
+        {options.map((option) => (
+          <label
+            key={option}
+            className={cn(
+              'grid h-10 cursor-pointer place-items-center rounded-xl text-sm font-bold ring-1 has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-ink-900',
+              value === option
+                ? 'bg-ink-900 text-cream-50 ring-ink-900'
+                : 'bg-white text-ink-900 ring-line hover:ring-ink-300',
+            )}
+          >
+            <input
+              type="radio"
+              name={`esfuerzo-${exercise.prescriptionId}`}
+              value={option}
+              checked={value === option}
+              onChange={() => onChange(option)}
+              className="sr-only"
+            />
+            {isRir && option === 5 ? '5+' : option}
+          </label>
+        ))}
+      </div>
+    </fieldset>
   );
 }
 
@@ -385,12 +485,20 @@ function SessionSummary({
   totalSets,
   effort,
   onEffort,
+  note,
+  onNote,
+  doneExercises,
+  totalExercises,
   onBack,
 }: {
   summary: ReturnType<typeof summarizeVolume>;
   totalSets: number;
   effort: number | null;
   onEffort: (value: number) => void;
+  note: string;
+  onNote: (value: string) => void;
+  doneExercises: number;
+  totalExercises: number;
   onBack: () => void;
 }) {
   return (
@@ -401,7 +509,8 @@ function SessionSummary({
           ¡Sesión terminada!
         </h2>
         <p className="mt-1 text-ink-700">
-          Has completado {summary.completedSets} de {totalSets} series.
+          Has completado {summary.completedSets} de {totalSets} series y {doneExercises} de{' '}
+          {totalExercises} ejercicios.
         </p>
       </div>
 
@@ -464,8 +573,28 @@ function SessionSummary({
         </div>
       </fieldset>
 
+      <div className="rounded-3xl bg-white p-5 shadow-soft">
+        <label htmlFor="observaciones" className="font-bold text-ink-900">
+          Observaciones para tu entrenador
+        </label>
+        <p className="mt-0.5 text-sm text-ink-500">
+          Molestias, sensaciones, cambios que hayas hecho… (opcional)
+        </p>
+        <textarea
+          id="observaciones"
+          value={note}
+          maxLength={500}
+          rows={3}
+          onChange={(event) => onNote(event.target.value)}
+          className="mt-2 w-full rounded-2xl border border-line bg-cream-50 p-3 text-ink-900 placeholder:text-ink-500 focus:border-ink-300"
+          placeholder="Escribe aquí"
+        />
+        <p className="text-right text-xs text-ink-500">{note.length}/500</p>
+      </div>
+
       <p className="rounded-2xl bg-cream-50 p-3 text-center text-sm text-ink-500 ring-1 ring-line">
-        Demostración: este registro no se guarda. Con la base de datos, llegará a tu entrenador.
+        Demostración: este registro y tus observaciones no se guardan ni se envían. Con la base de
+        datos, llegarán a tu entrenador.
       </p>
       <div className="grid gap-2">
         <Link

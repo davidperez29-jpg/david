@@ -70,6 +70,33 @@ export const FORMULA_REGISTRY: readonly FormulaDefinition[] = [
     ],
     references: [],
   },
+  {
+    id: 'assessment.best-attempt',
+    version: '1.0.0',
+    kind: 'operational_definition',
+    name: 'Mejor intento',
+    expression:
+      'El mejor de los intentos válidos según el sentido de la prueba: el mayor si un valor más alto es mejor, el menor si es más bajo.',
+    output: { name: 'Resultado de la prueba', unit: null },
+    limitations: [
+      'Es sensible a un intento atípico: conviene revisar los intentos individuales.',
+      'Solo es comparable con otros resultados calculados con la misma regla.',
+    ],
+    references: [],
+  },
+  {
+    id: 'assessment.mean-attempts',
+    version: '1.0.0',
+    kind: 'operational_definition',
+    name: 'Promedio de intentos',
+    expression: 'Media aritmética de los intentos válidos.',
+    output: { name: 'Resultado de la prueba', unit: null },
+    limitations: [
+      'Depende del número de intentos: debe mantenerse igual entre evaluaciones.',
+      'Solo es comparable con otros resultados calculados con la misma regla.',
+    ],
+    references: [],
+  },
 ];
 
 export function findFormula(
