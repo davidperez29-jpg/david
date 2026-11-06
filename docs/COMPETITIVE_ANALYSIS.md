@@ -98,6 +98,25 @@
 2. **Matriz por tareas**, cronometrando tareas reales en cada producto: crear un cliente, programar 4 × 6 con RIR por serie, registrar desde el móvil, ver lo prescrito frente a lo ejecutado.
 3. Actualizar precios en las páginas oficiales antes de cualquier decisión comercial.
 
+> **Indicación del responsable (6 de noviembre de 2026):** no se crean cuentas ni se aceptan pruebas comerciales todavía. Este análisis se amplía solo con información pública: documentación y centros de ayuda oficiales, vídeos de demostración de los propios fabricantes, notas de versión y opiniones públicas. Los puntos 1 y 2 quedan aplazados (P-60).
+
+### 4.1 Comparaciones que no se pueden verificar sin probar los productos
+
+| Comparación                                                                  | Por qué no se puede verificar con información pública                        |
+| ---------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| Rapidez real para programar una sesión por serie                             | Exige cronometrar la tarea en cada producto                                  |
+| Si admiten RIR/RPE **por serie**, rangos y escalas distintas                 | La documentación pública no lo detalla en la mayoría                         |
+| Fidelidad del registro: series repetidas, sesiones parciales, versiones      | Comportamiento interno no documentado                                        |
+| Funcionamiento sin conexión y recuperación de datos                          | Solo se comprueba usando la app                                              |
+| Cómo funcionan sus algoritmos de adaptación (Volt, JuggernautAI, RP, Fitbod) | Descripciones del fabricante sin detalle técnico ni validación independiente |
+| Calidad de sus explicaciones                                                 | Requiere ver recomendaciones reales                                          |
+| Profundidad real de las integraciones (VALD, Hawkin, TeamBuildr)             | Documentación de las API no pública o en planes de pago                      |
+| Precisión de los sensores (por ejemplo, «hasta el 99 %» de Output)           | Requiere estudios independientes; no se han encontrado                       |
+| Experiencia del cliente en el móvil                                          | Exige usar la app del deportista                                             |
+| Accesibilidad (WCAG)                                                         | Exige auditar la interfaz                                                    |
+
+Mientras no se prueben, estas comparaciones figuran como **«no verificadas»** y no se usan para afirmar ventajas.
+
 ## Fuentes
 
 - **Trainerize:** [Costbench](https://costbench.com/software/gym-management/trainerize/), [cambio de precio de mayo de 2026](https://costbench.com/changelog/trainerize-price-decrease-2026-05/), [Capterra](https://www.capterra.com/p/140262/Trainerize/pricing/), [FitBudd [C]](https://www.fitbudd.com/insights/trainerize-pricing-explained-what-it-actually-costs-trainers-in-2026-vs-better-alternatives), [comparativa de Capterra](https://www.capterra.com/compare/140262-155784/Trainerize-vs-truecoach).

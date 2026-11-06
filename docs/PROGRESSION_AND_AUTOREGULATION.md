@@ -81,6 +81,20 @@ Además, con 1 repetición algunas no devuelven la carga levantada (Epley da 82,
 
 Repeticiones hasta el fallo estimadas = repeticiones + RIR declarado. **No se ha encontrado validación publicada de esta combinación** (`EFFORT_AND_LOAD.md` §8.2). La subestimación media del RIR, de 0,95 repeticiones con mucha heterogeneidad (Halperin et al., 2022), se traslada al resultado. Se ofrece solo si el entrenador lo activa (P-24), con RIR de 3 o menos.
 
+### 3.6 Verificación de las fuentes (revisión del 6 de noviembre de 2026, P-50)
+
+Se refuerza la regla: **no se implementa ninguna ecuación sin leer su fuente original** (fórmula, población y condiciones). La vía alternativa de cotejar la expresión en estudios de validación queda descartada como regla general.
+
+| Ecuación                                               | Fuente original                     | Cómo obtenerla sin coste                                                                                    | Estado                                                                                                                                                                                       |
+| ------------------------------------------------------ | ----------------------------------- | ----------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Brzycki (1993)                                         | Artículo en _JOPERD_ (DOI conocido) | Biblioteca universitaria; hay una copia en línea, pero ese dominio está bloqueado por la red de esta sesión | **No leída.** Según fuentes secundarias, el artículo no describe los datos de los que sale la ecuación, así que su validez depende de los estudios posteriores (p. ej., Mayhew et al., 1995) |
+| Reynolds et al. (2006)                                 | Artículo indexado                   | Biblioteca universitaria                                                                                    | Resumen verificado; falta el texto completo (población y procedimiento)                                                                                                                      |
+| Epley (1985)                                           | Tabla comercial                     | Difícil de localizar                                                                                        | No localizada                                                                                                                                                                                |
+| O'Connor et al. (1989), Lombardi (1989), Wathan (1994) | Libros                              | Préstamo de biblioteca                                                                                      | No consultadas                                                                                                                                                                               |
+| Lander (1985), Mayhew et al. (1992)                    | Revistas profesionales no indexadas | Biblioteca o hemeroteca                                                                                     | No consultadas                                                                                                                                                                               |
+
+**Consecuencia para la 1C:** el 1RM estimado por ecuación solo entra si antes de empezar se han leído las fuentes. Si no, esa función queda como `PendingFeature` y se mantiene el 1RM estimado introducido a mano.
+
 ## 4. Valoración previa a la sesión
 
 ### 4.1 Qué se pregunta
@@ -113,6 +127,39 @@ Se responde en menos de 10 segundos, con dos deslizadores y un toque. Si se salt
 ### 4.4 Valoración posterior
 
 RPE de la sesión (§6) y un comentario opcional.
+
+### 4.5 Justificación ampliada de las dos preguntas (P-47)
+
+- **Por qué energía y recuperación.** Cubren dos ideas distintas: cómo se siente la persona para rendir hoy y cuánto se ha recuperado de lo anterior. Un instrumento validado de 8 ítems, la Short Recovery and Stress Scale (SRSS), mantiene escalas separadas que se parecen a estas dos, y se validó en 996 deportistas de tres regiones de habla inglesa (Kölling et al., 2019). En niños y adolescentes, la aplicabilidad de estos cuestionarios fue más limitada (Kölling et al., 2019b). La correspondencia entre nuestras preguntas y las de la SRSS es **conceptual**, no una validación de nuestras preguntas.
+- **Escala 1 a 10.** La pediste así y es fácil de entender en el móvil. No equivale a la escala de la SRSS ni se convierte a ella. Los extremos se rotulan con palabras propias («1: muy poca energía», «10: mucha energía»), sin pretender que sean anclas validadas.
+- **Interpretación.** Solo **respecto a la línea base de cada persona**: la mediana y el rango de sus últimas _K_ respuestas, con _K_ elegido por el entrenador. Si hay menos de _K_ respuestas, la señal es «insuficiente» y ninguna regla la usa. No hay umbrales universales.
+- **Limitaciones.** Son ítems propios no validados (Jeffries et al., 2020); dependen del estado de ánimo, de la sinceridad y de la costumbre de responder; no son mediciones fisiológicas; pueden estar muy correlacionados entre sí.
+- **Plan de revisión.** Con datos reales (E1) se calculará la correlación entre las dos preguntas y su relación con lo realizado (RIR real, cumplimiento). Si no aportan información distinta, se fusionarán en una sola.
+
+### 4.6 ¿Merece la pena preguntar más?
+
+| Variable posible                              | Valor                                                                 | Coste para el cliente      | Propuesta                                                                           |
+| --------------------------------------------- | --------------------------------------------------------------------- | -------------------------- | ----------------------------------------------------------------------------------- |
+| Dolor o molestias                             | Alto: es accionable (seguridad, restricciones, readaptación)          | Bajo (un «No» en un toque) | **Sí**, si se aprueba su protección (§4.7, P-58)                                    |
+| Sueño                                         | Medio; se solapa con la recuperación                                  | Bajo                       | No por defecto; el entrenador puede activarlo para un cliente                       |
+| Estrés                                        | Medio; útil en algunos contextos (competición, estudios)              | Bajo                       | No por defecto; activable                                                           |
+| Dolor muscular de aparición tardía            | Medio en fuerza e hipertrofia; se puede confundir con el dolor (§4.7) | Bajo                       | No por defecto; activable, con texto que lo distinga del dolor                      |
+| Ánimo o motivación                            | Bajo para decidir la carga                                            | Bajo                       | No                                                                                  |
+| Cuestionario validado completo (p. ej., SRSS) | Alto en rendimiento                                                   | Medio (8 ítems)            | **E3**, tras comprobar que existe versión validada en español y los derechos de uso |
+
+Cada pregunta añadida reduce la tasa de respuesta, así que la regla es: **dos preguntas fijas y las demás solo si el entrenador va a usarlas**.
+
+### 4.7 Dolor e incidencias (P-58)
+
+- **Finalidad:** avisar al profesional para que **él** decida. No es una valoración clínica, no genera diagnósticos y **no dispara ninguna regla automática**, ni siquiera preautorizada.
+- **Cómo se pregunta:**
+  - en la valoración previa: «¿Tienes alguna molestia o dolor hoy?» → No / Sí;
+  - si responde «Sí»: zona (de la taxonomía de regiones corporales), lado, intensidad de 0 a 10 y una nota opcional;
+  - también durante la sesión, en el ejercicio en el que aparece.
+- **Escala:** numérica de 0 a 10 (0 = sin dolor, 10 = el peor dolor posible). Las escalas numéricas tienen mejor cumplimentación que otras y son aplicables en la mayoría de contextos, aunque las anclas varían entre estudios (Hjermstad et al., 2011). Los cambios clínicamente importantes se han estudiado en dolor crónico, en torno a 2 puntos o un 30 % (Farrar et al., 2001). **TrainPro no usa esos valores como umbrales**: solo explican que un cambio de 1 punto no tiene por qué ser relevante.
+- **Mensaje fijo al cliente:** «Hemos avisado a tu entrenador. Si el dolor es intenso o va a más, detén el ejercicio y consulta con un profesional sanitario.»
+- **Quién lo ve:** el propio cliente y los profesionales de su equipo asistencial con **alcance de salud** (en la 1B, el entrenador responsable). Nadie más; los accesos quedan registrados.
+- **Protección:** dato de salud (categoría especial); minimización (sin diagnóstico ni texto libre obligatorio); no se exporta fuera de la ficha; borrado según la política de conservación de salud (`DATA_RIGHTS.md`).
 
 ## 5. Motor de adaptación
 
@@ -172,6 +219,111 @@ Cada recomendación guarda:
 
 Así se puede auditar y, más adelante, estudiar si las reglas funcionan.
 
+### 5.6 Cuatro orígenes de un cambio (P-45, desarrollo)
+
+| Origen                                          | Quién lo inicia                                        | Cuándo se aplica                                        | Aprobación                                                      | Registro (`prescription_change`)                                                      |
+| ----------------------------------------------- | ------------------------------------------------------ | ------------------------------------------------------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| **Decisión del cliente dentro de lo prescrito** | El cliente                                             | Al ejecutar (carga autoseleccionada, punto de un rango) | No es una adaptación: es ejecución                              | No es un cambio de la prescripción: se guarda en el registro de la ejecución          |
+| **Modificación manual del entrenador**          | El entrenador                                          | Al publicar una versión nueva                           | Es la decisión del profesional                                  | Versión nueva, con autor, fecha, motivo opcional y diferencias (**1B**)               |
+| **Recomendación supervisada**                   | El motor                                               | Cuando el entrenador la acepta o la modifica            | Obligatoria                                                     | Recomendación, explicación y decisión (**1C**)                                        |
+| **Adaptación preautorizada**                    | El motor, con una regla que el entrenador aprobó antes | Al momento, por ejemplo tras la valoración previa       | La dio el entrenador al activar la regla, dentro de sus límites | Igual que la supervisada, con decisión «preautorizada» y aviso al entrenador (**1C**) |
+
+Los cuatro orígenes comparten **un único modelo de cambio de prescripción**. En la 1B se registran los cambios manuales; en la 1C se añaden los dos del motor sin cambiar el modelo (P-63).
+
+### 5.7 Qué puede hacer cada modo
+
+✓ = permitido · ◐ = permitido con el límite que fija el entrenador · ✗ = prohibido
+
+| Acción                                                            | Manual                      | Supervisada                                   | Preautorizada                                                                                      |
+| ----------------------------------------------------------------- | --------------------------- | --------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| Aumentar la carga                                                 | ✓                           | ✓ (según el esquema)                          | ✗                                                                                                  |
+| No aplicar el incremento previsto                                 | ✓                           | ✓                                             | ✓                                                                                                  |
+| Mantener la carga                                                 | ✓                           | ✓                                             | ✓                                                                                                  |
+| Reducir la carga                                                  | ✓                           | ✓                                             | ◐                                                                                                  |
+| Elegir repeticiones dentro del rango prescrito                    | ✓                           | ✓                                             | ◐ solo hacia el extremo inferior                                                                   |
+| Prescribir repeticiones fuera del rango                           | ✓                           | ✓                                             | ✗                                                                                                  |
+| Quitar series                                                     | ✓                           | ✓                                             | ◐                                                                                                  |
+| Añadir series                                                     | ✓                           | ✓                                             | ✗                                                                                                  |
+| Cambiar el objetivo de RIR o RPE                                  | ✓                           | ✓                                             | ◐ solo hacia más reserva (RIR más alto, RPE más bajo)                                              |
+| Alargar el descanso                                               | ✓                           | ✓                                             | ✓                                                                                                  |
+| Acortar el descanso                                               | ✓                           | ✓                                             | ✗                                                                                                  |
+| Sustituir el ejercicio                                            | ✓                           | ✓ solo por una alternativa autorizada         | ◐ solo por una alternativa autorizada; en potencia y pliometría, solo por una regresión autorizada |
+| Quitar un ejercicio entero                                        | ✓                           | ✓                                             | ✗                                                                                                  |
+| Cambiar la intención o el criterio de calidad                     | ✓                           | ✓                                             | ✗                                                                                                  |
+| Mover la sesión de fecha                                          | ✓                           | ✗ (fuera de la 1C)                            | ✗                                                                                                  |
+| Cualquier cambio en un cliente con un caso de readaptación activo | ✓ (profesional responsable) | Solo resumen informativo, sin proponer cargas | ✗                                                                                                  |
+| Cualquier cambio motivado por un dolor registrado                 | ✓                           | ✗ (solo alerta)                               | ✗                                                                                                  |
+
+### 5.8 Perfiles de autorregulación por contexto
+
+Cada ejercicio prescrito se asocia a un **perfil**. El perfil fija qué señales se pueden usar y qué acciones se pueden preautorizar. **El entrenador no puede desbloquear lo que el perfil prohíbe.** TrainPro puede sugerir el perfil por las etiquetas del ejercicio (por ejemplo, «Pliometría»), pero el entrenador lo confirma, y sin perfil confirmado no se activan reglas preautorizadas.
+
+| Perfil                                                     | Señales admitidas                                                                     | Preautorizable                                                                                      | Prohibido siempre                                                                      | Fundamento                                                                                                                                                  |
+| ---------------------------------------------------------- | ------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Fuerza máxima**                                          | RIR/RPE real, repeticiones logradas, 1RM estimado (si es válido), valoración previa   | No aplicar el incremento, reducir la carga ◐, quitar series ◐, RIR más alto ◐                       | Subir la carga automáticamente; llevar series al fallo como respuesta                  | RIR más preciso cerca del fallo y con pocas repeticiones (`EFFORT_AND_LOAD.md` §4.2); carga autorregulada equivalente a porcentajes (Hickmott et al., 2022) |
+| **Fuerza general e hipertrofia**                           | Repeticiones frente al rango, RIR real, valoración previa                             | No aplicar el incremento, quitar series ◐, RIR más alto ◐, repeticiones hacia el mínimo del rango ◐ | Añadir series automáticamente                                                          | Progresar repeticiones o carga da resultados similares (Plotkin et al., 2022)                                                                               |
+| **Potencia y velocidad**                                   | Valoración de calidad (P-37), velocidad medida si hay instrumento, valoración previa  | Quitar series o repeticiones ◐, alargar el descanso, no aplicar el incremento                       | Usar el RIR como señal principal; compensar con más repeticiones; rebajar la intención | El RIR no es fiable lejos del fallo (Helms et al., 2016); la calidad es el objetivo                                                                         |
+| **Pliometría y aterrizajes**                               | Contactos, calidad del aterrizaje, valoración previa                                  | Quitar contactos ◐, sustituir por una regresión autorizada, alargar el descanso                     | Aumentar contactos, altura o intensidad automáticamente                                | Decisión de diseño conservadora: la carga de impacto la decide el profesional                                                                               |
+| **Salud y población general** (incluidas personas mayores) | Valoración previa, RPE de la sesión, adherencia, RIR si la persona está familiarizada | No aplicar el incremento, quitar series ◐, RIR más alto ◐                                           | Aumentos automáticos                                                                   | Prioridad en la adherencia y la seguridad; decisión de diseño                                                                                               |
+| **Readaptación**                                           | Solo informativo                                                                      | Nada                                                                                                | Cualquier adaptación del motor                                                         | Criterios definidos por el profesional (Ardern et al., 2016); riesgo regulatorio (`PRODUCT_STRATEGY.md` §6)                                                 |
+
+### 5.9 Señales, calidad y línea base
+
+Las reglas no leen datos sueltos, sino **señales** tipadas y con su calidad. Cada señal declara:
+
+- de dónde sale y con qué procedencia;
+- si tiene datos suficientes;
+- su tipo («autodeclarada», «calculada», «estimada con margen»).
+
+| Señal                                         | Definición                                              | Calidad mínima para usarla                             |
+| --------------------------------------------- | ------------------------------------------------------- | ------------------------------------------------------ |
+| Energía y recuperación frente a la línea base | Diferencia con la mediana de las últimas _K_ respuestas | _K_ respuestas previas (_K_ lo elige el entrenador)    |
+| Cumplimiento de repeticiones                  | Repeticiones logradas ÷ objetivo, por serie             | Series registradas                                     |
+| Diferencia de RIR                             | RIR real − RIR objetivo, por serie                      | RIR registrado y persona marcada como familiarizada    |
+| Tendencia del 1RM estimado                    | Pendiente en las últimas _N_ exposiciones               | Ecuación verificada y _N_ exposiciones válidas         |
+| Calidad en potencia                           | Valoraciones de calidad de la sesión                    | Valoración registrada                                  |
+| Dolor registrado                              | Sí o no, con zona e intensidad                          | **Solo genera alertas; nunca es entrada de una regla** |
+
+Si la calidad no se alcanza, la regla **no se dispara** y la explicación dice por qué («Faltan 3 valoraciones para tener línea base»).
+
+### 5.10 Ámbitos de las reglas y precedencia
+
+Una regla se puede definir para un **ejercicio** (o su rastro de progresión, P-62), un **bloque** de la sesión, un **objetivo** (las etiquetas de cualidades de la biblioteca), una **población** (el campo de población del cliente) o un **cliente**.
+
+Si varias se aplican a la vez:
+
+1. se aplican todas las que afectan a campos distintos;
+2. si cambian el mismo campo, gana el valor de menor exigencia (§5.2);
+3. las prohibiciones del perfil prevalecen siempre.
+
+### 5.11 Simulación retrospectiva
+
+Antes de activar una regla, el entrenador puede **simularla sobre el historial del cliente**: cuántas veces se habría activado y qué habría cambiado. Es descriptivo y no promete resultados. Sirve para elegir los valores con datos de esa persona, en lugar de con números arbitrarios.
+
+### 5.12 Progresión prevista frente a real
+
+- **Prevista:** las cargas y repeticiones publicadas en cada sesión del rastro de progresión, más las que el esquema proyecta si se cumple el criterio.
+- **Real:** lo ejecutado en cada exposición (series de trabajo efectivas).
+- **Métricas:**
+  - diferencia por exposición (kg y repeticiones);
+  - exposiciones en que se alcanzó lo previsto;
+  - retraso de la progresión (exposiciones de diferencia);
+  - recomendaciones aceptadas, modificadas y rechazadas;
+  - tendencia del 1RM estimado, si existe.
+- **Panel de evolución:** un gráfico por rastro de progresión, con la línea prevista y la real, las decisiones marcadas en la línea temporal y la etiqueta de procedencia. No se muestran correlaciones como si fueran causas.
+
+### 5.13 Por qué no es un conjunto de condiciones arbitrarias
+
+El riesgo de reglas como «puntuación baja → reducir un porcentaje fijo» se evita así:
+
+1. **Sin valores por defecto.** Todo umbral lo escribe el entrenador.
+2. **Señales relativas a la persona y con calidad mínima**, no números absolutos.
+3. **Perfiles con prohibiciones** según el contexto.
+4. **Simulación retrospectiva** antes de activar una regla.
+5. **Explicación y etiqueta de evidencia** en cada recomendación.
+6. **Registro de decisiones** y comparación entre lo previsto y lo real, para revisar si las reglas sirven.
+7. **Reglas versionadas.** Cambiar una regla no reescribe el pasado.
+
 ## 6. RPE de la sesión y carga interna
 
 ### 6.1 Magnitudes distintas
@@ -200,6 +352,20 @@ Según Impellizzeri et al. (2019), carga externa e interna son constructos disti
 - **Duración:** de «Empezar» a «Terminar», **sin las pausas** registradas.
 - **Se muestran** tendencias individuales (sesión y semana) con su fórmula y versión, **sin inferir causalidad**.
 - **No se calcula** el cociente de carga aguda:crónica ni ningún «riesgo de lesión». Se ha documentado que no hay evidencia para usarlo con ese fin, que es una métrica imprecisa (Impellizzeri et al., 2020) y que su cálculo convencional produce correlaciones espurias por acoplamiento matemático (Lolli et al., 2019, según su título).
+
+### 6.4 Resumen operativo (P-48 y P-49)
+
+| Aspecto          | RPE de la sesión                                                                                                              | Carga interna                                                                                              |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| Qué es           | Esfuerzo global percibido de la sesión completa                                                                               | RPE de la sesión × duración                                                                                |
+| Escala o fórmula | CR-10 modificada (Foster et al., 2001): enteros de 0 a 10                                                                     | `training.session-internal-load` 1.0.0, pendiente de verificar en el original                              |
+| Anclas           | Solo las verificadas en el original. Mientras tanto, versión provisional con los extremos rotulados y marcada como tal (P-64) | —                                                                                                          |
+| Momento          | Al terminar; «Responder más tarde» durante 24 h; se guardan los minutos transcurridos                                         | Se calcula cuando existen el RPE y la duración                                                             |
+| Duración         | —                                                                                                                             | De «Empezar» a «Terminar», menos las pausas registradas, en minutos enteros                                |
+| Unidad           | Puntos (0–10)                                                                                                                 | Unidades arbitrarias (UA = puntos × min)                                                                   |
+| Procedencia      | `self_reported`                                                                                                               | `calculated`                                                                                               |
+| Qué no se hace   | Convertirlo a RIR ni promediarlo con los RPE de las series                                                                    | Sumarla al tonelaje u otro volumen externo; calcular el cociente agudo:crónico; hablar de riesgo de lesión |
+| Ejemplo          | RPE 7, recogido 30 min después                                                                                                | 52 min − 7 min de pausa = 45 min → 7 × 45 = **315 UA**                                                     |
 
 ## 7. Volumen: ampliaciones
 
@@ -257,6 +423,10 @@ Complementa `EFFORT_AND_LOAD.md` §10 y P-36:
 - Impellizzeri FM, Marcora SM, Coutts AJ. Internal and external training load: 15 years on. _Int J Sports Physiol Perform_. 2019;14(2):270-273. doi:10.1123/ijspp.2018-0935. PMID 30614348.
 - Impellizzeri FM, et al. Acute:chronic workload ratio: conceptual issues and fundamental pitfalls. _Int J Sports Physiol Perform_. 2020;15(6):907-913. doi:10.1123/ijspp.2019-0864. PMID 32502973.
 - Jeffries AC, et al. Athlete-reported outcome measures for monitoring training responses: a systematic review of risk of bias and measurement property quality according to the COSMIN guidelines. _Int J Sports Physiol Perform_. 2020;15(9):1203-1215. doi:10.1123/ijspp.2020-0386. PMID 32957081.
+- Farrar JT, et al. Clinical importance of changes in chronic pain intensity measured on an 11-point numerical pain rating scale. _Pain_. 2001;94(2):149-158. doi:10.1016/S0304-3959(01)00349-9. PMID 11690728.
+- Hjermstad MJ, et al. Studies comparing Numerical Rating Scales, Verbal Rating Scales, and Visual Analogue Scales for assessment of pain intensity in adults: a systematic literature review. _J Pain Symptom Manage_. 2011;41(6):1073-93. doi:10.1016/j.jpainsymman.2010.08.016. PMID 21621130.
+- Kölling S, et al. Validation of the Acute Recovery and Stress Scale (ARSS) and the Short Recovery and Stress Scale (SRSS) in three English-speaking regions. _J Sports Sci_. 2020;38(2):130-139 (en línea en 2019). doi:10.1080/02640414.2019.1684790. PMID 31696778. (Kölling et al., 2019)
+- Kölling S, et al. Modification and applicability of questionnaires to assess the recovery-stress state among adolescent and child athletes. _Front Physiol_. 2019;10:1414. doi:10.3389/fphys.2019.01414. PMID 31824332. (Kölling et al., 2019b)
 - Laurent CM, et al. A practical approach to monitoring recovery: development of a perceived recovery status scale. _J Strength Cond Res_. 2011;25(3):620-8. doi:10.1519/JSC.0b013e3181c69ec6. PMID 20581704.
 - Lolli L, et al. Mathematical coupling causes spurious correlation within the conventional acute-to-chronic workload ratio calculations. _Br J Sports Med_. 2019;53(15):921-922. doi:10.1136/bjsports-2017-098110. PMID 29101104. **Editorial sin resumen: se cita el título.**
 - Mann JB, et al. The effect of autoregulatory progressive resistance exercise vs. linear periodization on strength improvement in college athletes. _J Strength Cond Res_. 2010;24(7):1718-23. doi:10.1519/JSC.0b013e3181def4a6. PMID 20543732.

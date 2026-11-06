@@ -139,6 +139,45 @@ Lo que **no** hará:
 - **Propuesta:** TrainPro se define como herramienta para profesionales del ejercicio que **registra y organiza** lo que ellos deciden. No diagnostica ni trata. La readaptación y la IA se revisarán con asesoría regulatoria antes de E4 y E6 (P-54).
 - **IA (Reglamento (UE) 2024/1689):** los sistemas de IA que son, o forman parte de, un producto sanitario sujeto a evaluación de terceros pueden ser de alto riesgo. Según fuentes secundarias, las fechas de aplicación de esas obligaciones se han revisado (2027–2028). Se verificará en el Diario Oficial antes de E6.
 
+### 6.1 Revisión con fuentes oficiales (6 de noviembre de 2026)
+
+> **Limitación:** EUR-Lex no es accesible desde la red de esta sesión. Los textos se han consultado mediante búsquedas que devuelven extractos de páginas oficiales (EUR-Lex, Comisión Europea y la mesa de servicio del Reglamento de IA). **Falta la lectura literal completa**: se puede hacer permitiendo `eur-lex.europa.eu` en la configuración de red (P-74) o con los textos que aportes. **Nada de esto es asesoramiento jurídico, ni permite afirmar que TrainPro cumple ninguna norma.**
+
+| Norma                                        | Qué dice (según fuentes oficiales consultadas)                                                                                                                                                                                                                                                                                                                                | Implicación para TrainPro                                                                                                                                                              |
+| -------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **MDR, considerando 19**                     | El software para fines generales, aunque se use en un entorno sanitario, y el software destinado a fines de **estilo de vida y bienestar** no es un producto sanitario. Lo es el software que el fabricante destina específicamente a algún fin médico de la definición                                                                                                       | El entrenamiento, el rendimiento y el bienestar pueden quedar fuera, **si la finalidad declarada lo es**                                                                               |
+| **MDR, artículo 2.1** (definición)           | Entre los fines médicos figuran, entre otros, el diagnóstico, la prevención, el seguimiento, el tratamiento o el alivio de una enfermedad, y el diagnóstico, el seguimiento, el tratamiento, el alivio o la compensación de **una lesión o una discapacidad** (texto literal pendiente de cotejar en EUR-Lex)                                                                 | Un módulo cuya finalidad declarada sea **tratar o aliviar lesiones** puede entrar en la definición. Es el principal riesgo de la readaptación (E4)                                     |
+| **MDCG 2019-11 rev. 1** (junio de 2025)      | Guía de la Comisión para calificar y clasificar el software (incluido el que usa IA). El software debe tener por sí mismo una finalidad médica para ser producto sanitario. Ya no se usa el término «software independiente»                                                                                                                                                  | La calificación se decide por la finalidad prevista de **cada módulo** (software modular)                                                                                              |
+| **MDCG 2025-6 / AIB 2025-1** (junio de 2025) | Guía conjunta sobre la interacción entre el MDR/IVDR y el Reglamento de IA                                                                                                                                                                                                                                                                                                    | Hay que leerla antes de E6 si alguna función de IA tuviera finalidad médica                                                                                                            |
+| **Reglamento de IA, artículo 6**             | Alto riesgo: (1) componente de seguridad de un producto del anexo I, o producto en sí, que requiera evaluación de terceros, o (2) casos del anexo III. Según la versión modificada consultada, no se consideran componentes de seguridad los sistemas usados solo para asistencia al usuario, optimización del rendimiento, eficiencia, automatización o comodidad            | Los usos previstos (recomendaciones de entrenamiento supervisadas, borradores de informes) no aparecen en el anexo III. Riesgo si alguna función se integrase en un producto sanitario |
+| **Reglamento de IA, artículos 50 y 113**     | La transparencia (avisar cuando se interactúa con una IA o se genera contenido sintético) se aplica desde el **2 de agosto de 2026**. Según la mesa de servicio de la Comisión y otras fuentes, las obligaciones de alto riesgo se aplazaron (2 de diciembre de 2027 para el anexo III, 2 de agosto de 2028 para el anexo I), **pendiente de confirmar en el Diario Oficial** | Toda salida de IA se etiquetará como generada desde el primer día (P-55)                                                                                                               |
+| **RGPD, artículo 4.15 y considerando 35**    | Datos relativos a la salud: los que revelan el estado de salud física o mental. El considerando incluye cualquier información sobre, por ejemplo, una enfermedad, una discapacidad o el **estado fisiológico** de la persona, sea cual sea su fuente. El Tribunal de Justicia aplica el criterio de si se pueden **inferir** conclusiones sobre la salud (asunto C-21/23)     | El dolor es dato de salud. La energía y la recuperación probablemente también, por inferencia: se protegen igual (P-58)                                                                |
+| **RGPD, artículo 35 y considerando 91**      | Evaluación de impacto cuando se tratan datos de salud a gran escala. El considerando 91 excluye el tratamiento de los pacientes o clientes de un profesional sanitario individual                                                                                                                                                                                             | Para TrainPro como plataforma con muchos profesionales, la evaluación de impacto será probablemente obligatoria antes de E1 (a confirmar)                                              |
+| **RGPD, artículo 22**                        | Decisiones basadas únicamente en el tratamiento automatizado con efectos jurídicos o significativos (texto no verificado en esta sesión)                                                                                                                                                                                                                                      | Las adaptaciones preautorizadas son automáticas: hay que valorar si «significativo» aplica. Mitigación: límites, explicación, notificación y revisión humana (P-45)                    |
+
+### 6.2 Clasificación de las funciones según su riesgo regulatorio
+
+| Funciones                                                                               | Encaje probable (a confirmar con asesoría)                        | Medidas                                                                                                        |
+| --------------------------------------------------------------------------------------- | ----------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| Planificación, prescripción, ejecución, volumen, evaluaciones de rendimiento            | Entrenamiento y rendimiento; fuera del MDR si la finalidad es esa | Finalidad documentada; ningún texto de marketing que hable de tratar lesiones                                  |
+| Valoración previa, RPE de la sesión, carga interna                                      | Bienestar; **datos de salud** según el RGPD                       | Protección de categoría especial; sin interpretaciones clínicas                                                |
+| Registro de dolor                                                                       | Dato de salud; sin finalidad diagnóstica                          | Solo informa al profesional; sin reglas (P-58)                                                                 |
+| Motor de progresión y autorregulación                                                   | Entrenamiento, siempre que no tenga finalidad médica              | Prohibido en readaptación (P-45); supervisión y explicación; posible análisis del artículo 22 del RGPD         |
+| **Readaptación de lesiones** (E4)                                                       | **Zona de riesgo de producto sanitario** (artículo 2.1)           | Asesoría regulatoria **antes** de diseñarla; posible limitación a herramienta de documentación del profesional |
+| IA de bajo riesgo: asistencia documental sin datos de clientes, borradores supervisados | Obligaciones generales del Reglamento de IA (transparencia)       | Etiquetado, revisión humana, contrato de tratamiento si hay datos personales (P-55, P-56)                      |
+| IA que influya en decisiones clínicas                                                   | Posible alto riesgo (anexo I, vía MDR)                            | **No se plantea** sin un análisis regulatorio completo                                                         |
+
+### 6.3 Preguntas para la asesoría especializada
+
+1. ¿Qué redacción de la finalidad prevista mantiene a TrainPro fuera del MDR, módulo a módulo, y qué afirmaciones comerciales hay que evitar?
+2. ¿Puede un módulo de readaptación que solo registra fases y criterios definidos por el profesional quedar fuera del MDR? ¿Y si sugiere progresiones?
+3. ¿Son la energía y la recuperación autodeclaradas datos de salud? ¿Qué base jurídica corresponde (consentimiento explícito u otra)?
+4. ¿Se aplica el artículo 22 del RGPD a las adaptaciones preautorizadas?
+5. Reparto de responsabilidades: ¿el entrenador como responsable y TrainPro como encargado? (P-14)
+6. ¿Es obligatoria la evaluación de impacto antes de la beta (E1)?
+7. Obligaciones del Reglamento de IA para la asistencia documental y los borradores supervisados.
+8. Normativa española aplicable (LOPDGDD) y profesiones reguladas del ejercicio y la fisioterapia.
+
 ## 7. Lo que no se construirá todavía
 
 Decidido con el criterio de las ocho preguntas y con el análisis competitivo:
@@ -154,6 +193,72 @@ Decidido con el criterio de las ocho preguntas y con el análisis competitivo:
 
 Cada una puede reevaluarse con datos.
 
+## 8. Producto y competitividad: respuestas
+
+Nada de lo siguiente afirma superioridad: son hipótesis que habrá que comprobar con usuarios y comparaciones verificables (`COMPETITIVE_ANALYSIS.md`).
+
+1. **¿Qué puede ser una ventaja competitiva real?**
+   - La autorregulación **supervisada** para entrenadores, con perfiles por contexto, simulación previa y registro de decisiones.
+   - La **fidelidad del registro**: estados deducidos, versiones, series sin duplicados, prescrito frente a real.
+   - El **rigor visible**: procedencia, fórmulas versionadas y etiquetas de evidencia.
+   - Un único ciclo que va de la salud al rendimiento.
+2. **¿Qué construir extraordinariamente bien desde el principio?**
+   - La ejecución móvil guiada y sin conexión.
+   - La prescripción por serie con todas las modalidades de carga.
+   - El historial y la trazabilidad.
+   - El cálculo de volumen sin mezclar magnitudes.
+   - La explicación de cada recomendación.
+
+   Son la base de todo lo demás, y fallos en ellos destruyen la confianza.
+
+3. **¿Qué no merece la pena copiar?**
+   - Puntuaciones compuestas de disposición y semáforos sin línea base.
+   - Generación de programas «por texto».
+   - Predicción de lesiones.
+   - Bibliotecas enormes sin clasificación.
+   - Nutrición, pagos, apps con marca propia y gestión de clases en esta etapa.
+   - IA presentada como «inteligente» sin explicación.
+4. **¿Qué carencias del mercado podemos aprovechar?**
+   - Autorregulación pensada para entrenadores, no para usuarios sin entrenador.
+   - El puente entre la evaluación instrumental y la programación para profesionales pequeños.
+   - Readaptación y rendimiento en una sola herramienta (con la cautela regulatoria).
+   - Interfaz en español de calidad profesional.
+5. **¿Qué decisiones de arquitectura podrían limitar el crecimiento comercial?**
+   - No tener **organización como inquilino** desde la Fase 2 (P-51).
+   - Un solo entrenador por cliente (P-52).
+   - Historiales de cambios incompatibles entre módulos (P-63).
+   - Escalas sin versión (P-64).
+   - Depender de una PWA para integraciones que exigen una app nativa (P-59).
+   - Atarse a un proveedor sin puertos (base de datos, almacenamiento, IA).
+   - Una finalidad prevista ambigua que convierta el producto en sanitario sin pretenderlo (P-54).
+6. **¿Qué funciones futuras dan más valor sin complicar el producto?**
+   - Detección de cambios relevantes según el error de medición (E2).
+   - Simulación retrospectiva de reglas (1C).
+   - Importación de CSV de dispositivos (E2).
+   - Borradores de informes supervisados (IA de bajo riesgo).
+   - Vistas de equipo para centros (E7).
+
+## 9. Registro de riesgos
+
+| Tipo       | Riesgo                                                   | Probabilidad | Impacto  | Mitigación                                                           | Dónde se detalla                         |
+| ---------- | -------------------------------------------------------- | ------------ | -------- | -------------------------------------------------------------------- | ---------------------------------------- |
+| Científico | Escalas subjetivas interpretadas como mediciones         | Media        | Alto     | `self_reported`, línea base, sin puntuaciones compuestas             | `PROGRESSION_AND_AUTOREGULATION.md` §4   |
+| Científico | Ecuaciones de 1RM fuera de su validez                    | Media        | Medio    | Solo con la fuente original leída; 2–10 repeticiones; margen visible | Ídem §3                                  |
+| Científico | Reglas arbitrarias presentadas como ciencia              | Media        | Alto     | Etiquetas, sin valores por defecto, simulación y registro            | Ídem §5.13                               |
+| Científico | Carga interna interpretada causalmente                   | Baja         | Medio    | Sin cociente agudo:crónico ni riesgo de lesión                       | Ídem §6                                  |
+| Técnico    | Sincronización sin conexión con conflictos o duplicados  | Media        | Alto     | Identificadores, cola idempotente, versiones, escenarios S-07 a S-09 | `ROADMAP.md` (escenarios)                |
+| Técnico    | Reconstrucción por decisiones estructurales mal fijadas  | Media        | Alto     | Decisiones de la 1B (P-62 a P-67)                                    | `ARCHITECTURE.md`                        |
+| Técnico    | Limitaciones de la PWA en iOS                            | Alta         | Medio    | Pruebas en dispositivos reales en E1; P-59                           | `INTEGRATIONS.md`                        |
+| Técnico    | Alcance de la 1B y la 1C demasiado grande                | Media        | Medio    | Listas cerradas, subfases y revisiones intermedias                   | `ROADMAP.md`                             |
+| Jurídico   | Software calificado como producto sanitario              | Media en E4  | Muy alto | Finalidad prevista y asesoría antes de E4 y E6                       | §6                                       |
+| Jurídico   | Tratamiento de datos de salud sin base jurídica adecuada | Media        | Muy alto | Datos ficticios hasta la asesoría; evaluación de impacto antes de E1 | `SECURITY_PRIVACY.md`, `DATA_RIGHTS.md`  |
+| Jurídico   | Decisiones automatizadas (RGPD, artículo 22)             | Baja         | Alto     | Límites, explicación, notificación y revisión humana                 | §6.1                                     |
+| Jurídico   | Derechos de imagen y de autor del material audiovisual   | Media        | Medio    | Cesiones registradas; material sintético en la 1B                    | `MEDIA.md`                               |
+| Económico  | Costes de infraestructura y transferencia de vídeo       | Baja         | Medio    | Límites de gasto; alternativas sin coste de transferencia            | `INFRASTRUCTURE.md`, `MEDIA.md`          |
+| Económico  | Coste de producir contenido y de la asesoría             | Alta         | Medio    | Presupuesto antes de E1; priorizar las variantes más usadas          | `MEDIA.md` §8                            |
+| Económico  | Dependencia de API de terceros (cierres, tarifas)        | Media        | Medio    | Adaptadores aislados y datos en bruto                                | `INTEGRATIONS.md`                        |
+| Producto   | Fatiga de cumplimentación del cliente                    | Media        | Medio    | Dos preguntas fijas; el resto, opcional                              | `PROGRESSION_AND_AUTOREGULATION.md` §4.6 |
+
 ## Fuentes
 
-Las referencias científicas están en `PROGRESSION_AND_AUTOREGULATION.md` y `EFFORT_AND_LOAD.md`; las de competencia, en `COMPETITIVE_ANALYSIS.md`. Regulación (fuentes secundarias, a contrastar con los textos oficiales): [OpenRegulatory sobre MDCG 2019-11](https://openregulatory.com/mdcg/mdcg-2019-11), [Emergo by UL sobre la revisión 1](https://www.emergobyul.com/news/european-revision-primary-software-guidance-mdcg-2019-11-revision-1-small-changes-meaningful), [Pure Global sobre las fechas del Reglamento de IA](https://www.pureglobal.com/news/eu-ai-act-omnibus-high-risk-dates-2028), [Sahha sobre IA en apps de salud](https://sahha.ai/blog/eu-ai-act-health-apps/).
+Las referencias científicas están en `PROGRESSION_AND_AUTOREGULATION.md` y `EFFORT_AND_LOAD.md`; las de competencia, en `COMPETITIVE_ANALYSIS.md`. Regulación (fuentes secundarias, a contrastar con los textos oficiales): [OpenRegulatory sobre MDCG 2019-11](https://openregulatory.com/mdcg/mdcg-2019-11), [Emergo by UL sobre la revisión 1](https://www.emergobyul.com/news/european-revision-primary-software-guidance-mdcg-2019-11-revision-1-small-changes-meaningful), [Pure Global sobre las fechas del Reglamento de IA](https://www.pureglobal.com/news/eu-ai-act-omnibus-high-risk-dates-2028), [Sahha sobre IA en apps de salud](https://sahha.ai/blog/eu-ai-act-health-apps/). Fuentes oficiales: [considerando 19 del MDR en EUR-Lex](https://eur-lex.europa.eu/eli/reg/2017/745/oj/eng), [MDCG 2019-11 rev. 1 (Comisión Europea, junio de 2025)](https://health.ec.europa.eu/latest-updates/update-mdcg-2019-11-rev1-qualification-and-classification-software-regulation-eu-2017745-and-2025-06-17_en), [guías del MDCG](https://health.ec.europa.eu/medical-devices-sector/new-regulations/guidance-mdcg-endorsed-documents-and-other-guidance_en), [MDCG 2025-6 / AIB 2025-1](https://health.ec.europa.eu/document/download/b78a17d7-e3cd-4943-851d-e02a2f22bbb4_en), [artículo 113 del Reglamento de IA (mesa de servicio de la Comisión)](https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-113), [calendario de aplicación](https://ai-act-service-desk.ec.europa.eu/en/ai-act/timeline/timeline-implementation-eu-ai-act), [artículo 6 (texto consolidado no oficial)](https://artificialintelligenceact.eu/article/6/), [RGPD en EUR-Lex](https://eur-lex.europa.eu/eli/reg/2016/679/art_4/oj), [considerando 35 (texto no oficial)](https://gdpr-info.eu/recitals/no-35/), [asunto C-21/23](https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A62023CJ0021).

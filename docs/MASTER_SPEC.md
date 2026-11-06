@@ -2,10 +2,11 @@
 
 Documento de referencia del producto: qué es TrainPro, qué reglas lo rigen, qué incluye cada módulo y dónde está el detalle. Reúne la especificación maestra de desarrollo, la revisión de la Fase 1 y los requisitos de la experiencia de entrenamiento guiada. Si dos documentos se contradicen, **manda el más específico** y se corrige el otro.
 
-| Versión | Fecha                  | Cambios                                                                                                                                                                                            |
-| ------- | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1.0     | 6 de noviembre de 2026 | Primera versión: consolida la especificación y la revisión de la Fase 1, y añade el diseño de la experiencia guiada, la carga y el esfuerzo, y la gestión audiovisual (pendiente de aprobación)    |
-| 1.1     | 6 de noviembre de 2026 | Cambio de ambición: visión estratégica, ciclo rector, motor de adaptación explicable, progresión, valoración previa, RPE de sesión, análisis competitivo e integraciones (pendiente de aprobación) |
+| Versión | Fecha                  | Cambios                                                                                                                                                                                                                                                                                                                 |
+| ------- | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1.0     | 6 de noviembre de 2026 | Primera versión: consolida la especificación y la revisión de la Fase 1, y añade el diseño de la experiencia guiada, la carga y el esfuerzo, y la gestión audiovisual (pendiente de aprobación)                                                                                                                         |
+| 1.1     | 6 de noviembre de 2026 | Cambio de ambición: visión estratégica, ciclo rector, motor de adaptación explicable, progresión, valoración previa, RPE de sesión, análisis competitivo e integraciones (pendiente de aprobación)                                                                                                                      |
+| 1.2     | 6 de noviembre de 2026 | Cierre de decisiones: tabla completa clasificada de A a E, autorregulación detallada (orígenes, matriz de acciones, perfiles, señales, simulación), decisiones estructurales de la 1B, escenarios de validación S-01 a S-24, revisión regulatoria con fuentes oficiales y registro de riesgos (pendiente de aprobación) |
 
 ## 1. Producto
 

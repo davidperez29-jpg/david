@@ -122,6 +122,19 @@ Las fases y los criterios de progresión los define **el profesional responsable
 
 Pendiente de aprobación. Amplía las reglas anteriores para que la ciencia sea verificable en toda la plataforma, no solo en las fórmulas.
 
+> **Indicación del responsable (6 de noviembre de 2026):** el protocolo será **obligatorio** para toda decisión científica y todo cálculo que se incorpore. El contenido concreto (jerarquía, campos y etiquetas) sigue pendiente de aprobación.
+
+### Cómo se hace obligatorio
+
+1. **Puerta automática.** El test `registryIssues` se amplía: una fórmula científica, una escala, un esquema de progresión o una regla con etiqueta «Evidencia» o «Consenso» sin fuente registrada (DOI o PMID, fecha de verificación y población) **hace fallar `pnpm check`**.
+2. **Lista de comprobación en cada cambio** que añada ciencia:
+   - fuente original leída;
+   - población y limitaciones anotadas;
+   - etiqueta asignada;
+   - ejemplo numérico publicado reproducido en un test, si existe.
+3. **Sin fuente original leída, no se implementa**: queda como `PendingFeature` (como el 1RM por ecuación y los anclajes del RPE de la sesión).
+4. **Revisión periódica:** cada fuente lleva la fecha de su última revisión, y una fuente sin revisar en más de 12 meses aparece como aviso en el registro.
+
 ### Jerarquía de fuentes
 
 1. **Revisiones sistemáticas y metaanálisis**, con su protocolo registrado cuando exista.

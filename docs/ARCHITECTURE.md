@@ -123,6 +123,63 @@ Un puerto `AssistantPort` aísla cualquier proveedor de IA. **No se conecta ning
 - Trabajos en segundo plano para los agregados y la importación, solo cuando haga falta.
 - Costes en `INFRASTRUCTURE.md`.
 
+## Decisiones estructurales que fija la Fase 1B (propuesta, P-51, P-52 y P-62 a P-67)
+
+El objetivo es que la 1B, aunque use datos ficticios, **no obligue a reconstruir** nada en la 1C ni en la Fase 2. Se separa lo que hay que preparar de lo que se implementa y de lo que puede esperar.
+
+| Área                                       | Preparación arquitectónica necesaria en la 1B                                                                                                        | Funcionalidad que se implementa en la 1B                         | Puede esperar                                                                                      | Coste de no fijarlo ahora                                                 |
+| ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| **Clientes y organizaciones** (P-51, P-52) | `organizationId` en todos los agregados; `membership` (usuario, organización, rol); `careTeam` del cliente con un responsable principal y alcances   | Una organización demo con un entrenador; crear y editar clientes | Centros, grupos, varios profesionales, interfaz de equipo (E7); acceso entre organizaciones (P-73) | Migrar todas las tablas y reescribir las políticas RLS en la Fase 2       |
+| **Prescripción por serie** (ADR-20, P-41)  | Valores comunes + excepciones por serie; modalidades de carga y escalas tipadas                                                                      | Editor y reproductor por serie                                   | —                                                                                                  | Rehacer el editor, el reproductor y los cálculos                          |
+| **Versiones de sesión**                    | Versiones inmutables; cada serie registrada apunta a la versión en vigor cuando se hizo                                                              | Publicar, editar y avisar al cliente                             | Comparar versiones visualmente a gran escala                                                       | Perder la trazabilidad de lo prescrito                                    |
+| **Rastro de progresión** (P-62)            | `trackId` opcional en cada ejercicio prescrito (cliente + variante + contexto), estable entre sesiones y versiones                                   | Se asigna al duplicar o planificar; visible en el historial      | Esquemas de progresión que lo usan (1C)                                                            | La 1C no podría saber qué ejercicios de sesiones distintas son «el mismo» |
+| **Cambios de prescripción** (P-63)         | Un único modelo `prescription_change` con origen (`manual`, `supervised`, `preauthorized`), autor, fecha, motivo y diferencias                       | Historial y trazabilidad de los cambios manuales                 | Orígenes del motor (1C)                                                                            | Dos historiales incompatibles entre la 1B y la 1C                         |
+| **Registro de ejecución** (ADR-22)         | Registro de solo adición, `clientSetId`, `supersedes`, procedencia por dato                                                                          | Registro, correcciones y series sin duplicados                   | —                                                                                                  | Contar series dos veces o perder correcciones                             |
+| **Cola de envío** (P-65)                   | Comandos idempotentes genéricos (serie, valoración previa, dolor, RPE de la sesión, nota)                                                            | Envío sin conexión y reintentos                                  | Sincronización en segundo plano (no existe en iOS)                                                 | Una cola distinta por tipo de dato                                        |
+| **Valoraciones subjetivas** (P-64)         | `instrument` + `item` + versión de la escala en cada respuesta (valoración previa, RPE de la sesión, escalas de RPE, dolor, calidad)                 | Recogida y visualización                                         | Instrumentos validados opcionales (E3)                                                             | Mezclar respuestas de escalas distintas al cambiar la escala              |
+| **Cálculos de carga**                      | Funciones puras y versionadas en el registro de fórmulas; resultados recalculables, no guardados                                                     | Volumen y tonelaje por tipo (P-36)                               | Carga interna (1C) y volumen por músculo (E3)                                                      | Cifras que no se pueden reproducir                                        |
+| **Unidades y tiempo** (P-66)               | Unidades canónicas (kg, s, m) con la unidad en cada valor; fechas con la zona horaria del cliente                                                    | Visualización en kg                                              | Libras y otras unidades de visualización                                                           | Errores de conversión y sesiones que cambian de día                       |
+| **Integraciones**                          | Modelo de medición con procedencia `imported`, dispositivo y lote, igual para series y evaluaciones                                                  | Transcripción manual con procedencia (P-25)                      | Importación de CSV (E2) y API (E5)                                                                 | Datos importados sin trazabilidad                                         |
+| **Permisos**                               | Políticas con la forma `puede(actor, acción, recurso)`, con la organización, el equipo asistencial y el alcance (entrenamiento, evaluaciones, salud) | Políticas nuevas con tests de acceso no autorizado               | Roles adicionales (E7)                                                                             | Reescribir todas las políticas al añadir roles                            |
+| **Historial de decisiones**                | Registro de solo adición compartido con `prescription_change`                                                                                        | Cambios manuales                                                 | Recomendaciones y decisiones del motor (1C)                                                        | Auditoría incompleta                                                      |
+| **Datos de referencia** (P-67)             | `normative_reference` con fuente, población y verificación; referencias del cliente (1RM, peso corporal, línea base) como mediciones                 | Referencias del cliente                                          | Valores normativos poblacionales verificados (E2)                                                  | Comparaciones con referencias sin fuente                                  |
+
+### Terminología (P-52)
+
+- **Miembro de la organización** (`membership`): profesional que trabaja en una organización, con un rol.
+- **Equipo asistencial** (`care_team`): profesionales que atienden a **un cliente**, cada uno con su alcance.
+- **Equipo deportivo o grupo** (`team`, `group`): conjunto de clientes o deportistas que se planifican juntos (E7).
+
+Así no se confunden «el equipo de un club» y «los profesionales que atienden a una persona».
+
+### Mapa de dependencias entre módulos
+
+```mermaid
+flowchart LR
+  identity["identity<br/>organizaciones, miembros, roles"] --> people["people<br/>clientes, equipo asistencial"]
+  people --> assessment["assessment<br/>evaluaciones, referencias"]
+  library["library<br/>ejercicios, medios, evidencia"] --> planning
+  people --> planning["planning<br/>sesiones, prescripción, versiones, rastros"]
+  assessment --> planning
+  planning --> execution["execution<br/>registro, valoraciones, dolor, cola"]
+  execution --> analytics["analytics<br/>volumen, carga, carga interna"]
+  planning --> analytics
+  analytics --> adaptation["adaptation (1C)<br/>esquemas, reglas, recomendaciones"]
+  execution --> adaptation
+  assessment --> adaptation
+  adaptation -->|prescription_change| planning
+  evidence["evidence<br/>fuentes y etiquetas"] --> adaptation
+  evidence --> analytics
+  integrations["integrations (E5)"] --> assessment
+  integrations --> execution
+```
+
+**Regla:** `adaptation` solo modifica la planificación a través de `prescription_change`, nunca directamente. Las dependencias van siempre en el sentido de las flechas y se comprueban con ESLint, como las capas actuales.
+
+### Acceso entre organizaciones (P-73, diseñado, no construido)
+
+Si en el futuro un cliente trabaja con un centro y una clínica distintos, cada organización conserva sus datos. Compartirlos exigirá una **concesión explícita** (`access_grant`: quién, qué alcance, hasta cuándo) con el consentimiento del cliente. No se implementa hasta E7, pero las políticas de permisos ya reciben la organización del recurso, así que añadirlo no exigirá rehacerlas.
+
 ## Sesión de demostración
 
 No hay autenticación. `getTrainerContext()` y `getClientContext()` devuelven actores fijos (Alex, entrenador; Marta, clienta). Son **el único punto que cambiará** con el inicio de sesión real: el actor saldrá de una sesión verificada en el servidor. El resto del código ya trabaja con un `Actor` y no sabe de dónde viene.
