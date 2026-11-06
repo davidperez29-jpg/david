@@ -12,16 +12,19 @@ De este reparto depende quién responde a cada solicitud. La plataforma debe **f
 
 ## 2. Inventario de datos por categoría
 
-| Categoría               | Ejemplos                                                   | Sensibilidad                    |
-| ----------------------- | ---------------------------------------------------------- | ------------------------------- |
-| Identificación y cuenta | Nombre, correo, sesiones de acceso                         | Media                           |
-| Perfil deportivo        | Objetivos, población, deporte                              | Media                           |
-| Entrenamiento           | Planes, sesiones, series registradas, RIR/RPE, comentarios | Media                           |
-| Evaluaciones            | Resultados, intentos, procedencia                          | Media                           |
-| **Salud**               | Lesiones, antecedentes, readaptación                       | **Categoría especial (art. 9)** |
-| Notas del entrenador    | Observaciones privadas sobre el cliente                    | Media (son datos del cliente)   |
-| Registros técnicos      | Auditoría de accesos y cambios                             | Baja; sin contenido de salud    |
-| Copias de seguridad     | Todo lo anterior, de forma temporal                        | Según contenido                 |
+| Categoría                    | Ejemplos                                                                                   | Sensibilidad                                     |
+| ---------------------------- | ------------------------------------------------------------------------------------------ | ------------------------------------------------ |
+| Identificación y cuenta      | Nombre, correo, sesiones de acceso                                                         | Media                                            |
+| Perfil deportivo             | Objetivos, población, deporte                                                              | Media                                            |
+| Entrenamiento                | Planes, sesiones, series registradas, RIR/RPE, comentarios                                 | Media                                            |
+| Evaluaciones                 | Resultados, intentos, procedencia                                                          | Media                                            |
+| **Salud**                    | Lesiones, antecedentes, readaptación                                                       | **Categoría especial (art. 9)**                  |
+| Notas del entrenador         | Observaciones privadas sobre el cliente                                                    | Media (son datos del cliente)                    |
+| Indicaciones y restricciones | Indicaciones del entrenador para el cliente; restricciones que pueden proceder de la salud | Media; **de salud** si revelan una lesión        |
+| Datos en el dispositivo      | Sesión del día y series pendientes de enviar (propuesta, `ARCHITECTURE.md`)                | Media; se borran al cerrar sesión                |
+| Imagen en vídeos             | Personas que aparecen en los vídeos de demostración (no clientes, en este alcance)         | Media; requiere cesión de imagen (`MEDIA.md` §9) |
+| Registros técnicos           | Auditoría de accesos y cambios                                                             | Baja; sin contenido de salud                     |
+| Copias de seguridad          | Todo lo anterior, de forma temporal                                                        | Según contenido                                  |
 
 ## 3. Procedimiento común
 
@@ -44,6 +47,7 @@ De este reparto depende quién responde a cada solicitud. La plataforma debe **f
 
 - Datos de perfil: el cliente los corrige directamente o lo solicita.
 - **Mediciones y registros: no se sobrescriben en silencio.** Se crea una corrección con motivo, fecha y autor, y se conserva el historial. Así se mantiene la trazabilidad y se sabe qué valor se usó en cada cálculo.
+- **Series registradas** (diseño de la experiencia guiada): el cliente corrige una serie creando una versión nueva (`supersedes`), que sustituye a la anterior en los cálculos y la conserva en el historial. El entrenador no edita lo realizado por el cliente: lo anota.
 
 ## 6. Supresión (art. 17) y conservación
 

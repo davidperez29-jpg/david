@@ -167,7 +167,10 @@ erDiagram
 | `variant_progression`                                                      | Arista dirigida: `to` es una progresión de `from` (y `from`, una regresión de `to`)                                                                                                                 | Sin autoenlaces, duplicados ni ciclos de dos nodos. Tiene propietario: las relaciones de un entrenador no las ven otros.                                                                                                       |
 | `favorite`                                                                 | (trainer_id, variant_id)                                                                                                                                                                            | Único por par.                                                                                                                                                                                                                 |
 | `trainer_exercise_note`                                                    | Observaciones personales del entrenador sobre una variante                                                                                                                                          | Información personalizada, separada del catálogo global.                                                                                                                                                                       |
-| `media_asset`                                                              | Imagen o vídeo: tipo, URL `https` o clave de almacenamiento, propietario                                                                                                                            | Sin medios, se muestra la silueta.                                                                                                                                                                                             |
+| `media_asset`                                                              | Archivo de imagen o vídeo **fuera de la base de datos**: proveedor, clave, tipo, códec, dimensiones, duración, tamaño, suma de comprobación, estado y derechos                                      | Diseño en `MEDIA.md` §3 (pendiente de aprobación). Sin medios, se muestra la silueta.                                                                                                                                          |
+| `variant_media`                                                            | Hueco publicado de cada variante: `silhouette`, `demo_short` (< 15 s) o `demo_extended` (≤ 45 s)                                                                                                    | Único (variant_id, slot). Cada hueco se gestiona por separado; el ampliado nunca ocupa el hueco del breve.                                                                                                                     |
+| `media_rights`                                                             | Titular, licencia y cesión de imagen de las personas que aparecen                                                                                                                                   | Obligatoria antes de publicar un vídeo con personas identificables.                                                                                                                                                            |
+| `client_exercise_guidance`                                                 | Indicaciones y restricciones del entrenador **para un cliente** con una variante (o con todas)                                                                                                      | Visibles para ese cliente en todas sus sesiones con la variante. Si proceden de la salud, se muestran sin el diagnóstico.                                                                                                      |
 
 ### Visibilidad
 
@@ -188,7 +191,7 @@ Los clientes no navegan por la biblioteca: ven los ejercicios a través de las s
 
 ## 4. Planificación
 
-**Estado:** sesiones y prescripción por ejercicio implementadas en el dominio; planes y semanas, conceptuales.
+**Estado:** sesiones y prescripción por ejercicio implementadas en el dominio; planes y semanas, conceptuales. **La prescripción v2, las versiones, las plantillas y el calentamiento son una propuesta pendiente de aprobación** (§12 y `EFFORT_AND_LOAD.md`).
 
 | Entidad             | Campos principales                                                                                                                                                                                                                            |
 | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -198,6 +201,19 @@ Los clientes no navegan por la biblioteca: ven los ejercicios a través de las s
 | `session_item`      | id, session_id, variant_id, block (A, B…), ordinal, notes                                                                                                                                                                                     |
 | `item_prescription` | item_id, sets, rep_target (`fixed`, `range`, `seconds`, `meters` + valores), load (`kg`, `bodyweight`, `percent_1rm`, `autoregulated`, `text` + valores), rest_seconds, tempo (4 fases), effort (`rir`, `rpe`, `character`, `none` + valores) |
 | `item_set_override` | item_id, set_number y los campos anteriores, opcionales                                                                                                                                                                                       | Pirámides, contrastes, _clusters_ u otros métodos sin imponer una estructura rígida. |
+
+**Propuesta v2 (pendiente de aprobación):**
+
+| Entidad                  | Cambio                                                                                                                                                                                                                                                              |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `session`                | + `status` (`draft`, `published`, `cancelled`), `version`, `day_order` y `day_label` (dos sesiones el mismo día), `derived_from_template_id`, `effort_rating_requested` (pedir el RPE de la sesión)                                                                 |
+| `session_version`        | session_id, version, published_at, published_by, snapshot de la prescripción. Las series registradas apuntan a la versión con la que se hicieron                                                                                                                    |
+| `session_warmup_item`    | session_id, ordinal, variant_id (opcional), text, duration_s o reps                                                                                                                                                                                                 |
+| `session_item`           | + `block_mode` (`sequential`, `superset`, `circuit`), `client_note` (visible) y `private_note` (solo el entrenador), `show_short_video`, `show_extended_video`                                                                                                      |
+| `item_prescription` → v2 | load: `LoadSpec` (10 modalidades, base de la carga), reps con `per_side`, effort: `EffortTarget` v2 (RIR, RPE con escala, ambos con justificación, carácter, calidad, ninguno), `stop_criteria`, rest, tempo de 3 o 4 fases, `warmup_sets` (series de aproximación) |
+| `set_prescription`       | Sustituye a `item_set_override`: item_id, set_number y cualquier campo anterior que cambie en esa serie                                                                                                                                                             |
+| `percent_1rm_resolution` | item_id, set_number, reference_result_id (1RM directo o estimado), percent, rounding_step_kg, resolved_kg, formula_key, formula_version, resolved_at. Se congela al publicar                                                                                        |
+| `session_template`       | id, trainer_id, title, contenido como una sesión sin cliente ni datos individuales                                                                                                                                                                                  |
 
 ## 5. Registro de la ejecución
 
@@ -209,6 +225,17 @@ Los clientes no navegan por la biblioteca: ven los ejercicios a través de las s
 | `set_log`           | id, session_log_id, session_item_id, set_number, reps, load_kg, duration_s, distance_m, completed. **Único (session_log_id, session_item_id, set_number)**: una serie no puede registrarse dos veces |
 | `exercise_feedback` | session_log_id, session_item_id, rir, rpe, note (autodeclarados)                                                                                                                                     |
 | `message` (futuro)  | id, client_id, author, body, created_at, read_at: comunicación con el entrenador                                                                                                                     |
+
+**Propuesta v2 (pendiente de aprobación):**
+
+| Entidad             | Cambio                                                                                                                                                                                                                                                                                                                                                                    |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `session_log`       | + `session_version`, `last_activity_at` (para retomar), `not_done_reason` (autodeclarado), `warmup_status` (`done`, `skipped`, `none`)                                                                                                                                                                                                                                    |
+| `set_log`           | + `client_set_id` (UUID generado en el dispositivo, **único**: idempotencia), `set_role` (`warmup`, `working`), `performed_load` (misma modalidad que la prescrita: kg y base, kg añadidos, asistencia, banda, ajuste), `reps_per_side`, `rir`, `rpe`, `rpe_scale`, `stop_reason`, `note`, `recorded_at` (dispositivo), `received_at` (servidor), `supersedes_set_log_id` |
+| `exercise_feedback` | Se conserva para la valoración del ejercicio completo; el RIR/RPE por serie pasa a `set_log`                                                                                                                                                                                                                                                                              |
+| `exercise_skip`     | session_log_id, session_item_id, reason (`no_equipment`, `discomfort`, `other`), note                                                                                                                                                                                                                                                                                     |
+
+Reglas: las series efectivas son la última versión válida por (session_log_id, session_item_id, set_number), siguiendo `supersedes`; un `client_set_id` repetido no crea otra fila; el entrenador **no edita** `set_log` (anota con `set_annotation`). Todo lo realizado es `self_reported` salvo lo que mide un instrumento o se importa.
 
 **El estado de la sesión no se guarda: se deduce** (`sessionStatus` en `src/domain/training/session.ts`) de las series efectivas (sin duplicados ni registros ajenos a lo prescrito) y de si la sesión ha terminado:
 
@@ -229,6 +256,7 @@ Pulsar «Terminar» **no** convierte una sesión en completada.
 - El volumen por patrón o por clasificación usará `variant_pattern` y `variant_tag`. Para que no cuente doble, cada serie suma una vez a cada patrón que tenga su variante, y así se documentará en su fórmula.
 - Tipos de cuantificación: repeticiones, tiempo y distancia. El tonelaje solo se calcula con carga externa en kg.
 - **Estimación de RM:** se guardará como medición `estimated` con la fórmula (id + versión) y su error, nunca como medición directa. La ecuación no se elegirá hasta verificar su fuente primaria.
+- **Propuesta v2 (pendiente de aprobación):** volumen y tonelaje **prescritos** frente a **ejecutados**, carga externa añadida (lastre), resumen de asistencia, intensidad relativa (% 1RM) y carga respecto al peso corporal, como métricas separadas; `training.volume-load` 2.0.0 con base de la carga, repeticiones por lado y exclusión de las series de aproximación. El peso corporal × repeticiones **no** es tonelaje. Detalle y fórmulas en `EFFORT_AND_LOAD.md` §10.
 
 ## 7. Evaluaciones
 
@@ -291,6 +319,124 @@ Los valores importados se registran como `imported` con `import_batch_id`, y el 
 | `erasure_job`      | id, data_request_id, scope, executed_at, pending_backup_expiry_at                                                                                                              |
 
 Se auditan: accesos a datos de salud, cambios de lo compartido, exportaciones, importaciones, borrados y cambios de permisos.
+
+## 12. Prescripción y registro v2 en el dominio (propuesta)
+
+**Estado:** diseño pendiente de aprobación. Boceto de los tipos de `src/domain/training` (TypeScript puro, sin dependencias); no es código del proyecto todavía.
+
+```ts
+type LoadBasis = 'total' | 'per_side' | 'per_implement';
+
+type LoadSpec =
+  | { kind: 'external'; kg: number; basis: LoadBasis; implements?: number }
+  | { kind: 'external_range'; minKg: number; maxKg: number; basis: LoadBasis; implements?: number }
+  | { kind: 'percent_1rm'; percent: number | { min: number; max: number }; roundingStepKg: number }
+  | { kind: 'bodyweight' }
+  | { kind: 'bodyweight_plus'; addedKg: number }
+  | {
+      kind: 'assisted';
+      assistanceKg?: number;
+      via: 'machine' | 'band' | 'partner' | 'other';
+      descriptor?: string;
+    }
+  | { kind: 'elastic'; descriptor: string }
+  | { kind: 'device'; setting: string; unit?: string; calibratedKg?: number }
+  | { kind: 'self_selected'; guidance?: string }
+  | { kind: 'none' }
+  | { kind: 'other'; text: string };
+
+type RpeScale = 'rir_based' | 'omni_res' | 'borg_cr10';
+type Amount = number | { min: number; max: number };
+
+type EffortTarget =
+  | { kind: 'rir'; rir: Amount }
+  | { kind: 'rpe'; rpe: Amount; scale: RpeScale }
+  | {
+      kind: 'rir_and_rpe';
+      rir: Amount;
+      rpe: Amount;
+      scale: Exclude<RpeScale, 'rir_based'>;
+      justification: string;
+    }
+  | { kind: 'character'; performed: number; possible: number }
+  | { kind: 'quality'; focus: string }
+  | { kind: 'none' };
+
+type StopCriterion =
+  | { kind: 'velocity_loss'; percent: number; instrument: string }
+  | { kind: 'performance_drop'; metric: string; percent: number; instrument: string }
+  | { kind: 'technique' | 'quality'; description: string }
+  | { kind: 'pain'; threshold: string; definedBy: 'trainer' | 'clinician' }
+  | { kind: 'time_cap'; seconds: number }
+  | { kind: 'rep_cap'; reps: number };
+
+interface SetTarget {
+  reps: RepTarget & { perSide?: boolean };
+  load: LoadSpec;
+  effort: EffortTarget;
+  restSeconds: number;
+  tempo?: Tempo; // 3 o 4 fases (P-22)
+  stop?: StopCriterion[];
+}
+
+interface ExercisePrescriptionV2 {
+  id: string;
+  variantId: string;
+  block: string;
+  blockMode: 'sequential' | 'superset' | 'circuit';
+  order: number;
+  sets: number;
+  warmupSets?: number;
+  defaults: SetTarget;
+  perSet?: (Partial<SetTarget> & { setNumber: number })[];
+  clientNote?: string;
+  privateNote?: string; // nunca llega al cliente
+  showShortVideo: boolean;
+  showExtendedVideo: boolean;
+}
+
+type PerformedLoad =
+  | { kind: 'external'; kg: number; basis: LoadBasis; implements?: number }
+  | { kind: 'bodyweight' }
+  | { kind: 'bodyweight_plus'; addedKg: number }
+  | { kind: 'assisted'; assistanceKg?: number; descriptor?: string }
+  | { kind: 'elastic' | 'device' | 'other'; descriptor: string }
+  | { kind: 'none' };
+
+interface SetLogV2 {
+  clientSetId: string; // UUID del dispositivo: idempotencia
+  prescriptionId: string;
+  sessionVersion: number;
+  setNumber: number;
+  role: 'warmup' | 'working';
+  reps?: number;
+  repsPerSide?: boolean;
+  durationS?: number;
+  distanceM?: number;
+  load: PerformedLoad;
+  rir?: number;
+  rpe?: number;
+  rpeScale?: RpeScale;
+  stopReason?: 'completed' | 'criterion' | 'pain' | 'other';
+  completed: boolean;
+  note?: string;
+  recordedAt: string;
+  supersedes?: string; // clientSetId corregido
+}
+```
+
+**Correspondencia con el modelo actual** (para migrar sin perder nada):
+
+| Hoy                                                            | v2                                                                                                    |
+| -------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `LoadPrescription { kind: 'kg' }`                              | `LoadSpec { kind: 'external', basis: 'total' }`                                                       |
+| `bodyweight`, `percent_1rm`, `text`                            | `bodyweight`, `percent_1rm` (+ redondeo), `other`                                                     |
+| `autoregulated`                                                | `self_selected`                                                                                       |
+| `EffortTarget` `rir`, `rpe`, `character`, `none`               | Igual; `rpe` añade la escala obligatoria (los datos demo usarán `rir_based`, que es la que describen) |
+| Un esfuerzo para todas las series                              | `defaults.effort` + `perSet`                                                                          |
+| `SetRecord { reps, loadKg, completed }`                        | `SetLogV2` con `load: { kind: 'external', kg }` o `{ kind: 'bodyweight' }` si `loadKg` es nulo        |
+| `ExerciseFeedback.rir/rpe`                                     | Se conserva por ejercicio; además, por serie                                                          |
+| `effectiveSetRecords` (última por ejercicio y número de serie) | Igual, con `clientSetId` y `supersedes` (y la versión de la sesión)                                   |
 
 ## Correspondencia con el código actual
 

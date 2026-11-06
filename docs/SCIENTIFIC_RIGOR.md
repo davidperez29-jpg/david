@@ -55,7 +55,7 @@ Una evaluación puede registrar varios **intentos**. El resultado se obtiene con
 
 - **No se infieren variables que el instrumento no mide.** A partir de una altura de salto no se calculan fuerza pico, RFD, impulso, curvas fuerza-tiempo ni estrategia de aterrizaje.
 - **No se atribuyen a una prueba capacidades que no mide.**
-- **Estimación de RM**: el sistema está preparado para guardarla como `estimated`, con la fórmula versionada y su error, nunca como medición directa. **Ninguna ecuación está incorporada todavía**: se elegirá tras verificar su fuente primaria, su población y su rango de validez, y se documentarán sus limitaciones (por ejemplo, que pierde precisión con muchas repeticiones o con RIR declarado).
+- **Estimación de RM**: el sistema está preparado para guardarla como `estimated`, con la fórmula versionada y su error, nunca como medición directa. **Ninguna ecuación está incorporada todavía**: se elegirá tras verificar su fuente primaria, su población y su rango de validez, y se documentarán sus limitaciones (por ejemplo, que pierde precisión con muchas repeticiones o con RIR declarado). El análisis de las ecuaciones candidatas, su estado de verificación y las condiciones para usarlas con RIR están en `EFFORT_AND_LOAD.md` §8.
 - **Volumen**: series, repeticiones y tonelaje solo donde corresponde. Las series por tiempo o distancia no se convierten a tonelaje. El volumen por patrón o por etiqueta se definirá como fórmula registrada antes de mostrarse.
 
 ## Comparación de resultados
@@ -77,6 +77,34 @@ Son notaciones de la aplicación, no afirmaciones científicas:
 - **RPE**: esfuerzo percibido de 1 a 10, en pasos de 0,5.
 - **Carácter del esfuerzo**: repeticiones realizadas (realizables), por ejemplo `6 (12)`.
 - **Esfuerzo percibido de la sesión** (pantalla final del cliente): de 0 a 10, marcado como autodeclarado. La escala y sus anclajes se definirán y documentarán en la fase de seguimiento de carga, antes de usarlo para cualquier cálculo de carga interna.
+
+## Carga y carácter del esfuerzo (diseño pendiente de aprobación)
+
+El análisis completo, con referencias verificadas en PubMed, está en `EFFORT_AND_LOAD.md`. Reglas que añade:
+
+- **Cada RPE lleva su escala** (basada en RIR, OMNI-RES o Borg CR10). No se comparan datos de escalas distintas ni se convierte entre ellas.
+- La equivalencia **RPE 10 = RIR 0, RPE 9 = RIR 1…** solo vale dentro de la escala basada en RIR, que se define así; por debajo de 5 esa escala usa descriptores de esfuerzo.
+- **Sin RIR ni RPE por defecto** y sin automatismos que ajusten cargas o esfuerzos.
+- **Prescrito, realizado y calculado o estimado**, siempre separados.
+- El **peso corporal × repeticiones no es tonelaje**.
+- Los criterios de **pérdida de velocidad** se registran como datos introducidos; TrainPro no mide velocidad ni supone integraciones.
+- **Tempo:** se propone admitir también tres cifras (excéntrica – pausa – concéntrica), como `2-0-1` (P-22).
+
+### Fórmulas propuestas
+
+| Id                                | Tipo                 | Estado                                                                                                        |
+| --------------------------------- | -------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `training.percent-1rm-load`       | Definición operativa | Propuesta: porcentaje × 1RM de referencia, redondeado                                                         |
+| `training.load-deviation`         | Definición operativa | Propuesta: kg realizados − kg prescritos                                                                      |
+| `training.prescribed-volume`      | Definición operativa | Propuesta                                                                                                     |
+| `training.prescribed-volume-load` | Definición operativa | Propuesta                                                                                                     |
+| `training.volume-load`            | Definición operativa | 1.0.0 implementada; **2.0.0 propuesta** (base de la carga, repeticiones por lado, sin series de aproximación) |
+| `training.added-load-volume`      | Definición operativa | Propuesta (lastre)                                                                                            |
+| `training.assistance-summary`     | Definición operativa | Propuesta                                                                                                     |
+| `training.relative-intensity`     | Definición operativa | Propuesta (% 1RM)                                                                                             |
+| `training.load-to-body-mass`      | Definición operativa | Propuesta (kg ÷ peso corporal)                                                                                |
+| `estimation.1rm-brzycki`          | Fórmula científica   | **Pendiente de leer la fuente primaria** (P-23)                                                               |
+| `estimation.1rm-from-rir`         | Fórmula propia       | Sin validación publicada encontrada; solo bajo demanda (P-24)                                                 |
 
 ## Estado de las sesiones y cálculos sin duplicados
 

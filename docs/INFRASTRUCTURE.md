@@ -65,6 +65,20 @@ Preferencia indicada: **PostgreSQL con Supabase y Supabase Auth**. La arquitectu
 
 Las cifras son orientativas, en dólares estadounidenses (salvo el VPS, en euros), sin impuestos, y pueden cambiar. **0 €/mes es viable para desarrollar y para pruebas con datos ficticios, pero no para un servicio con datos reales de salud que necesite copias de seguridad.**
 
+### Almacenamiento multimedia (añadido el 6 de noviembre de 2026)
+
+Con los supuestos de `MEDIA.md` §8 (300 variantes con silueta, vídeo breve y ampliado ≈ 2,9 GB; 10–36 GB/mes de transferencia):
+
+| Escenario                                        | Coste mensual estimado                                                  |
+| ------------------------------------------------ | ----------------------------------------------------------------------- |
+| Desarrollo con archivos locales o Supabase local | **0 €**                                                                 |
+| Supabase Free                                    | **No cabe** (1 GB de archivos y 5 GB de transferencia [T])              |
+| Supabase Pro (ya contratado para la BD)          | **+0 $**: dentro de los 100 GB y 250 GB de transferencia incluidos [T]  |
+| Cloudflare R2                                    | **0 $**: dentro de los 10 GB gratuitos y sin coste de transferencia [O] |
+| Bunny Stream                                     | ~0,13–0,39 $ → **mínimo de 1 $/mes** [T]                                |
+
+La partida principal es la **producción del contenido** (grabación, edición, siluetas y cesiones de imagen), sin estimar (P-33). Comparativa completa, formatos y riesgos en `MEDIA.md`.
+
 ## 5. Riesgos
 
 - **Cambios de condiciones** en los planes gratuitos o en los precios. Mitigación: arquitectura con adaptadores y exportaciones periódicas.
@@ -73,6 +87,7 @@ Las cifras son orientativas, en dólares estadounidenses (salvo el VPS, en euros
 - **Residencia de los datos**: copias, registros y subencargados fuera de la UE. Mitigación: región de la UE, revisión del DPA y de los subencargados, y evaluación de impacto.
 - **Dependencia del proveedor** (Auth y almacenamiento de Supabase). Mitigación: puertos propios y datos en PostgreSQL estándar.
 - **Operación propia** (VPS o PostgreSQL propio): copias, parches y seguridad recaen en nosotros.
+- **Transferencia de vídeo**: es lo que más puede crecer con el uso. Mitigación: vídeos ligeros, caché larga, límite de gasto y la opción de R2, que no cobra la transferencia (`MEDIA.md`).
 
 ## Fuentes consultadas
 

@@ -128,6 +128,28 @@ Los saltos y aterrizajes se clasifican por dirección (patrón). La ejecución u
 - Adaptar un ejercicio global crea una **copia personalizada** con `derivedFrom` (`adaptVariant`) y el original no cambia.
 - Tres relaciones distintas: variante de, copia adaptada de, y progresión o regresión.
 
+## ADR-20 · Prescripción v2: prescrito, realizado y calculado separados · Propuesta (experiencia guiada)
+
+- Diez modalidades de carga con base de la carga (total, por lado, por implemento) y repeticiones por lado.
+- Esfuerzo por ejercicio o por serie, con valores o rangos: RIR, RPE **con su escala**, ambos solo con justificación, carácter, criterio de calidad o ninguno. **Sin valores por defecto**.
+- Criterios de finalización (velocidad, calidad, técnica, dolor, topes) como datos, sin integración de dispositivos.
+- Kg del %1RM calculados con una fórmula operativa versionada y congelados al publicar.
+- Sin automatismos que cambien cargas o esfuerzos.
+- Motivo: el requisito prioritario R2 y las limitaciones científicas de `EFFORT_AND_LOAD.md`. Alternativa descartada: un único sistema obligatorio (RIR o RPE para todo), que no se ajusta a la técnica, la potencia ni a muchas poblaciones.
+
+## ADR-21 · Recursos visuales fuera de la base de datos, en tres huecos independientes · Propuesta
+
+- Silueta de la variante, vídeo breve (< 15 s) y ampliado (≤ 45 s), cada uno con su ciclo de vida. El ampliado no ocupa nunca el hueco del breve.
+- Archivos en almacenamiento de objetos; en la base de datos solo la referencia, los metadatos y los derechos.
+- MP4 + H.264 con el elemento `<video>` nativo, sin dependencias nuevas ni reproductores de terceros incrustados.
+- Detalle en `MEDIA.md`.
+
+## ADR-22 · Registro primero en el dispositivo, con envío idempotente · Propuesta
+
+- Cada serie se guarda en el dispositivo (IndexedDB) con un identificador propio y se envía cuando hay conexión. El servidor la acepta una sola vez.
+- Las correcciones son versiones nuevas que sustituyen a la anterior y la conservan.
+- Motivo: los gimnasios suelen tener mala cobertura, y la regla de no contar dos veces una serie ya existe. Alternativa descartada: exigir conexión para registrar.
+
 ## Pendientes de aprobación
 
 | Id   | Decisión                                                                                                         | Notas                                                                                                                                                                                                                |
@@ -147,3 +169,27 @@ Los saltos y aterrizajes se clasifican por dirección (patrón). La ejecución u
 | P-13 | **Notas privadas del entrenador** frente al derecho de acceso del cliente                                        | Ver `DATA_RIGHTS.md`; requiere asesoría jurídica.                                                                                                                                                                    |
 | P-14 | **Roles del tratamiento** (entrenador responsable, TrainPro encargado) y contrato de encargo                     | Ver `DATA_RIGHTS.md`.                                                                                                                                                                                                |
 | P-15 | **Plazos de conservación** e inactividad                                                                         | Propuesta inicial en `DATA_RIGHTS.md`, para validar.                                                                                                                                                                 |
+
+### Experiencia de entrenamiento guiada (6 de noviembre de 2026)
+
+| Id   | Decisión                                                                                                                                    | Recomendación                                                                                                                                |
+| ---- | ------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| P-16 | **Priorización**: etapa «Fase 1B» (prescripción v2 y experiencia guiada sobre datos demo) antes de la Fase 2, o repartirlo en las fases 4–8 | **Fase 1B**: sin costes ni infraestructura, y fija el modelo antes del esquema de la base de datos (`TRAINING_EXPERIENCE.md` §11)            |
+| P-17 | Hasta cuándo se puede **retomar** una sesión interrumpida                                                                                   | Hasta el final del día programado, en la zona horaria del cliente                                                                            |
+| P-18 | **Cambios del entrenador** en una sesión en curso                                                                                           | Aviso al cliente, que actualiza cuando quiere; lo hecho no cambia                                                                            |
+| P-19 | Al **duplicar a otro cliente**, ¿se copian los kg?                                                                                          | No por defecto (se conservan %1RM y estructura); nunca se copian indicaciones, restricciones ni notas privadas                               |
+| P-20 | **Series de aproximación**                                                                                                                  | Registrarlas aparte y excluirlas del volumen y del tonelaje de trabajo                                                                       |
+| P-21 | **Dos sesiones el mismo día**                                                                                                               | Orden obligatorio, etiqueta opcional y confirmación al empezar la segunda con la primera en curso                                            |
+| P-22 | **Tempo de tres cifras** (`2-0-1`, como en el requisito) además del de cuatro                                                               | Admitir ambos: tres cifras = excéntrica, pausa, concéntrica                                                                                  |
+| P-23 | **Ecuación de estimación del 1RM**                                                                                                          | Brzycki tras leer su fuente primaria; Epley no, mientras no se localice la suya. Mientras tanto, 1RM estimado introducido a mano             |
+| P-24 | Estimación del 1RM **a partir de RIR**                                                                                                      | Solo bajo demanda, con las condiciones de `EFFORT_AND_LOAD.md` §8.2 y como aproximación con margen; nunca automática                         |
+| P-25 | **Criterios de velocidad** sin dispositivos integrados                                                                                      | Solo como criterio escrito y dato introducido a mano; ninguna integración hasta verificarla                                                  |
+| P-26 | **Textos para el cliente** (RIR, RPE, carga, asistencia)                                                                                    | Revisar y aprobar los borradores de `EFFORT_AND_LOAD.md` §6                                                                                  |
+| P-27 | Métrica **«masa del sistema»** en dominadas y fondos                                                                                        | No en la primera versión                                                                                                                     |
+| P-28 | ¿Se puede publicar el **vídeo ampliado sin el breve**?                                                                                      | No: el ampliado solo se publica si existe el breve                                                                                           |
+| P-29 | **Relación de aspecto** de los vídeos                                                                                                       | Cuadrada para el breve; 16:9 o 4:5 para el ampliado                                                                                          |
+| P-30 | **Vídeos sin conexión**                                                                                                                     | Fuera del alcance inicial: sin conexión, silueta e instrucciones                                                                             |
+| P-31 | **Subidas de vídeo de los entrenadores** y su conversión                                                                                    | En una fase posterior; decidir entonces entre conversión propia o plataforma (`MEDIA.md` §7)                                                 |
+| P-32 | **Almacenamiento multimedia**                                                                                                               | El mismo proveedor que la base de datos (Supabase Storage si se aprueba P-01); Cloudflare R2 como alternativa. Sin cuentas hasta autorizarlo |
+| P-33 | **Producción de contenido**: siluetas por variante, vídeos y cesiones de imagen                                                             | Decidir medios propios o encargo; es la partida de coste principal                                                                           |
+| P-34 | **Escalas de RPE** disponibles al principio                                                                                                 | Basada en RIR y OMNI-RES (adultos e infantil); Borg CR10 más adelante                                                                        |

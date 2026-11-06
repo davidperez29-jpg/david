@@ -64,6 +64,18 @@ La ficha del cliente solo contiene lo necesario para entrenar (nombre, objetivo,
 | Proveedores              | Contratos de encargo de tratamiento (DPA) y región UE                                                                      |
 | Legal                    | DPIA, registro de actividades de tratamiento, textos informativos y revisión por un profesional                            |
 
+### Experiencia guiada: medidas previstas (diseño pendiente de aprobación)
+
+| Área                              | Medida                                                                                                                                                                                                                |
+| --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Datos en el dispositivo           | Solo la sesión del día y la siguiente, y las series pendientes de enviar, en IndexedDB. Se borran al cerrar sesión, avisando si queda algo sin enviar. Nada de datos de salud ni evaluaciones                         |
+| Registro de la ejecución          | Solo el propio cliente registra en sus sesiones publicadas (`canLogExecution`); el entrenador anota pero no edita lo realizado; envío idempotente                                                                     |
+| Notas del entrenador              | Las privadas nunca se envían al navegador del cliente; las visibles se separan de ellas en el modelo                                                                                                                  |
+| Restricciones de origen sanitario | El cliente ve la instrucción («sin carga axial»), no el diagnóstico; el resto se rige por los permisos de salud                                                                                                       |
+| Recursos visuales                 | Archivos fuera de la base de datos; URLs firmadas de corta duración para ejercicios personalizados y privados, tras comprobar el permiso; cesión de imagen de quien aparece; metadatos eliminados (ver `MEDIA.md` §9) |
+| CSP                               | `media-src` e `img-src` solo para el dominio de medios aprobado; `frame-src` sigue en `'none'` (sin reproductores de terceros)                                                                                        |
+| Subidas (fase posterior)          | URL firmada directa al almacenamiento, tipo comprobado por contenido, tamaño máximo y cuota por entrenador                                                                                                            |
+
 ### Derechos del cliente
 
 El diseño de acceso, exportación, rectificación y supresión (con datos de salud y obligaciones de conservación) está en `DATA_RIGHTS.md`.
