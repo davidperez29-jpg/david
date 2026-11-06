@@ -96,6 +96,15 @@ flowchart TD
 
 Durante cada ejercicio se ve, **sin cambiar de pantalla**: nombre, silueta, vídeo breve, acceso al ampliado (si existe), series y repeticiones, **carga prescrita**, **esfuerzo objetivo**, descanso, tempo (si procede) e indicaciones del entrenador.
 
+**Ampliación propuesta (6 de noviembre de 2026, pendiente de aprobación):**
+
+- **Valoración previa** entre «Empezar entrenamiento» y el calentamiento: energía y recuperación de 1 a 10, y dolor o molestias. Se responde en menos de 10 segundos y se puede saltar.
+- **Dolor o incidencias** registrables durante la sesión, por ejercicio.
+- **RPE de la sesión** al terminar, en todas las sesiones, con «Responder más tarde».
+- Si el entrenador tiene reglas preautorizadas, la sesión puede cambiar tras la valoración previa, y el cliente ve el cambio explicado.
+
+Detalle en `PROGRESSION_AND_AUTOREGULATION.md` §4 a §6 (P-45, P-47, P-48).
+
 ### 3.2 Bloques, superseries y circuitos
 
 El modelo ya agrupa los ejercicios por bloques (A, B, C). En un bloque con varios ejercicios (superserie o circuito), el orden de registro alterna los ejercicios del bloque y el descanso se aplica al terminar la ronda, según lo indique el entrenador (`blockMode`: `sequential` | `superset` | `circuit`). El panel «Tu sesión» muestra la ronda actual.

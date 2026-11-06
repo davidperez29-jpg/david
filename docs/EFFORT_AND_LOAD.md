@@ -279,6 +279,8 @@ Limitaciones que se mostrarán junto al resultado:
 - No se recalcula el %1RM de las sesiones publicadas.
 - Si en el futuro se añade una regla (por ejemplo, «si el RIR real es 2 más que el objetivo, proponer +2,5 kg»), será **opcional**, por cliente y ejercicio, documentada como fórmula versionada, y producirá **propuestas que el entrenador confirma**. Nunca se aplicará en readaptación sin el profesional responsable.
 
+> **Ampliación propuesta (6 de noviembre de 2026, pendiente de aprobación, P-45):** el motor de adaptación de `PROGRESSION_AND_AUTOREGULATION.md` §5 mantiene este principio. Nada actúa por defecto y todas las reglas las configura el entrenador. Hay dos modos: **supervisado** (el entrenador confirma cada propuesta, como se describe arriba) y **preautorizado** (acciones conservadoras que el entrenador define de antemano para aplicarlas justo antes de la sesión, por ejemplo no aplicar el incremento previsto). El modo preautorizado nunca aumenta la exigencia, nunca se usa en readaptación y siempre queda registrado y se notifica.
+
 ## 10. Integración con volumen y tonelaje (R6)
 
 ### 10.1 Métricas separadas
@@ -310,6 +312,10 @@ Si en el futuro se necesita, se definiría una métrica aparte y con nombre prop
 ### 10.4 Sin duplicados
 
 Todas las métricas parten de las series efectivas (§7.2): una serie reenviada o corregida cuenta una sola vez. El volumen por patrón o por etiqueta sigue la regla ya documentada: cada serie suma una vez a cada patrón de su variante.
+
+### 10.5 Ampliación del motor de volumen (propuesta)
+
+Contactos, lanzamientos, distancia, duración, carga interna (RPE de la sesión × duración), volumen por patrón (solo el principal, y el principal con los secundarios, por separado) y, más adelante, volumen por grupo muscular con recuento fraccional. El detalle y las referencias están en `PROGRESSION_AND_AUTOREGULATION.md` §6 y §7. La regla sigue siendo la misma: **cada magnitud por separado, prescrita frente a ejecutada, con su fórmula y su versión**.
 
 ## 11. Riesgos científicos y limitaciones
 

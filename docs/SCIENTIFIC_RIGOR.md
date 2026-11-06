@@ -117,3 +117,48 @@ Las etiquetas se organizan en cuatro dimensiones independientes (ver `TAXONOMY.m
 ## Readaptación
 
 Las fases y los criterios de progresión los define **el profesional responsable** (entrenador o fisioterapeuta, según conste en cada criterio). TrainPro registra si cada criterio se cumple y nunca propone criterios clínicos por su cuenta. El caso de la demo es ficticio y no constituye una recomendación clínica.
+
+## Protocolo de evidencia (propuesta, P-61)
+
+Pendiente de aprobación. Amplía las reglas anteriores para que la ciencia sea verificable en toda la plataforma, no solo en las fórmulas.
+
+### Jerarquía de fuentes
+
+1. **Revisiones sistemáticas y metaanálisis**, con su protocolo registrado cuando exista.
+2. **Estudios de validación** del instrumento, la prueba, la escala o la ecuación, en la población de interés.
+3. **Estudios originales** relevantes (ensayos aleatorizados y observacionales).
+4. **Declaraciones de consenso** de sociedades o grupos de expertos.
+5. **Manuales y textos profesionales**: solo para definiciones y prácticas, nunca como prueba de eficacia.
+
+### Datos obligatorios de cada fuente (`evidence_source`)
+
+- Cita completa con DOI o PMID **verificado en la base de datos**, y fecha de verificación.
+- Tipo de estudio y **población** (edad, sexo, nivel de entrenamiento, condición clínica).
+- Hallazgo concreto que se usa, con su magnitud e incertidumbre si se publican.
+- **Limitaciones**: tamaño de la muestra, duración, conflictos de interés (por ejemplo, autores vinculados a la empresa que comercializa el producto evaluado).
+- **Aplicabilidad**: alta, media, baja o no aplicable a la población del cliente.
+- **Fecha de la última revisión** y quién la hizo. Las fuentes se revisan cada 12 meses o cuando se publica una revisión sistemática nueva.
+
+### Etiquetas visibles en la interfaz
+
+| Etiqueta               | Significado                                                             | Ejemplo                                              |
+| ---------------------- | ----------------------------------------------------------------------- | ---------------------------------------------------- |
+| **Medición directa**   | Lo mide el instrumento                                                  | 1RM levantado en una prueba                          |
+| **Cálculo**            | Resultado de una fórmula operativa registrada                           | Tonelaje, carga interna                              |
+| **Estimación**         | Predicción con un modelo, con su error                                  | 1RM estimado                                         |
+| **Evidencia**          | Respaldado por fuentes de los niveles 1 a 3, aplicables a esa población | RPE de la sesión como método de carga interna        |
+| **Consenso**           | Respaldado por una declaración de consenso                              | Retorno al deporte como un continuo                  |
+| **Heurística**         | Práctica profesional razonable, sin evidencia directa                   | Doble progresión                                     |
+| **Decisión de diseño** | Elección del producto o del profesional, sin pretensión científica      | Umbrales de una regla, ítems de la valoración previa |
+
+- La etiqueta «basado en evidencia» **solo** se usa para elementos con la etiqueta «Evidencia» y su fuente visible.
+- **No se vincula evidencia automáticamente.** Toda relación entre una fuente y un ejercicio, un método, una regla o un objetivo la propone una persona, la revisa otra (la administración del catálogo) y queda con estado `borrador`, `revisada` o `aprobada`.
+
+### Ecuaciones cuya fuente original es un libro
+
+Varias ecuaciones de estimación del 1RM proceden de libros o revistas profesionales no indexadas (`PROGRESSION_AND_AUTOREGULATION.md` §3). La propuesta (P-50) tiene dos vías:
+
+- **Preferente:** obtener y leer el original.
+- **Si no es posible:** cotejar la expresión en al menos dos estudios de validación indexados que la reproduzcan. Se registra como «tomada de estudios de validación; original no consultado».
+
+En ambos casos, solo se ofrece para los ejercicios y las poblaciones en que se ha validado.

@@ -6,6 +6,7 @@ Fases definidas en la especificación maestra (`MASTER_SPEC.md`). Cada fase empi
 | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
 | 1      | **Fundamentos**: entorno, proyecto limpio, tecnologías, arquitectura, configuración, identidad visual, primera interfaz navegable del entrenador y del cliente, modelo conceptual de datos (incluida la biblioteca multidimensional)                                                                                  | Hecha y revisada (`PHASE1_REPORT.md`)                                            |
 | **1B** | **Ciclo funcional completo con datos ficticios**, sin infraestructura externa: crear cliente → evaluar → planificar → prescribir → ejecutar desde el móvil → registrar → analizar (ver abajo)                                                                                                                         | **Acuerdo conceptual (6 de noviembre de 2026); alcance pendiente de aprobación** |
+| **1C** | **Progresión y autorregulación supervisada con datos ficticios**: esquemas de progresión, motor de reglas explicable, registro de decisiones, carga interna y 1RM estimado verificado (ver abajo)                                                                                                                     | **Propuesta (P-44), pendiente de aprobación**                                    |
 | 2      | **Autenticación y usuarios**: registro e inicio de sesión, roles, entrenadores, clientes, permisos y aislamiento de datos (con base de datos y RLS). El esquema incluye ya el modelo de la 1B                                                                                                                         | Pendiente de aprobación (requiere decidir P-01, P-02)                            |
 | 3      | **Clientes**: gestión, fichas individuales, pestañas, información y objetivos. _La 1B adelanta el alta y la edición básica con datos ficticios._                                                                                                                                                                      | Pendiente                                                                        |
 | 4      | **Biblioteca**: modelo de datos completo, catálogo, etiquetas multidimensionales, patrones, variantes, progresiones y regresiones, filtros Y/O, buscador avanzado, favoritos. _Añade siluetas y vídeos reales con almacenamiento y la administración del catálogo; la 1B solo usa material sintético._                | Pendiente (P-10, P-32, P-33)                                                     |
@@ -14,9 +15,182 @@ Fases definidas en la especificación maestra (`MASTER_SPEC.md`). Cada fase empi
 | 7      | **Portal del cliente**: entrenamiento diario protagonista, consulta de ejercicios, registro de ejecución, comunicación con el entrenador, progreso en un apartado independiente. _La 1B adelanta el reproductor guiado y el registro sin conexión; quedan persistencia real, comunicación y pruebas en dispositivos._ | Pendiente                                                                        |
 | 8      | **Carga y volumen**: cálculos, seguimiento, resúmenes y análisis. _La 1B adelanta prescrito frente a ejecutado; quedan carga interna, pérdida de velocidad calculada y estimación del 1RM (P-23, P-24)._                                                                                                              | Pendiente                                                                        |
 | 9      | **Readaptación e informes**: procesos, fases, criterios, informes                                                                                                                                                                                                                                                     | Pendiente                                                                        |
-| 10     | **Validación y despliegue**: seguridad, pruebas, rendimiento, accesibilidad, PWA (incluido iOS real) y despliegue (solo tras autorización)                                                                                                                                                                            | Pendiente                                                                        |
+| 10     | **Validación y despliegue**: seguridad, pruebas, rendimiento, accesibilidad, PWA (incluido iOS real) y despliegue (solo tras autorización). _Propuesta (P-57): dividirla en 10a, antes de la primera beta con datos reales, y 10b, validación a escala._                                                              | Pendiente                                                                        |
 
 Algunas pantallas de fases posteriores ya existen como **propuesta visual con datos ficticios**. Su lógica de dominio está probada, pero no tienen persistencia ni edición. `PHASE1_REPORT.md` detalla qué funciona de verdad y qué no.
+
+## Hoja de ruta estratégica (propuesta, 6 de noviembre de 2026)
+
+> **Pendiente de aprobación.** Agrupa las fases en etapas según la visión de `PRODUCT_STRATEGY.md`. Las fases 1 a 10 **conservan su contenido**; solo se proponen dos cambios justificados: dividir la Fase 10 (P-57) y hacer las integraciones antes que la IA (P-56). **Visión no es alcance:** cada etapa se aprueba por separado y solo lo que figura en su alcance cerrado se compromete.
+
+| Etapa                                             | Fases incluidas                          | Versión orientativa              |
+| ------------------------------------------------- | ---------------------------------------- | -------------------------------- |
+| **E0 · Núcleo funcional** (datos demo)            | 1 (hecha), 1B, 1C                        | Demostración                     |
+| **E1 · Producto profesional inicial**             | 2, 3, 4, 6, 7, 8 y 10a                   | Beta privada con datos reales    |
+| **E2 · Evaluación avanzada**                      | 5 (ampliada)                             | v1.x                             |
+| **E3 · Planificación y autorregulación avanzada** | 6 y 8 (ampliadas)                        | v1.x                             |
+| **E4 · Readaptación**                             | 9                                        | v2, tras la revisión regulatoria |
+| **E5 · Integraciones** (P-56: antes que la IA)    | Nueva                                    | v2                               |
+| **E6 · Inteligencia artificial**                  | Nueva                                    | v2+                              |
+| **E7 · Centros y equipos**                        | Nueva (el modelo existe desde la Fase 2) | v2+                              |
+| **E8 · Escalabilidad comercial**                  | 10b y nueva                              | Comercial                        |
+
+### E0 · Núcleo funcional
+
+- **Objetivo:** demostrar con calidad el ciclo evaluar → planificar → prescribir → ejecutar → registrar → analizar → adaptar, sin infraestructura.
+- **Funcionalidades:** 1B (núcleo de ejecución) y 1C (progresión y autorregulación supervisada), definidas abajo.
+- **Dependencias:** las aprobaciones resumidas en `DECISIONS.md`.
+- **Riesgos:** alcance grande; construir sobre datos ficticios.
+- **Criterios de aceptación y tests:** 1B-01 a 1B-47 y 1C-01 a 1C-16, más las pruebas E2E del ciclo completo.
+- **Costes:** 0 €.
+- **Valor para el usuario:** probar el flujo completo, del entrenador al móvil del cliente.
+- **Ventaja competitiva:** prescripción por serie, ejecución fiel y adaptación explicable y supervisada.
+
+### E1 · Producto profesional inicial
+
+- **Objetivo:** que un grupo pequeño de entrenadores reales trabaje con clientes reales, con seguridad y garantías jurídicas.
+- **Funcionalidades:**
+  - autenticación y base de datos con organización como inquilino y equipos asistenciales (Fase 2);
+  - clientes (Fase 3);
+  - biblioteca con material audiovisual real (Fase 4);
+  - planes y semanas (Fase 6);
+  - persistencia real, sin conexión en dispositivos y comunicación básica (Fase 7);
+  - volumen y carga con datos reales (Fase 8);
+  - seguridad, copias probadas, revisión jurídica, evaluación de impacto y despliegue mínimo (Fase 10a).
+- **Dependencias:** P-01 a P-04, P-13 a P-15, P-32, P-33, P-51, P-52 y P-57.
+- **Riesgos:** datos de salud reales, costes, comportamiento sin conexión en iOS.
+- **Criterios de aceptación:**
+  - aislamiento entre organizaciones probado, también con RLS;
+  - una restauración de copia probada;
+  - evaluación de impacto completada;
+  - sin hallazgos graves en una revisión de seguridad;
+  - registro sin conexión probado en un iPhone y un Android reales;
+  - tareas clave completadas por los entrenadores de la beta.
+- **Tests:** políticas RLS, migraciones, E2E contra base de datos local, pruebas en dispositivos reales y revisión de seguridad.
+- **Costes:** ~25–30 $/mes (Supabase Pro), alojamiento de 0 a 20 $/mes, asesoría jurídica y producción de contenido, sin estimar.
+- **Valor para el usuario:** usarlo de verdad con sus clientes.
+- **Ventaja competitiva:** el núcleo completo desde el primer día.
+
+### E2 · Evaluación avanzada
+
+- **Objetivo:** evaluar con protocolos y detectar **cambios reales**, no ruido.
+- **Funcionalidades:**
+  - protocolos versionados por capacidad: fuerza, potencia, saltos, sprint, cambios de dirección, movilidad, equilibrio, resistencia y antropometría;
+  - error típico y cambio mínimo detectable por protocolo (Hopkins, 2000);
+  - referencias verificadas, con su población;
+  - perfil fuerza–velocidad cuando haya instrumento;
+  - importación de CSV;
+  - informes de evolución con las limitaciones de cada comparación.
+- **Dependencias:** E1 y el protocolo de evidencia (P-61).
+- **Riesgos:** referencias de otra población; instrumentos distintos entre evaluaciones.
+- **Criterios de aceptación:** ningún cambio se marca como relevante sin el error de medición del protocolo; cada referencia tiene población y DOI o PMID; las comparaciones solo se hacen con el mismo protocolo e instrumento.
+- **Tests:** tests unitarios con ejemplos publicados; importaciones con archivos de muestra.
+- **Costes:** sin coste adicional, salvo dispositivos para conocer sus formatos de exportación.
+- **Valor para el usuario:** interpretar las evaluaciones con criterio.
+- **Ventaja competitiva:** detección de cambios según el error de medición; no se ha visto en la competencia revisada.
+
+### E3 · Planificación y autorregulación avanzada
+
+- **Objetivo:** periodización y autorregulación completas para cualquier población.
+- **Funcionalidades:**
+  - bloques y mesociclos;
+  - modelos ondulante y ondulante flexible, y APRE;
+  - planificación concurrente;
+  - objetivos por capacidad;
+  - volumen por grupo muscular (P-53);
+  - evidencia vinculada a ejercicios y métodos;
+  - análisis de cómo funcionan las reglas a partir del registro de decisiones.
+- **Dependencias:** E1 con datos y la Fase 1C.
+- **Riesgos:** complejidad de la interfaz y reglas mal configuradas.
+- **Criterios de aceptación:** todo esquema y toda regla tienen etiqueta de evidencia; ninguna regla se activa sin configuración explícita; los informes de reglas muestran su tasa de aceptación y sus resultados, sin inferir causalidad.
+- **Tests:** dominio puro con casos de cada modelo, E2E del editor de planes.
+- **Costes:** sin coste adicional.
+- **Valor para el usuario:** programar con profundidad sin perder rapidez.
+- **Ventaja competitiva:** autorregulación supervisada para entrenadores, que la competencia revisada resuelve mal.
+
+### E4 · Readaptación
+
+- **Objetivo:** acompañar la readaptación y el retorno al deporte con criterios definidos por el profesional.
+- **Funcionalidades:**
+  - lesiones y antecedentes (datos de salud);
+  - fases y criterios;
+  - exposición progresiva y tolerancia, con registro de síntomas;
+  - evaluaciones funcionales;
+  - asimetrías (evidencia asociativa; Bishop et al., 2018);
+  - sprint, frenadas, saltos y cambios de dirección;
+  - retorno como un continuo (Ardern et al., 2016).
+- **Dependencias:** asesoría regulatoria (P-54) y E2.
+- **Riesgos:** que el software se considere producto sanitario; responsabilidad clínica.
+- **Criterios de aceptación:** el sistema no propone criterios clínicos; cada criterio tiene autor y rol; se auditan los accesos a datos de salud; no hay automatismos.
+- **Tests:** permisos por alcance de salud y auditoría.
+- **Costes:** asesoría regulatoria.
+- **Valor para el usuario:** un único ciclo desde la lesión hasta el rendimiento.
+- **Ventaja competitiva:** unir readaptación y rendimiento, que hoy van en herramientas separadas.
+
+### E5 · Integraciones
+
+- **Objetivo:** incorporar datos instrumentales con procedencia.
+- **Funcionalidades:**
+  - la primera API, elegida por apertura verificada y demanda (`INTEGRATIONS.md`);
+  - un _wearable_;
+  - la decisión sobre una app nativa complementaria (P-59).
+- **Dependencias:** acuerdos con los fabricantes y hardware de prueba.
+- **Riesgos:** cambios o cierres de API; contratos de tratamiento.
+- **Criterios de aceptación:** cada medición importada conserva el dispositivo, el lote y la versión de la correspondencia; no se deducen variables no medidas.
+- **Tests:** contratos de API simulados y archivos reales de muestra.
+- **Costes:** hardware (de cientos a miles de dólares) y posibles tarifas.
+- **Valor para el usuario:** no transcribir a mano.
+- **Ventaja competitiva:** datos instrumentales y de campo en un mismo modelo, para profesionales pequeños.
+
+### E6 · Inteligencia artificial
+
+- **Objetivo:** ayudar a interpretar y decidir, de forma explicable.
+- **Funcionalidades:**
+  - modelos de respuesta individual y detección de incoherencias;
+  - sugerencias de ejercicios a partir de la biblioteca y de la evidencia vinculada;
+  - asistente para redactar informes, siempre revisado por el profesional.
+- **Dependencias:** datos reales suficientes, E5, P-54 y P-55.
+- **Riesgos:** Reglamento de IA y MDR, sesgos, errores del modelo, privacidad.
+- **Criterios de aceptación:** cada salida lleva explicación y etiqueta; evaluación con datos históricos antes de mostrarse; se mide la tasa de aceptación; ningún dato de salud sale sin base jurídica.
+- **Tests:** conjuntos de evaluación fijos y pruebas de regresión de las salidas.
+- **Costes:** proveedor de IA, pago por uso.
+- **Valor para el usuario:** menos tiempo en análisis e informes.
+- **Ventaja competitiva:** IA explicable y supervisada, frente a «cajas negras».
+
+### E7 · Centros y equipos
+
+- **Objetivo:** organizaciones con varios centros, profesionales y grupos.
+- **Funcionalidades:**
+  - centros y roles por centro;
+  - grupos y vistas de equipo;
+  - programación grupal con individualización;
+  - informes de equipo.
+- **Dependencias:** P-51 y P-52 desde la Fase 2.
+- **Riesgos:** complejidad de permisos.
+- **Criterios de aceptación:** pruebas de acceso entre centros y roles.
+- **Tests:** matrices de permisos.
+- **Costes:** solo el crecimiento de la infraestructura.
+- **Valor para el usuario:** trabajo en equipo e interdisciplinar.
+- **Ventaja competitiva:** pasar de entrenador individual a centro sin cambiar de herramienta.
+
+### E8 · Escalabilidad comercial
+
+- **Objetivo:** producto comercial sostenible.
+- **Funcionalidades:**
+  - planes y facturación;
+  - alta autoservicio;
+  - idiomas;
+  - observabilidad y rendimiento;
+  - exportación y portabilidad;
+  - soporte;
+  - validación a escala (Fase 10b).
+- **Dependencias:** E1 a E7 según la demanda.
+- **Riesgos:** costes de infraestructura y obligaciones fiscales.
+- **Criterios de aceptación:** objetivos de rendimiento y disponibilidad acordados y medidos.
+- **Tests:** carga y recuperación ante desastres.
+- **Costes:** proveedor de pagos e infraestructura escalable.
+- **Valor para el usuario:** fiabilidad.
+- **Ventaja competitiva:** confianza.
 
 ---
 
@@ -47,14 +221,17 @@ Probar **el ciclo funcional completo de TrainPro** con datos ficticios: **crear 
 | F-07 | Prescribir                            | Editor por ejercicio con prescripción común y **por serie** (P-41): repeticiones o rango (y por lado), 10 modalidades de carga, esfuerzo (RIR, RPE con la escala basada en RIR, carácter, intención o ninguno), descanso, tempo de 3 o 4 cifras, observaciones visibles y privadas, criterios de finalización, series de aproximación, medición opcional (P-25), bloques y su modo; %1RM con la referencia del cliente, redondeo y congelación al publicar; validaciones y avisos |
 | F-08 | Ficha del ejercicio y material visual | Ficha completa del §2 de `TRAINING_EXPERIENCE.md`; tres huecos por variante con su estado; vista «Material pendiente»; alternativa cuando falta o falla un recurso; 2–3 clips sintéticos y siluetas propias para las variantes de las sesiones demo (P-38)                                                                                                                                                                                                                        |
 | F-09 | Pantalla «Hoy»                        | Sesión del día con objetivo, duración y número de ejercicios; dos sesiones el mismo día (P-21); «Continuar entrenamiento»; día sin sesión con la próxima                                                                                                                                                                                                                                                                                                                          |
-| F-10 | Reproductor guiado                    | Vista previa, calentamiento (hacer o saltar), ejercicio actual con la tarjeta de prescripción, silueta, vídeo, indicaciones y restricciones, registro de series con un toque, descanso, siguiente ejercicio, panel «Tu sesión», saltar un ejercicio con motivo, terminar (con confirmación si faltan series), RPE de la sesión si el entrenador lo pide, mensaje y resumen                                                                                                        |
+| F-10 | Reproductor guiado                    | Vista previa, calentamiento (hacer o saltar), ejercicio actual con la tarjeta de prescripción, silueta, vídeo, indicaciones y restricciones, registro de series con un toque, descanso, siguiente ejercicio, panel «Tu sesión», saltar un ejercicio con motivo, terminar (con confirmación si faltan series), RPE de la sesión en todas las sesiones (P-48), mensaje y resumen                                                                                                    |
 | F-11 | Registro sin conexión y reanudación   | Cada serie se guarda primero en el dispositivo con su identificador; cola de envío idempotente; «Guardado en el móvil» frente a «Enviado»; correcciones como versiones; reanudación tras cerrar o recargar (P-17, P-42); borrado de los datos locales al salir                                                                                                                                                                                                                    |
 | F-12 | Textos claros para el cliente         | Ayudas de RIR, RPE (escala basada en RIR), tempo, carga autoseleccionada, lastre, asistencia, intención y calidad, con el texto aprobado (P-26)                                                                                                                                                                                                                                                                                                                                   |
 | F-13 | Analizar                              | En la ficha del cliente: lo realizado serie a serie frente a lo prescrito, con la versión; volumen y tonelaje prescritos frente a ejecutados según P-36; lastre, asistencia, intensidad relativa (con referencia) y carga respecto al peso corporal (con peso medido); anotaciones del entrenador; panel con las sesiones del día (también dos por día)                                                                                                                           |
 | F-14 | Progreso del cliente                  | Solo lo compartido por el entrenador, con las métricas nuevas                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | F-15 | Permisos                              | Políticas `canLogExecution`, `canEditPrescription`, `canAnnotateExecution`, `canViewMedia` y las de clientes y evaluaciones, con tests de acceso no autorizado                                                                                                                                                                                                                                                                                                                    |
+| F-16 | Valoración previa                     | Energía y recuperación de 1 a 10 y dolor o molestias antes de la sesión (P-47); se puede saltar; visible para el entrenador junto a la sesión, como dato autodeclarado. **Solo se recoge y se muestra: no adapta nada** (eso llega en la 1C)                                                                                                                                                                                                                                      |
+| F-17 | Dolor e incidencias                   | Durante la sesión, por ejercicio: zona, lado, intensidad 0–10 y nota; tratado como dato de salud (P-58)                                                                                                                                                                                                                                                                                                                                                                           |
+| F-18 | RPE de la sesión                      | Al terminar, en todas las sesiones, con «Responder más tarde» durante 24 h y los minutos transcurridos (P-48); duración sin pausas registrada. **Sin calcular la carga interna** (1C)                                                                                                                                                                                                                                                                                             |
 
-**Fuera de la 1B:** autenticación real, base de datos, almacenamiento en la nube, subida de vídeos, vídeos con personas, vídeos sin conexión, ecuaciones de estimación del 1RM, cálculo de pérdida de velocidad, integración de dispositivos, carga interna (RPE de la sesión × duración), planes, semanas y mesociclos, mensajería, notificaciones, informes, edición de la readaptación, interfaz de administración del catálogo, CI y despliegue.
+**Fuera de la 1B:** autenticación real, base de datos, almacenamiento en la nube, subida de vídeos, vídeos con personas, vídeos sin conexión, ecuaciones de estimación del 1RM, cálculo de pérdida de velocidad, integración de dispositivos, carga interna (RPE de la sesión × duración, en la 1C), motor de progresión y autorregulación (1C), planes, semanas y mesociclos, mensajería, notificaciones, informes, edición de la readaptación, interfaz de administración del catálogo, CI y despliegue.
 
 ### 3. Definiciones que fija la 1B
 
@@ -187,6 +364,12 @@ No se muestran un total de «repeticiones» que sume fuerza y saltos (120), ni u
 | Todas | 1B-39 | Ciclo completo del §6 en escritorio (entrenador) y móvil (cliente)                                                                                                                | E       |
 | Todas | 1B-40 | Sin incidencias graves de axe ni desplazamiento horizontal en las pantallas nuevas (CA-49); carga y esfuerzo, los textos más grandes de la ficha del ejercicio (CA-48)            | E, M    |
 | Todas | 1B-41 | `pnpm check` y `pnpm test:e2e` pasan; `package.json` no tiene dependencias nuevas; lo simulado se marca con `PendingFeature` o `Notice` (CA-52)                                   | U, E, M |
+| F-16  | 1B-42 | La valoración previa se responde en un máximo de tres interacciones, se puede saltar y se guarda como `self_reported`, sin puntuación compuesta                                   | U, E    |
+| F-16  | 1B-43 | La valoración previa no cambia la prescripción (no hay reglas en la 1B)                                                                                                           | U       |
+| F-17  | 1B-44 | El dolor se registra con zona, lado, intensidad y contexto; solo lo ven quienes tienen el alcance de salud; acceso no autorizado probado                                          | U, E    |
+| F-18  | 1B-45 | El RPE de la sesión se pide al terminar en todas las sesiones salvo desactivación con motivo; «Responder más tarde» funciona 24 h y se guardan los minutos                        | U, E    |
+| F-18  | 1B-46 | La duración de la sesión excluye las pausas registradas; no se calcula ninguna carga interna                                                                                      | U       |
+| Todas | 1B-47 | El ciclo del §6 incluye la valoración previa y el RPE de la sesión, visibles para el entrenador como autodeclarados                                                               | E       |
 
 ### 6. Prueba del ciclo completo (1B-39)
 
@@ -199,17 +382,19 @@ Una prueba E2E recorre el ciclo con valores comprobables:
    - B1 · Dominadas, 3 × 5, peso corporal + 5 kg, RIR 2.
    - C1 · Salto con contramovimiento, 3 × 5, sin carga, intención máxima y criterio de calidad.
 4. **Ejecutar desde el móvil** como Lucía:
+   - Valoración previa: energía 7, recuperación 6, sin dolor.
    - Sentadilla: dos series de 6 × 75 kg. **Sin conexión**: 6 × 72,5 kg y 5 × 75 kg.
    - Recarga la página → «Continuar» abre las dominadas.
    - **Vuelve la conexión** y se envía la cola. Se fuerza el reenvío de una serie, que no debe contar.
    - Dominadas: 5, 5 y 4 con +5 kg. Saltos: 5, 5 y 5, con su valoración.
-   - Termina.
+   - Termina y valora la sesión con un RPE de 7.
 5. **Registrar:** el resumen muestra 10 de 10 series y la sesión completada.
 6. **Analizar** como Alex:
    - Sentadilla: 24 → 23 repeticiones, tonelaje 1.800 → **1.710 kg**; intensidad relativa de la tercera serie, 72,5 %.
    - Dominadas: 15 → 14 repeticiones; lastre 75 → **70 kg**.
    - Saltos: 15 → 15 contactos.
    - Repeticiones de fuerza: 39 → 37.
+   - Valoración previa (7 y 6) y RPE de la sesión (7) como autodeclarados, sin carga interna calculada (llega en la 1C).
 
 ### 7. Etapas, dependencias y riesgos
 
@@ -218,12 +403,12 @@ Una prueba E2E recorre el ciclo con valores comprobables:
 | 1B.1  | Dominio: prescripción y registro v2, validaciones, métricas y los ejemplos del §4 como tests; datos demo adaptados; las pantallas actuales siguen funcionando | **Revisión intermedia (P-43)**, si la apruebas |
 | 1B.2  | Datos demo con escritura, identidad demo, crear cliente, evaluar, indicaciones (F-01 a F-05)                                                                  | Commit y pruebas                               |
 | 1B.3  | Planificar y prescribir (F-06, F-07)                                                                                                                          | Commit y pruebas                               |
-| 1B.4  | Portal: Hoy, reproductor, registro sin conexión, reanudación, textos (F-09 a F-12)                                                                            | Commit y pruebas                               |
+| 1B.4  | Portal: Hoy, reproductor, registro sin conexión, reanudación, textos, valoración previa, dolor y RPE de la sesión (F-09 a F-12 y F-16 a F-18)                 | Commit y pruebas                               |
 | 1B.5  | Ficha y material visual, análisis, progreso, ciclo completo e informe (F-08, F-13 a F-15)                                                                     | **Informe de la Fase 1B y parada**             |
 
 **Dependencias:**
 
-- **Tu aprobación** del alcance y de las decisiones marcadas «Sí» en `DECISIONS.md`: P-11, P-16 a P-23, P-25, P-26, P-28 y P-34 a P-43.
+- **Tu aprobación** del alcance y de las decisiones marcadas «Sí» en `DECISIONS.md`: P-11, P-16 a P-23, P-25, P-26, P-28, P-34 a P-44, P-47, P-48 y P-58.
 - **Textos aprobados** para el cliente (P-26) antes de la etapa 1B.4.
 - **Documentación de Next.js 16** incluida en `node_modules` (acciones de servidor, manejadores de rutas, cookies), que hay que leer antes de programar, como pide `AGENTS.md`.
 - **ffmpeg en local**, solo para generar los clips sintéticos una vez (está disponible en este entorno; no es una dependencia del proyecto).
@@ -240,3 +425,80 @@ Una prueba E2E recorre el ciclo con valores comprobables:
 | Introducción de datos reales en los formularios                        | Aviso visible; los datos se pierden al reiniciar; sin envío a terceros             |
 | Cambios en pruebas existentes (repeticiones totales, «nada se guarda») | Justificación de cada cambio en el informe; fórmulas con versión nueva             |
 | Servidor sin autenticación accesible en la red local                   | Ejecutarlo solo en local; no desplegar                                             |
+
+---
+
+## Fase 1C · Propuesta: progresión y autorregulación supervisada
+
+> **Pendiente de aprobación (P-44).** Empieza solo tras cerrar la 1B y con las aprobaciones de «antes de la 1C» (`DECISIONS.md`). Mismas condiciones que la 1B: datos ficticios, sin infraestructura, sin dependencias nuevas y sin costes. Diseño en `PROGRESSION_AND_AUTOREGULATION.md`.
+
+### 1. Funcionalidades (lista cerrada)
+
+| Id   | Funcionalidad                             | Incluye                                                                                                                                                                                           |
+| ---- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| C-01 | Esquemas de progresión                    | Lineal en kg o %, doble progresión, por cumplimiento de repeticiones y RIR/RPE, y mantener, reducir o repetir (P-46); por ejercicio o bloque; parámetros del entrenador; versión                  |
+| C-02 | Motor de reglas                           | Funciones puras del dominio: condición, acción, límites, modo y versión. Sin valores por defecto                                                                                                  |
+| C-03 | Alternativas autorizadas                  | Lista de sustitutos permitidos por ejercicio y cliente                                                                                                                                            |
+| C-04 | Recomendaciones explicables               | Tarjeta con propuesta, motivo, datos con procedencia, regla y versión, etiqueta de evidencia, limitaciones y alternativas                                                                         |
+| C-05 | Bandeja de revisión                       | Aceptar, modificar o rechazar; aviso de las acciones preautorizadas aplicadas                                                                                                                     |
+| C-06 | Reglas preautorizadas previas a la sesión | Se evalúan tras la valoración previa, también sin conexión, con la misma función del dominio; el cliente ve el cambio explicado                                                                   |
+| C-07 | Registro de decisiones                    | Los seis datos del §5.5 de `PROGRESSION_AND_AUTOREGULATION.md`, visibles en la ficha del cliente                                                                                                  |
+| C-08 | 1RM estimado                              | Solo con ecuaciones que superen P-50, con margen y condiciones; progresión por 1RM estimado, supervisada. Si ninguna ecuación supera el protocolo: `PendingFeature` y solo el 1RM estimado a mano |
+| C-09 | Carga interna y volumen por patrón        | RPE de la sesión × duración sin pausas (P-49), con tendencias semanales; volumen por patrón «solo principal» y «principal y secundarios». Si la fórmula no se verifica: `PendingFeature`          |
+| C-10 | Registro de evidencia mínimo              | Fuentes y etiquetas de las fórmulas, esquemas y reglas incluidos (P-61)                                                                                                                           |
+
+**Fuera de la 1C:** periodización por bloques, modelos ondulantes, APRE, VBT, volumen por grupo muscular, IA, modo automático sin límites, reglas en readaptación, notificaciones push y planes con semanas.
+
+### 2. Ejemplos que se convertirán en tests
+
+Todos los umbrales son **valores escritos por el entrenador en el ejemplo**, no recomendaciones.
+
+1. **Doble progresión.** Press de banca 3 × 6–8 con 60 kg; incremento de 2,5 kg cuando todas las series lleguen a 8 con RIR real ≥ 2. Sesión A: 8, 8 y 7 → «Mantener 60 kg». Sesión B: 8, 8 y 8 con RIR 2, 2 y 3 → «Subir a 62,5 kg y volver a 6 repeticiones». Si el entrenador acepta, la sesión siguiente se publica con 62,5 kg y queda el registro de la decisión.
+2. **Regla preautorizada.** «Si energía ≤ 4 y recuperación ≤ 4, no aplicar el incremento previsto.» El cliente responde 3 y 3 → hoy 60 kg en lugar de 62,5 kg. Queda registrado: original 62,5 kg; respuesta 3 y 3; regla v1; recomendación «no aplicar el incremento»; decisión «preautorizada»; ejecutado 60 kg.
+3. **Conflicto.** Carga prevista para hoy: 62,5 kg. Dos reglas preautorizadas: «no aplicar el incremento» (→ 60 kg) y «reducir un 10 % la carga prevista» (62,5 × 0,9 = 56,25 kg → 55 kg, porque el redondeo a 2,5 kg resuelve el empate hacia abajo, P-41). En la carga gana la de menor exigencia: **55 kg**. Si una tercera regla quita una serie, se aplica también, porque afecta a otro campo.
+4. **1RM estimado.** 80 kg × 8 repeticiones con RIR 0 y una ecuación validada para ese ejercicio → valor con margen. Con 12 repeticiones → «Fuera del rango de la ecuación (2–10)», sin resultado.
+5. **Carga interna.** Sesión de 52 min con 7 min en pausa → 45 min. RPE de la sesión 7 → 315 UA (`calculated`, con fórmula y versión).
+6. **Readaptación.** Intentar crear una regla preautorizada para un ejercicio de un caso de readaptación → se rechaza.
+
+### 3. Criterios de aceptación y pruebas
+
+| Func. | Id    | Criterio verificable                                                                                                                                   | Prueba  |
+| ----- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ------- |
+| C-01  | 1C-01 | Cada esquema del catálogo se asigna a un ejercicio o bloque y produce las recomendaciones del ejemplo 1                                                | U, E    |
+| C-01  | 1C-02 | Ningún esquema tiene parámetros prerrellenados                                                                                                         | U       |
+| C-02  | 1C-03 | Las reglas son deterministas: la misma entrada da la misma salida; cambiar una regla crea una versión nueva                                            | U       |
+| C-02  | 1C-04 | El ejemplo 3 (conflicto) se resuelve campo a campo con el valor de menor exigencia                                                                     | U       |
+| C-02  | 1C-05 | Una acción preautorizada nunca aumenta la exigencia por encima de lo planificado ni se aplica en readaptación (ejemplo 6)                              | U       |
+| C-03  | 1C-06 | Solo se sustituye por alternativas autorizadas para ese ejercicio y cliente                                                                            | U       |
+| C-04  | 1C-07 | Cada recomendación muestra los seis elementos de la explicación, y los datos llevan su procedencia                                                     | U, E    |
+| C-05  | 1C-08 | Aceptar, modificar y rechazar actualizan la prescripción solo en los dos primeros casos                                                                | U, E    |
+| C-06  | 1C-09 | El ejemplo 2 funciona con y sin conexión, con el mismo resultado, y el cliente ve el texto explicativo                                                 | U, E    |
+| C-07  | 1C-10 | El registro de decisiones contiene los seis datos y no se puede editar                                                                                 | U       |
+| C-08  | 1C-11 | El 1RM estimado se guarda como `estimated`, con su margen y condiciones; fuera de rango no se calcula; nunca sustituye a un 1RM directo                | U       |
+| C-08  | 1C-12 | Las ecuaciones reproducen los valores del §3.3 de `PROGRESSION_AND_AUTOREGULATION.md` y, si existen, los ejemplos publicados de su fuente              | U       |
+| C-09  | 1C-13 | Ejemplo 5: 315 UA con fórmula y versión; no existe ningún cociente agudo:crónico ni indicador de riesgo de lesión                                      | U       |
+| C-09  | 1C-14 | El volumen por patrón «solo principal» y «principal y secundarios» se muestra por separado y cada serie cuenta una vez por patrón                      | U       |
+| C-10  | 1C-15 | Cada fórmula, esquema y regla incluidos tiene su fuente o su etiqueta («heurística», «decisión de diseño»)                                             | U, M    |
+| Todas | 1C-16 | Un entrenador no puede crear reglas ni ver recomendaciones de clientes que no son suyos; `pnpm check` y `pnpm test:e2e` pasan; sin dependencias nuevas | U, E, M |
+
+### 4. Subfases, dependencias y riesgos
+
+| Subfase | Contenido                                                                 | Termina con                        |
+| ------- | ------------------------------------------------------------------------- | ---------------------------------- |
+| 1C.1    | Dominio: esquemas, reglas, explicación, registro de decisiones y ejemplos | Revisión intermedia (como P-43)    |
+| 1C.2    | Entrenador: asignar esquemas, configurar reglas y alternativas, bandeja   | Commit y pruebas                   |
+| 1C.3    | Cliente: reglas preautorizadas tras la valoración previa, sin conexión    | Commit y pruebas                   |
+| 1C.4    | 1RM estimado, carga interna, volumen por patrón, evidencia e informe      | **Informe de la Fase 1C y parada** |
+
+**Dependencias:**
+
+- Las aprobaciones de «antes de la 1C».
+- La verificación de la fórmula de carga interna y de las ecuaciones de 1RM, sin la cual esas partes quedan como `PendingFeature`.
+
+**Riesgos:**
+
+| Riesgo                                         | Mitigación                                                                  |
+| ---------------------------------------------- | --------------------------------------------------------------------------- |
+| Reglas que parecen recomendaciones científicas | Etiqueta «decisión del entrenador» en todo umbral y explicación obligatoria |
+| Complejidad de configuración                   | Pocos esquemas, sin parámetros por defecto pero con ayuda contextual        |
+| Incoherencias entre el móvil y el servidor     | La misma función del dominio y tests que comparan ambos resultados          |

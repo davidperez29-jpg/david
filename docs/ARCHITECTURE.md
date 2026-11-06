@@ -72,6 +72,57 @@ El temporizador de descanso se calcula a partir de la hora de fin y del reloj mo
 
 Un puerto `MediaStorage` en `src/server` (subir con URL firmada, obtener URL de lectura, firmada o pública según la visibilidad, y borrar) aísla el proveedor de almacenamiento. El caso de uso comprueba `canViewMedia` antes de firmar una URL. Detalle en `MEDIA.md`.
 
+## Evolución hacia un producto comercial (propuesta)
+
+Pendiente de aprobación (`PRODUCT_STRATEGY.md`, P-51 y siguientes). Principio: **monolito modular**, sin microservicios. Se separan módulos dentro del mismo proyecto y solo se extrae un servicio si una carga concreta lo exige y se mide.
+
+### Módulos
+
+Cada módulo tiene su carpeta en `domain`, `server/services` y `contracts`, y solo se comunica con los demás por su interfaz pública (reglas de ESLint por módulo, como las de las capas actuales):
+
+- `identity` (organizaciones, centros, miembros y roles);
+- `people` (clientes y equipos asistenciales);
+- `library`;
+- `assessment`;
+- `planning` (planes, sesiones y prescripción);
+- `execution` (registro, valoración previa y RPE de la sesión);
+- `analytics` (volumen y carga);
+- `adaptation` (progresiones, reglas, recomendaciones y registro de decisiones);
+- `rehab`;
+- `evidence`;
+- `media`;
+- `integrations`;
+- `reporting`;
+- `messaging`.
+
+### Inquilinos y permisos
+
+- **Organización como inquilino** desde el primer esquema (Fase 2). Un entrenador independiente es una organización de una persona, de modo que añadir centros y equipos (E7) no exige migrar los datos.
+- Cada fila lleva `organization_id`. RLS filtra por organización y por la relación con el cliente.
+- Los permisos pasan de «entrenador responsable» a **equipo asistencial** (`client_care_team`): cada profesional tiene un rol (entrenador, readaptador, fisioterapeuta, observador) y un alcance (entrenamiento, evaluaciones, salud). Las políticas de `src/domain/access.ts` se amplían con esos roles, con tests de acceso no autorizado.
+
+### Motor de reglas
+
+- Funciones **puras** del dominio: reciben una instantánea de los datos y devuelven recomendaciones con su explicación. Sin acceso a red ni a base de datos, deterministas y versionadas.
+- Se ejecutan en el servidor y, para las reglas preautorizadas previas a la sesión, también en el móvil sin conexión, con la misma función (como `summarizeExecution`).
+- El **registro de decisiones** es una tabla de primera clase, de solo adición (`PROGRESSION_AND_AUTOREGULATION.md` §5.5).
+
+### Versionado y auditoría
+
+- Tienen versión: prescripciones (versión de la sesión), reglas, fórmulas, correspondencias de integraciones y fuentes de evidencia (fecha de revisión).
+- Auditoría de los accesos a datos de salud, de los cambios en lo compartido y de las decisiones del motor. No se usa _event sourcing_ completo: solo registros de adición donde la trazabilidad lo exige.
+
+### IA y servicios externos
+
+Un puerto `AssistantPort` aísla cualquier proveedor de IA. **No se conecta ninguno hasta aprobar** el proveedor, la región (UE), el contrato de tratamiento, el coste y la base jurídica (P-55). Las salidas se etiquetan como generadas y requieren la revisión del profesional.
+
+### Escalabilidad
+
+- PostgreSQL con índices por organización y fecha.
+- Partición por tiempo de `set_log` cuando el volumen lo justifique.
+- Trabajos en segundo plano para los agregados y la importación, solo cuando haga falta.
+- Costes en `INFRASTRUCTURE.md`.
+
 ## Sesión de demostración
 
 No hay autenticación. `getTrainerContext()` y `getClientContext()` devuelven actores fijos (Alex, entrenador; Marta, clienta). Son **el único punto que cambiará** con el inicio de sesión real: el actor saldrá de una sesión verificada en el servidor. El resto del código ya trabaja con un `Actor` y no sabe de dónde viene.
@@ -107,7 +158,7 @@ src/features/                    brand/, shared/, trainer/, client/
 src/ui/                          button, card, badge, avatar, stat, meter, notice, page-header, empty-state, cn
 ```
 
-El modelo de datos completo (también lo que aún es conceptual) está en `DATA_MODEL.md`. El diseño de la experiencia guiada, la prescripción v2 y los recursos visuales, pendiente de aprobación, está en `TRAINING_EXPERIENCE.md`, `EFFORT_AND_LOAD.md` y `MEDIA.md`.
+El modelo de datos completo (también lo que aún es conceptual) está en `DATA_MODEL.md`. El diseño de la experiencia guiada, la prescripción v2 y los recursos visuales, pendiente de aprobación, está en `TRAINING_EXPERIENCE.md`, `EFFORT_AND_LOAD.md` y `MEDIA.md`. La estrategia, la progresión y autorregulación y las integraciones están en `PRODUCT_STRATEGY.md`, `PROGRESSION_AND_AUTOREGULATION.md` e `INTEGRATIONS.md`.
 
 ## Cómo ampliar
 

@@ -79,6 +79,18 @@ Con los supuestos de `MEDIA.md` §8 (300 variantes con silueta, vídeo breve y a
 
 La partida principal es la **producción del contenido** (grabación, edición, siluetas y cesiones de imagen), sin estimar (P-33). Comparativa completa, formatos y riesgos en `MEDIA.md`.
 
+### Costes potenciales de etapas posteriores (añadido el 6 de noviembre de 2026)
+
+No se activan sin aprobación. Detalle por etapa en `ROADMAP.md`.
+
+| Concepto                                                       | Cuándo                 | Orden de magnitud                                                               |
+| -------------------------------------------------------------- | ---------------------- | ------------------------------------------------------------------------------- |
+| Asesoría jurídica (RGPD) y regulatoria (MDR, Reglamento de IA) | Antes de E1 y de E4/E6 | Sin estimar; servicio profesional                                               |
+| Hardware para probar integraciones                             | E5                     | Cientos de dólares (encoder) a miles (plataformas de fuerza), según tiendas [T] |
+| Programas de desarrolladores de _wearables_                    | E5                     | Gratuitos o con condiciones comerciales, según el fabricante                    |
+| Proveedor de IA                                                | E6                     | Pago por uso; se estimará con el volumen real antes de aprobarlo                |
+| Pagos y facturación                                            | E8                     | Comisión por transacción del proveedor (a evaluar)                              |
+
 ## 5. Riesgos
 
 - **Cambios de condiciones** en los planes gratuitos o en los precios. Mitigación: arquitectura con adaptadores y exportaciones periódicas.

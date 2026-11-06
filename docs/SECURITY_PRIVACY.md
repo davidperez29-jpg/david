@@ -76,6 +76,18 @@ La ficha del cliente solo contiene lo necesario para entrenar (nombre, objetivo,
 | CSP                               | `media-src` e `img-src` solo para el dominio de medios aprobado; `frame-src` sigue en `'none'` (sin reproductores de terceros)                                                                                        |
 | Subidas (fase posterior)          | URL firmada directa al almacenamiento, tipo comprobado por contenido, tamaño máximo y cuota por entrenador                                                                                                            |
 
+### Visión ampliada: medidas previstas (propuesta, 6 de noviembre de 2026)
+
+| Área                               | Medida                                                                                                                                                                                                                                       |
+| ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Aislamiento entre organizaciones   | `organization_id` en todas las filas y RLS por organización y por la relación con el cliente; tests de acceso cruzado entre organizaciones (P-51)                                                                                            |
+| Equipos asistenciales              | Cada profesional ve solo el alcance de su rol (entrenamiento, evaluaciones, salud) (P-52)                                                                                                                                                    |
+| Valoración previa y dolor          | El **dolor es un dato de salud** (categoría especial). La energía y la recuperación se tratarán con la misma protección hasta que una asesoría jurídica diga lo contrario (P-58)                                                             |
+| Motor de adaptación                | Registro de decisiones de solo adición; el cliente ve qué cambió y por qué, en lenguaje claro                                                                                                                                                |
+| IA                                 | Ningún proveedor hasta aprobarlo. Región UE, contrato de tratamiento, minimización y **ningún dato de salud sin base jurídica**. Salidas etiquetadas como generadas y revisadas por el profesional (P-55)                                    |
+| Regulación de productos sanitarios | Finalidad prevista documentada: herramienta para profesionales que registra y organiza sus decisiones, **sin diagnóstico ni tratamiento**. Asesoría regulatoria (MDR y Reglamento de IA) antes de la readaptación avanzada y de la IA (P-54) |
+| Integraciones                      | Consentimiento por integración, revocable; contrato de tratamiento con cada proveedor; datos en bruto con suma de comprobación (`INTEGRATIONS.md`)                                                                                           |
+
 ### Derechos del cliente
 
 El diseño de acceso, exportación, rectificación y supresión (con datos de salud y obligaciones de conservación) está en `DATA_RIGHTS.md`.
