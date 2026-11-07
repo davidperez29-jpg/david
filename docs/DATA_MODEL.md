@@ -322,7 +322,7 @@ Se auditan: accesos a datos de salud, cambios de lo compartido, exportaciones, i
 
 ## 12. Prescripción y registro v2 en el dominio (propuesta)
 
-**Estado:** diseño pendiente de aprobación. Boceto de los tipos de `src/domain/training` (TypeScript puro, sin dependencias); no es código del proyecto todavía.
+**Estado:** diseño pendiente de aprobación. Boceto de los tipos de `src/domain/training` (TypeScript puro, sin dependencias); no es código del proyecto todavía. **Concreción para V1:** `V1_SPEC.md` §4, con el subconjunto que usa V1 y estas diferencias: `referenceResultId` y la resolución congelada del %1RM, `note` por serie, `revision` del borrador y un registro de sesión por sesión.
 
 ```ts
 type LoadBasis = 'total' | 'per_side' | 'per_implement';
@@ -417,7 +417,7 @@ interface SetLogV2 {
   rir?: number;
   rpe?: number;
   rpeScale?: RpeScale;
-  stopReason?: 'completed' | 'criterion' | 'pain' | 'other';
+  stopReason?: 'completed' | 'criterion' | 'pain' | 'other'; // V1 no lo usa; 'pain' depende de Q3 (P-58 revisada)
   completed: boolean;
   note?: string;
   recordedAt: string;
@@ -435,7 +435,7 @@ interface SetLogV2 {
 | `EffortTarget` `rir`, `rpe`, `character`, `none`               | Igual; `rpe` añade la escala obligatoria (los datos demo usarán `rir_based`, que es la que describen) |
 | Un esfuerzo para todas las series                              | `defaults.effort` + `perSet`                                                                          |
 | `SetRecord { reps, loadKg, completed }`                        | `SetLogV2` con `load: { kind: 'external', kg }` o `{ kind: 'bodyweight' }` si `loadKg` es nulo        |
-| `ExerciseFeedback.rir/rpe`                                     | Se conserva por ejercicio; además, por serie                                                          |
+| `ExerciseFeedback.rir/rpe`                                     | Solo el RPE del ejercicio completo, opcional; el RIR, solo por serie (H-4)                            |
 | `effectiveSetRecords` (última por ejercicio y número de serie) | Igual, con `clientSetId` y `supersedes` (y la versión de la sesión)                                   |
 
 ## 13. Visión ampliada: entidades nuevas (propuesta)

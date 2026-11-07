@@ -297,6 +297,8 @@ Cada entrega deja un flujo **funcional y comprobable** de extremo a extremo, ent
 
 ### V1 · Una sesión prescrita por serie, ejecutada y analizada
 
+> **Concretada en `V1_SPEC.md` (7 de noviembre de 2026, pendiente de aprobación).** A petición tuya, V1 adelanta desde V2 las correcciones, la reanudación y un guardado local mínimo, y desde V3, «Entrar como…» si se aprueba P-76. Las pantallas, el modelo, la API, las tareas y las pruebas de V1 están allí.
+
 - **Objetivo:** el entrenador prescribe por serie una sesión de fuerza a una clienta demo y la publica; la clienta la ejecuta en el móvil; el entrenador ve lo realizado frente a lo prescrito.
 - **Funcionalidades:**
   - almacén demo con escritura, «Restablecer» y aislamiento en E2E (F-01);
@@ -332,6 +334,8 @@ Cada entrega deja un flujo **funcional y comprobable** de extremo a extremo, ent
 
 ### V2 · Interrupciones, cambios y mala conexión
 
+> **Tras `V1_SPEC.md`:** V2 conserva IndexedDB y el registro completo sin conexión, dos sesiones el mismo día, editar una sesión publicada (versión 2 con aviso), la lista de versiones y el registro desde dos dispositivos.
+
 - **Objetivo:** que nunca se pierda ni se duplique una serie, y que los cambios del entrenador no reescriban lo hecho.
 - **Funcionalidades:**
   - guardar primero en el dispositivo (IndexedDB) y cola idempotente para lo que escribe el cliente;
@@ -350,6 +354,8 @@ Cada entrega deja un flujo **funcional y comprobable** de extremo a extremo, ent
 - **No implementar todavía:** empezar una sesión sin conexión; vista de diferencias.
 
 ### V3 · Un cliente nuevo y su evaluación
+
+> **Tras `V1_SPEC.md`:** si se aprueba P-76, «Entrar como…» pasa a V1. La prueba de alta de V3 usará otro nombre ficticio, para no confundirlo con Lucía Gil, la clienta sembrada de V1.
 
 - **Objetivo:** los pasos 1 y 2 del flujo, con un cliente creado desde cero que luego entrena.
 - **Funcionalidades:**

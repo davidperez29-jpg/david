@@ -57,7 +57,7 @@ Algunas reglas del dominio se ejecutan también en el navegador, siempre con **l
 
 ## Registro sin conexión y envío idempotente (propuesta, ADR-22)
 
-Diseño pendiente de aprobación para el portal del cliente (`TRAINING_EXPERIENCE.md` §4). No añade dependencias: usa APIs del navegador.
+Diseño pendiente de aprobación para el portal del cliente (`TRAINING_EXPERIENCE.md` §4). No añade dependencias: usa APIs del navegador. V1 aplica un subconjunto (`V1_SPEC.md` §5.5): una lista local de pendientes en `localStorage`, con estados y reintentos; IndexedDB y el registro completo sin conexión llegan en V2.
 
 1. Al abrir «Hoy» con conexión, el portal guarda en el dispositivo la sesión del día (y la siguiente), con su prescripción, las indicaciones y las siluetas. Los vídeos no se guardan (P-30).
 2. Cada serie registrada se guarda **primero en IndexedDB** con un `clientSetId` (UUID generado en el dispositivo) y pasa a una **cola de envío**.
@@ -184,7 +184,7 @@ Si en el futuro un cliente trabaja con un centro y una clínica distintos, cada 
 
 ## Sesión de demostración
 
-No hay autenticación. `getTrainerContext()` y `getClientContext()` devuelven actores fijos (Alex, entrenador; Marta, clienta). Son **el único punto que cambiará** con el inicio de sesión real: el actor saldrá de una sesión verificada en el servidor. El resto del código ya trabaja con un `Actor` y no sabe de dónde viene.
+No hay autenticación. `getTrainerContext()` y `getClientContext()` devuelven actores fijos (Alex, entrenador; Marta, clienta). Son **el único punto que cambiará** con el inicio de sesión real: el actor saldrá de una sesión verificada en el servidor. El resto del código ya trabaja con un `Actor` y no sabe de dónde viene. **En V1 (propuesta, `V1_SPEC.md` §8):** el cliente se elige con «Entrar como…» (P-76), los datos se escriben en un almacén en memoria con espacios aislados para las E2E (P-80), el entrenador escribe con acciones de servidor y el cliente, con una API de comandos idempotentes (P-79).
 
 ## Estructura de carpetas
 

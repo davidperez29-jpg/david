@@ -88,6 +88,7 @@ scripts/       Utilidades de mantenimiento
 | [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md)                                       | Desarrollo y mantenimiento del día a día                                                                                    |
 | [`docs/ROADMAP.md`](docs/ROADMAP.md)                                               | Fases propuestas                                                                                                            |
 | [`docs/IMPLEMENTATION_READINESS.md`](docs/IMPLEMENTATION_READINESS.md)             | Auditoría de preparación: primera versión funcional, decisiones para aprobar, entregas verticales y definición de terminado |
+| [`docs/V1_SPEC.md`](docs/V1_SPEC.md)                                               | Especificación técnica y funcional de V1: pantallas, modelo de datos, API, plan por bloques y pruebas                       |
 
 ## Costes
 

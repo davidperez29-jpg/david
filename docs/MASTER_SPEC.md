@@ -8,6 +8,7 @@ Documento de referencia del producto: qué es TrainPro, qué reglas lo rigen, qu
 | 1.1     | 6 de noviembre de 2026 | Cambio de ambición: visión estratégica, ciclo rector, motor de adaptación explicable, progresión, valoración previa, RPE de sesión, análisis competitivo e integraciones (pendiente de aprobación)                                                                                                                                                                      |
 | 1.2     | 6 de noviembre de 2026 | Cierre de decisiones: tabla completa clasificada de A a E, autorregulación detallada (orígenes, matriz de acciones, perfiles, señales, simulación), decisiones estructurales de la 1B, escenarios de validación S-01 a S-24, revisión regulatoria con fuentes oficiales y registro de riesgos (pendiente de aprobación)                                                 |
 | 1.3     | 7 de noviembre de 2026 | Auditoría de preparación para implementar (`IMPLEMENTATION_READINESS.md`): reclasificación de las funcionalidades de la 1B (A–D), primera versión funcional cerrada, seis preguntas para aprobar (Q1–Q6), entregas verticales V1–V6, definición de terminado, dolor sin registro estructurado en la 1B y salvaguarda de la valoración aislada (pendiente de aprobación) |
+| 1.4     | 7 de noviembre de 2026 | Especificación técnica y funcional de V1 (`V1_SPEC.md`): pantallas, modelo de datos, reglas de prescripción y registro, análisis, permisos, arquitectura, plan por bloques, pruebas y decisiones P-76 a P-84 (pendiente de aprobación)                                                                                                                                  |
 
 ## 1. Producto
 
@@ -122,6 +123,7 @@ Las fases se agrupan en **etapas estratégicas** (E0 núcleo funcional a E8 esca
 | `DESIGN_SYSTEM.md`                  | Identidad, tokens, componentes y patrones                                                                                           |
 | `DECISIONS.md`                      | Decisiones tomadas (ADR) y pendientes (P-xx)                                                                                        |
 | `ROADMAP.md`                        | Fases                                                                                                                               |
+| `V1_SPEC.md`                        | Especificación de la primera entrega vertical (V1): pantallas, modelo, API, tareas y pruebas                                        |
 | `IMPLEMENTATION_READINESS.md`       | Auditoría de preparación, primera versión funcional, decisiones para aprobar (Q1–Q6), entregas verticales y definición de terminado |
 | `SCREEN_INVENTORY.md`               | Qué funciona en cada pantalla                                                                                                       |
 | `PHASE1_REPORT.md`                  | Informe de la Fase 1                                                                                                                |
