@@ -1,6 +1,10 @@
 # V1 · Especificación técnica y funcional
 
-> **Estado: versión 2 de la especificación, pendiente de aprobación (7 de noviembre de 2026). No autoriza a programar.** Sustituye a la primera versión (commit `57bf859`, que sigue en el historial de Git). El §0 resume qué ha cambiado y por qué.
+> **Estado: versión 2.1 de la especificación, pendiente de aprobación (7 de noviembre de 2026). No autoriza a programar.**
+>
+> - Sustituye a la versión 1 (commit `57bf859`) y revisa la 2 (commit `2dd77fa`); las dos siguen en el historial de Git.
+> - El §0 resume qué ha cambiado y por qué.
+> - La versión 2.1 revisa la persistencia (§8.3), la versión de Node (§8.7), el bloque 1 (§9.1), las garantías ante fallos de conexión (§5.7) y la propuesta de decisiones (§11.1 y §12).
 >
 > V1 es la primera entrega vertical de `IMPLEMENTATION_READINESS.md` §8: una sesión prescrita por serie, ejecutada en el móvil y analizada. Para no duplicar, este documento remite a:
 >
@@ -11,17 +15,21 @@
 
 ## 0. Correcciones respecto a la versión anterior
 
-| Tema                           | Antes                                                         | Ahora                                                                                                                                        | Motivo                                      |
-| ------------------------------ | ------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
-| Sesiones el mismo día          | Una por cliente y fecha (P-77)                                | Varias, cada una con su orden y su contexto («Mañana», «Club»…), su registro y su historial; análisis por sesión y total del día             | Tu indicación                               |
-| Sesiones publicadas            | De solo lectura en V1 (P-78)                                  | Se editan publicando una versión nueva. Lo ya registrado queda bloqueado y ligado a su versión (§5.4)                                        | Tu indicación                               |
-| Cambios con la sesión en curso | El cliente decidía cuándo actualizar (P-18)                   | Las series pendientes adoptan la versión nueva, con un aviso. El cliente no tiene que decidir nada                                           | No obligar al cliente a interpretar cambios |
-| Fecha de ejecución             | Solo el día programado (P-83); cierre al acabar el día (P-17) | Cualquier día. Se distinguen la fecha prevista y las fechas reales. Una sesión sin terminar queda «Interrumpida» y se puede continuar (§5.5) | Tu indicación                               |
-| Persistencia                   | En memoria: los datos se perdían al reiniciar (P-80)          | SQLite local en un archivo, con migraciones, transacciones y restricciones (§8.3, P-85)                                                      | Tu indicación, tras comparar alternativas   |
-| Series después de medianoche   | Se rechazaban                                                 | Se aceptan siempre. Cuenta la hora real de la ejecución, con su zona horaria (§5.5)                                                          | Tu indicación                               |
-| Identidad                      | «Cualquiera que abra `/entrenador` actúa como Alex»           | Identidad, rol y permiso separados; protección mínima del prototipo local y requisitos de cada etapa (§7)                                    | Tu indicación                               |
-| Correcciones del cliente       | Hasta terminar la sesión o hasta el final del día             | Hasta terminar la sesión                                                                                                                     | Coherencia con las fechas libres            |
-| Fecha al crear una sesión      | Entre hoy y dentro de 60 días                                 | Cualquier fecha, con aviso si ya ha pasado                                                                                                   | Era una limitación artificial               |
+| Tema                                    | Antes                                                         | Ahora                                                                                                                                        | Motivo                                      |
+| --------------------------------------- | ------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
+| Sesiones el mismo día                   | Una por cliente y fecha (P-77)                                | Varias, cada una con su orden y su contexto («Mañana», «Club»…), su registro y su historial; análisis por sesión y total del día             | Tu indicación                               |
+| Sesiones publicadas                     | De solo lectura en V1 (P-78)                                  | Se editan publicando una versión nueva. Lo ya registrado queda bloqueado y ligado a su versión (§5.4)                                        | Tu indicación                               |
+| Cambios con la sesión en curso          | El cliente decidía cuándo actualizar (P-18)                   | Las series pendientes adoptan la versión nueva, con un aviso. El cliente no tiene que decidir nada                                           | No obligar al cliente a interpretar cambios |
+| Fecha de ejecución                      | Solo el día programado (P-83); cierre al acabar el día (P-17) | Cualquier día. Se distinguen la fecha prevista y las fechas reales. Una sesión sin terminar queda «Interrumpida» y se puede continuar (§5.5) | Tu indicación                               |
+| Persistencia                            | En memoria: los datos se perdían al reiniciar (P-80)          | SQLite local en un archivo, con migraciones, transacciones y restricciones (§8.3, P-85)                                                      | Tu indicación, tras comparar alternativas   |
+| Series después de medianoche            | Se rechazaban                                                 | Se aceptan siempre. Cuenta la hora real de la ejecución, con su zona horaria (§5.5)                                                          | Tu indicación                               |
+| Identidad                               | «Cualquiera que abra `/entrenador` actúa como Alex»           | Identidad, rol y permiso separados; protección mínima del prototipo local y requisitos de cada etapa (§7)                                    | Tu indicación                               |
+| Correcciones del cliente                | Hasta terminar la sesión o hasta el final del día             | Hasta terminar la sesión                                                                                                                     | Coherencia con las fechas libres            |
+| Controlador SQLite (revisión del 7 nov) | `node:sqlite` en Node 24.15                                   | `better-sqlite3` 13.x, por la estabilidad de su API. `node:sqlite` es _release candidate_ (1.2), no estable (§8.3)                           | Tu revisión crítica                         |
+| Versión de Node                         | 24.15 o posterior                                             | Node 26 LTS (hoy 26.13.0), con una política de actualización (§8.7)                                                                          | La 24 ya está en mantenimiento              |
+| Bloque 1                                | Una fila del plan                                             | Desglose A–E, qué se podrá hacer y qué no, y 12 pruebas propias (§9.1)                                                                       | Tu petición                                 |
+| Fallos de conexión                      | Estados y reintentos                                          | Además: escritura previa al envío, rechazos visibles que no se descartan y aviso si el navegador no puede guardar (§5.7)                     | Que ningún registro se pierda en silencio   |
+| Fecha al crear una sesión               | Entre hoy y dentro de 60 días                                 | Cualquier fecha, con aviso si ya ha pasado                                                                                                   | Era una limitación artificial               |
 
 ## 1. Especificación funcional
 
@@ -576,13 +584,29 @@ Ejemplo (S-05): la versión 1 prescribe 4 × 6 × 80 kg; se registran las series
 
 ### 5.7 Guardado local temporal, persistencia confirmada y sincronización (Q4)
 
-| Capa                        | V1                                                                                                                                                                                                                                        |
-| --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Guardado local temporal** | En el móvil (`localStorage`): los comandos pendientes con su identificador y la hora de fin del descanso. Se conservan si se cierra la app o se pierde la conexión. Se borran al confirmarse o al salir del modo demostración (con aviso) |
-| **Persistencia confirmada** | El servidor guarda el comando en una transacción SQLite y responde `200`. Es lo único que la interfaz llama «Guardada». Sobrevive a cerrar la app y a reiniciar el servidor                                                               |
-| **Sincronización**          | En orden: al abrir el reproductor, con el evento `online`, al volver a la pestaña y con reintentos cada 2, 4, 8, 16 y 30 s, además de «Reintentar». Aviso al salir de la página con pendientes                                            |
+| Capa                        | V1                                                                                                                                                                                                                                                                         |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Guardado local temporal** | En el móvil (`localStorage`): los comandos pendientes con su identificador y la hora de fin del descanso. **Se escriben antes de enviar.** Se conservan si se cierra la app o se pierde la conexión. Se borran al confirmarse o al salir del modo demostración (con aviso) |
+| **Persistencia confirmada** | El servidor guarda el comando en una transacción SQLite y responde `200`. Es lo único que la interfaz llama «Guardada». Sobrevive a cerrar la app y a reiniciar el servidor                                                                                                |
+| **Sincronización**          | En orden: al abrir el reproductor, con el evento `online`, al volver a la pestaña y con reintentos cada 2, 4, 8, 16 y 30 s, además de «Reintentar». Aviso al salir de la página con pendientes                                                                             |
 
-**En V2:** IndexedDB, empezar o hacer toda la sesión sin conexión y el registro desde dos dispositivos.
+**Garantías para el cliente:**
+
+| Situación                                    | Comportamiento                                                                                                                                                                                        |
+| -------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Registro pendiente                           | Se muestra como «Guardando…» o «Sin enviar», **nunca** como «Guardada»                                                                                                                                |
+| Operación confirmada (`200`)                 | Está en la base y no se pierde. El estado de la sesión que devuelve el servidor manda sobre lo local                                                                                                  |
+| Falla el envío (red, `5xx` o tiempo agotado) | El comando sigue en el móvil y se reintenta con el **mismo** identificador. El servidor responde «ya aplicado» si ya lo tenía, así que el reintento nunca duplica la serie                            |
+| El servidor lo rechaza (`422` o `409`)       | No se descarta en silencio: queda visible como «No se ha podido guardar», con el motivo y «Corregir». `set_already_logged` se reconcilia con el registro del servidor                                 |
+| El navegador no permite guardar en local     | Por ejemplo, sin espacio o en navegación privada restringida. Aviso permanente: «Este navegador no puede guardar temporalmente: no cierres hasta ver "Guardada"». Lo pendiente se mantiene en memoria |
+
+**Límites que hay que aceptar en V1** (se resuelven en V2, con IndexedDB y almacenamiento persistente):
+
+- lo **pendiente** se pierde si se borran los datos del navegador o se cambia de dispositivo antes de enviarlo;
+- Safari puede borrar ese almacenamiento si la web pasa días sin usarse;
+- no se puede empezar una sesión sin conexión.
+
+Lo confirmado nunca se pierde.
 
 ### 5.8 Estados de ejecución
 
@@ -709,46 +733,100 @@ Se respetan las capas: los componentes de `features` reciben las acciones como p
 
 **Requisitos:**
 
-- no perder datos al cerrar y abrir la app ni al reiniciar el servidor;
-- integridad de las restricciones;
-- varios clientes ficticios;
-- E2E reproducibles;
-- sin servicios externos ni costes;
-- poder migrar a PostgreSQL o Supabase.
+- nada se pierde al recargar, al cerrar y abrir el navegador ni al reiniciar el servidor;
+- integridad de las relaciones y transacciones en lo que deba ser atómico;
+- identificadores únicos y protección frente a duplicados;
+- migraciones versionadas;
+- copias de seguridad y recuperación en el entorno de prueba;
+- varios clientes ficticios y E2E reproducibles;
+- sin servicios externos ni costes, y con una vía de migración a PostgreSQL.
 
-**Comparativa:**
+#### 8.3.1 Entornos
 
-| Opción                                             | Persiste al reiniciar | Integridad                                                                             | Concurrencia                                                          | Dependencias y costes                              | Seguridad                                                        | Pruebas                                                | Migración a PostgreSQL                     | Mantenimiento                                                                       | Veredicto                                                                           |
-| -------------------------------------------------- | --------------------- | -------------------------------------------------------------------------------------- | --------------------------------------------------------------------- | -------------------------------------------------- | ---------------------------------------------------------------- | ------------------------------------------------------ | ------------------------------------------ | ----------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| Memoria del servidor (diseño anterior)             | No                    | Solo en el código                                                                      | Un proceso                                                            | Ninguna                                            | —                                                                | Fácil                                                  | —                                          | Bajo                                                                                | Descartada                                                                          |
-| Archivo JSON en el servidor                        | Sí                    | **Solo en el código**: sin restricciones; escritura atómica por renombrado             | Un proceso, con exclusión mutua propia                                | Ninguna; 0 €                                       | Archivo local                                                    | Fácil                                                  | Script de exportación                      | **Alto**: sería programar una base de datos (unicidad, índices, cambios de formato) | Descartada                                                                          |
-| **SQLite con `node:sqlite`** (integrado en Node)   | Sí                    | Transacciones ACID, `UNIQUE`, `CHECK`, claves ajenas, índices parciales y disparadores | Un escritor y lectores en paralelo (WAL): suficiente para un servidor | **Ninguna dependencia**; 0 €                       | Archivo local con permisos de usuario; solo consultas preparadas | `:memory:` en unitarias; un archivo por espacio en E2E | SQL portable; un adaptador nuevo para `pg` | Bajo: SQL estándar y un adaptador de un archivo                                     | **Recomendada**                                                                     |
-| SQLite con `better-sqlite3`                        | Sí                    | Igual                                                                                  | Igual                                                                 | Dependencia nueva con módulo nativo; 0 €           | Igual, más la cadena de suministro                               | Igual                                                  | Igual                                      | Bajo; muy madura                                                                    | Alternativa si no se cambia de versión de Node                                      |
-| PGlite (PostgreSQL en WebAssembly)                 | Sí                    | PostgreSQL completo                                                                    | Una conexión                                                          | Dependencia nueva y voluminosa; 0 €                | Igual                                                            | Un directorio por espacio                              | **Mínima** (mismo dialecto)                | Medio: proyecto más joven                                                           | No por ahora                                                                        |
-| PostgreSQL local (o Supabase local)                | Sí                    | Completa                                                                               | Completa                                                              | Un servicio aparte (Docker) y el cliente `pg`; 0 € | Más superficie (puerto y credenciales)                           | Más lentas: una base por prueba                        | Ninguna                                    | Alto para un prototipo                                                              | En la Fase 2 (`INFRASTRUCTURE.md`)                                                  |
-| Almacenamiento del navegador como fuente principal | Por dispositivo       | Débil                                                                                  | —                                                                     | Ninguna                                            | Datos repartidos por dispositivos                                | —                                                      | —                                          | —                                                                                   | Descartada: entrenador y cliente no comparten datos. Solo para la cola local (§5.7) |
+| Entorno                  | Persistencia                                                                                                                                                                                                                                 | Notas                                                                                              |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| **A. Desarrollo local**  | `.data/trainpro.sqlite`, con un solo proceso (`next dev`)                                                                                                                                                                                    | La conexión se reutiliza en `globalThis` para que la recarga en caliente no abra conexiones de más |
+| **B. Pruebas**           | <ul><li>Unitarias: `:memory:` o un archivo temporal por prueba.</li><li>E2E: `next start` en `127.0.0.1`, con un archivo `.data/e2e/<espacio>.sqlite` por prueba.</li><li>Reinicio: un servidor propio con un directorio temporal.</li></ul> | Los datos de E2E se borran al empezar cada ejecución                                               |
+| **C. Usuarios externos** | **PostgreSQL**, en la Fase 2 (P-01)                                                                                                                                                                                                          | SQLite no se usará con usuarios externos (§8.3.5)                                                  |
 
-**Comprobado en este entorno (7 de noviembre de 2026):**
+#### 8.3.2 Comparativa del controlador SQLite
 
-- **Node 22.23.4 incluye SQLite 3.53.** `UNIQUE` y `CHECK` funcionan, y el módulo muestra el aviso «ExperimentalWarning».
-- **Funciona con la compilación de Next.js 16.4.5 del proyecto** (Turbopack), en un componente de servidor y en un manejador de rutas. Lo comprobé con una prueba aislada, fuera del repositorio y ya borrada.
-- **Estabilidad del módulo según la documentación oficial de Node.js:**
-  - en Node 22: «1.1 · Active development», sin opción de activación desde la 22.13;
-  - desde Node **24.15.0**: «1.2 · Release candidate» (en la rama 25, desde la 25.7.0).
+Todas las opciones usan el mismo motor SQLite y el mismo esquema (§4). Lo que cambia es el controlador.
 
-**Recomendación:**
+| Criterio                   | **A. `node:sqlite`** (integrado en Node 26 LTS)                                                                                          | **B. `better-sqlite3`** 13.x                                                                                                                                                                                                                                 | **C. libSQL** (`@libsql/client`)                                            |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------- |
+| Madurez y estabilidad      | «1.2 · Release candidate» desde Node 24.15.0 (25.7.0 en la rama 25) y también en Node 26. **No es estable.** Existe desde la 22.5 (2024) | Estable y muy usada desde 2016. Versión 13.0.3 (5 de agosto de 2026). Los cambios incompatibles llegan con las versiones mayores: la 13 salió en julio de 2026                                                                                               | Versión 0.18.0: todavía 0.x. Orientada al servicio Turso                    |
+| Mantenimiento              | El equipo de Node; SQLite se actualiza con Node                                                                                          | WiseLibs; publicaciones frecuentes (seis entre junio y agosto de 2026); pocos mantenedores                                                                                                                                                                   | La empresa Turso                                                            |
+| Next.js 16                 | **Comprobado aquí, con Node 22.23.4** (Turbopack: componente de servidor y manejador de rutas). No he podido probarlo con Node 26        | Next.js 16.4.5 no la empaqueta y la carga desde `node_modules` (está en su lista `server-external-packages.jsonc`). No comprobado aquí: no puedo instalarla                                                                                                  | También en esa lista                                                        |
+| TypeScript                 | Tipos en `@types/node`, cuya versión mayor hay que alinear con la de Node                                                                | `@types/better-sqlite3` 9.6.0 (DefinitelyTyped), aparte; pueden ir por detrás                                                                                                                                                                                | Tipos incluidos                                                             |
+| Windows y entorno actual   | Incluido en Node para Windows, macOS y Linux. Aquí (Node 22.23.4) funciona, con el aviso «ExperimentalWarning»                           | **Binarios precompilados dentro del paquete** para Windows x64 y arm64, macOS, Linux y Linux musl, sin script de instalación (comprobado en el paquete publicado). Si una plataforma no está, se compila con `node-gyp` (en Windows, Visual Studio y Python) | Binarios por plataforma como paquetes opcionales (en Windows, solo x64)     |
+| Dependencias nativas       | Ninguna                                                                                                                                  | Un módulo nativo de 27 MB descomprimido. Usa N-API, así que sirve para versiones futuras de Node sin recompilar. Es un binario más en la cadena de suministro                                                                                                | Módulo nativo y cuatro dependencias                                         |
+| Rendimiento y concurrencia | Síncrono y en el mismo proceso. SQLite admite un escritor y lectores en paralelo (WAL); de sobra para el prototipo                       | Igual; además, ayuda para hilos de trabajo                                                                                                                                                                                                                   | Asíncrono; parecido                                                         |
+| Transacciones e integridad | SQL completo (`BEGIN IMMEDIATE` … `COMMIT`). No trae una ayuda `transaction()`: la escribimos en el adaptador                            | `db.transaction()`, con puntos de guardado anidados                                                                                                                                                                                                          | Transacciones interactivas asíncronas                                       |
+| Migraciones                | Ninguna trae migraciones: archivos SQL numerados y un ejecutor propio                                                                    | Igual                                                                                                                                                                                                                                                        | Igual                                                                       |
+| Copias de seguridad        | `sqlite.backup()` en línea (presente en Node 22.23) y `VACUUM INTO`                                                                      | `db.backup()` y `VACUUM INTO`                                                                                                                                                                                                                                | `VACUUM INTO`                                                               |
+| Pruebas automatizadas      | **Comprobado en Vitest 5 con Node 22.23.4**: índice único parcial, disparadores y `ROLLBACK`                                             | Uso habitual en Vitest; no comprobado aquí                                                                                                                                                                                                                   | Posible                                                                     |
+| Mantenimiento del proyecto | Nada que actualizar aparte de Node, pero hay que seguir los cambios de una API candidata                                                 | Una dependencia y sus tipos que actualizar; API conocida y bien documentada                                                                                                                                                                                  | Más piezas                                                                  |
+| Migración a PostgreSQL     | La misma en las tres: SQL portable y un adaptador nuevo                                                                                  | La misma                                                                                                                                                                                                                                                     | La misma. Añade una salida hacia Turso, un servicio externo que no buscamos |
+| Límites de despliegue      | Los de SQLite en un disco local (§8.3.5)                                                                                                 | Los mismos                                                                                                                                                                                                                                                   | Los mismos en modo local                                                    |
+| **Veredicto**              | Alternativa válida                                                                                                                       | **Recomendada**                                                                                                                                                                                                                                              | No                                                                          |
 
-- SQLite con `node:sqlite`, **en Node 24 LTS (24.15 o posterior)**. Requiere cambiar `engines` y la versión de Node del entorno (P-85).
-- Todo el acceso pasa por `src/server/db/sqlite.ts`. Si el módulo cambiara, pasar a `better-sqlite3` afectaría solo a ese archivo: las dos API son síncronas y muy parecidas.
+**Otras opciones descartadas:**
 
-**Configuración:**
+- `sql.js` (WebAssembly): trabaja en memoria y tiene que reescribir el archivo entero para guardarlo.
+- `sqlite3` (node-sqlite3): API de retrollamadas, más antigua y con compilación.
+- Drizzle, Kysely y otros ORM o constructores de consultas: no son controladores; añadirían una abstracción que el adaptador del §8.3.4 no necesita.
 
-- `journal_mode=WAL`, `synchronous=FULL` (no se pierde una transacción confirmada aunque se corte la luz), `foreign_keys=ON` y `busy_timeout=5000`.
-- Archivo en `.data/trainpro.sqlite`, fuera de Git y con permisos `600`.
-- En las E2E (`TRAINPRO_DEMO_SPACES=on`): `.data/e2e/<espacio>.sqlite`, creado y sembrado al primer uso y borrado al empezar cada ejecución.
-- «Restablecer datos demo» vuelve a crear el archivo con la semilla de hoy.
+#### 8.3.3 Recomendación
 
-**Migración a PostgreSQL o Supabase:**
+**`better-sqlite3` 13.x**: la última versión 13 al empezar, con la versión exacta fijada en `pnpm-lock.yaml`. Sobre **Node 26 LTS** (§8.7).
+
+**Motivos:**
+
+1. **Su API es estable** y tiene años de uso. La de `node:sqlite` sigue siendo una candidata (1.2), también en Node 26.
+2. **Se instala sin compilar** en las plataformas habituales, Windows incluido: el paquete trae los binarios.
+3. **Next.js 16 la deja fuera del empaquetado de serie.**
+4. **Trae ayuda para transacciones y copias en línea.**
+
+**El coste:**
+
+- una dependencia nueva, que es una excepción a P-11 y requiere tu aprobación;
+- sus tipos, que van aparte;
+- un binario nativo más.
+
+**Rectificación:** en la versión 2 recomendé `node:sqlite`. Tu precisión es correcta: es _release candidate_, no estable. Con la estabilidad pesando más que evitar una dependencia, la recomendación pasa a `better-sqlite3`.
+
+**Si prefieres no añadir dependencias, A sigue siendo viable:** lo he comprobado con Next.js 16 y Vitest 5, en Node 22. Cambiar entre A y B afecta a un solo archivo (`src/server/db/sqlite.ts`).
+
+#### 8.3.4 Arquitectura para empezar con SQLite sin quedar atrapados
+
+```
+dominio (puro) → casos de uso (políticas) → puertos → adaptador SQLite → src/server/db/sqlite.ts → controlador
+```
+
+- **Puertos por agregado, con operaciones atómicas a la medida de los casos de uso.**
+  - Sin repositorio genérico, sin unidad de trabajo y sin ORM.
+  - Los puertos de V1:
+    - `clients`;
+    - `sessions` (`createDraft`, `saveDraft(revisión esperada)`, `publishVersion`, `deleteDraft`, `get` y `listByClient`);
+    - `versions` (`get` y `list`);
+    - `executions` (`start`, `appendSetLog`, `finish` y `get`).
+  - Cada método es **una transacción** y devuelve un resultado explícito: `ok`, `conflict`, `locked`, `duplicate_same` o `duplicate_different`.
+- **El SQL solo vive en el adaptador** (`src/server/repositories/sqlite/*`).
+  - Una regla de ESLint impide importar el controlador fuera de `src/server/db/sqlite.ts`.
+  - Otra regla impide importar el adaptador fuera de la composición del contexto.
+- **SQL portable:**
+  - UUID generados por la aplicación;
+  - instantes ISO en UTC;
+  - `ON CONFLICT DO NOTHING` y `RETURNING`, que existen en los dos motores;
+  - nada de `rowid`, de `INSERT OR REPLACE` ni de funciones de fecha de SQLite en la lógica.
+- **Pruebas de contrato por puerto** (`*.contract.test.ts`): comprueban restricciones, idempotencia, inmutabilidad y conflictos contra el adaptador SQLite. El de PostgreSQL tendrá que pasar las mismas.
+- **Migración a PostgreSQL**, sin tocar el dominio, los casos de uso, los contratos ni la interfaz:
+  1. Traducir las migraciones con la tabla de tipos (más abajo).
+  2. Escribir el adaptador de PostgreSQL de los mismos puertos.
+  3. Pasar las pruebas de contrato.
+  4. Copiar los datos ficticios con un script, si interesa conservarlos.
+  5. Cambiar `TRAINPRO_DATA_SOURCE`.
 
 | SQLite           | PostgreSQL    |
 | ---------------- | ------------- |
@@ -759,17 +837,47 @@ Se respetan las capas: los componentes de `features` reciben las acciones como p
 | `INTEGER` 0/1    | `boolean`     |
 | `REAL`           | `numeric`     |
 
-- Se conservan las mismas `CHECK`, claves ajenas e índices parciales.
-- Los disparadores de inmutabilidad pasan a permisos y RLS.
-- Los puertos ya son asíncronos: se escribe un adaptador nuevo y un script copia los datos ficticios si interesa conservarlos.
+Se conservan las mismas `CHECK`, claves ajenas e índices parciales. Los disparadores de inmutabilidad pasan a permisos y RLS.
 
-**Limitaciones que hay que aceptar:**
+#### 8.3.5 Límites de SQLite según el despliegue
 
-- **Un solo proceso de servidor:** no sirve para varias instancias ni para funciones sin servidor.
-- **Sin cifrado en reposo ni copias automáticas:** se copia el archivo con `VACUUM INTO`. Por eso, solo datos ficticios.
-- **Este entorno en la nube es efímero:** el archivo sobrevive a reiniciar el servidor y a cerrar y abrir la app, pero **no a que se vuelva a crear el entorno**. En tu ordenador persiste de verdad.
-- **En Node 22 el módulo sigue siendo experimental.**
+| Escenario                                  | ¿Sirve un archivo SQLite?                                             | Por qué                                                                                                                                    |
+| ------------------------------------------ | --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| Un servidor con almacenamiento persistente | Técnicamente sí, con copias; **no lo propongo con usuarios externos** | Un solo escritor; las copias, el cifrado y la recuperación quedarían a nuestro cargo; no hay RLS                                           |
+| Varios procesos en la misma máquina        | Con cautela                                                           | SQLite bloquea el archivo entre procesos (un escritor a la vez, con espera por `busy_timeout`). Las cachés de cada proceso no se comparten |
+| Serverless                                 | **No**                                                                | No hay disco persistente ni compartido: cada instancia tendría su archivo, o ninguno                                                       |
+| Varias instancias simultáneas              | **No**                                                                | Cada máquina tendría su copia. SQLite sobre un sistema de archivos en red no es fiable con los bloqueos                                    |
+| Cualquier proveedor de alojamiento         | No suponer nada                                                       | Muchos usan discos efímeros: sin un volumen persistente, el archivo se pierde al volver a desplegar                                        |
+
+**Conclusión:** SQLite para los entornos A y B. Con usuarios externos (C), PostgreSQL.
+
+#### 8.3.6 Cómo se cumplen los requisitos
+
+| Requisito                                 | Cómo                                                                                                                                                                                                                                                                                                    |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Recargar y cerrar el navegador            | Los datos están en el servidor. El navegador solo guarda lo pendiente (§5.7)                                                                                                                                                                                                                            |
+| Reiniciar el servidor                     | Archivo en disco con `synchronous=FULL`. Se prueba con `SIGTERM` y con `SIGKILL`                                                                                                                                                                                                                        |
+| Integridad de las relaciones              | `foreign_keys=ON` en cada conexión y las claves ajenas del §4                                                                                                                                                                                                                                           |
+| Transacciones                             | Crear y publicar (versión y sesión); cada comando del cliente (comando, serie y registro de sesión); restablecer los datos. Siempre `BEGIN IMMEDIATE`                                                                                                                                                   |
+| Identificación                            | UUID. En el navegador, `crypto.randomUUID()`, que necesita un contexto seguro (`localhost` lo es), con una alternativa basada en `crypto.getRandomValues()`                                                                                                                                             |
+| Duplicados                                | <ul><li>Claves primarias, índice único parcial y tabla de comandos.</li><li>**Entrenador:** el identificador del borrador se emite al mostrar el formulario, así que un reenvío no crea otro; publicar dos veces no crea dos versiones; guardar dos veces el mismo contenido no da conflicto.</li></ul> |
+| Migraciones versionadas                   | <ul><li>`schema_migrations` guarda número, nombre, suma de comprobación y fecha.</li><li>Solo hacia delante.</li><li>Si una migración ya aplicada cambia, el arranque falla.</li><li>Antes de migrar se hace una copia automática.</li></ul>                                                            |
+| Copias y recuperación (entorno de prueba) | <ul><li>`pnpm db:backup`: copia en línea a `.data/backups/AAAAMMDD-HHMMSS.sqlite`.</li><li>`pnpm db:restore <archivo>`: con el servidor parado, comprueba `PRAGMA integrity_check` antes de sustituir.</li><li>Una prueba automática copia, modifica y restaura.</li></ul>                              |
+
+#### 8.3.7 Configuración
+
+- `journal_mode=WAL`, `synchronous=FULL`, `foreign_keys=ON` y `busy_timeout=5000`.
+- El archivo, en `.data/`, fuera de Git. En Linux y macOS, con permisos `600`; en Windows, los permisos de la carpeta del usuario.
+- En las E2E (`TRAINPRO_DEMO_SPACES=on`), un archivo por espacio, creado y sembrado al primer uso.
+- «Restablecer datos demo» hace una copia y vuelve a crear la base con la semilla de hoy.
+
+#### 8.3.8 Limitaciones
+
+- **Un solo proceso de servidor.** Ni serverless ni varias instancias (§8.3.5).
+- **Sin cifrado en reposo ni copias automáticas programadas.** Por eso, solo datos ficticios.
+- **Este entorno en la nube es efímero:** el archivo sobrevive a reiniciar el servidor y a cerrar y abrir el navegador, pero **no a que se vuelva a crear el entorno**. En tu ordenador persiste de verdad.
 - **Los datos de referencia de la demo siguen en el código** hasta su fase (§4.3).
+- **Con B, una dependencia nativa.** Si fallara en alguna plataforma, la alternativa A cambia un solo archivo.
 
 ### 8.4 API de comandos del cliente (P-79)
 
@@ -827,27 +935,140 @@ Se respetan las capas: los componentes de `features` reciben las acciones como p
 - `next start -H` fija la interfaz de red; por defecto escucha en `0.0.0.0`.
 - `useOffline` es experimental y no se activa.
 
+### 8.7 Versión de Node (P-85)
+
+**Estado actual** (comprobado el 7 de noviembre de 2026):
+
+| Elemento                      | Valor                                                                   |
+| ----------------------------- | ----------------------------------------------------------------------- |
+| Este entorno                  | Node 22.23.4 (la última de la 22) y pnpm 10.28.0                        |
+| `.nvmrc`                      | `22`: solo la versión mayor                                             |
+| `package.json`                | `engines` `>=22.13`; `packageManager` `pnpm@10.28.0` (Corepack)         |
+| `.npmrc`                      | `engine-strict=true`: no se instala con un Node que no cumpla `engines` |
+| CI y contenedor de desarrollo | No existen (no hay `.github`; la CI depende de P-04)                    |
+| Compilación                   | Next.js 16.4.5 con Turbopack                                            |
+
+**Calendario oficial** (repositorio `nodejs/Release`):
+
+| Rama | Estado                                                                | Fin de soporte | Última versión publicada |
+| ---- | --------------------------------------------------------------------- | -------------- | ------------------------ |
+| 22   | Mantenimiento                                                         | 30-04-2027     | 22.23.4                  |
+| 24   | Mantenimiento desde el 20-10-2026                                     | 30-04-2028     | 24.22.2                  |
+| 26   | **LTS activa** desde el 28-10-2026; mantenimiento desde el 20-10-2027 | **30-04-2029** | 26.13.0                  |
+
+**Compatibilidad declarada de las dependencias:**
+
+| Dependencia                  | Versiones de Node              |
+| ---------------------------- | ------------------------------ |
+| Next.js                      | `>=20.9`                       |
+| Vitest 5                     | `^22.12 \|\| ^24 \|\| >=26`    |
+| ESLint 10                    | `^20.19 \|\| ^22.13 \|\| >=24` |
+| Playwright                   | `>=20`                         |
+| TypeScript, Prettier y React | Sin restricción relevante      |
+
+- Las dependencias con binarios (esbuild, sharp, unrs-resolver y Tailwind) usan N-API o ejecutables propios, que no dependen de la versión de Node.
+- **No lo he podido comprobar en Node 26**, porque este entorno solo tiene Node 22. La primera tarea del bloque 1 lo comprueba.
+
+**Recomendación:** Node 26 LTS, en la última versión de la 26 cuando se haga el cambio (hoy, 26.13.0).
+
+**Por qué no 24.15:**
+
+- la rama 24 ya está en mantenimiento;
+- si se eligiera la 24, habría que usar su última versión (24.22.2), no la 24.15.
+
+**Política de versiones:**
+
+1. **Una sola fuente de verdad:** `.nvmrc` con la versión exacta (`26.13.0`).
+2. **`engines`:** `>=26.13 <27`. Con `engine-strict=true`, nadie instala con otra versión mayor.
+3. **`@types/node`:** en la 26.x, alineado con el entorno.
+4. **Actualizaciones de la 26:** en cada versión de seguridad, y como mucho una vez al mes. Cada una en un commit propio que cambia `.nvmrc` (y el mínimo de `engines` si hace falta), solo tras pasar `pnpm check` y `pnpm test:e2e`.
+5. **Cambio de versión mayor:** se evalúa la siguiente LTS (28) cuando pase a LTS activa (octubre de 2028) y se migra antes del fin de la 26 (abril de 2029).
+6. **Coherencia entre equipos:**
+   - en desarrollo, `nvm`, `fnm` o Volta leen `.nvmrc`;
+   - en la CI (cuando se apruebe P-04), `actions/setup-node` con `node-version-file: .nvmrc`;
+   - en el futuro entorno de ejecución, una imagen de Node con la misma versión exacta, fijada por su resumen.
+7. **Este entorno en la nube:** instalar Node 26 es un cambio de su configuración. Te lo propondré cuando lo apruebes; no he cambiado nada.
+
+**Orden:** el cambio de Node es la primera tarea del bloque 1 y va separado de cualquier cambio funcional. Si fallara, se sigue con Node 22 (con soporte hasta abril de 2027) mientras se resuelve. Con la opción B, SQLite no depende de la versión de Node.
+
 ## 9. Plan de implementación por bloques
 
 Cada bloque termina con funcionalidad comprobable de extremo a extremo, `pnpm check`, `pnpm test:e2e` y un commit.
 
-| Bloque                                               | Tareas                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | Al terminar se comprueba                                                                                                                                                                                                                                |
-| ---------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **1 · Base persistente: Alex publica y Lucía lo ve** | <ul><li>**1.1** Dominio de prescripción v2 y de versiones (tipos, `resolveSets`, validaciones, bloqueos, resumen de cambios).</li><li>**1.2** SQLite: adaptador, migración `001`, semilla, repositorios, compatibilidad, espacios E2E y protección local (`-H 127.0.0.1`, `proxy.ts`, `TRAINPRO_MODE`).</li><li>**1.3** Casos de uso del entrenador (crear, guardar, publicar v1) con sus políticas.</li><li>**1.4** Constructor con prescripción común y vista publicada.</li><li>**1.5** Cliente: Hoy con varias sesiones, detalle y «Entrar como…».</li></ul> | <ul><li>Toda la batería actual en verde sobre SQLite.</li><li>Prueba de equivalencia de la compatibilidad.</li><li>Reinicio del servidor (E2E-20).</li><li>Publicar → aparece en Hoy, en Pixel 7.</li><li>Dos sesiones el mismo día visibles.</li></ul> |
-| **2 · Ejecutar y registrar**                         | <ul><li>**2.1** Dominio de ejecución y modelo de tiempo.</li><li>**2.2** API de comandos y de estado.</li><li>**2.3** Reproductor por pasos.</li><li>**2.4** Cola local, sincronización, correcciones y series no realizadas.</li><li>**2.5** Terminar y resumen.</li></ul>                                                                                                                                                                                                                                                                                      | E2E-1 (lado del cliente), E2E-2 a E2E-6, E2E-9, E2E-10, E2E-18, E2E-19, E2E-21 a E2E-23                                                                                                                                                                 |
-| **3 · Analizar**                                     | <ul><li>**3.1** Fórmulas y análisis por sesión y por día.</li><li>**3.2** A3 por días, A8 y panel.</li></ul>                                                                                                                                                                                                                                                                                                                                                                                                                                                     | E2E-1 completo y E2E-12                                                                                                                                                                                                                                 |
-| **4 · Prescripción completa**                        | <ul><li>**4.1** Tabla por serie.</li><li>**4.2** Lastre, asistida y %1RM.</li><li>**4.3** Tempo y ayudas (borradores, Q6).</li></ul>                                                                                                                                                                                                                                                                                                                                                                                                                             | S-01 de principio a fin; 1B-18 y 1B-19                                                                                                                                                                                                                  |
-| **5 · Editar sesiones publicadas**                   | <ul><li>**5.1** Borrador de cambios, bloqueos y publicación de la versión n + 1.</li><li>**5.2** Historial de versiones (A7 y A7v).</li><li>**5.3** Aviso al cliente y adopción de lo pendiente.</li></ul>                                                                                                                                                                                                                                                                                                                                                       | E2E-13 a E2E-17 (casos A–D y S-05 con 1.410 kg)                                                                                                                                                                                                         |
-| **6 · Cierre y revisión (Q5)**                       | <ul><li>**6.1** Estados de carga y error, teclado, movimiento reducido, pruebas existentes adaptadas.</li><li>**6.2** `SCREEN_INVENTORY.md`, informe de V1 y revisión contigo.</li></ul>                                                                                                                                                                                                                                                                                                                                                                         | Calidad del §10.4                                                                                                                                                                                                                                       |
+| Bloque                                                                 | Tareas                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | Al terminar se comprueba                                                                                                                                                                                                                                |
+| ---------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **1 · Base persistente: Alex publica y Lucía lo ve (detalle en §9.1)** | <ul><li>**1.1** Dominio de prescripción v2 y de versiones (tipos, `resolveSets`, validaciones, bloqueos, resumen de cambios).</li><li>**1.2** SQLite: adaptador, migración `001`, semilla, repositorios, compatibilidad, espacios E2E y protección local (`-H 127.0.0.1`, `proxy.ts`, `TRAINPRO_MODE`).</li><li>**1.3** Casos de uso del entrenador (crear, guardar, publicar v1) con sus políticas.</li><li>**1.4** Constructor con prescripción común y vista publicada.</li><li>**1.5** Cliente: Hoy con varias sesiones, detalle y «Entrar como…».</li></ul> | <ul><li>Toda la batería actual en verde sobre SQLite.</li><li>Prueba de equivalencia de la compatibilidad.</li><li>Reinicio del servidor (E2E-20).</li><li>Publicar → aparece en Hoy, en Pixel 7.</li><li>Dos sesiones el mismo día visibles.</li></ul> |
+| **2 · Ejecutar y registrar**                                           | <ul><li>**2.1** Dominio de ejecución y modelo de tiempo.</li><li>**2.2** API de comandos y de estado.</li><li>**2.3** Reproductor por pasos.</li><li>**2.4** Cola local, sincronización, correcciones y series no realizadas.</li><li>**2.5** Terminar y resumen.</li></ul>                                                                                                                                                                                                                                                                                      | E2E-1 (lado del cliente), E2E-2 a E2E-6, E2E-9, E2E-10, E2E-18, E2E-19, E2E-21 a E2E-23                                                                                                                                                                 |
+| **3 · Analizar**                                                       | <ul><li>**3.1** Fórmulas y análisis por sesión y por día.</li><li>**3.2** A3 por días, A8 y panel.</li></ul>                                                                                                                                                                                                                                                                                                                                                                                                                                                     | E2E-1 completo y E2E-12                                                                                                                                                                                                                                 |
+| **4 · Prescripción completa**                                          | <ul><li>**4.1** Tabla por serie.</li><li>**4.2** Lastre, asistida y %1RM.</li><li>**4.3** Tempo y ayudas (borradores, Q6).</li></ul>                                                                                                                                                                                                                                                                                                                                                                                                                             | S-01 de principio a fin; 1B-18 y 1B-19                                                                                                                                                                                                                  |
+| **5 · Editar sesiones publicadas**                                     | <ul><li>**5.1** Borrador de cambios, bloqueos y publicación de la versión n + 1.</li><li>**5.2** Historial de versiones (A7 y A7v).</li><li>**5.3** Aviso al cliente y adopción de lo pendiente.</li></ul>                                                                                                                                                                                                                                                                                                                                                       | E2E-13 a E2E-17 (casos A–D y S-05 con 1.410 kg)                                                                                                                                                                                                         |
+| **6 · Cierre y revisión (Q5)**                                         | <ul><li>**6.1** Estados de carga y error, teclado, movimiento reducido, pruebas existentes adaptadas.</li><li>**6.2** `SCREEN_INVENTORY.md`, informe de V1 y revisión contigo.</li></ul>                                                                                                                                                                                                                                                                                                                                                                         | Calidad del §10.4                                                                                                                                                                                                                                       |
 
 **Riesgos principales y su mitigación:**
 
-| Riesgo                                            | Mitigación                                                                  |
-| ------------------------------------------------- | --------------------------------------------------------------------------- |
-| Diferencias sutiles en la capa de compatibilidad  | Prueba de equivalencia de los modelos de vista con la semilla               |
-| Complejidad del constructor con series bloqueadas | Bloqueos en el dominio, probados por separado; la interfaz solo los refleja |
-| Temporizadores y relojes en las pruebas           | El reloj de Playwright (`page.clock`) y un reloj inyectado en las unitarias |
-| El módulo SQLite de Node 22 es experimental       | Node 24.15 o posterior (P-85) y un único archivo de acceso                  |
+| Riesgo                                            | Mitigación                                                                                     |
+| ------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| Diferencias sutiles en la capa de compatibilidad  | Prueba de equivalencia de los modelos de vista con la semilla                                  |
+| Complejidad del constructor con series bloqueadas | Bloqueos en el dominio, probados por separado; la interfaz solo los refleja                    |
+| Temporizadores y relojes en las pruebas           | El reloj de Playwright (`page.clock`) y un reloj inyectado en las unitarias                    |
+| Dependencia nativa del controlador SQLite         | Binarios incluidos en el paquete; si fallara, `node:sqlite` cambiando un solo archivo (§8.3.3) |
+| Cambio a Node 26 sin probar en este entorno       | Primera tarea del bloque 1, en un commit aparte; si falla, se sigue con Node 22 (§8.7)         |
+
+### 9.1 Bloque 1 en detalle
+
+**Qué es el bloque 1:** la primera infraestructura funcional y el primer corte vertical (publicar y ver).
+
+- **No es V1:** V1 son los bloques 1 a 6.
+- Tampoco es la primera entrega vertical completa del plan (V1 de `IMPLEMENTATION_READINESS.md`), que necesita también el registro y el análisis.
+
+| Parte                                 | Se construye                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | Queda para después                                                                                 |
+| ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| **A. Infraestructura y persistencia** | <ul><li>**A0.** Node 26 (si apruebas P-85): `.nvmrc`, `engines` y `@types/node`, con la batería completa en verde. Va en un commit aparte.</li><li>**A1.** Adaptador del controlador y ejecutor de migraciones con suma de comprobación.</li><li>**A2.** Migración `001` con **todas** las tablas de V1 (§4), también las de ejecución, porque la semilla incluye registros.</li><li>**A3.** Semilla, copia y restauración (`db:backup` y `db:restore`).</li><li>**A4.** Espacios E2E.</li><li>**A5.** Capa de compatibilidad para las pantallas existentes.</li><li>**A6.** Protección local: `-H 127.0.0.1`, `proxy.ts`, `TRAINPRO_MODE` y `TRAINPRO_ALLOWED_HOSTS`.</li></ul> | IndexedDB (V2), CI (P-04), adaptador de PostgreSQL (Fase 2)                                        |
+| **B. Modelo de prescripción**         | <ul><li>Tipos v2 completos: todas las modalidades de carga y de esfuerzo en el modelo.</li><li>`SessionContent` y `resolveSets`.</li><li>Validaciones al guardar y al publicar.</li><li>Versiones: publicar la v1 y, a nivel de dominio y de servicio, la v2 y siguientes, con los bloqueos y el resumen de cambios.</li></ul>                                                                                                                                                                                                                                                                                                                                                   | La tabla por serie, las otras modalidades y la edición de versiones en la interfaz (bloques 4 y 5) |
+| **C. Clientes de prueba**             | <ul><li>Semilla: Alex, sus clientes y, si apruebas P-76, Lucía.</li><li>«Entrar como…», validado en el servidor y solo en modo local.</li></ul>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Crear y editar clientes (V3)                                                                       |
+| **D. Crear y publicar sesiones**      | <ul><li>Borrador con fecha, orden y contexto.</li><li>Varias sesiones el mismo día.</li><li>Ejercicios de la biblioteca, ordenar y quitar.</li><li>Prescripción común: kg, peso corporal o sin carga; RIR, RPE o nada; descanso; notas.</li><li>Guardar con revisión, publicar la versión 1 y borrar un borrador que nunca se publicó.</li><li>A3 agrupado por días y A7, la pestaña Prescripción.</li></ul>                                                                                                                                                                                                                                                                     | Por serie, %1RM, lastre y asistida; versiones y análisis en la interfaz                            |
+| **E. El cliente ve sus sesiones**     | <ul><li>«Hoy», con la sesión protagonista, «También hoy» y «De días anteriores».</li><li>Detalle (B2) de cada sesión publicada.</li><li>El reproductor actual se mantiene, con un aviso de que aún no guarda.</li></ul>                                                                                                                                                                                                                                                                                                                                                                                                                                                          | El reproductor nuevo y el registro guardado (bloque 2)                                             |
+
+**Lo que podrás hacer al terminar:**
+
+- Elegir en la portada si entras como Alex, como Marta o como Lucía.
+- Como Alex: crear para Lucía dos sesiones el mismo día («Mañana» y «Tarde») y otra para otro día, prescribirlas con valores comunes, guardar, recargar, publicar y borrar un borrador.
+- Como Lucía: ver en el móvil sus sesiones del día y su detalle. No ve las de Marta, y Marta no ve las suyas.
+- Reiniciar el servidor sin perder nada, y hacer y restaurar una copia de seguridad.
+- Ver las sesiones nuevas en las pantallas existentes: panel, semana, planificación y carga.
+
+**Lo que aún no podrás hacer:**
+
+- registrar series que se guarden;
+- el análisis;
+- la tabla por serie y las otras modalidades;
+- editar una sesión publicada y su historial desde la interfaz;
+- la cola local.
+
+**Pruebas del bloque 1:**
+
+| Id    | Qué comprueba                                                                                                                                                                                                            | Tipo |
+| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---- |
+| B1-01 | **Reinicio del servidor** con `SIGTERM` y con `SIGKILL`: sesiones, versiones y registros sembrados intactos (servidor propio con un directorio temporal)                                                                 | E    |
+| B1-02 | **Persistencia** al recargar y al cerrar y abrir el navegador (un contexto nuevo)                                                                                                                                        | E    |
+| B1-03 | **Dos sesiones el mismo día:** «Mañana» y «Tarde», con su orden, en A3 y en «Hoy» («También hoy»)                                                                                                                        | E    |
+| B1-04 | **Clientes independientes:** Lucía no ve las sesiones de Marta (página y datos); un segundo entrenador ficticio, solo en la base de pruebas, no puede leer ni editar las de Alex                                         | U, E |
+| B1-05 | **Versiones en el modelo:** se publica la v1; se crea y publica la v2 desde el servicio; la v1 no cambia; los disparadores impiden `UPDATE` y `DELETE`; los bloqueos funcionan con registros sembrados                   | U    |
+| B1-06 | **Integridad:** una sesión sin cliente o una serie sin versión se rechazan; también los `CHECK` de rangos y el índice único parcial                                                                                      | U    |
+| B1-07 | **Reintentos y duplicados del entrenador:** reenviar «Crear borrador» deja un solo borrador; publicar dos veces deja una versión; guardar dos veces lo mismo no da conflicto; una revisión antigua con otro contenido sí | U, E |
+| B1-08 | **Duplicados en las tablas de ejecución** (preparan el bloque 2): un `client_set_id` repetido, un segundo original de la misma serie o un `supersedes` doble se rechazan                                                 | U    |
+| B1-09 | **Compatibilidad:** prueba de equivalencia de los modelos de vista con la semilla; la batería actual en verde, con los cambios justificados (P-84)                                                                       | U, E |
+| B1-10 | **Migraciones y copias:** una base vacía aplica la `001`; al volver a arrancar no la reaplica; una migración alterada hace fallar el arranque; copia y restauración con `integrity_check`                                | U    |
+| B1-11 | **Protección local:** el servidor solo escucha en `127.0.0.1`; un `Host` ajeno recibe `403`; sin `TRAINPRO_MODE=local-demo` no hay «Entrar como…»                                                                        | U, E |
+| B1-12 | **Accesibilidad y adaptación** de A3, A4, A5, A7, B1 y B2 (axe, 360 px)                                                                                                                                                  | E    |
+
+**Criterio de aceptación:**
+
+- todas las pruebas en verde, con `pnpm check` y `pnpm test:e2e`;
+- un recorrido manual documentado;
+- un informe breve.
+
+Después, **tu revisión antes del bloque 2**.
 
 ## 10. Pruebas y criterios de aceptación
 
@@ -915,19 +1136,62 @@ Escritorio y Pixel 7, en un espacio de datos propio:
   - `pnpm check` y `pnpm test:e2e` en verde;
   - axe sin incidencias graves;
   - nada desborda a 360 px;
-  - ninguna dependencia nueva (salvo lo que decidas en P-85);
+  - ninguna dependencia nueva, salvo `better-sqlite3` y sus tipos si apruebas P-85;
   - lo simulado, marcado con `PendingFeature`.
 
 ## 11. Decisiones
 
-### 11.1 Requieren tu aprobación expresa (lista reducida)
+### 11.1 Requieren tu aprobación expresa
 
-| Id       | Pregunta                                                                                                                              | Recomendación                                                                                                                    | Alternativas                                                                                                          |
-| -------- | ------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| **Q1**   | ¿Apruebas el alcance de V1 de este documento (§1), con varias sesiones al día, edición con versiones, fechas libres y persistencia?   | Sí                                                                                                                               | Quitar algo y llevarlo a V2                                                                                           |
-| **P-85** | ¿Con qué se guarda: SQLite con `node:sqlite` en Node 24 LTS (24.15 o posterior)?                                                      | Sí: sin dependencias nuevas y con el módulo como candidato a estable. Hay que cambiar `engines` y la versión de Node del entorno | <ul><li>Node 22, aceptando el aviso experimental.</li><li>`better-sqlite3`, una dependencia nueva y madura.</li></ul> |
-| **Q4**   | ¿Basta en V1 con el guardado local temporal y la confirmación del servidor (§5.7), dejando el registro completo sin conexión para V2? | Sí                                                                                                                               | Adelantar IndexedDB a V1                                                                                              |
-| **P-76** | ¿El flujo de V1 se hace con Lucía, clienta ficticia nueva, con «Entrar como…» en V1?                                                  | Sí                                                                                                                               | Marta, que tiene historial sembrado; «Entrar como…» en V3                                                             |
+**Q1 · Alcance de V1**
+
+- **Recomendación:** aprobar el alcance del §1 (V1 = bloques 1 a 6) y autorizar ahora **solo el bloque 1**, con tu revisión antes de cada bloque siguiente.
+- **Motivos:** cubre tu flujo completo, y el modelo de datos ya soporta todo el alcance, así que no habrá que rehacerlo.
+- **Alternativas:**
+  - aprobar solo el bloque 1 y decidir el resto después de verlo;
+  - recortar V1, por ejemplo, llevando la edición de versiones a V2.
+- **Consecuencias:** queda fijado el orden de los bloques; cualquier cambio de alcance posterior pasa por una decisión.
+- **Si se aplaza:** no se puede empezar.
+
+**Q4 · Persistencia y fallos de conexión**
+
+- **Recomendación:** el servidor (SQLite) es la única fuente de verdad. En el móvil, el guardado local temporal de §5.7: escrito antes de enviar, con estados visibles, reintentos idempotentes y rechazos que nunca se descartan en silencio. El registro completo sin conexión, en V2.
+- **Motivos:** cumple tus cuatro garantías con un coste bajo.
+- **Alternativas:**
+  - IndexedDB ya en V1: más robusto ante límites de espacio, pero más código;
+  - envío directo sin guardado local: descartado, porque podría perder series.
+- **Consecuencias:** lo pendiente solo se pierde si se borran los datos del navegador o se cambia de dispositivo antes de enviarlo. No se puede empezar una sesión sin conexión.
+- **Si se aplaza:** no afecta al bloque 1, que no registra series, pero bloquea el bloque 2.
+
+**P-76 · Lucía y el selector de cliente**
+
+- **Recomendación:** Lucía Gil, clienta ficticia sin historial, y «Entrar como…» limitado a los clientes ficticios de Alex y solo en modo local (§7).
+- **Motivos:**
+  - las pruebas tienen valores exactos;
+  - Marta conserva su demostración;
+  - permite probar en la interfaz que los clientes están separados.
+- **Alternativas:**
+  - Marta: tiene historial, y habría que quitarle la sesión sembrada de hoy;
+  - una identidad fija sin selector: no permite probar la separación desde la interfaz.
+- **Consecuencias:** un selector que hay que eliminar antes de cualquier acceso externo.
+- **Si se aplaza:** el bloque 1 se puede hacer con Marta, pero B1-03 y B1-04 solo se prueban a nivel de servicio.
+
+**P-85 · Tecnología SQLite y versión de Node**
+
+- **Recomendación:**
+  - **(a)** `better-sqlite3` 13.x como controlador (§8.3.3);
+  - **(b)** Node 26 LTS, hoy 26.13.0, con la política del §8.7.
+- **Motivos:**
+  - (a) API estable, binarios incluidos también para Windows, Next.js 16 la excluye del empaquetado de serie, y trae transacciones y copias;
+  - (b) es la LTS activa, con soporte hasta abril de 2029. La 22 termina en abril de 2027 y la 24 ya está en mantenimiento.
+- **Alternativas:**
+  - para (a): `node:sqlite` en Node 26: sin dependencias y comprobado en Next.js y Vitest (con Node 22), pero con la API como candidata a estable;
+  - para (b): Node 24.22, con soporte hasta abril de 2028, o seguir de momento en Node 22.
+- **Consecuencias:**
+  - (a) una dependencia nueva con sus tipos, que es una excepción a P-11;
+  - (b) cambiar `.nvmrc`, `engines` y `@types/node`, e instalar Node 26 en este entorno, un cambio de configuración que te propondré.
+  - Las dos partes son independientes.
+- **Si se aplaza:** sin persistencia no hay bloque 1. La parte (b) sí se puede aplazar, porque con la opción (a) SQLite no depende de la versión de Node.
 
 ### 11.2 Resueltas por tus indicaciones
 
@@ -967,14 +1231,23 @@ Escritorio y Pixel 7, en un espacio de datos propio:
 
 **Sin cambios:** Q2, Q3, Q5 y Q6. No hay registro estructurado de dolor en V1.
 
-## 12. Primer bloque de código recomendado
+## 12. ¿Podemos empezar a programar?
 
-Bloque 1, por este orden:
+**Sí, en cuanto apruebes Q1 (al menos el bloque 1), P-85 y P-76.**
 
-1. **Tarea 1.1:** el dominio de prescripción v2 y de versiones. Es TypeScript puro con pruebas.
-2. **Tarea 1.2:** SQLite con su migración, la semilla, los repositorios, la compatibilidad, los espacios E2E y la protección local.
-   - Es la base de todo lo demás y la parte con más riesgo de romper lo que ya funciona.
-   - Se da por buena cuando la batería actual pasa sobre SQLite, la prueba de equivalencia confirma que las pantallas existentes no cambian y el reinicio del servidor no pierde nada.
-3. **Tareas 1.3 a 1.5:** completan el primer flujo visible. Alex publica una o varias sesiones el mismo día y Lucía las ve en el móvil, con los datos guardados de verdad.
+- **Q4** solo hace falta antes del bloque 2.
+- **No hace falta más documentación:** el siguiente paso es código.
 
-No incluye todavía ni el registro, ni el análisis, ni la edición de versiones. Así no se construye ninguna infraestructura que no use el primer flujo.
+**Primer bloque de código:** el bloque 1 del §9.1, en este orden.
+
+1. **A0, el cambio a Node 26.** Va en un commit aparte y no cambia ninguna funcionalidad.
+2. **A1 a A6, la base SQLite**, junto con **B, el modelo de prescripción v2.** Se da por buena cuando:
+   - la batería actual pasa sobre SQLite;
+   - la prueba de equivalencia confirma que las pantallas existentes no cambian;
+   - B1-01 (reinicio) y B1-10 (migraciones y copias) están en verde.
+3. **C, D y E:** el primer flujo visible. Alex publica una o varias sesiones el mismo día y Lucía las ve en el móvil, con los datos guardados de verdad.
+
+**Al terminar:**
+
+- me detendré con el informe y el recorrido manual para tu revisión;
+- el registro, el análisis y la edición de versiones en la interfaz llegarán en los bloques siguientes.

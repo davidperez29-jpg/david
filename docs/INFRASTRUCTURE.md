@@ -28,7 +28,7 @@ Preferencia indicada: **PostgreSQL con Supabase y Supabase Auth**. La arquitectu
 
 - **Supabase encaja con la arquitectura**: PostgreSQL con RLS, autenticación con 2FA por aplicación, almacenamiento de archivos y región UE (Frankfurt o París).
 - **Supabase Free no es adecuado para datos reales**: se pausa con 7 días de inactividad, no garantiza copias de seguridad y es para prototipos. Con datos de salud reales hacen falta copias y un DPA firmado.
-- **Prototipo de V1 (propuesta, P-85):** SQLite local con el módulo integrado de Node, solo con datos ficticios (`V1_SPEC.md` §8.3). No sustituye a la decisión de la Fase 2: el esquema se escribe para migrarlo a PostgreSQL.
+- **Prototipo de V1 (propuesta, P-85):** SQLite local (controlador `better-sqlite3`, con `node:sqlite` como alternativa), solo con datos ficticios y sin usuarios externos (`V1_SPEC.md` §8.3). No sustituye a la decisión de la Fase 2: el esquema se escribe para migrarlo a PostgreSQL.
 - **Propuesta para la Fase 2 (sin coste):** desarrollar contra un **Supabase local** (la CLI de Supabase levanta la pila completa con Docker en el propio ordenador) o un PostgreSQL local, con datos ficticios. No se necesita ninguna cuenta.
 - **Antes de usar datos reales:** Supabase **Pro** en una región UE, con el DPA revisado y la decisión sobre PITR. Coste estimado más abajo.
 - **A verificar antes de decidir:** cifras exactas de Free y Pro, copias en Free, condiciones del correo de autenticación (el servicio de correo integrado suele ser limitado para producción, y un proveedor SMTP propio sería otro encargado del tratamiento) y la lista de subencargados.
