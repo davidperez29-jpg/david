@@ -184,7 +184,12 @@ Si en el futuro un cliente trabaja con un centro y una clínica distintos, cada 
 
 ## Sesión de demostración
 
-No hay autenticación. `getTrainerContext()` y `getClientContext()` devuelven actores fijos (Alex, entrenador; Marta, clienta). Son **el único punto que cambiará** con el inicio de sesión real: el actor saldrá de una sesión verificada en el servidor. El resto del código ya trabaja con un `Actor` y no sabe de dónde viene. **En V1 (propuesta, `V1_SPEC.md` §8):** el cliente se elige con «Entrar como…» (P-76), los datos se escriben en un almacén en memoria con espacios aislados para las E2E (P-80), el entrenador escribe con acciones de servidor y el cliente, con una API de comandos idempotentes (P-79).
+No hay autenticación. `getTrainerContext()` y `getClientContext()` devuelven actores fijos (Alex, entrenador; Marta, clienta). Son **el único punto que cambiará** con el inicio de sesión real: el actor saldrá de una sesión verificada en el servidor. El resto del código ya trabaja con un `Actor` y no sabe de dónde viene. **En V1 (propuesta, `V1_SPEC.md` §7 y §8):**
+
+- Identidad, rol y permiso se separan: `resolveIdentity()` (demo ahora, sesión verificada después), `resolveActor()` y las políticas.
+- El cliente se elige con «Entrar como…» (P-76), que **no es autenticación** y solo existe en el modo local protegido (P-87).
+- Los datos se guardan en SQLite local (P-85), con un archivo por espacio en las E2E.
+- El entrenador escribe con acciones de servidor y el cliente, con una API de comandos idempotentes (P-79).
 
 ## Estructura de carpetas
 

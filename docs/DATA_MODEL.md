@@ -322,7 +322,7 @@ Se auditan: accesos a datos de salud, cambios de lo compartido, exportaciones, i
 
 ## 12. Prescripción y registro v2 en el dominio (propuesta)
 
-**Estado:** diseño pendiente de aprobación. Boceto de los tipos de `src/domain/training` (TypeScript puro, sin dependencias); no es código del proyecto todavía. **Concreción para V1:** `V1_SPEC.md` §4, con el subconjunto que usa V1 y estas diferencias: `referenceResultId` y la resolución congelada del %1RM, `note` por serie, `revision` del borrador y un registro de sesión por sesión.
+**Estado:** diseño pendiente de aprobación. Boceto de los tipos de `src/domain/training` (TypeScript puro, sin dependencias); no es código del proyecto todavía. **Concreción para V1:** `V1_SPEC.md` §4, con el esquema SQLite de la migración inicial y estas diferencias: `referenceResultId` y la resolución congelada del %1RM por versión, `note` por serie, borrador de cambios con revisión, varias sesiones por día con orden y contexto, un registro de sesión por sesión e instantes con zona horaria.
 
 ```ts
 type LoadBasis = 'total' | 'per_side' | 'per_implement';

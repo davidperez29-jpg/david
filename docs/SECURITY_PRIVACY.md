@@ -51,6 +51,8 @@ La ficha del cliente solo contiene lo necesario para entrenar (nombre, objetivo,
 
 ## Pendiente (fases posteriores)
 
+Las protecciones de cada etapa (prototipo local, prueba con usuarios controlados y producto con datos reales) y la separación entre identidad, rol y permiso están en `V1_SPEC.md` §7 (propuesta, P-87). Una ruta oculta, un identificador difícil de adivinar o la identidad demo **no son autenticación**.
+
 | Área                     | Qué falta                                                                                                                  |
 | ------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
 | Autenticación            | Proveedor, contraseñas seguras o enlace mágico, 2FA para entrenadores, sesiones con cookies `HttpOnly`/`Secure`/`SameSite` |
