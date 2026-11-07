@@ -98,10 +98,10 @@ Durante cada ejercicio se ve, **sin cambiar de pantalla**: nombre, silueta, víd
 
 **Ampliación propuesta (6 de noviembre de 2026, pendiente de aprobación):**
 
-- **Valoración previa** entre «Empezar entrenamiento» y el calentamiento: energía y recuperación de 1 a 10, y dolor o molestias. Se responde en menos de 10 segundos y se puede saltar.
-- **Dolor o incidencias** registrables durante la sesión, por ejercicio.
+- **Valoración previa** entre «Empezar entrenamiento» y el calentamiento: energía y recuperación de 1 a 10 (sin la pregunta de dolor, según la recomendación revisada de P-58). Se responde en menos de 10 segundos y se puede saltar.
+- **Molestias:** al saltar un ejercicio o terminar una serie antes de tiempo, el motivo neutro «molestias», sin escala ni zona, y las observaciones libres. El registro estructurado del dolor, solo en E4 y si se aprueba (P-58).
 - **RPE de la sesión** al terminar, en todas las sesiones, con «Responder más tarde».
-- Si el entrenador tiene reglas preautorizadas, la sesión puede cambiar tras la valoración previa, y el cliente ve el cambio explicado.
+- En la 1C, si el entrenador tiene reglas preautorizadas, la sesión puede cambiar tras la valoración previa, y el cliente ve el cambio explicado. Una valoración aislada, como mucho, impide el incremento previsto (`PROGRESSION_AND_AUTOREGULATION.md` §5.14).
 
 Detalle en `PROGRESSION_AND_AUTOREGULATION.md` §4 a §6 (P-45, P-47, P-48).
 
@@ -327,7 +327,7 @@ Variantes: «Continuar entrenamiento» (en curso) · «Hoy descansas» + próxim
 │ │ Plan  3 × 8 · 70–75 kg · RIR 3 │ │
 │ │ Hecho 8,8 · 70/72,5            │ │
 │ └────────────────────────────────┘ │
-│  ¿Cómo de dura ha sido la sesión?  │  Si el entrenador lo pidió
+│  ¿Cómo de dura ha sido la sesión?  │  En todas las sesiones, salvo desactivación con motivo (P-48)
 │  (0)…(10)                          │
 │  Mensaje para Alex  [__________]   │
 │ ┌────────────────────────────────┐ │
@@ -392,6 +392,8 @@ Resumen (el detalle y las referencias están en `EFFORT_AND_LOAD.md` §11 y §12
 | Medidores de velocidad u otros dispositivos                    | No se integran (P-25)                                                                                                      |
 
 ## 11. Priorización por fases
+
+> La priorización vigente de la 1B es la de `IMPLEMENTATION_READINESS.md` (clases A–D y entregas verticales V1–V6). Esta tabla se conserva como referencia de cómo se repartía el trabajo entre las fases.
 
 **Propuesta (P-16): una etapa A antes de la Fase 2**, sin infraestructura ni costes, para fijar el modelo de prescripción antes de diseñar el esquema de la base de datos. Así se evita migrarlo después. La alternativa es repartir todo en las fases 4 a 8 del plan original.
 

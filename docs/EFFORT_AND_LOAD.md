@@ -23,20 +23,20 @@
 
 ## 2. Situación actual y lo que falta
 
-| Aspecto                   | Hoy (Fase 1)                                                           | Propuesta                                                                                                        |
-| ------------------------- | ---------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| Modalidades de carga      | `kg`, `bodyweight`, `percent_1rm`, `autoregulated`, `text`             | Diez modalidades (§3), con base de la carga (total, por lado o por implemento)                                   |
-| Rango de carga            | No existe                                                              | `external_range` (70–75 kg)                                                                                      |
-| Lastre y asistencia       | Solo como texto                                                        | `bodyweight_plus` (+10 kg) y `assisted` (asistencia de 20 kg)                                                    |
-| Bandas y dispositivos     | Solo como texto                                                        | `elastic` y `device`, con descriptor (banda roja, nivel 7, polea placa 5)                                        |
-| Esfuerzo                  | Un único objetivo para todas las series (RIR, RPE, carácter o ninguno) | Por ejercicio **o por serie**, valores o rangos, RIR y RPE juntos solo con justificación, escala RPE explícita   |
-| Criterios de finalización | No existen                                                             | Pérdida de velocidad, de calidad, de técnica, dolor (readaptación), tope de tiempo o repeticiones (§5)           |
-| Variación por serie       | No (todas las series iguales)                                          | Valores por defecto del ejercicio + excepciones por serie                                                        |
-| Tempo                     | Cuatro fases obligatorias (`3-1-X-0`)                                  | Admitir también tres fases (`2-0-1`), como en el ejemplo del requisito (decisión P-22)                           |
-| Registro por serie        | Repeticiones, kg y completada                                          | Carga realizada según su modalidad, repeticiones, tiempo o distancia, RIR o RPE reales, observaciones            |
-| RIR/RPE reales            | Uno por ejercicio (`ExerciseFeedback`)                                 | Por serie (opcional) y por ejercicio, siempre `self_reported`                                                    |
-| %1RM                      | Se muestra el porcentaje, sin calcular kg                              | Kg calculados con referencia de 1RM explícita (directa o estimada, con fecha) y redondeo, congelados al publicar |
-| Estimación de 1RM         | No existe (prevista)                                                   | Diseño en §8; **no se implementa hasta verificar la fuente primaria de la ecuación**                             |
+| Aspecto                   | Hoy (Fase 1)                                                           | Propuesta                                                                                                                                                |
+| ------------------------- | ---------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Modalidades de carga      | `kg`, `bodyweight`, `percent_1rm`, `autoregulated`, `text`             | Diez modalidades (§3), con base de la carga (total, por lado o por implemento)                                                                           |
+| Rango de carga            | No existe                                                              | `external_range` (70–75 kg)                                                                                                                              |
+| Lastre y asistencia       | Solo como texto                                                        | `bodyweight_plus` (+10 kg) y `assisted` (asistencia de 20 kg)                                                                                            |
+| Bandas y dispositivos     | Solo como texto                                                        | `elastic` y `device`, con descriptor (banda roja, nivel 7, polea placa 5)                                                                                |
+| Esfuerzo                  | Un único objetivo para todas las series (RIR, RPE, carácter o ninguno) | Por ejercicio **o por serie**, valores o rangos, RIR y RPE juntos solo con justificación, escala RPE explícita                                           |
+| Criterios de finalización | No existen                                                             | Pérdida de velocidad, de calidad, de técnica, dolor (readaptación), tope de tiempo o repeticiones (§5)                                                   |
+| Variación por serie       | No (todas las series iguales)                                          | Valores por defecto del ejercicio + excepciones por serie                                                                                                |
+| Tempo                     | Cuatro fases obligatorias (`3-1-X-0`)                                  | Admitir también tres fases (`2-0-1`), como en el ejemplo del requisito (decisión P-22)                                                                   |
+| Registro por serie        | Repeticiones, kg y completada                                          | Carga realizada según su modalidad, repeticiones, tiempo o distancia, RIR o RPE reales, observaciones                                                    |
+| RIR/RPE reales            | Uno por ejercicio (`ExerciseFeedback`)                                 | Por serie (opcional), siempre `self_reported`. **El RIR, solo por serie**; por ejercicio, como mucho un RPE del ejercicio completo, que es otra magnitud |
+| %1RM                      | Se muestra el porcentaje, sin calcular kg                              | Kg calculados con referencia de 1RM explícita (directa o estimada, con fecha) y redondeo, congelados al publicar                                         |
+| Estimación de 1RM         | No existe (prevista)                                                   | Diseño en §8; **no se implementa hasta verificar la fuente primaria de la ecuación**                                                                     |
 
 Lo que ya funciona y se conserva: estado de la sesión deducido de lo realizado, series sin duplicados (`effectiveSetRecords`), tonelaje solo con carga externa en kg, procedencia en cada dato y fórmulas versionadas.
 
@@ -111,13 +111,13 @@ El RIR (repeticiones en reserva) estima cuántas repeticiones más se podrían h
 | `rir_based` (1–10)   | Escala de fuerza basada en repeticiones en reserva: 10 = no podría hacer más, 9 = 1 en reserva, y así sucesivamente. 5–6 agrupa 4–6 en reserva; 3–4 = «esfuerzo ligero»; 1–2 = «poco o ningún esfuerzo» | Zourdos et al. (2016): relación inversa fuerte entre la puntuación y la velocidad media (r = −0,88 con experiencia, −0,77 sin ella). En powerlifters, relación muy fuerte entre puntuación y %1RM (r = 0,88–0,91) en sentadilla, press de banca y peso muerto (Helms et al., 2017a). Descriptores según Helms et al. (2016) |
 | `omni_res` (0–10)    | Escala OMNI de ejercicio con resistencias, con apoyo visual. Distingue músculos activos y cuerpo entero                                                                                                 | Adultos jóvenes con entrenamiento recreativo (Robertson et al., 2003); versión infantil de 10 a 14 años (Robertson et al., 2005); usada para guiar la selección de carga en mayores de 60 (Gearhart et al., 2011)                                                                                                           |
 | `borg_cr10` (0–10)   | Escala de categorías con propiedades de razón de Borg                                                                                                                                                   | Borg (1982). Uso general, no específica de fuerza                                                                                                                                                                                                                                                                           |
-| **RPE de la sesión** | Una puntuación para toda la sesión, tomada unos 30 minutos después según Helms et al. (2016)                                                                                                            | Foster et al. (2001), comparada con un método basado en la frecuencia cardiaca. **Es otra métrica** (carga interna de la sesión, Fase 8), no el RPE de una serie                                                                                                                                                            |
+| **RPE de la sesión** | Una puntuación para toda la sesión, tomada unos 30 minutos después según Helms et al. (2016)                                                                                                            | Foster et al. (2001), comparada con un método basado en la frecuencia cardiaca. **Es otra métrica**, no el RPE de una serie: se recoge en la 1B si se aprueba P-48, y la carga interna se calcula en la 1C (P-49)                                                                                                           |
 
 **Apropiado:**
 
 - Escala basada en RIR: los mismos casos que el RIR (§4.2). Es la misma información expresada de otra forma, con descriptores para esfuerzos bajos que sirven, por ejemplo, para **limitar** el esfuerzo en trabajo de velocidad («RPE como máximo 4», Helms et al., 2016).
 - OMNI-RES: cuando la cercanía al fallo no es el objetivo o es difícil de estimar (población mayor, salud, personas sin experiencia, isométricos, circuitos). Tiene versión infantil validada. Con el ejercicio a varias series al 70 % del 1RM, el RPE OMNI subió entre series y al 50 % no (Lins-Filho et al., 2012).
-- RPE de la sesión: seguimiento de la carga interna, en la Fase 8.
+- RPE de la sesión: recogida en la 1B (si se aprueba P-48) y seguimiento de la carga interna en la 1C (P-49).
 
 ### 4.4 RIR y RPE a la vez: solo con justificación
 
@@ -209,7 +209,7 @@ La ayuda (ⓘ) se despliega en el sitio, sin cambiar de pantalla, y se ofrece si
 
 - Carga realizada **en la misma modalidad** que la prescrita, rellena con el valor previsto para confirmarla con un toque: kg, kg añadidos, asistencia, banda o ajuste.
 - Repeticiones (o segundos, o metros), por lado si procede.
-- RIR o RPE reales, **opcionales** y en la misma escala que la prescripción. Si no se prescribió escala, no se piden.
+- RIR o RPE reales, **opcionales** y en la misma escala que la prescripción. Si no se prescribió escala, no se piden. **El RIR es siempre por serie**; si el entrenador lo pide, al terminar el ejercicio se puede añadir un RPE del ejercicio completo, con su escala, que no se mezcla con el de las series ni con el RPE de la sesión.
 - Motivo de parada (opcional) y observaciones.
 - Hora del registro en el dispositivo y hora de recepción en el servidor.
 

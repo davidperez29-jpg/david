@@ -99,11 +99,11 @@ Se refuerza la regla: **no se implementa ninguna ecuación sin leer su fuente or
 
 ### 4.1 Qué se pregunta
 
-| Pregunta                                     | Escala                     | Obligatoria          |
-| -------------------------------------------- | -------------------------- | -------------------- |
-| ¿Cuánta energía tienes hoy?                  | 1 (muy poca) a 10 (mucha)  | Sí (se puede saltar) |
-| ¿Cómo de recuperado o descansado te sientes? | 1 (nada) a 10 (totalmente) | Sí (se puede saltar) |
-| ¿Tienes dolor o molestias?                   | No / Sí → zona y 0–10      | Propuesta (P-47)     |
+| Pregunta                                     | Escala                     | Obligatoria                       |
+| -------------------------------------------- | -------------------------- | --------------------------------- |
+| ¿Cuánta energía tienes hoy?                  | 1 (muy poca) a 10 (mucha)  | Sí (se puede saltar)              |
+| ¿Cómo de recuperado o descansado te sientes? | 1 (nada) a 10 (totalmente) | Sí (se puede saltar)              |
+| ¿Tienes dolor o molestias?                   | No / Sí → zona y 0–10      | No en la 1B (P-58 revisada, §4.7) |
 
 Se responde en menos de 10 segundos, con dos deslizadores y un toque. Si se salta, la sesión sigue igual.
 
@@ -117,7 +117,7 @@ Se responde en menos de 10 segundos, con dos deslizadores y un toque. Si se salt
 
 ### 4.3 Propuesta (P-47)
 
-1. Mantener las **dos preguntas pedidas**, marcadas como **ítems propios no validados**, y la pregunta de **dolor o molestias**, porque es accionable (restricciones y seguridad) y relevante en readaptación.
+1. Mantener las **dos preguntas pedidas**, marcadas como **ítems propios no validados**. La pregunta de **dolor o molestias**, propuesta antes por ser accionable (restricciones y seguridad) y relevante en readaptación, queda fuera de la 1B por la recomendación revisada de P-58 (§4.7).
 2. **Sin puntuación compuesta**, a diferencia de la encuesta promediada de TrainHeroic: mezclar dimensiones oculta información.
 3. Interpretar los valores **respecto a la línea base de cada persona**, no con umbrales absolutos.
 4. **Revisar con datos reales** (E1): si energía y recuperación correlacionan mucho, fusionarlas; si alguna no se relaciona con nada útil, retirarla.
@@ -140,7 +140,7 @@ RPE de la sesión (§6) y un comentario opcional.
 
 | Variable posible                              | Valor                                                                 | Coste para el cliente      | Propuesta                                                                           |
 | --------------------------------------------- | --------------------------------------------------------------------- | -------------------------- | ----------------------------------------------------------------------------------- |
-| Dolor o molestias                             | Alto: es accionable (seguridad, restricciones, readaptación)          | Bajo (un «No» en un toque) | **Sí**, si se aprueba su protección (§4.7, P-58)                                    |
+| Dolor o molestias                             | Alto: es accionable (seguridad, restricciones, readaptación)          | Bajo (un «No» en un toque) | **No en la 1B** (§4.7); en E4, si se aprueban su diseño y su protección             |
 | Sueño                                         | Medio; se solapa con la recuperación                                  | Bajo                       | No por defecto; el entrenador puede activarlo para un cliente                       |
 | Estrés                                        | Medio; útil en algunos contextos (competición, estudios)              | Bajo                       | No por defecto; activable                                                           |
 | Dolor muscular de aparición tardía            | Medio en fuerza e hipertrofia; se puede confundir con el dolor (§4.7) | Bajo                       | No por defecto; activable, con texto que lo distinga del dolor                      |
@@ -151,6 +151,8 @@ Cada pregunta añadida reduce la tasa de respuesta, así que la regla es: **dos 
 
 ### 4.7 Dolor e incidencias (P-58)
 
+> **Recomendación revisada (7 de noviembre de 2026, pendiente de tu respuesta a Q3 de `IMPLEMENTATION_READINESS.md`).** En la 1B no hay registro estructurado de dolor: solo las observaciones libres y el motivo neutro «molestias» al saltar un ejercicio o terminar una serie, sin escala ni zona. Lo que sigue es el diseño para E4, que solo se aplicará tras la asesoría jurídica y regulatoria y con tu aprobación. Del dolor nunca se derivarán recomendaciones ni cambios automáticos del entrenamiento, en ninguna fase ni modo.
+
 - **Finalidad:** avisar al profesional para que **él** decida. No es una valoración clínica, no genera diagnósticos y **no dispara ninguna regla automática**, ni siquiera preautorizada.
 - **Cómo se pregunta:**
   - en la valoración previa: «¿Tienes alguna molestia o dolor hoy?» → No / Sí;
@@ -158,7 +160,7 @@ Cada pregunta añadida reduce la tasa de respuesta, así que la regla es: **dos 
   - también durante la sesión, en el ejercicio en el que aparece.
 - **Escala:** numérica de 0 a 10 (0 = sin dolor, 10 = el peor dolor posible). Las escalas numéricas tienen mejor cumplimentación que otras y son aplicables en la mayoría de contextos, aunque las anclas varían entre estudios (Hjermstad et al., 2011). Los cambios clínicamente importantes se han estudiado en dolor crónico, en torno a 2 puntos o un 30 % (Farrar et al., 2001). **TrainPro no usa esos valores como umbrales**: solo explican que un cambio de 1 punto no tiene por qué ser relevante.
 - **Mensaje fijo al cliente:** «Hemos avisado a tu entrenador. Si el dolor es intenso o va a más, detén el ejercicio y consulta con un profesional sanitario.»
-- **Quién lo ve:** el propio cliente y los profesionales de su equipo asistencial con **alcance de salud** (en la 1B, el entrenador responsable). Nadie más; los accesos quedan registrados.
+- **Quién lo ve:** el propio cliente y los profesionales de su equipo asistencial con **alcance de salud** (con un solo profesional, el entrenador responsable). Nadie más; los accesos quedan registrados.
 - **Protección:** dato de salud (categoría especial); minimización (sin diagnóstico ni texto libre obligatorio); no se exporta fuera de la ficha; borrado según la política de conservación de salud (`DATA_RIGHTS.md`).
 
 ## 5. Motor de adaptación
@@ -282,7 +284,7 @@ Las reglas no leen datos sueltos, sino **señales** tipadas y con su calidad. Ca
 | Diferencia de RIR                             | RIR real − RIR objetivo, por serie                      | RIR registrado y persona marcada como familiarizada    |
 | Tendencia del 1RM estimado                    | Pendiente en las últimas _N_ exposiciones               | Ecuación verificada y _N_ exposiciones válidas         |
 | Calidad en potencia                           | Valoraciones de calidad de la sesión                    | Valoración registrada                                  |
-| Dolor registrado                              | Sí o no, con zona e intensidad                          | **Solo genera alertas; nunca es entrada de una regla** |
+| Dolor registrado (E4, si se aprueba)          | Sí o no, con zona e intensidad                          | **Solo genera alertas; nunca es entrada de una regla** |
 
 Si la calidad no se alcanza, la regla **no se dispara** y la explicación dice por qué («Faltan 3 valoraciones para tener línea base»).
 
@@ -323,6 +325,17 @@ El riesgo de reglas como «puntuación baja → reducir un porcentaje fijo» se 
 5. **Explicación y etiqueta de evidencia** en cada recomendación.
 6. **Registro de decisiones** y comparación entre lo previsto y lo real, para revisar si las reglas sirven.
 7. **Reglas versionadas.** Cambiar una regla no reescribe el pasado.
+8. **Una valoración aislada nunca basta** para reducir ni aumentar (§5.14).
+
+### 5.14 La valoración aislada no basta para cambiar la carga
+
+Salvaguarda añadida en la auditoría de preparación (7 de noviembre de 2026), pendiente de aprobación con P-45 y P-69:
+
+- **Una valoración subjetiva aislada** (la valoración previa o el RPE de la sesión, sin otra señal) **como mucho impide el incremento previsto**: «mantener lo planificado sin progresar».
+- **Nunca reduce ni aumenta por sí sola** la carga, las series ni las repeticiones.
+- Para reducir hace falta, además, **otra señal de rendimiento** con calidad suficiente (por ejemplo, una diferencia de RIR en la exposición anterior, §5.9) o la **supervisión del entrenador**: en modo supervisado, la regla solo genera una recomendación que decide él.
+- Se comprueba al guardar la regla: una regla preautorizada que reduce o aumenta con una valoración aislada como única señal no se puede guardar (criterio 1C-25 y escenario S-18 de `ROADMAP.md`).
+- **Motivo:** los ítems sueltos no están validados (§4.2) y dependen del ánimo y de la costumbre de responder. Una sola respuesta no justifica cambiar lo que prescribió el profesional.
 
 ## 6. RPE de la sesión y carga interna
 

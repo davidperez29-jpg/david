@@ -94,7 +94,7 @@
 
 ## 4. Próximos pasos de este análisis
 
-1. **Pruebas prácticas** con las versiones gratuitas o de prueba: Trainerize (30 días), TrainHeroic y Physitrack (14 días), Everfit (plan gratuito). Requieren crear cuentas: **pendiente de tu autorización** (P-60).
+1. **Pruebas prácticas** con las versiones gratuitas o de prueba: Trainerize (30 días), TrainHeroic y Physitrack (14 días), Everfit (plan gratuito). Requieren crear cuentas: **aplazadas por tu indicación** de no crear cuentas ni aceptar pruebas comerciales todavía (P-60).
 2. **Matriz por tareas**, cronometrando tareas reales en cada producto: crear un cliente, programar 4 × 6 con RIR por serie, registrar desde el móvil, ver lo prescrito frente a lo ejecutado.
 3. Actualizar precios en las páginas oficiales antes de cualquier decisión comercial.
 

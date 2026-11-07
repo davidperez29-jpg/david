@@ -64,29 +64,30 @@ scripts/       Utilidades de mantenimiento
 
 ## Documentación
 
-| Documento                                                                          | Contenido                                                                                                                |
-| ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| [`docs/MASTER_SPEC.md`](docs/MASTER_SPEC.md)                                       | **Documento maestro**: producto, reglas, módulos, fases y mapa de la documentación                                       |
-| [`docs/PRODUCT_STRATEGY.md`](docs/PRODUCT_STRATEGY.md)                             | Visión estratégica, principios, mapa de módulos, auditoría y regulación (propuesta)                                      |
-| [`docs/COMPETITIVE_ANALYSIS.md`](docs/COMPETITIVE_ANALYSIS.md)                     | Análisis competitivo con fuentes y oportunidades de diferenciación                                                       |
-| [`docs/PROGRESSION_AND_AUTOREGULATION.md`](docs/PROGRESSION_AND_AUTOREGULATION.md) | Progresión, 1RM estimado, valoración previa, motor de adaptación y carga interna (propuesta)                             |
-| [`docs/INTEGRATIONS.md`](docs/INTEGRATIONS.md)                                     | Requisitos de cada integración y arquitectura de importación                                                             |
-| [`docs/TRAINING_EXPERIENCE.md`](docs/TRAINING_EXPERIENCE.md)                       | Experiencia de entrenamiento guiada: análisis, flujo, bocetos y criterios de aceptación (diseño pendiente de aprobación) |
-| [`docs/EFFORT_AND_LOAD.md`](docs/EFFORT_AND_LOAD.md)                               | Prescripción de carga y esfuerzo (RIR, RPE), registro, 1RM, volumen y tonelaje                                           |
-| [`docs/MEDIA.md`](docs/MEDIA.md)                                                   | Silueta y vídeos de los ejercicios: formatos, almacenamiento, costes y privacidad                                        |
-| [`docs/PHASE1_REPORT.md`](docs/PHASE1_REPORT.md)                                   | Informe de revisión de la Fase 1                                                                                         |
-| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)                                     | Arquitectura, capas, flujo de datos y cómo ampliar                                                                       |
-| [`docs/DATA_MODEL.md`](docs/DATA_MODEL.md)                                         | Modelo conceptual de datos, incluida la biblioteca multidimensional                                                      |
-| [`docs/TAXONOMY.md`](docs/TAXONOMY.md)                                             | Taxonomía de la biblioteca: dimensiones de etiquetas, patrones y niveles de ejercicios                                   |
-| [`docs/INFRASTRUCTURE.md`](docs/INFRASTRUCTURE.md)                                 | Comparativa de base de datos, autenticación, alojamiento y CI, con costes y riesgos                                      |
-| [`docs/DATA_RIGHTS.md`](docs/DATA_RIGHTS.md)                                       | Diseño de los derechos del cliente: acceso, exportación, rectificación y supresión                                       |
-| [`docs/SCREEN_INVENTORY.md`](docs/SCREEN_INVENTORY.md)                             | Qué es funcional, qué usa datos ficticios y qué es solo visual en cada pantalla                                          |
-| [`docs/DECISIONS.md`](docs/DECISIONS.md)                                           | Decisiones técnicas justificadas (ADR) y las pendientes de aprobar                                                       |
-| [`docs/SECURITY_PRIVACY.md`](docs/SECURITY_PRIVACY.md)                             | Modelo de permisos, privacidad, RGPD y pendientes                                                                        |
-| [`docs/SCIENTIFIC_RIGOR.md`](docs/SCIENTIFIC_RIGOR.md)                             | Procedencia de los datos, registro de fórmulas y convenciones                                                            |
-| [`docs/DESIGN_SYSTEM.md`](docs/DESIGN_SYSTEM.md)                                   | Identidad visual, tokens, componentes y accesibilidad                                                                    |
-| [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md)                                       | Desarrollo y mantenimiento del día a día                                                                                 |
-| [`docs/ROADMAP.md`](docs/ROADMAP.md)                                               | Fases propuestas                                                                                                         |
+| Documento                                                                          | Contenido                                                                                                                   |
+| ---------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| [`docs/MASTER_SPEC.md`](docs/MASTER_SPEC.md)                                       | **Documento maestro**: producto, reglas, módulos, fases y mapa de la documentación                                          |
+| [`docs/PRODUCT_STRATEGY.md`](docs/PRODUCT_STRATEGY.md)                             | Visión estratégica, principios, mapa de módulos, auditoría y regulación (propuesta)                                         |
+| [`docs/COMPETITIVE_ANALYSIS.md`](docs/COMPETITIVE_ANALYSIS.md)                     | Análisis competitivo con fuentes y oportunidades de diferenciación                                                          |
+| [`docs/PROGRESSION_AND_AUTOREGULATION.md`](docs/PROGRESSION_AND_AUTOREGULATION.md) | Progresión, 1RM estimado, valoración previa, motor de adaptación y carga interna (propuesta)                                |
+| [`docs/INTEGRATIONS.md`](docs/INTEGRATIONS.md)                                     | Requisitos de cada integración y arquitectura de importación                                                                |
+| [`docs/TRAINING_EXPERIENCE.md`](docs/TRAINING_EXPERIENCE.md)                       | Experiencia de entrenamiento guiada: análisis, flujo, bocetos y criterios de aceptación (diseño pendiente de aprobación)    |
+| [`docs/EFFORT_AND_LOAD.md`](docs/EFFORT_AND_LOAD.md)                               | Prescripción de carga y esfuerzo (RIR, RPE), registro, 1RM, volumen y tonelaje                                              |
+| [`docs/MEDIA.md`](docs/MEDIA.md)                                                   | Silueta y vídeos de los ejercicios: formatos, almacenamiento, costes y privacidad                                           |
+| [`docs/PHASE1_REPORT.md`](docs/PHASE1_REPORT.md)                                   | Informe de revisión de la Fase 1                                                                                            |
+| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)                                     | Arquitectura, capas, flujo de datos y cómo ampliar                                                                          |
+| [`docs/DATA_MODEL.md`](docs/DATA_MODEL.md)                                         | Modelo conceptual de datos, incluida la biblioteca multidimensional                                                         |
+| [`docs/TAXONOMY.md`](docs/TAXONOMY.md)                                             | Taxonomía de la biblioteca: dimensiones de etiquetas, patrones y niveles de ejercicios                                      |
+| [`docs/INFRASTRUCTURE.md`](docs/INFRASTRUCTURE.md)                                 | Comparativa de base de datos, autenticación, alojamiento y CI, con costes y riesgos                                         |
+| [`docs/DATA_RIGHTS.md`](docs/DATA_RIGHTS.md)                                       | Diseño de los derechos del cliente: acceso, exportación, rectificación y supresión                                          |
+| [`docs/SCREEN_INVENTORY.md`](docs/SCREEN_INVENTORY.md)                             | Qué es funcional, qué usa datos ficticios y qué es solo visual en cada pantalla                                             |
+| [`docs/DECISIONS.md`](docs/DECISIONS.md)                                           | Decisiones técnicas justificadas (ADR) y las pendientes de aprobar                                                          |
+| [`docs/SECURITY_PRIVACY.md`](docs/SECURITY_PRIVACY.md)                             | Modelo de permisos, privacidad, RGPD y pendientes                                                                           |
+| [`docs/SCIENTIFIC_RIGOR.md`](docs/SCIENTIFIC_RIGOR.md)                             | Procedencia de los datos, registro de fórmulas y convenciones                                                               |
+| [`docs/DESIGN_SYSTEM.md`](docs/DESIGN_SYSTEM.md)                                   | Identidad visual, tokens, componentes y accesibilidad                                                                       |
+| [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md)                                       | Desarrollo y mantenimiento del día a día                                                                                    |
+| [`docs/ROADMAP.md`](docs/ROADMAP.md)                                               | Fases propuestas                                                                                                            |
+| [`docs/IMPLEMENTATION_READINESS.md`](docs/IMPLEMENTATION_READINESS.md)             | Auditoría de preparación: primera versión funcional, decisiones para aprobar, entregas verticales y definición de terminado |
 
 ## Costes
 

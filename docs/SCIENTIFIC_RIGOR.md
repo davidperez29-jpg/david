@@ -169,9 +169,6 @@ Pendiente de aprobación. Amplía las reglas anteriores para que la ciencia sea 
 
 ### Ecuaciones cuya fuente original es un libro
 
-Varias ecuaciones de estimación del 1RM proceden de libros o revistas profesionales no indexadas (`PROGRESSION_AND_AUTOREGULATION.md` §3). La propuesta (P-50) tiene dos vías:
+Varias ecuaciones de estimación del 1RM proceden de libros o revistas profesionales no indexadas (`PROGRESSION_AND_AUTOREGULATION.md` §3). Por tu indicación (P-50), **solo hay una vía: obtener y leer el original**. La vía alternativa que se propuso (cotejar la expresión en al menos dos estudios de validación indexados) **queda descartada**. Si no se consigue el original, la ecuación no se implementa y se muestra `PendingFeature`.
 
-- **Preferente:** obtener y leer el original.
-- **Si no es posible:** cotejar la expresión en al menos dos estudios de validación indexados que la reproduzcan. Se registra como «tomada de estudios de validación; original no consultado».
-
-En ambos casos, solo se ofrece para los ejercicios y las poblaciones en que se ha validado.
+Aun con el original, solo se ofrece para los ejercicios y las poblaciones en que se ha validado.

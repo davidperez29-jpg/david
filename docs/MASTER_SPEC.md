@@ -2,11 +2,12 @@
 
 Documento de referencia del producto: qué es TrainPro, qué reglas lo rigen, qué incluye cada módulo y dónde está el detalle. Reúne la especificación maestra de desarrollo, la revisión de la Fase 1 y los requisitos de la experiencia de entrenamiento guiada. Si dos documentos se contradicen, **manda el más específico** y se corrige el otro.
 
-| Versión | Fecha                  | Cambios                                                                                                                                                                                                                                                                                                                 |
-| ------- | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1.0     | 6 de noviembre de 2026 | Primera versión: consolida la especificación y la revisión de la Fase 1, y añade el diseño de la experiencia guiada, la carga y el esfuerzo, y la gestión audiovisual (pendiente de aprobación)                                                                                                                         |
-| 1.1     | 6 de noviembre de 2026 | Cambio de ambición: visión estratégica, ciclo rector, motor de adaptación explicable, progresión, valoración previa, RPE de sesión, análisis competitivo e integraciones (pendiente de aprobación)                                                                                                                      |
-| 1.2     | 6 de noviembre de 2026 | Cierre de decisiones: tabla completa clasificada de A a E, autorregulación detallada (orígenes, matriz de acciones, perfiles, señales, simulación), decisiones estructurales de la 1B, escenarios de validación S-01 a S-24, revisión regulatoria con fuentes oficiales y registro de riesgos (pendiente de aprobación) |
+| Versión | Fecha                  | Cambios                                                                                                                                                                                                                                                                                                                                                                 |
+| ------- | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1.0     | 6 de noviembre de 2026 | Primera versión: consolida la especificación y la revisión de la Fase 1, y añade el diseño de la experiencia guiada, la carga y el esfuerzo, y la gestión audiovisual (pendiente de aprobación)                                                                                                                                                                         |
+| 1.1     | 6 de noviembre de 2026 | Cambio de ambición: visión estratégica, ciclo rector, motor de adaptación explicable, progresión, valoración previa, RPE de sesión, análisis competitivo e integraciones (pendiente de aprobación)                                                                                                                                                                      |
+| 1.2     | 6 de noviembre de 2026 | Cierre de decisiones: tabla completa clasificada de A a E, autorregulación detallada (orígenes, matriz de acciones, perfiles, señales, simulación), decisiones estructurales de la 1B, escenarios de validación S-01 a S-24, revisión regulatoria con fuentes oficiales y registro de riesgos (pendiente de aprobación)                                                 |
+| 1.3     | 7 de noviembre de 2026 | Auditoría de preparación para implementar (`IMPLEMENTATION_READINESS.md`): reclasificación de las funcionalidades de la 1B (A–D), primera versión funcional cerrada, seis preguntas para aprobar (Q1–Q6), entregas verticales V1–V6, definición de terminado, dolor sin registro estructurado en la 1B y salvaguarda de la valoración aislada (pendiente de aprobación) |
 
 ## 1. Producto
 
@@ -89,41 +90,42 @@ Requisitos 1 a 9 de la experiencia profesional y guiada. **Diseño completo en `
 
 ## 5. Fases
 
-| Fase   | Contenido                                                                                                                                                    | Estado                                                 |
-| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------ |
-| 1      | Fundamentos                                                                                                                                                  | Hecha y revisada (`PHASE1_REPORT.md`)                  |
-| **1B** | **Propuesta:** prescripción v2 y experiencia guiada sobre datos demo, sin infraestructura ni costes; añade la valoración previa, el dolor y el RPE de sesión | **Acuerdo conceptual; alcance pendiente (P-16, P-44)** |
-| **1C** | **Propuesta:** progresión y autorregulación supervisada, registro de decisiones, carga interna y 1RM estimado verificado, sobre datos demo                   | **Pendiente de aprobación (P-44)**                     |
-| 2      | Autenticación y usuarios, con base de datos                                                                                                                  | Pendiente de aprobación (P-01, P-02)                   |
-| 3–10   | Clientes, biblioteca, evaluaciones, planificación, portal, carga y volumen, readaptación e informes, validación y despliegue                                 | Pendientes (`ROADMAP.md`)                              |
+| Fase   | Contenido                                                                                                                                                                                                                                                                                                     | Estado                                                 |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
+| 1      | Fundamentos                                                                                                                                                                                                                                                                                                   | Hecha y revisada (`PHASE1_REPORT.md`)                  |
+| **1B** | **Propuesta:** prescripción v2 y experiencia guiada sobre datos demo, sin infraestructura ni costes; añade la valoración previa y el RPE de sesión, si se aprueban (Q2), y el motivo neutro «molestias», sin registro estructurado de dolor (Q3). Primera versión y entregas en `IMPLEMENTATION_READINESS.md` | **Acuerdo conceptual; alcance pendiente (P-16, P-44)** |
+| **1C** | **Propuesta:** progresión y autorregulación supervisada, registro de decisiones, carga interna y 1RM estimado verificado, sobre datos demo                                                                                                                                                                    | **Pendiente de aprobación (P-44)**                     |
+| 2      | Autenticación y usuarios, con base de datos                                                                                                                                                                                                                                                                   | Pendiente de aprobación (P-01, P-02)                   |
+| 3–10   | Clientes, biblioteca, evaluaciones, planificación, portal, carga y volumen, readaptación e informes, validación y despliegue                                                                                                                                                                                  | Pendientes (`ROADMAP.md`)                              |
 
 Las fases se agrupan en **etapas estratégicas** (E0 núcleo funcional a E8 escalabilidad comercial) en `ROADMAP.md`.
 
 ## 6. Mapa de la documentación
 
-| Documento                           | Contenido                                                                                       |
-| ----------------------------------- | ----------------------------------------------------------------------------------------------- |
-| `MASTER_SPEC.md`                    | Este documento                                                                                  |
-| `PRODUCT_STRATEGY.md`               | Visión, principios, mapa de módulos, auditoría, motor de inteligencia y regulación              |
-| `COMPETITIVE_ANALYSIS.md`           | Matriz competitiva y oportunidades de diferenciación                                            |
-| `PROGRESSION_AND_AUTOREGULATION.md` | Progresión, 1RM estimado, valoración previa, motor de adaptación, RPE de sesión y carga interna |
-| `INTEGRATIONS.md`                   | Requisitos de cada integración y arquitectura de importación                                    |
-| `TRAINING_EXPERIENCE.md`            | Análisis y diseño de la experiencia guiada, bocetos, flujo y criterios de aceptación            |
-| `EFFORT_AND_LOAD.md`                | Carga, esfuerzo, registro, estimación del 1RM, volumen y tonelaje, con referencias              |
-| `MEDIA.md`                          | Silueta y vídeos: modelo, formatos, almacenamiento, costes, privacidad y riesgos                |
-| `ARCHITECTURE.md`                   | Capas, flujo de datos, sincronización sin conexión y cómo ampliar                               |
-| `DATA_MODEL.md`                     | Modelo conceptual de datos                                                                      |
-| `TAXONOMY.md`                       | Taxonomía de la biblioteca                                                                      |
-| `SCIENTIFIC_RIGOR.md`               | Procedencia, registro de fórmulas y convenciones                                                |
-| `SECURITY_PRIVACY.md`               | Permisos, privacidad y RGPD                                                                     |
-| `DATA_RIGHTS.md`                    | Derechos del cliente                                                                            |
-| `INFRASTRUCTURE.md`                 | Base de datos, autenticación, alojamiento, CI y almacenamiento multimedia, con costes           |
-| `DESIGN_SYSTEM.md`                  | Identidad, tokens, componentes y patrones                                                       |
-| `DECISIONS.md`                      | Decisiones tomadas (ADR) y pendientes (P-xx)                                                    |
-| `ROADMAP.md`                        | Fases                                                                                           |
-| `SCREEN_INVENTORY.md`               | Qué funciona en cada pantalla                                                                   |
-| `PHASE1_REPORT.md`                  | Informe de la Fase 1                                                                            |
-| `DEVELOPMENT.md`                    | Desarrollo del día a día                                                                        |
+| Documento                           | Contenido                                                                                                                           |
+| ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `MASTER_SPEC.md`                    | Este documento                                                                                                                      |
+| `PRODUCT_STRATEGY.md`               | Visión, principios, mapa de módulos, auditoría, motor de inteligencia y regulación                                                  |
+| `COMPETITIVE_ANALYSIS.md`           | Matriz competitiva y oportunidades de diferenciación                                                                                |
+| `PROGRESSION_AND_AUTOREGULATION.md` | Progresión, 1RM estimado, valoración previa, motor de adaptación, RPE de sesión y carga interna                                     |
+| `INTEGRATIONS.md`                   | Requisitos de cada integración y arquitectura de importación                                                                        |
+| `TRAINING_EXPERIENCE.md`            | Análisis y diseño de la experiencia guiada, bocetos, flujo y criterios de aceptación                                                |
+| `EFFORT_AND_LOAD.md`                | Carga, esfuerzo, registro, estimación del 1RM, volumen y tonelaje, con referencias                                                  |
+| `MEDIA.md`                          | Silueta y vídeos: modelo, formatos, almacenamiento, costes, privacidad y riesgos                                                    |
+| `ARCHITECTURE.md`                   | Capas, flujo de datos, sincronización sin conexión y cómo ampliar                                                                   |
+| `DATA_MODEL.md`                     | Modelo conceptual de datos                                                                                                          |
+| `TAXONOMY.md`                       | Taxonomía de la biblioteca                                                                                                          |
+| `SCIENTIFIC_RIGOR.md`               | Procedencia, registro de fórmulas y convenciones                                                                                    |
+| `SECURITY_PRIVACY.md`               | Permisos, privacidad y RGPD                                                                                                         |
+| `DATA_RIGHTS.md`                    | Derechos del cliente                                                                                                                |
+| `INFRASTRUCTURE.md`                 | Base de datos, autenticación, alojamiento, CI y almacenamiento multimedia, con costes                                               |
+| `DESIGN_SYSTEM.md`                  | Identidad, tokens, componentes y patrones                                                                                           |
+| `DECISIONS.md`                      | Decisiones tomadas (ADR) y pendientes (P-xx)                                                                                        |
+| `ROADMAP.md`                        | Fases                                                                                                                               |
+| `IMPLEMENTATION_READINESS.md`       | Auditoría de preparación, primera versión funcional, decisiones para aprobar (Q1–Q6), entregas verticales y definición de terminado |
+| `SCREEN_INVENTORY.md`               | Qué funciona en cada pantalla                                                                                                       |
+| `PHASE1_REPORT.md`                  | Informe de la Fase 1                                                                                                                |
+| `DEVELOPMENT.md`                    | Desarrollo del día a día                                                                                                            |
 
 ## 7. Glosario
 
