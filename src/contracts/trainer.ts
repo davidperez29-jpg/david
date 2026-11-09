@@ -79,11 +79,6 @@ export interface ClientPlanVM {
   weekSessions: (SessionCardVM & { preview: SessionPreviewItemVM[] })[];
 }
 
-export interface ClientSessionsVM {
-  upcoming: SessionCardVM[];
-  past: SessionCardVM[];
-}
-
 /** Lo que el cliente registró en una sesión, serie a serie, con su valoración y observaciones. */
 export interface TrainingLogEntryVM {
   sessionId: string;

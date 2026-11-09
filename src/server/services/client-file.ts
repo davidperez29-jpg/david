@@ -3,7 +3,6 @@ import {
   type ClientPlanVM,
   type ClientProfileVM,
   type ClientResultsVM,
-  type ClientSessionsVM,
   type GoalVM,
   type TrainingLogEntryVM,
 } from '@/contracts/trainer';
@@ -115,23 +114,6 @@ export async function getClientPlan(
         ...toSessionCard(s, logs.get(s.id), ctx.today),
         preview: toPreview(s, variants.byId),
       })),
-  };
-}
-
-export async function getClientSessions(
-  ctx: TrainerContext,
-  clientId: string,
-): Promise<ClientSessionsVM | null> {
-  const client = await ownClient(ctx, clientId);
-  if (!client) return null;
-  const { sessions, logs } = await sessionsAndLogs(ctx, client.id, {
-    from: addDays(ctx.today, -28),
-    to: addDays(ctx.today, 14),
-  });
-  const cards = sessions.map((s) => toSessionCard(s, logs.get(s.id), ctx.today));
-  return {
-    upcoming: cards.filter((c) => c.date >= ctx.today),
-    past: cards.filter((c) => c.date < ctx.today).reverse(),
   };
 }
 

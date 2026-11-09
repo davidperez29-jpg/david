@@ -1,58 +1,73 @@
+import { CalendarPlus } from 'lucide-react';
 import { type Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { type SessionCardVM } from '@/contracts/shared';
-import { formatDate } from '@/domain/format';
-import { SessionStatusBadge } from '@/features/shared/status-badge';
+import { SessionDays } from '@/features/trainer/session-days';
+import { ButtonLink } from '@/ui/button';
 import { Card, CardHeader } from '@/ui/card';
+import { EmptyState } from '@/ui/empty-state';
 import { getTrainerContext } from '@/server/context';
-import { getClientSessions } from '@/server/services/client-file';
+import { getTrainerSessions } from '@/server/services/trainer-sessions';
+import { deleteDraftAction, moveDraftAction } from './actions';
 
 export const metadata: Metadata = { title: 'Ficha · Sesiones' };
 
-function SessionList({ sessions, empty }: { sessions: SessionCardVM[]; empty: string }) {
-  if (sessions.length === 0) return <p className="text-sm text-ink-500">{empty}</p>;
-  return (
-    <ul className="divide-y divide-line">
-      {sessions.map((s) => (
-        <li key={s.id} className="flex items-center justify-between gap-3 py-2.5 text-sm">
-          <div className="min-w-0">
-            <p className="truncate font-semibold text-ink-900">{s.title}</p>
-            <p className="text-ink-500">
-              {formatDate(s.date, 'long')} · {s.exerciseCount} ejercicios · {s.completedSets}/
-              {s.plannedSets} series
-            </p>
-          </div>
-          <SessionStatusBadge status={s.status} />
-        </li>
-      ))}
-    </ul>
-  );
-}
-
+/** A3 · Sesiones del cliente, agrupadas por fecha prevista (varias el mismo día). */
 export default async function ClientSessionsTab(
   props: PageProps<'/entrenador/clientes/[clientId]/sesiones'>,
 ) {
   const { clientId } = await props.params;
-  const sessions = await getClientSessions(await getTrainerContext(), clientId);
-  if (!sessions) notFound();
+  const vm = await getTrainerSessions(await getTrainerContext(), clientId);
+  if (!vm) notFound();
+  const newSession = `/entrenador/clientes/${vm.clientId}/sesiones/nueva`;
+  const common = {
+    clientId: vm.clientId,
+    clientFirstName: vm.clientFirstName,
+    moveAction: moveDraftAction,
+    deleteAction: deleteDraftAction,
+  };
+
+  if (vm.upcoming.length === 0 && vm.past.length === 0) {
+    return (
+      <Card>
+        <EmptyState
+          title={`Todavía no hay sesiones para ${vm.clientFirstName}`}
+          action={
+            <ButtonLink href={newSession}>
+              <CalendarPlus aria-hidden className="size-4" /> Planificar una sesión
+            </ButtonLink>
+          }
+        >
+          Crea la primera: puedes poner varias el mismo día («Mañana», «Tarde»…).
+        </EmptyState>
+      </Card>
+    );
+  }
+
   return (
-    <div className="grid items-start gap-6 lg:grid-cols-2">
-      <Card>
-        <CardHeader
-          as="h2"
-          title="Próximas sesiones"
-          description="Hoy y las dos próximas semanas."
-        />
-        <SessionList sessions={sessions.upcoming} empty="Sin sesiones programadas." />
-      </Card>
-      <Card>
-        <CardHeader
-          as="h2"
-          title="Sesiones anteriores"
-          description="Últimas cuatro semanas, con su estado según el registro."
-        />
-        <SessionList sessions={sessions.past} empty="Sin sesiones anteriores." />
-      </Card>
-    </div>
+    <>
+      <div className="mb-4 flex justify-end">
+        <ButtonLink href={newSession}>
+          <CalendarPlus aria-hidden className="size-4" /> Nueva sesión
+        </ButtonLink>
+      </div>
+      <div className="grid items-start gap-6 lg:grid-cols-2">
+        <Card>
+          <CardHeader
+            as="h2"
+            title="Próximas sesiones"
+            description="Desde hoy, por día y en su orden. Los borradores no los ve el cliente."
+          />
+          <SessionDays days={vm.upcoming} empty="Sin sesiones programadas." {...common} />
+        </Card>
+        <Card>
+          <CardHeader
+            as="h2"
+            title="Sesiones anteriores"
+            description="Últimas cuatro semanas, con su estado según el registro."
+          />
+          <SessionDays days={vm.past} empty="Sin sesiones anteriores." {...common} />
+        </Card>
+      </div>
+    </>
   );
 }

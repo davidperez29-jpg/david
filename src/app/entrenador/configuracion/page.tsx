@@ -1,16 +1,20 @@
-import { Database, Globe, Lock, Plug, Ruler, UserRound } from 'lucide-react';
+import { Globe, Lock, Plug, Ruler, UserRound } from 'lucide-react';
 import { type Metadata } from 'next';
 import { Badge } from '@/ui/badge';
 import { Card, CardHeader } from '@/ui/card';
 import { PageHeader } from '@/ui/page-header';
-import { getTrainerContext } from '@/server/context';
+import { DemoDataCard } from '@/features/trainer/demo-data-card';
+import { getDataMaintenance, getTrainerContext } from '@/server/context';
 import { readServerEnv } from '@/server/env';
+import { getDemoData } from '@/server/services/demo-data';
+import { backupAction, resetAction } from './actions';
 
 export const metadata: Metadata = { title: 'Configuración' };
 
 export default async function SettingsPage() {
-  await getTrainerContext();
+  const ctx = await getTrainerContext();
   const env = readServerEnv();
+  const data = getDemoData(ctx, await getDataMaintenance());
   const sections = [
     {
       icon: <UserRound className="size-5" />,
@@ -26,15 +30,6 @@ export default async function SettingsPage() {
         ['Datos de salud', 'Solo el entrenador responsable'],
       ] as const,
       status: 'Reglas listas, sin login real',
-    },
-    {
-      icon: <Database className="size-5" />,
-      title: 'Datos',
-      rows: [
-        ['Fuente de datos', 'SQLite local (datos ficticios)'],
-        ['Persistencia', 'En este equipo, en la carpeta de datos'],
-      ] as const,
-      status: 'Demo',
     },
     {
       icon: <Globe className="size-5" />,
@@ -63,9 +58,12 @@ export default async function SettingsPage() {
     <>
       <PageHeader
         title="Configuración"
-        description="Ajustes de la cuenta, la privacidad y los datos. En esta fase solo se pueden consultar."
+        description="Ajustes de la cuenta, la privacidad y los datos. Por ahora solo se pueden consultar, salvo los datos de la demostración."
       />
       <div className="grid gap-5 md:grid-cols-2">
+        {data ? (
+          <DemoDataCard vm={data} backupAction={backupAction} resetAction={resetAction} />
+        ) : null}
         {sections.map((section) => (
           <Card key={section.title}>
             <CardHeader

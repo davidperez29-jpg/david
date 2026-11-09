@@ -5,7 +5,7 @@ import { seededTestDatabase } from '../db/test-support';
 import { createDemoRepositories } from '../repositories/demo';
 import { buildDemoDataset, DEMO_TRAINER_ID } from '../repositories/demo/dataset';
 import { type Repositories } from '../repositories/ports';
-import { getClientHome, getClientProgress, getClientSession, getClientWeek } from './client';
+import { getClientProgress, getClientSession, getClientWeek } from './client';
 import {
   getClientEvaluations,
   getClientGoals,
@@ -13,7 +13,6 @@ import {
   getClientPlan,
   getClientProfile,
   getClientResults,
-  getClientSessions,
   getClientTrainingLog,
 } from './client-file';
 import { getLibrary } from './library';
@@ -98,7 +97,6 @@ for (const today of ['2026-11-04', '2026-11-09', '2026-11-15']) {
           getClientProfile,
           getClientGoals,
           getClientPlan,
-          getClientSessions,
           getClientTrainingLog,
           getClientEvaluations,
           getClientResults,
@@ -114,9 +112,9 @@ for (const today of ['2026-11-04', '2026-11-09', '2026-11-15']) {
       }
     });
 
-    it('la app de cada cliente: Hoy, Semana, Progreso y cada sesión', async () => {
+    it('la app de cada cliente: Semana, Progreso y cada sesión (reproductor)', async () => {
       for (const { id } of data.clients) {
-        for (const view of [getClientHome, getClientWeek, getClientProgress] as ((
+        for (const view of [getClientWeek, getClientProgress] as ((
           ctx: ClientContext,
         ) => Promise<unknown>)[]) {
           const result = await both((repos) => view(client(repos, id)));
