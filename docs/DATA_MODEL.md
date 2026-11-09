@@ -2,6 +2,8 @@
 
 Diseño relacional y normalizado para PostgreSQL, que se implementará en fases posteriores. En la Fase 1 **no hay base de datos**: parte del modelo ya existe como tipos de TypeScript en `src/domain` (los usa el adaptador demo en memoria) y el resto es conceptual. Cada sección indica qué está implementado.
 
+> **Desde V1 (bloque 1, 9 nov 2026):** hay una base **SQLite local** con las tablas de V1. El esquema implementado está en `V1_SPEC.md` §4 (con las columnas añadidas del §9.2) y en `src/server/db/migrations/001-v1.ts`. El paso a PostgreSQL sigue previsto para la Fase 2 (`V1_SPEC.md` §8.3.4).
+
 ## Principios
 
 1. **Normalización.** Nada de listas en campos de texto: las etiquetas, patrones, materiales, regiones y entornos se relacionan con tablas intermedias (muchos a muchos).

@@ -27,7 +27,7 @@ La lógica (permisos, procedencia, fórmulas y volumen) vive en `src/domain` sin
 
 La interfaz no puede importar código de servidor (regla de ESLint). Los tipos de los modelos de vista viven en `src/contracts`, que solo contiene tipos. Así el contrato es explícito y se comprueba en compilación.
 
-## ADR-06 · Sin base de datos en la Fase 1 · Aprobada (por el alcance de la fase)
+## ADR-06 · Sin base de datos en la Fase 1 · Aprobada (por el alcance de la fase) · Sustituida en V1 por ADR-23
 
 Los datos son ficticios, deterministas y generados en memoria a partir de la fecha actual. No hay persistencia: el registro de sesiones del cliente funciona en la pantalla, pero no se guarda.
 
@@ -38,6 +38,8 @@ Los datos son ficticios, deterministas y generados en memoria a partir de la fec
 | `next`, `react`, `react-dom`                                          | Marco de la aplicación                                                |
 | `lucide-react` (ISC)                                                  | Iconografía coherente y accesible; solo se incluyen los iconos usados |
 | `server-only`                                                         | Impide en compilación que el código de servidor llegue al navegador   |
+| `better-sqlite3` 13.0.3 (MIT; desde V1, P-85 aprobada)                | Base SQLite local; solo la importa `src/server/db/sqlite.ts`          |
+| `@types/better-sqlite3` 9.6.0 (solo desarrollo)                       | Tipos de `better-sqlite3`                                             |
 | `tailwindcss`, `@tailwindcss/postcss`                                 | Estilos con _tokens_ de diseño                                        |
 | `typescript`, `eslint`, `eslint-config-next`, `prettier`              | Calidad y consistencia                                                |
 | `vitest`                                                              | Tests unitarios y de integración                                      |
@@ -150,6 +152,22 @@ Los saltos y aterrizajes se clasifican por dirección (patrón). La ejecución u
 - Cada serie se guarda en el dispositivo (IndexedDB) con un identificador propio y se envía cuando hay conexión. El servidor la acepta una sola vez.
 - Las correcciones son versiones nuevas que sustituyen a la anterior y la conservan.
 - Motivo: los gimnasios suelen tener mala cobertura, y la regla de no contar dos veces una serie ya existe. Alternativa descartada: exigir conexión para registrar.
+
+## ADR-23 · V1 con SQLite local (`better-sqlite3`) y Node 26 · Aprobada (9 nov 2026)
+
+**Aprobaciones del 9 de noviembre de 2026 (inicio del bloque 1):**
+
+- **Q1:** V1 completa es el objetivo de desarrollo, pero **solo el bloque 1 está autorizado**. Al terminarlo hay que parar y presentar un informe; el bloque 2 necesita tu aprobación expresa.
+- **P-76:** Lucía Gil como clienta de prueba. El selector «Entrar como…» (Alex, Marta, Lucía) solo existe en el entorno local, con datos ficticios, y **no es autenticación ni autorización**.
+- **P-85:** `better-sqlite3` y Node 26, con la condición de comprobar la compatibilidad real y de parar ante cualquier incompatibilidad, compilación inesperada o problema de binarios.
+- **Q4:** persistencia temporal en el cliente más confirmación del servidor; **no** un modo sin conexión completo. El cliente distinguirá «Pendiente de envío», «Confirmado por el servidor» y «Error de envío»; los reintentos serán idempotentes; la pérdida de lo pendiente al borrar los datos del navegador queda documentada como limitación (bloque 2).
+
+**Cómo se ha aplicado (bloque 1):**
+
+- **Versiones:** Node 26.13.0 y `better-sqlite3` 13.0.3, con los binarios incluidos en el paquete (sin compilar).
+- **Verificación:** en Linux x64 con Next.js 16.4.5, Vitest 5 y pnpm 10.28. En Windows solo se han comprobado los binarios, sin ejecutarlos.
+- **Detalle:** `V1_SPEC.md` §8.3 y §9.2.
+- **Técnicas aplicadas:** P-80 (espacios E2E como archivos aparte), P-84 (RIR por serie en la semilla) y P-87 (protección local: `127.0.0.1`, `TRAINPRO_MODE`, `Host` permitido y permisos del archivo).
 
 ## Decisiones pendientes
 
@@ -327,6 +345,6 @@ Sustituye a la lista anterior, que pedía aprobar toda la clase A.
 2. **Resoluciones técnicas** que aplicaré salvo que te opongas: P-11, P-17, P-18, P-21, P-22, P-34 a P-37, P-39 a P-42, P-64, P-67 y P-75 (y P-12, ya implementada).
 3. **Antes de la 1C (B):** la autorregulación (P-45, P-46, P-68, P-69, P-70), la carga interna (P-49), el 1RM (P-24, P-50), la definición de la finalidad prevista (P-54), el contenido del protocolo de evidencia (P-61), el rastro de progresión y el modelo de cambios (P-62, P-63), las notificaciones (P-71) y **conseguir las fuentes originales** (P-72).
 4. **Opcional:** permitir los dominios oficiales en la red de la sesión (P-74).
-5. **Para V1, además** (`V1_SPEC.md` §11, revisado el 7 de noviembre): P-76 y P-85 necesitan tu aprobación, junto con Q1 y Q4. P-77, P-78, P-83 y P-17 están resueltas por tus indicaciones. P-18, P-79 a P-82, P-84 y P-86 a P-89 son técnicas y se aplicarán salvo que te opongas.
+5. **Para V1, además** (`V1_SPEC.md` §11, revisado el 7 de noviembre): P-76 y P-85, junto con Q1 y Q4, **aprobadas el 9 de noviembre** (ADR-23). P-77, P-78, P-83 y P-17 están resueltas por tus indicaciones. P-18, P-79 a P-82, P-84 y P-86 a P-89 son técnicas y se aplicarán salvo que te opongas.
 
 Cuando apruebes estas decisiones, se actualizarán con ellas `EFFORT_AND_LOAD.md`, `TRAINING_EXPERIENCE.md`, `MEDIA.md` y `DATA_MODEL.md`. Cada decisión nueva debe responder a las ocho preguntas del criterio de decisión (`PRODUCT_STRATEGY.md` §2).

@@ -4,7 +4,7 @@ Plataforma web para gestionar el entrenamiento, la evaluación, el rendimiento, 
 
 Ciclo de trabajo: **crear cliente → evaluar → interpretar → planificar → registrar ejecución → analizar carga y evolución → ajustar el plan**.
 
-> **Estado: Fase 1 (fundamentos), versión de demostración.** Usa **datos ficticios en memoria**, **no tiene inicio de sesión real** y **no guarda nada**. No hay base de datos ni servicios externos conectados, y no hay ningún despliegue público. El detalle de qué funciona de verdad y qué está pendiente está en [`docs/PHASE1_REPORT.md`](docs/PHASE1_REPORT.md). El diseño de la experiencia de entrenamiento guiada está documentado y **pendiente de aprobación**, sin código nuevo (ver [`docs/MASTER_SPEC.md`](docs/MASTER_SPEC.md)).
+> **Estado: V1, bloque 1 implementado y pendiente de revisión (9 de noviembre de 2026).** Prototipo **local** con **datos ficticios** guardados en **SQLite** en tu equipo: el entrenador crea y publica sesiones (varias el mismo día) y la clienta las ve en el móvil. **No hay inicio de sesión real** («Entrar como…» elige una persona ficticia), ni servicios externos, ni despliegue. El registro de series todavía no se guarda (bloque 2). Detalle: [`docs/V1_SPEC.md`](docs/V1_SPEC.md) §9.2; la Fase 1: [`docs/PHASE1_REPORT.md`](docs/PHASE1_REPORT.md).
 
 ## Requisitos
 
@@ -19,34 +19,42 @@ nvm use                             # o fnm use: Node 26.13.0 según .nvmrc
 npm install -g corepack@0.36.0      # una vez por equipo (Node 26 no incluye Corepack)
 corepack enable                     # una vez por equipo
 pnpm install                        # instala las dependencias exactas del lockfile
+cp .env.example .env.local          # activa el modo de demostración local (TRAINPRO_MODE=local-demo)
 pnpm exec next telemetry disable    # opcional y recomendado: desactiva la telemetría anónima de Next.js
-pnpm dev                            # http://localhost:3000
+pnpm dev                            # http://127.0.0.1:3000 (solo en este equipo)
 ```
 
-No hace falta configurar nada: todas las variables de entorno tienen un valor por defecto seguro. Si quieres cambiarlas, copia `.env.example` como `.env.local`.
+- **`.env.local` con `TRAINPRO_MODE=local-demo`** es necesario para entrar: sin él la aplicación arranca, pero no hay forma de entrar (no hay autenticación hasta la Fase 2). El resto de variables tienen un valor por defecto seguro (`docs/DEVELOPMENT.md`).
+- El servidor **solo escucha en 127.0.0.1** y rechaza cualquier otro nombre de host (`TRAINPRO_ALLOWED_HOSTS`): no es accesible desde la red local.
+- `better-sqlite3` trae los binarios compilados para Linux, macOS y Windows (x64 y arm64): `pnpm install` no compila nada y avisa de que ha ignorado su script de compilación, que no hace falta.
 
-Entradas de la demo:
+**Datos:** la primera vez se crea `.data/trainpro.sqlite` (fuera de Git, solo legible por tu usuario) con los datos ficticios del día. Se conservan al recargar, al cerrar el navegador y al reiniciar el servidor. «Restablecer datos demo» (Configuración) guarda una copia y vuelve a sembrar con la fecha de hoy.
 
-| Ruta          | Experiencia                                                                               |
-| ------------- | ----------------------------------------------------------------------------------------- |
-| `/`           | Portada: elegir entre entrenador y cliente                                                |
-| `/entrenador` | Área del entrenador (Alex, ficticio): panel, clientes con ficha por pestañas, biblioteca… |
-| `/cliente`    | Portal del cliente, pensado para el móvil (Marta, ficticia): la sesión de hoy             |
+Entradas de la demo (en la portada, «Entrar como…»):
+
+| Persona          | Experiencia                                                                                                   |
+| ---------------- | ------------------------------------------------------------------------------------------------------------- |
+| Alex, entrenador | Panel, clientes con ficha por pestañas, sesiones (crear, prescribir y publicar), biblioteca, carga, informes… |
+| Marta, clienta   | App pensada para el móvil, con historial: Hoy, detalle de cada sesión, semana y progreso                      |
+| Lucía, clienta   | Clienta nueva, sin historial: ve lo que Alex le publica                                                       |
 
 ## Scripts
 
-| Comando          | Qué hace                                                                           |
-| ---------------- | ---------------------------------------------------------------------------------- |
-| `pnpm dev`       | Servidor de desarrollo                                                             |
-| `pnpm build`     | Compilación de producción                                                          |
-| `pnpm start`     | Sirve la compilación de producción                                                 |
-| `pnpm lint`      | ESLint, incluidas las reglas que impiden saltarse las capas                        |
-| `pnpm typecheck` | Genera los tipos de rutas y comprueba TypeScript                                   |
-| `pnpm format`    | Formatea con Prettier (`format:check` solo comprueba)                              |
-| `pnpm test`      | Tests unitarios y de integración (Vitest)                                          |
-| `pnpm test:e2e`  | Compila y ejecuta las pruebas de extremo a extremo (Playwright + axe)              |
-| `pnpm check`     | Formato + lint + tipos + tests + compilación: lo que debe pasar antes de un commit |
-| `pnpm icons`     | Regenera los iconos PNG de la PWA a partir de `public/icons/icon.svg`              |
+| Comando                   | Qué hace                                                                                 |
+| ------------------------- | ---------------------------------------------------------------------------------------- |
+| `pnpm dev`                | Servidor de desarrollo                                                                   |
+| `pnpm build`              | Compilación de producción                                                                |
+| `pnpm start`              | Sirve la compilación de producción                                                       |
+| `pnpm lint`               | ESLint, incluidas las reglas que impiden saltarse las capas                              |
+| `pnpm typecheck`          | Genera los tipos de rutas y comprueba TypeScript                                         |
+| `pnpm format`             | Formatea con Prettier (`format:check` solo comprueba)                                    |
+| `pnpm test`               | Tests unitarios y de integración (Vitest)                                                |
+| `pnpm test:e2e`           | Compila y ejecuta las pruebas de extremo a extremo (Playwright + axe)                    |
+| `pnpm check`              | Formato + lint + tipos + tests + compilación: lo que debe pasar antes de un commit       |
+| `pnpm icons`              | Regenera los iconos PNG de la PWA a partir de `public/icons/icon.svg`                    |
+| `pnpm db:status`          | Dónde está la base, migraciones, semilla, recuento, integridad y copias                  |
+| `pnpm db:backup`          | Copia de seguridad verificada en `.data/backups/` (también con el servidor en marcha)    |
+| `pnpm db:restore <copia>` | Restaura una copia verificada. **Con el servidor parado**; guarda antes el estado actual |
 
 ## Estructura
 
@@ -54,14 +62,15 @@ Entradas de la demo:
 src/
   app/         Rutas de Next.js (solo orquestan: piden datos al servidor y los pasan a la interfaz)
   domain/      Modelo y reglas en TypeScript puro: permisos, procedencia de datos, fórmulas, volumen…
-  server/      Solo servidor: contexto de la petición, casos de uso y repositorios (hoy, demo en memoria)
+  server/      Solo servidor: contexto de la petición, casos de uso, repositorios y base SQLite (server/db)
   contracts/   Tipos de los datos que el servidor entrega a la interfaz (ya filtrados por permisos)
   features/    Componentes de pantalla por área (entrenador, cliente, compartidos, marca)
   ui/          Componentes visuales genéricos del sistema de diseño
 e2e/           Pruebas de extremo a extremo
 docs/          Documentación técnica y de producto
 public/        Iconos, service worker y página sin conexión
-scripts/       Utilidades de mantenimiento
+scripts/       Utilidades de mantenimiento (copias de la base, limpieza de datos de E2E, iconos)
+.data/         Base de datos local y sus copias (se crea al arrancar; fuera de Git)
 ```
 
 ## Documentación

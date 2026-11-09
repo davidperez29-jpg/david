@@ -34,6 +34,13 @@ TrainPro es un **monolito modular** en una única aplicación Next.js (App Route
 
 Actores: `trainer`, `client` y `admin` (administración del catálogo de ejercicios; no accede a datos de clientes). Estas reglas **se comprueban automáticamente** con ESLint (`no-restricted-imports` en `eslint.config.mjs`); `pnpm lint` falla si alguien se las salta. Además, cada módulo de `src/server` importa `server-only`: si un componente de cliente lo importara por error, la compilación fallaría y ese código nunca llegaría al navegador.
 
+Dos reglas más desde V1 (`V1_SPEC.md` §8.3.4):
+
+- el controlador `better-sqlite3` solo se importa en `src/server/db/sqlite.ts`;
+- el adaptador `src/server/repositories/sqlite/*` solo se importa desde la composición, `src/server/db/store.ts`, y desde las pruebas.
+
+Los módulos de `src/server/db` que usa también la herramienta de copias (`sqlite.ts`, `migrate.ts`, `backup.ts`, `location.ts`, `lock.ts` y la migración) no importan `server-only` ni alias `@/`: Node 26 los ejecuta directamente desde `scripts/db.ts`.
+
 ## Flujo de una petición
 
 1. La ruta (por ejemplo `src/app/entrenador/clientes/[clientId]/page.tsx`) obtiene el **contexto**: `getTrainerContext()` o `getClientContext()` en `src/server/context.ts`. El contexto contiene el **actor** (quién pide), el día de hoy en la zona horaria configurada y los repositorios.
@@ -49,11 +56,17 @@ Algunas reglas del dominio se ejecutan también en el navegador, siempre con **l
 
 ## Datos: puertos y adaptadores
 
-`src/server/repositories/ports.ts` define interfaces asíncronas: `ClientRepository`, `SessionRepository`, etc. Hoy las implementa `src/server/repositories/demo/`, un **adaptador en memoria** con datos ficticios, deterministas y relativos a la fecha actual. Cuando se apruebe la base de datos se añadirá un adaptador PostgreSQL con las mismas interfaces, sin tocar casos de uso ni pantallas.
+```
+dominio (puro) → casos de uso (políticas) → puertos → adaptador SQLite → src/server/db/sqlite.ts → better-sqlite3
+```
 
-- Los repositorios **no deciden permisos**: lo hacen los casos de uso con las políticas del dominio. Con PostgreSQL se añadirá una segunda barrera en la base de datos (Row Level Security) como defensa en profundidad.
-- El adaptador demo devuelve **copias** (`structuredClone`): nadie puede modificar el conjunto en memoria por accidente.
-- `TRAINPRO_DATA_SOURCE` elige el adaptador; hoy solo acepta `demo` y falla al arrancar con cualquier otro valor.
+- **Puertos** (`src/server/repositories/ports.ts`): interfaces asíncronas por agregado. Desde V1, `TrainingRepository` cubre la prescripción v2: borradores con revisión, publicación idempotente, versiones inmutables y lectura de la ejecución. Cada escritura es **una transacción `BEGIN IMMEDIATE`** y devuelve un resultado explícito (`created`/`exists`, `saved`/`unchanged`/`conflict`, `published`/`already_published`/`conflict`…).
+- **Adaptador SQLite** (`src/server/repositories/sqlite/`): todo el SQL vive aquí, en un subconjunto portable a PostgreSQL (sin `rowid`, sin `INSERT OR REPLACE`, sin funciones de fecha en la lógica). Las pantallas de la Fase 1 leen a través de la **capa de compatibilidad** (`src/domain/training/compat.ts`): solo ven sesiones publicadas, en su versión vigente.
+- **Composición** (`src/server/db/store.ts`): una conexión por archivo, guardada en `globalThis`. Al abrir aplica las migraciones pendientes, con una copia previa si la base ya tenía datos, y siembra la base si está vacía. Los datos de referencia de solo lectura (biblioteca, objetivos, evaluaciones, readaptación, compartición) siguen en el código y se generan con la **fecha de la semilla** (`meta.seed_date`).
+- **Base** (`src/server/db/`): `sqlite.ts` abre con WAL, `synchronous=FULL`, `foreign_keys=ON` y `busy_timeout=5000`. `migrate.ts` aplica las migraciones en orden y con suma de comprobación; si una ya aplicada cambia, el arranque falla. `backup.ts` hace copias en línea verificadas y restaura (`integrity_check`, claves ajenas y migraciones). `seed.ts` convierte la demostración al modelo v2. La migración `001` tiene `CHECK`, claves ajenas compuestas, un índice único parcial y disparadores de inmutabilidad.
+- **Adaptador en memoria** (`src/server/repositories/demo/`): ya no lo usa la aplicación. Queda como **referencia de la prueba de equivalencia**: las pantallas existentes deben ver lo mismo con los dos adaptadores (`compat.equivalence.test.ts`).
+- Los repositorios **no deciden permisos**: lo hacen los casos de uso con las políticas del dominio. Con PostgreSQL se añadirá una segunda barrera en la base de datos (Row Level Security).
+- `TRAINPRO_DATA_SOURCE` solo acepta `sqlite`. La migración a PostgreSQL (Fase 2) sigue el plan de `V1_SPEC.md` §8.3.4: un adaptador nuevo de los mismos puertos que pase las mismas pruebas de contrato.
 
 ## Registro sin conexión y envío idempotente (propuesta, ADR-22)
 
@@ -182,21 +195,31 @@ flowchart LR
 
 Si en el futuro un cliente trabaja con un centro y una clínica distintos, cada organización conserva sus datos. Compartirlos exigirá una **concesión explícita** (`access_grant`: quién, qué alcance, hasta cuándo) con el consentimiento del cliente. No se implementa hasta E7, pero las políticas de permisos ya reciben la organización del recurso, así que añadirlo no exigirá rehacerlas.
 
-## Sesión de demostración
+## Sesión de demostración y protección local
 
-No hay autenticación. `getTrainerContext()` y `getClientContext()` devuelven actores fijos (Alex, entrenador; Marta, clienta). Son **el único punto que cambiará** con el inicio de sesión real: el actor saldrá de una sesión verificada en el servidor. El resto del código ya trabaja con un `Actor` y no sabe de dónde viene. **En V1 (propuesta, `V1_SPEC.md` §7 y §8):**
+No hay autenticación. Identidad, rol y permiso están separados (`V1_SPEC.md` §7):
 
-- Identidad, rol y permiso se separan: `resolveIdentity()` (demo ahora, sesión verificada después), `resolveActor()` y las políticas.
-- El cliente se elige con «Entrar como…» (P-76), que **no es autenticación** y solo existe en el modo local protegido (P-87).
-- Los datos se guardan en SQLite local (P-85), con un archivo por espacio en las E2E.
-- El entrenador escribe con acciones de servidor y el cliente, con una API de comandos idempotentes (P-79).
+1. **Identidad** (`resolveIdentity` en `src/server/context.ts`): solo con `TRAINPRO_MODE=local-demo`. El área del entrenador es la de Alex; en la del cliente, la persona elegida en «Entrar como…» (cookie `trainpro-cliente`, validada contra las identidades ficticias de la semilla; Marta por defecto). **No es autenticación.** Sin el modo local no hay ninguna identidad y las áreas privadas vuelven a la portada.
+2. **Rol**: el actor sale de la base (entrenador o cliente vinculado a su entrenador).
+3. **Permiso**: las políticas de `access.ts` en cada caso de uso (`canPlanForClient`, `canEditSession`, `canViewSession`, `canManageDemoData`…).
+
+En la Fase 2 solo cambia el paso 1: la identidad saldrá de una sesión verificada.
+
+**Protección del prototipo local (P-87):**
+
+- `next dev` y `next start` escuchan solo en `127.0.0.1` (`-H 127.0.0.1` en los scripts).
+- `src/proxy.ts` rechaza con `403` cualquier `Host` o `X-Forwarded-Host` que no esté en `TRAINPRO_ALLOWED_HOSTS` (por defecto `localhost` y `127.0.0.1`), también los archivos estáticos: protege frente al DNS rebinding.
+- Las acciones de servidor comprueban el origen (Next.js compara `Origin` con `Host`).
+- El archivo de datos tiene permisos `600` y la carpeta `700` (Linux y macOS).
+
+**Espacios de prueba:** con `TRAINPRO_DEMO_SPACES=on` (solo E2E), la cookie `trainpro-espacio` elige un archivo SQLite aparte, sembrado al primer uso, para que las pruebas que escriben no se pisen.
 
 ## Estructura de carpetas
 
 ```
 src/app/
   layout.tsx, globals.css        Raíz: fuentes, metadatos, tokens de diseño, service worker
-  page.tsx                       Portada (elegir experiencia)
+  page.tsx, actions.ts           Portada y «Entrar como…» (acción de servidor)
   manifest.ts, icon.svg, apple-icon.png   PWA
   not-found.tsx, error.tsx       Páginas de error propias
   entrenador/                    Área del entrenador (layout con barra lateral)
@@ -204,20 +227,28 @@ src/app/
     clientes/                    Lista de clientes
     clientes/[clientId]/         Ficha con pestañas horizontales (layout + una ruta por pestaña):
       page.tsx                   Información
-      objetivos/ evaluaciones/ resultados/ planificacion/ sesiones/
+      objetivos/ evaluaciones/ resultados/ planificacion/
+      sesiones/                  A3 por días · nueva/ (A4) · [sessionId]/ (A7) · [sessionId]/editar/ (A5) · actions.ts
       registro/ informes/ salud/ compartido/
     evaluaciones/, analisis/     Catálogo y últimos resultados · evolución y comparaciones
-    planificacion/, carga/, readaptacion/, informes/, configuracion/
+    planificacion/, carga/, readaptacion/, informes/
+    configuracion/               Ajustes; datos de la demostración (copias y restablecer) con actions.ts
     ejercicios/, ejercicios/[exerciseId]/   Biblioteca (buscador avanzado) y ficha de variante
   cliente/                       Portal del cliente (columna móvil)
     (pestanas)/                  Grupo con navegación inferior: Hoy, Semana, Progreso
-    sesion/[sessionId]/          Reproductor de sesión a pantalla completa
-src/domain/                      access, measurement, formulas, assessment, goals, people, rehab,
-                                 time, text, format, training/{prescription,session,volume},
-                                 library/{taxonomy, exercise, search}
-src/server/                      env, context, repositories/{ports, demo/{dataset, library, index}},
-                                 services/{trainer, trainer-access, client-file, client, library, mappers}
-src/contracts/                   shared, trainer, client
+    sesion/[sessionId]/          Detalle de la sesión publicada (B2)
+    sesion/[sessionId]/entrenar/ Reproductor de la Fase 1 (aún no guarda)
+src/proxy.ts                     Protección local: Host permitido o 403
+src/domain/                      access, issues, measurement, formulas, assessment, goals, people, rehab,
+                                 time, text, format, library/{taxonomy, exercise, search},
+                                 training/{prescription, session, volume, load, effort, session-v2,
+                                 execution, compat}
+src/server/                      env, context, host-guard,
+                                 db/{sqlite, migrate, migrations/001-v1, seed, store, backup, location, lock},
+                                 repositories/{ports, sqlite/{index, training, rows}, demo/{dataset, library, index}},
+                                 services/{trainer, trainer-access, trainer-sessions, client-file, client,
+                                 client-sessions, session-views, demo-data, library, mappers}
+src/contracts/                   shared, trainer, client, sessions
 src/features/                    brand/, shared/, trainer/, client/
 src/ui/                          button, card, badge, avatar, stat, meter, notice, page-header, empty-state, cn
 ```
@@ -227,5 +258,5 @@ El modelo de datos completo (también lo que aún es conceptual) está en `DATA_
 ## Cómo ampliar
 
 - **Nueva pantalla**: crea la ruta en `src/app`, obtén el contexto, llama a un caso de uso y pasa el resultado a un componente de `src/features`. No consultes repositorios directamente desde la ruta.
-- **Nuevo dato**: añade el tipo en `src/domain`, el método en el puerto y en el adaptador demo, el caso de uso con su comprobación de permisos y el modelo de vista en `src/contracts`. Escribe tests del caso de uso que incluyan el intento de acceso no autorizado.
+- **Nuevo dato**: añade el tipo en `src/domain`, el método en el puerto y en el adaptador SQLite (con su prueba de contrato), la migración nueva si cambia el esquema (nunca se edita una ya aplicada), el caso de uso con su comprobación de permisos y el modelo de vista en `src/contracts`. Escribe tests del caso de uso que incluyan el intento de acceso no autorizado.
 - **Nuevo cálculo**: regístralo en `src/domain/formulas.ts` con id, versión y limitaciones; si es científico, con su referencia verificada (ver `SCIENTIFIC_RIGOR.md`).
