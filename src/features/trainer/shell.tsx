@@ -17,7 +17,7 @@ export function TrainerShell({
 }) {
   return (
     <div className="min-h-dvh">
-      <DemoBanner compact />
+      <DemoBanner compact viewer={`${trainerName.split(' ')[0]}, entrenador`} />
       <div className="lg:grid lg:grid-cols-[17rem_1fr]">
         <aside className="hidden border-r border-line bg-cream-50 lg:block">
           <div className="sticky top-0 flex h-dvh flex-col px-4 py-6">
