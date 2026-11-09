@@ -19,7 +19,7 @@ const NOW = '2026-11-09T10:00:00.000Z';
 function seedMinimal(target: SqlDatabase) {
   target.exec(`
     INSERT INTO trainer VALUES ('t-1', 'Entrenadora ficticia');
-    INSERT INTO client VALUES ('c-1', 't-1', 'Cliente ficticio', 'active', 'general_health', 'Objetivo', NULL, '2026-01-01');
+    INSERT INTO client VALUES ('c-1', 't-1', 'Cliente ficticio', 'active', 'general_health', 'Objetivo', NULL, '2026-01-01', '2026-01-01T09:00:00.000Z');
   `);
   target.transaction(() => {
     target

@@ -8,7 +8,7 @@ import { isRegisteredFormula } from '@/domain/formulas';
 import { measurementIssues } from '@/domain/measurement';
 import { prescriptionIssues } from '@/domain/training/prescription';
 import { type ClientContext, type TrainerContext } from '../context';
-import { createDemoRepositories } from '../repositories/demo';
+import { seededTestDatabase } from '../db/test-support';
 import { buildDemoDataset, DEMO_CLIENT_ID, DEMO_TRAINER_ID } from '../repositories/demo/dataset';
 import { getClientHome, getClientProgress, getClientSession, getClientWeek } from './client';
 import {
@@ -28,16 +28,20 @@ import {
 
 const TODAY = '2026-11-04'; // miércoles
 const data = buildDemoDataset(TODAY);
-const repos = createDemoRepositories(data);
+// Los casos de uso se prueban sobre el adaptador real (SQLite sembrado). La equivalencia con el
+// almacén en memoria de la Fase 1 se comprueba aparte (compat.equivalence.test.ts).
+const { repos } = seededTestDatabase(TODAY);
 
 const trainerCtx = (trainerId = DEMO_TRAINER_ID): TrainerContext => ({
   actor: { role: 'trainer', trainerId } satisfies TrainerActor,
   today: TODAY,
+  timeZone: 'Europe/Madrid',
   repos,
 });
 const clientCtx = (clientId = DEMO_CLIENT_ID): ClientContext => ({
   actor: { role: 'client', clientId, trainerId: DEMO_TRAINER_ID } satisfies ClientActor,
   today: TODAY,
+  timeZone: 'Europe/Madrid',
   repos,
 });
 
@@ -142,7 +146,8 @@ describe('experiencia del cliente', () => {
 describe('experiencia del entrenador', () => {
   it('ve a todos sus clientes, con los activos primero', async () => {
     const clients = await listTrainerClients(trainerCtx());
-    expect(clients).toHaveLength(5);
+    // Cinco clientes de la Fase 1 y Lucía (P-76), que acaba de empezar y aún no tiene sesiones.
+    expect(clients).toHaveLength(6);
     expect(clients.at(-1)?.status).toBe('paused');
   });
 
@@ -153,7 +158,7 @@ describe('experiencia del entrenador', () => {
 
   it('el panel cuenta las sesiones de hoy y de la semana', async () => {
     const dashboard = await getTrainerDashboard(trainerCtx());
-    expect(dashboard.activeClients).toBe(4);
+    expect(dashboard.activeClients).toBe(5);
     expect(dashboard.pausedClients).toBe(1);
     // Hoy (miércoles) entrenan Marta (días alternos desde hoy) y Diego (lunes, miércoles y viernes).
     expect(dashboard.todaySessions.map((s) => s.clientName).sort()).toEqual([
@@ -231,7 +236,7 @@ describe('experiencia del entrenador', () => {
 
   it('la carga semanal cubre 4 semanas por cliente activo y declara sus fórmulas', async () => {
     const load = await getLoadOverview(trainerCtx());
-    expect(load.clients).toHaveLength(4);
+    expect(load.clients).toHaveLength(5);
     for (const client of load.clients) expect(client.weeks).toHaveLength(4);
     expect(load.formulas.map((f) => f.id)).toContain('training.volume-load');
   });

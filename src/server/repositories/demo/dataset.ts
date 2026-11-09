@@ -63,6 +63,19 @@ export interface DemoDataset {
 
 export const DEMO_TRAINER_ID = 't-alex';
 export const DEMO_CLIENT_ID = 'c-marta';
+/** Clienta ficticia sin historial para el flujo de V1 (P-76). */
+export const DEMO_NEW_CLIENT_ID = 'c-lucia';
+
+/** Personas ficticias de «Entrar como…» (solo en `TRAINPRO_MODE=local-demo`; no es autenticación). */
+export interface DemoIdentity {
+  id: string;
+  role: 'trainer' | 'client';
+}
+export const DEMO_IDENTITIES: readonly DemoIdentity[] = [
+  { id: DEMO_TRAINER_ID, role: 'trainer' },
+  { id: DEMO_CLIENT_ID, role: 'client' },
+  { id: DEMO_NEW_CLIENT_ID, role: 'client' },
+];
 
 type Rx = Omit<ExercisePrescription, 'id' | 'order' | 'block'> & { slot: string };
 
@@ -687,6 +700,15 @@ export function buildDemoDataset(today: IsoDate): DemoDataset {
       population: 'general_health',
       goal: 'Retomar el entrenamiento tras una pausa por trabajo',
       startedOn: addDays(today, -150),
+    },
+    {
+      id: DEMO_NEW_CLIENT_ID,
+      trainerId: DEMO_TRAINER_ID,
+      displayName: 'Lucía Gil',
+      status: 'active',
+      population: 'general_health',
+      goal: 'Ganar fuerza en el tren inferior',
+      startedOn: addDays(today, -3),
     },
   ];
 

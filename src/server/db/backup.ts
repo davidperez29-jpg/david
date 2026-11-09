@@ -88,6 +88,28 @@ export async function createBackup(
   return describe(file);
 }
 
+/**
+ * Copia SÍNCRONA de una base abierta: vuelca el WAL al archivo principal y lo copia.
+ * Se usa antes de migrar y antes de restablecer los datos, donde no puede colarse ninguna
+ * escritura entre la copia y el cambio (todo ocurre sin ceder el turno a otra petición).
+ */
+export function snapshotSync(
+  db: { path: string; pragma(name: string): unknown },
+  label: string,
+  now: Date = new Date(),
+): BackupInfo {
+  const dir = backupDir(db.path);
+  mkdirSync(dir, { recursive: true });
+  const base = basename(db.path).replace(/\.sqlite$/, '');
+  let file = join(dir, `${base}-${stamp(now)}-${label}.sqlite`);
+  for (let n = 2; existsSync(file); n += 1)
+    file = join(dir, `${base}-${stamp(now)}-${label}-${n}.sqlite`);
+  db.pragma('wal_checkpoint(TRUNCATE)');
+  copyFileSync(db.path, file);
+  verifyDatabaseFile(file);
+  return describe(file);
+}
+
 function describe(file: string): BackupInfo {
   const stats = statSync(file);
   return {

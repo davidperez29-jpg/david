@@ -33,6 +33,11 @@ const noDriver = {
   message:
     'El controlador SQLite solo se importa en src/server/db/sqlite.ts (ver docs/V1_SPEC.md §8.3.4).',
 };
+const noAdapter = {
+  regex: '(^|/)repositories/sqlite(/|$)',
+  message:
+    'El adaptador SQLite solo se compone en src/server/db/store.ts (ver docs/V1_SPEC.md §8.3.4).',
+};
 const noFramework = {
   group: ['react', 'react/*', 'react-dom', 'react-dom/*', 'next', 'next/*', 'lucide-react'],
   message: 'El dominio es TypeScript puro, sin frameworks.',
@@ -71,11 +76,26 @@ export default defineConfig([
     rules: restrict([noDriver]),
   },
   {
+    // El adaptador SQLite solo se importa desde la composición (y desde las pruebas).
+    files: ['src/**'],
+    ignores: ['src/server/db/store.ts', 'src/server/repositories/sqlite/**', 'src/**/*.test.ts'],
+    rules: restrict([noDriver, noAdapter]),
+  },
+  {
     files: ['src/domain/**'],
-    rules: restrict([noServer, noApp, noFeatures, noUi, noFramework, noDriver]),
+    rules: restrict([noServer, noApp, noFeatures, noUi, noFramework, noDriver, noAdapter]),
   },
   {
     files: ['src/server/**'],
+    ignores: ['src/server/db/store.ts', 'src/server/repositories/sqlite/**', 'src/**/*.test.ts'],
+    rules: restrict([noApp, noFeatures, noUi, noDriver, noAdapter]),
+  },
+  {
+    files: [
+      'src/server/db/store.ts',
+      'src/server/repositories/sqlite/**',
+      'src/server/**/*.test.ts',
+    ],
     rules: restrict([noApp, noFeatures, noUi, noDriver]),
   },
   {
@@ -85,10 +105,10 @@ export default defineConfig([
   },
   {
     files: ['src/ui/**'],
-    rules: restrict([noServer, noApp, noFeatures, noDomain, noDriver]),
+    rules: restrict([noServer, noApp, noFeatures, noDomain, noDriver, noAdapter]),
   },
   {
     files: ['src/features/**'],
-    rules: restrict([noServer, noApp, noDriver]),
+    rules: restrict([noServer, noApp, noDriver, noAdapter]),
   },
 ]);

@@ -40,6 +40,7 @@ CREATE TABLE client (
   goal TEXT NOT NULL CHECK (length(goal) <= 200),
   sport TEXT CHECK (sport IS NULL OR length(sport) BETWEEN 1 AND 80),
   started_on TEXT NOT NULL ${DATE('started_on')},
+  created_at TEXT NOT NULL ${INSTANT('created_at')},
   UNIQUE (id, trainer_id)
 ) STRICT;
 CREATE INDEX client_by_trainer ON client (trainer_id);

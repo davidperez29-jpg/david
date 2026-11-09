@@ -1,13 +1,40 @@
 import 'server-only';
 import { type IsoDate } from '@/domain/time';
-import { type DateRange, type Repositories } from '../ports';
-import { buildDemoDataset, type DemoDataset } from './dataset';
+import { type DateRange, type Repositories, type TrainingRepository } from '../ports';
+import { type DemoDataset } from './dataset';
 
 const inRange = (date: IsoDate, range: DateRange) => date >= range.from && date <= range.to;
 
 /** Copia profunda: quien consume los datos nunca puede modificar el conjunto en memoria. */
 const clone = <T>(value: T): T => structuredClone(value);
 
+const readOnly = (): never => {
+  throw new Error(
+    'El almacén en memoria es solo la referencia de las pruebas de equivalencia: la prescripción v2 vive en SQLite.',
+  );
+};
+
+/** Sin prescripción v2: cualquier uso es un error de programación (la aplicación usa SQLite). */
+const noTraining: TrainingRepository = {
+  getSession: readOnly,
+  listSessions: readOnly,
+  createDraft: readOnly,
+  saveDraft: readOnly,
+  deleteDraft: readOnly,
+  startChangeDraft: readOnly,
+  discardChangeDraft: readOnly,
+  publish: readOnly,
+  getVersion: readOnly,
+  listVersions: readOnly,
+  getExecution: readOnly,
+};
+
+/**
+ * Repositorios en memoria sobre el conjunto de demostración de la Fase 1.
+ * Desde V1 la aplicación usa SQLite (`../sqlite`); este adaptador queda como referencia de la
+ * prueba de equivalencia de la capa de compatibilidad (las pantallas existentes deben verse
+ * igual con los dos) y como fuente de los datos de referencia de solo lectura.
+ */
 export function createDemoRepositories(data: DemoDataset): Repositories {
   return {
     trainers: {
@@ -63,15 +90,6 @@ export function createDemoRepositories(data: DemoDataset): Repositories {
       getForClient: async (clientId) =>
         clone(data.sharing.find((s) => s.clientId === clientId) ?? null),
     },
+    training: noTraining,
   };
-}
-
-/** El conjunto de demostración se regenera una vez al día (depende de la fecha de hoy). */
-let cached: { today: IsoDate; repositories: Repositories } | null = null;
-
-export function getDemoRepositories(today: IsoDate): Repositories {
-  if (cached?.today !== today) {
-    cached = { today, repositories: createDemoRepositories(buildDemoDataset(today)) };
-  }
-  return cached.repositories;
 }

@@ -31,11 +31,8 @@ export default async function SettingsPage() {
       icon: <Database className="size-5" />,
       title: 'Datos',
       rows: [
-        [
-          'Fuente de datos',
-          env.dataSource === 'demo' ? 'Demostración en memoria (ficticia)' : env.dataSource,
-        ],
-        ['Persistencia', 'Ninguna: se regenera cada día'],
+        ['Fuente de datos', 'SQLite local (datos ficticios)'],
+        ['Persistencia', 'En este equipo, en la carpeta de datos'],
       ] as const,
       status: 'Demo',
     },
