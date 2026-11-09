@@ -28,6 +28,11 @@ const noDomain = {
   group: ['@/domain', '@/domain/*'],
   message: 'Los componentes de ui son genéricos y no conocen el dominio.',
 };
+const noDriver = {
+  group: ['better-sqlite3'],
+  message:
+    'El controlador SQLite solo se importa en src/server/db/sqlite.ts (ver docs/V1_SPEC.md §8.3.4).',
+};
 const noFramework = {
   group: ['react', 'react/*', 'react-dom', 'react-dom/*', 'next', 'next/*', 'lucide-react'],
   message: 'El dominio es TypeScript puro, sin frameworks.',
@@ -62,19 +67,28 @@ export default defineConfig([
     rules: { 'no-console': 'off' },
   },
   {
+    files: ['src/**'],
+    rules: restrict([noDriver]),
+  },
+  {
     files: ['src/domain/**'],
-    rules: restrict([noServer, noApp, noFeatures, noUi, noFramework]),
+    rules: restrict([noServer, noApp, noFeatures, noUi, noFramework, noDriver]),
   },
   {
     files: ['src/server/**'],
+    rules: restrict([noApp, noFeatures, noUi, noDriver]),
+  },
+  {
+    // Única excepción: el adaptador del controlador.
+    files: ['src/server/db/sqlite.ts'],
     rules: restrict([noApp, noFeatures, noUi]),
   },
   {
     files: ['src/ui/**'],
-    rules: restrict([noServer, noApp, noFeatures, noDomain]),
+    rules: restrict([noServer, noApp, noFeatures, noDomain, noDriver]),
   },
   {
     files: ['src/features/**'],
-    rules: restrict([noServer, noApp]),
+    rules: restrict([noServer, noApp, noDriver]),
   },
 ]);

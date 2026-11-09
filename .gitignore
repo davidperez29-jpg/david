@@ -7,6 +7,9 @@ coverage/
 *.tsbuildinfo
 next-env.d.ts
 
+# Base de datos local de la demostración (datos ficticios; ver docs/V1_SPEC.md §8.3)
+.data/
+
 # Pruebas
 test-results/
 playwright-report/
