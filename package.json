@@ -21,7 +21,10 @@
     "test:watch": "vitest",
     "test:e2e": "pnpm build && playwright test",
     "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build",
-    "icons": "node scripts/generate-icons.mjs"
+    "icons": "node scripts/generate-icons.mjs",
+    "db:status": "node scripts/db.ts status",
+    "db:backup": "node scripts/db.ts backup",
+    "db:restore": "node scripts/db.ts restore"
   },
   "dependencies": {
     "better-sqlite3": "13.0.3",
