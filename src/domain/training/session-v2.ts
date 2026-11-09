@@ -31,7 +31,7 @@ export interface SessionItem {
   /** Nombre de la variante, copiado al publicar (la versión no depende de la biblioteca). */
   variantName?: string;
   order: number;
-  /** Letra del bloque (A, B, C…), derivada del orden. */
+  /** Bloque (A, B, C…). Los ejercicios de un mismo bloque van seguidos (A1, A2). */
   block: string;
   blockMode: 'sequential';
   sets: number;
@@ -149,33 +149,39 @@ const trimOrUndefined = (value: string | undefined) => {
 };
 
 /**
- * Forma canónica del contenido: orden 1…n y bloques derivados, textos recortados, excepciones
+ * Forma canónica del contenido: orden 1…n, bloques renombrados A, B…, textos recortados, excepciones
  * ordenadas y sin series que ya no existen. Se aplica antes de guardar.
  */
 export function normalizeContent(content: SessionContent): SessionContent {
-  const items = [...content.items]
-    .sort((a, b) => a.order - b.order)
-    .map((item, index) => {
-      const order = index + 1;
-      const clientNote = trimOrUndefined(item.clientNote);
-      const privateNote = trimOrUndefined(item.privateNote);
-      const variantName = trimOrUndefined(item.variantName);
-      return {
-        id: item.id,
-        variantId: item.variantId,
-        ...(variantName ? { variantName } : {}),
-        order,
-        block: blockLetter(order),
-        blockMode: 'sequential' as const,
-        sets: item.sets,
-        defaults: normalizeTarget(item.defaults),
-        perSet: item.perSet
-          .filter((o) => o.setNumber >= 1 && o.setNumber <= item.sets)
-          .sort((a, b) => a.setNumber - b.setNumber),
-        ...(clientNote ? { clientNote } : {}),
-        ...(privateNote ? { privateNote } : {}),
-      };
-    });
+  const sorted = [...content.items].sort((a, b) => a.order - b.order);
+  // Los bloques se conservan (los ejercicios de un mismo bloque, como A1 y A2, siguen juntos) y
+  // se vuelven a nombrar por orden de aparición: A, B, C…
+  const letters = new Map<string, string>();
+  for (const item of sorted) {
+    const key = item.block.trim() || `#${item.id}`;
+    if (!letters.has(key)) letters.set(key, blockLetter(letters.size + 1));
+  }
+  const items = sorted.map((item, index) => {
+    const order = index + 1;
+    const clientNote = trimOrUndefined(item.clientNote);
+    const privateNote = trimOrUndefined(item.privateNote);
+    const variantName = trimOrUndefined(item.variantName);
+    return {
+      id: item.id,
+      variantId: item.variantId,
+      ...(variantName ? { variantName } : {}),
+      order,
+      block: letters.get(item.block.trim() || `#${item.id}`)!,
+      blockMode: 'sequential' as const,
+      sets: item.sets,
+      defaults: normalizeTarget(item.defaults),
+      perSet: item.perSet
+        .filter((o) => o.setNumber >= 1 && o.setNumber <= item.sets)
+        .sort((a, b) => a.setNumber - b.setNumber),
+      ...(clientNote ? { clientNote } : {}),
+      ...(privateNote ? { privateNote } : {}),
+    };
+  });
   const label = trimOrUndefined(content.label);
   const coachNote = trimOrUndefined(content.coachNote);
   return {
@@ -299,6 +305,18 @@ export function contentIssues(content: SessionContent, context: ValidationContex
     issues.push(issue('items', 'Una sesión admite como mucho 30 ejercicios.'));
   }
   const ids = new Set<string>();
+  const closedBlocks = new Set<string>();
+  [...content.items]
+    .sort((a, b) => a.order - b.order)
+    .forEach((item, index, sorted) => {
+      const previous = sorted[index - 1];
+      if (previous && previous.block !== item.block) closedBlocks.add(previous.block);
+      if (closedBlocks.has(item.block)) {
+        issues.push(
+          issue(`items.${index}.block`, 'Los ejercicios de un mismo bloque deben ir seguidos.'),
+        );
+      }
+    });
   content.items.forEach((item, index) => {
     const path = `items.${index}`;
     if (!textWithin(item.id, 1, 80) || ids.has(item.id)) {

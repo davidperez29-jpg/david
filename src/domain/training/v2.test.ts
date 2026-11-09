@@ -101,17 +101,21 @@ describe('prescripción por serie', () => {
           squat({
             id: 'b',
             order: 5,
+            block: 'Q',
             clientNote: '  ',
             perSet: [{ setNumber: 9, restSeconds: 60 }],
           }),
-          squat({ id: 'a', order: 2, title: undefined } as Partial<SessionItem>),
+          squat({ id: 'a', order: 2, block: 'K', title: undefined } as Partial<SessionItem>),
+          squat({ id: 'c', order: 7, block: 'Q' }),
         ],
         { title: '  Fuerza  ' },
       ),
     );
+    // Orden 1…n y bloques renombrados por orden de aparición, conservando los pares (B1, B2).
     expect(normalized.items.map((i) => [i.id, i.order, i.block])).toEqual([
       ['a', 1, 'A'],
       ['b', 2, 'B'],
+      ['c', 3, 'B'],
     ]);
     expect(normalized.items[1]!.perSet).toEqual([]);
     expect(normalized.items[1]!.clientNote).toBeUndefined();
@@ -160,6 +164,21 @@ describe('validaciones al guardar y al publicar', () => {
         'items.1.variantId',
       ]),
     );
+  });
+
+  it('los ejercicios de un mismo bloque deben ir seguidos (A1, A2; no A, B, A)', () => {
+    const together = content([
+      squat({ id: 'x', order: 1, block: 'A' }),
+      squat({ id: 'y', order: 2, block: 'A' }),
+      squat({ id: 'z', order: 3, block: 'B' }),
+    ]);
+    expect(contentIssues(together, usable)).toEqual([]);
+    const split = content([
+      squat({ id: 'x', order: 1, block: 'A' }),
+      squat({ id: 'y', order: 2, block: 'B' }),
+      squat({ id: 'z', order: 3, block: 'A' }),
+    ]);
+    expect(contentIssues(split, usable).map((i) => i.path)).toEqual(['items.2.block']);
   });
 
   it('un borrador incompleto se guarda, pero no se publica', () => {
