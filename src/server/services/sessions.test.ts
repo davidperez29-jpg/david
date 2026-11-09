@@ -273,6 +273,21 @@ describe('sesiones del entrenador (A3–A7)', () => {
   });
 });
 
+describe('B1 · Hoy del cliente', () => {
+  it('una sesión interrumpida otro día no desplaza a la de hoy: va a «De días anteriores»', async () => {
+    // Un lunes, la semilla deja a medias la sesión de Marta del miércoles anterior.
+    const monday = '2026-11-09';
+    const { repos } = seededTestDatabase(monday);
+    const home = await getClientToday({ ...client(repos, DEMO_CLIENT_ID), today: monday });
+    expect(home.hero).toMatchObject({ id: `s-marta-${monday}`, action: 'start' });
+    expect(home.earlier.map((s) => [s.id, s.execution.status])).toEqual([
+      ['s-marta-2026-11-04', 'interrupted'],
+    ]);
+    expect(home.next).toBeNull();
+    expect(home.week.planned).toBeGreaterThan(0);
+  });
+});
+
 describe('B1-04 · clientes y entrenadores independientes', () => {
   it('Lucía no ve las sesiones de Marta, ni Marta las de Lucía; nadie ve los borradores', async () => {
     const { repos } = setup();

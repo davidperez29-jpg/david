@@ -79,8 +79,15 @@ export async function getClientToday(ctx: ClientContext): Promise<ClientTodayVM>
   const { client, visible } = await visibleSessions(ctx, { from, to: addDays(ctx.today, 60) });
 
   const todays = visible.filter((v) => v.line.plannedDate === ctx.today);
+  // Protagonista 1 (aclaración del §3 B1): la que se está haciendo (actividad hoy) o la de hoy
+  // interrumpida. Una interrumpida de otro día va a «De días anteriores», con «Continuar»: así el
+  // entrenamiento del día sigue siendo lo primero.
   const active = visible
-    .filter((v) => ACTIVE.has(v.line.execution.status))
+    .filter(
+      (v) =>
+        v.line.execution.status === 'in_progress' ||
+        (v.line.execution.status === 'interrupted' && v.line.plannedDate === ctx.today),
+    )
     .sort((a, b) => (b.lastActivityAt ?? '').localeCompare(a.lastActivityAt ?? ''));
   const hero =
     active[0] ??

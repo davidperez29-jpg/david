@@ -1,10 +1,9 @@
 import 'server-only';
-import { type ClientHomeVM, type ClientProgressVM, type ClientWeekVM } from '@/contracts/client';
+import { type ClientProgressVM, type ClientWeekVM } from '@/contracts/client';
 import { type SessionDetailVM } from '@/contracts/shared';
 import { canAccessClient, canReadResource, visibleAssessmentTestIds } from '@/domain/access';
-import { firstName } from '@/domain/text';
 import { addDays, startOfIsoWeek } from '@/domain/time';
-import { sessionStatus, sortSessions } from '@/domain/training/session';
+import { sortSessions } from '@/domain/training/session';
 import { weeklyVolume } from '@/domain/training/volume';
 import { type ClientContext } from '../context';
 import { loadSessionVariants } from './library';
@@ -12,7 +11,6 @@ import {
   loggedSets,
   logsBySession,
   toAssessmentSeries,
-  toPreview,
   toSessionCard,
   toSessionDetail,
 } from './mappers';
@@ -23,45 +21,6 @@ async function loadSelf(ctx: ClientContext) {
     throw new Error('La sesión no corresponde a ningún cliente accesible.');
   }
   return client;
-}
-
-/** Pantalla principal del cliente: la sesión de hoy es la protagonista. */
-export async function getClientHome(ctx: ClientContext): Promise<ClientHomeVM> {
-  const client = await loadSelf(ctx);
-  const weekStart = startOfIsoWeek(ctx.today);
-  const range = { from: weekStart, to: addDays(ctx.today, 14) };
-  const [sessions, logs] = await Promise.all([
-    ctx.repos.sessions.listByClient(client.id, range),
-    ctx.repos.logs.listByClient(client.id, range),
-  ]);
-  const logIndex = logsBySession(logs);
-  const ordered = sortSessions(sessions);
-  const todays = ordered.find((s) => s.date === ctx.today) ?? null;
-  const next = ordered.find((s) => s.date > ctx.today) ?? null;
-  const thisWeek = ordered.filter((s) => s.date <= addDays(weekStart, 6));
-  const { byId: variants } = await loadSessionVariants(
-    ctx,
-    todays ? todays.exercises.map((rx) => rx.variantId) : [],
-  );
-
-  return {
-    firstName: firstName(client.displayName),
-    today: ctx.today,
-    todaySession: todays
-      ? {
-          ...toSessionCard(todays, logIndex.get(todays.id), ctx.today),
-          coachNote: todays.coachNote ?? null,
-          preview: toPreview(todays, variants),
-        }
-      : null,
-    nextSession: next ? toSessionCard(next, logIndex.get(next.id), ctx.today) : null,
-    week: {
-      planned: thisWeek.length,
-      completed: thisWeek.filter(
-        (s) => sessionStatus(s, logIndex.get(s.id), ctx.today) === 'completed',
-      ).length,
-    },
-  };
 }
 
 /** Detalle de una sesión. Devuelve `null` si no existe o no pertenece al cliente. */

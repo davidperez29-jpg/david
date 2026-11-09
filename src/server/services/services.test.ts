@@ -10,7 +10,8 @@ import { prescriptionIssues } from '@/domain/training/prescription';
 import { type ClientContext, type TrainerContext } from '../context';
 import { seededTestDatabase } from '../db/test-support';
 import { buildDemoDataset, DEMO_CLIENT_ID, DEMO_TRAINER_ID } from '../repositories/demo/dataset';
-import { getClientHome, getClientProgress, getClientSession, getClientWeek } from './client';
+import { getClientProgress, getClientSession, getClientWeek } from './client';
+import { getClientSessionDetail, getClientToday } from './client-sessions';
 import {
   getClientGoals,
   getClientHealth,
@@ -101,16 +102,20 @@ describe('integridad de los datos de demostración', () => {
 
 describe('experiencia del cliente', () => {
   it('la pantalla principal muestra la sesión de hoy', async () => {
-    const home = await getClientHome(clientCtx());
+    const home = await getClientToday(clientCtx());
     expect(home.firstName).toBe('Marta');
-    expect(home.todaySession?.date).toBe(TODAY);
-    expect(home.todaySession?.status).toBe('pending');
-    expect(home.todaySession?.preview.length).toBeGreaterThan(0);
+    expect(home.hero?.plannedDate).toBe(TODAY);
+    expect(home.hero?.execution.status).toBe('planned');
+    expect(home.hero?.action).toBe('start');
+    expect(home.hero?.preview.length).toBeGreaterThan(0);
   });
 
   it('abre sus propias sesiones con toda la prescripción', async () => {
-    const home = await getClientHome(clientCtx());
-    const session = await getClientSession(clientCtx(), home.todaySession!.id);
+    const home = await getClientToday(clientCtx());
+    const detail = await getClientSessionDetail(clientCtx(), home.hero!.id);
+    expect(detail?.items.map((i) => i.slot)).toEqual(['A1', 'A2', 'B1', 'B2', 'C1']);
+    expect(detail?.items[0]).toMatchObject({ setsAndReps: '4 × 6–8', tempoLabel: '3-1-X-0' });
+    const session = await getClientSession(clientCtx(), home.hero!.id);
     expect(session?.exercises[0]).toMatchObject({
       name: 'Sentadilla trasera con barra',
       setsAndReps: '4 × 6–8',
@@ -353,7 +358,7 @@ describe('biblioteca de ejercicios', () => {
   it('los clientes no acceden a la biblioteca, solo a sus sesiones', async () => {
     const session = await getClientSession(
       clientCtx(),
-      (await getClientHome(clientCtx())).todaySession!.id,
+      (await getClientToday(clientCtx())).hero!.id,
     );
     expect(session?.exercises[0]?.silhouette).toBe('squat');
   });
