@@ -3,6 +3,8 @@
 ## Primer arranque
 
 ```bash
+nvm use                               # Node 26.13.0 (.nvmrc)
+npm install -g corepack@0.36.0        # una vez: Node 26 no incluye Corepack
 corepack enable
 pnpm install
 pnpm exec next telemetry disable      # recomendado (ver SECURITY_PRIVACY.md)
