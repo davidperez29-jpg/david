@@ -5,6 +5,10 @@ export interface PlannedSession {
   id: string;
   clientId: string;
   date: IsoDate;
+  /** Orden en el día cuando hay varias sesiones (1, 2…). */
+  dayOrder?: number;
+  /** Contexto de la sesión en el día («Mañana», «Club»…). */
+  label?: string;
   title: string;
   focus: string;
   estimatedMinutes: number;
@@ -166,5 +170,10 @@ export function completedSetCount(session: PlannedSession, log: SessionLog | und
 }
 
 export function sortSessions(sessions: readonly PlannedSession[]): PlannedSession[] {
-  return [...sessions].sort((a, b) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id));
+  return [...sessions].sort(
+    (a, b) =>
+      a.date.localeCompare(b.date) ||
+      (a.dayOrder ?? 1) - (b.dayOrder ?? 1) ||
+      a.id.localeCompare(b.id),
+  );
 }

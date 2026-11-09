@@ -69,6 +69,36 @@ export function todayInTimeZone(timeZone: string, now: Date = new Date()): IsoDa
   return `${get('year')}-${get('month')}-${get('day')}`;
 }
 
+/** Fecha local (AAAA-MM-DD) de un instante en una zona horaria IANA. */
+export function localDateOf(instant: IsoDateTime, timeZone: string): IsoDate {
+  return todayInTimeZone(timeZone, new Date(instant));
+}
+
+/** Desfase respecto a UTC, en minutos, de una zona horaria en un instante (Madrid en invierno: 60). */
+export function utcOffsetMinutes(instant: IsoDateTime, timeZone: string): number {
+  const date = new Date(instant);
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone,
+    hourCycle: 'h23',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  }).formatToParts(date);
+  const get = (type: string) => Number(parts.find((part) => part.type === type)?.value);
+  const asUtc = Date.UTC(
+    get('year'),
+    get('month') - 1,
+    get('day'),
+    get('hour'),
+    get('minute'),
+    get('second'),
+  );
+  return Math.round((asUtc - Math.floor(date.getTime() / 1000) * 1000) / 60_000);
+}
+
 export function isValidTimeZone(timeZone: string): boolean {
   try {
     new Intl.DateTimeFormat('en-CA', { timeZone });
