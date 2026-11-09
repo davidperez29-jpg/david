@@ -7,7 +7,8 @@ test.describe('app del cliente (móvil)', () => {
     await page.goto('/cliente');
     const hero = page.getByRole('region', { name: /Fuerza · tren inferior/ });
     await expect(hero).toContainText('Hoy toca');
-    const start = page.getByRole('link', { name: /Empezar sesión/ });
+    // Bloque 1: «Empezar sesión» pasa a «Empezar entrenamiento» (V1_SPEC §3 B1).
+    const start = page.getByRole('link', { name: /Empezar entrenamiento/ });
     await expect(start).toBeInViewport(); // visible sin hacer scroll
     // El progreso no ocupa la pantalla principal: vive en su propia pestaña.
     await expect(page.getByRole('heading', { name: 'Mi progreso' })).toHaveCount(0);
@@ -17,7 +18,9 @@ test.describe('app del cliente (móvil)', () => {
 
   test('registrar una sesión con pocas acciones', async ({ page }) => {
     await page.goto('/cliente');
-    await page.getByRole('link', { name: /Empezar sesión/ }).click();
+    // Bloque 1: el reproductor (que aún no guarda) está en /cliente/sesion/<id>/entrenar.
+    await page.getByRole('link', { name: /Empezar entrenamiento/ }).click();
+    await expect(page).toHaveURL(/\/entrenar$/);
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Fuerza · tren inferior');
     await expect(page.getByText('0 de 16 series')).toBeVisible();
 
@@ -86,7 +89,9 @@ test.describe('app del cliente (móvil)', () => {
 
   test('solo se da por completada si están hechas todas las series', async ({ page }) => {
     await page.goto('/cliente');
-    await page.getByRole('link', { name: /Empezar sesión/ }).click();
+    // Bloque 1: el reproductor (que aún no guarda) está en /cliente/sesion/<id>/entrenar.
+    await page.getByRole('link', { name: /Empezar entrenamiento/ }).click();
+    await expect(page).toHaveURL(/\/entrenar$/);
     await expect(page.getByText('Pendiente').first()).toBeVisible();
     const completeAll = page.getByRole('button', { name: 'Marcar todas como hechas' });
     while ((await completeAll.count()) > 0) await completeAll.first().click();
@@ -105,6 +110,9 @@ test.describe('app del cliente (móvil)', () => {
     // Diego (otro cliente) entrena los lunes: su sesión de esta semana existe, pero no es de Marta.
     const foreign = await page.goto(`/cliente/sesion/s-diego-${mondayOf(today)}`);
     expect(foreign?.status()).toBe(404);
+    // Tampoco su reproductor (bloque 1: ruta nueva).
+    const foreignPlayer = await page.goto(`/cliente/sesion/s-diego-${mondayOf(today)}/entrenar`);
+    expect(foreignPlayer?.status()).toBe(404);
   });
 
   test('semana y progreso son secciones secundarias navegables', async ({ page }) => {

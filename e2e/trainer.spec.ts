@@ -36,7 +36,9 @@ test.describe('área del entrenador', () => {
       const response = await page.goto(path);
       expect(response?.status()).toBe(200);
       await expect(page.getByRole('heading', { level: 1 })).toContainText(heading);
-      await expect(page.getByRole('note')).toContainText('Demostración');
+      // Bloque 1 (B0): el aviso dice «Modo demostración» y como quién se ve la app.
+      await expect(page.getByRole('note')).toContainText('Modo demostración');
+      await expect(page.getByRole('note')).toContainText('Estás viendo la app como Alex');
       await expectNoSeriousA11yIssues(page);
       expect(errors).toEqual([]);
     });

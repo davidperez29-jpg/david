@@ -1,15 +1,26 @@
 import { expect, test } from '@playwright/test';
 import { collectErrors, expectNoSeriousA11yIssues } from './helpers';
 
-test('la portada ofrece las dos experiencias y es accesible', async ({ page }) => {
+test('la portada ofrece «Entrar como…» (Alex, Marta y Lucía) y es accesible', async ({ page }) => {
+  // Bloque 1 (P-76): los enlaces de la Fase 1 pasan a ser botones que el servidor valida.
   const errors = collectErrors(page);
   await page.goto('/');
   await expect(page.getByRole('heading', { level: 1 })).toContainText('Entrena con criterio');
-  await expect(page.getByRole('link', { name: /Soy entrenador/ })).toHaveAttribute(
-    'href',
-    '/entrenador',
+  await expect(page.getByRole('region', { name: 'Soy entrenador' }).getByRole('button')).toHaveText(
+    'Entrar como Alex, entrenador',
   );
-  await expect(page.getByRole('link', { name: /Soy cliente/ })).toHaveAttribute('href', '/cliente');
+  await expect(page.getByRole('region', { name: 'Soy cliente' }).getByRole('button')).toHaveText([
+    'Entrar como Marta, clienta',
+    'Entrar como Lucía, clienta',
+  ]);
+  await expect(page.getByRole('note')).toContainText('Modo demostración');
+  await page.getByRole('button', { name: 'Entrar como Lucía, clienta' }).click();
+  await expect(page).toHaveURL(/\/cliente$/);
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Hola, Lucía');
+  await page.getByRole('link', { name: 'Cambiar' }).click();
+  await page.getByRole('button', { name: 'Entrar como Alex, entrenador' }).click();
+  await expect(page).toHaveURL(/\/entrenador$/);
+  await page.goto('/');
   await expectNoSeriousA11yIssues(page);
   expect(errors).toEqual([]);
 });

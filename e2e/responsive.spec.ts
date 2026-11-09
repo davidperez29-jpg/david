@@ -15,6 +15,8 @@ const ROUTES = [
   '/entrenador/clientes/c-marta/resultados',
   '/entrenador/clientes/c-marta/planificacion',
   '/entrenador/clientes/c-marta/sesiones',
+  '/entrenador/clientes/c-lucia/sesiones',
+  '/entrenador/clientes/c-lucia/sesiones/nueva',
   '/entrenador/clientes/c-marta/registro',
   '/entrenador/clientes/c-marta/informes',
   '/entrenador/clientes/c-diego/salud',
