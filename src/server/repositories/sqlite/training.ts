@@ -8,6 +8,7 @@ import {
 import { type SqlDatabase } from '../../db/sqlite.ts';
 import { type DateRange, type TrainingRepository } from '../ports';
 import {
+  parseContent,
   type SessionLogRow,
   type SessionRow,
   type SetLogRow,
@@ -108,6 +109,37 @@ export function createSqliteTraining(db: SqlDatabase): TrainingRepository {
           label: content.label?.trim() || null,
         });
         return { result: 'saved', revision };
+      }),
+
+    swapDraftOrder: async (firstId, secondId, updatedAt) =>
+      db.transaction(() => {
+        const a = sessionById(firstId);
+        const b = sessionById(secondId);
+        if (
+          !a ||
+          !b ||
+          a.id === b.id ||
+          a.status !== 'draft' ||
+          b.status !== 'draft' ||
+          a.client_id !== b.client_id ||
+          a.planned_date !== b.planned_date ||
+          a.draft_content === null ||
+          b.draft_content === null
+        ) {
+          return 'not_allowed';
+        }
+        const update = db.prepare(
+          `UPDATE session SET day_order = @dayOrder, draft_content = @draft,
+             draft_revision = draft_revision + 1, updated_at = @updatedAt WHERE id = @id`,
+        );
+        for (const [row, dayOrder] of [
+          [a, b.day_order],
+          [b, a.day_order],
+        ] as const) {
+          const draft = { ...parseContent(row.draft_content!), dayOrder };
+          update.run({ id: row.id, dayOrder, draft: contentJson(draft), updatedAt });
+        }
+        return 'swapped';
       }),
 
     deleteDraft: async (sessionId) =>

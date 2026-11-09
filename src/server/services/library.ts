@@ -30,7 +30,7 @@ async function taxonomyFor(ctx: TrainerContext): Promise<Taxonomy> {
 }
 
 /** Variantes visibles para el entrenador, con sus etiquetas personales añadidas (solo para él). */
-async function visibleVariants(ctx: TrainerContext): Promise<ExerciseVariant[]> {
+export async function visibleVariants(ctx: TrainerContext): Promise<ExerciseVariant[]> {
   const [variants, tagging] = await Promise.all([
     ctx.repos.library.variants(),
     ctx.repos.library.personalTagging(ctx.actor.trainerId),

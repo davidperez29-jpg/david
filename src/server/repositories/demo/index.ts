@@ -20,6 +20,7 @@ const noTraining: TrainingRepository = {
   listSessions: readOnly,
   createDraft: readOnly,
   saveDraft: readOnly,
+  swapDraftOrder: readOnly,
   deleteDraft: readOnly,
   startChangeDraft: readOnly,
   discardChangeDraft: readOnly,

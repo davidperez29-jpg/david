@@ -205,6 +205,27 @@ describe('TrainingRepository (SQLite)', () => {
     expect(range.map((s) => s.id)).toEqual(['ses-manana', 'ses-tarde']);
   });
 
+  it('el orden en el día se intercambia solo entre borradores sin publicar del mismo día', async () => {
+    const { repos } = seededTestDatabase(TODAY);
+    await repos.training.createDraft(draft('ses-1'));
+    await repos.training.createDraft(draft('ses-2', { dayOrder: 2, label: 'Tarde' }));
+    await repos.training.createDraft(draft('ses-otro-dia', { plannedDate: '2026-11-11' }));
+    expect(await repos.training.swapDraftOrder('ses-1', 'ses-2', NOW)).toBe('swapped');
+    const day = await repos.training.listSessions(DEMO_NEW_CLIENT_ID, {
+      from: '2026-11-10',
+      to: '2026-11-10',
+    });
+    expect(day.map((s) => [s.id, s.dayOrder, s.draft!.dayOrder])).toEqual([
+      ['ses-2', 1, 1],
+      ['ses-1', 2, 2],
+    ]);
+    expect(await repos.training.swapDraftOrder('ses-1', 'ses-otro-dia', NOW)).toBe('not_allowed');
+    await repos.training.publish(
+      publishInput('ses-2', { expectedRevision: 1, content: day[0]!.draft! }),
+    );
+    expect(await repos.training.swapDraftOrder('ses-1', 'ses-2', NOW)).toBe('not_allowed');
+  });
+
   it('la versión 2 se publica aparte y la 1 no cambia; las versiones son inmutables', async () => {
     const { repos, db } = seededTestDatabase(TODAY);
     await repos.training.createDraft(draft('ses-1'));

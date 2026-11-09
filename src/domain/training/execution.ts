@@ -1,6 +1,7 @@
-import { localDateOf, type IsoDate, type IsoDateTime } from '../time';
+import { daysBetween, localDateOf, type IsoDate, type IsoDateTime } from '../time';
 import { type RpeScale } from './effort';
 import { type PerformedLoad } from './load';
+import { type SessionContent } from './session-v2';
 
 /**
  * Ejecución v2 (docs/V1_SPEC.md §4 y §5): un registro por sesión y series de solo adición.
@@ -122,4 +123,53 @@ export function executionStatus(input: StatusInput): ExecutionStatusV2 {
       : 'interrupted';
   }
   return input.plannedDate < input.today ? 'overdue' : 'planned';
+}
+
+/** Series de una versión: (ejercicio, número de serie). */
+export const currentSetRefs = (content: Pick<SessionContent, 'items'>) =>
+  content.items.flatMap((item) =>
+    Array.from({ length: item.sets }, (_, index) => ({
+      prescriptionId: item.id,
+      setNumber: index + 1,
+    })),
+  );
+
+export interface ExecutionSummaryV2 {
+  status: ExecutionStatusV2;
+  /** Series de la versión vigente con un registro efectivo hecho (con cualquier versión). */
+  completedSets: number;
+  plannedSets: number;
+  startedAt: IsoDateTime | null;
+  finishedAt: IsoDateTime | null;
+  /** Fecha local de ejecución (la de su inicio) y diferencia en días con la prevista. */
+  executedOn: IsoDate | null;
+  daysFromPlanned: number | null;
+}
+
+/** Estado y avance de una sesión publicada, con lo registrado hasta ahora. */
+export function summarizeExecutionV2(input: {
+  plannedDate: IsoDate;
+  content: Pick<SessionContent, 'items'>;
+  log: SessionLogV2 | null;
+  setLogs: readonly SetLogV2[];
+  today: IsoDate;
+  timeZone: string;
+}): ExecutionSummaryV2 {
+  const currentSets = currentSetRefs(input.content);
+  const done = new Set(
+    effectiveSetLogs(input.setLogs)
+      .filter((log) => log.completed)
+      .map((log) => `${log.prescriptionId}#${log.setNumber}`),
+  );
+  const executedOn = input.log ? executionDate(input.log) : null;
+  return {
+    status: executionStatus({ ...input, currentSets }),
+    completedSets: currentSets.filter((set) => done.has(`${set.prescriptionId}#${set.setNumber}`))
+      .length,
+    plannedSets: currentSets.length,
+    startedAt: input.log?.startedAt ?? null,
+    finishedAt: input.log?.finishedAt ?? null,
+    executedOn,
+    daysFromPlanned: executedOn ? daysBetween(input.plannedDate, executedOn) : null,
+  };
 }

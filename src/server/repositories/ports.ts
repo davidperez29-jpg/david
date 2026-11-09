@@ -131,6 +131,15 @@ export interface TrainingRepository {
     content: SessionContent;
     updatedAt: string;
   }): Promise<SaveDraftResult>;
+  /**
+   * Intercambia el orden en el día de dos borradores que nunca se han publicado, del mismo
+   * cliente y la misma fecha (una transacción). Las publicadas cambian de orden con una versión.
+   */
+  swapDraftOrder(
+    firstId: string,
+    secondId: string,
+    updatedAt: string,
+  ): Promise<'swapped' | 'not_allowed'>;
   /** Solo borradores que nunca se han publicado. */
   deleteDraft(sessionId: string): Promise<'deleted' | 'not_found' | 'not_deletable'>;
   /** Abre un borrador de cambios a partir de la versión vigente. */

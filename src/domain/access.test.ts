@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
   canAccessClient,
+  canEditSession,
+  canManageDemoData,
+  canPlanForClient,
   canReadResource,
+  canViewSession,
   defaultSharing,
   visibleAssessmentTestIds,
   type Actor,
@@ -63,5 +67,51 @@ describe('control de acceso', () => {
     expect((visibleAssessmentTestIds(martaActor, otherClient, sharing) as Set<string>).size).toBe(
       0,
     );
+  });
+});
+
+describe('sesiones de entrenamiento (V1)', () => {
+  const draftOfMarta = { clientId: 'c-marta', trainerId: 't-alex', status: 'draft' as const };
+  const publishedOfMarta = { ...draftOfMarta, status: 'published' as const };
+  const admin: Actor = { role: 'admin', adminId: 'adm-1' };
+
+  it('solo el entrenador del cliente planifica y edita sus sesiones', () => {
+    expect(canPlanForClient(trainer, marta)).toBe(true);
+    expect(canEditSession(trainer, draftOfMarta, marta)).toBe(true);
+    // Intentos no autorizados: otro entrenador, el propio cliente y la administración.
+    expect(canPlanForClient(otherTrainer, marta)).toBe(false);
+    expect(canEditSession(otherTrainer, draftOfMarta, marta)).toBe(false);
+    expect(canPlanForClient(martaActor, marta)).toBe(false);
+    expect(canEditSession(martaActor, draftOfMarta, marta)).toBe(false);
+    expect(canEditSession(admin, draftOfMarta, marta)).toBe(false);
+  });
+
+  it('una sesión que no es de ese cliente o de ese entrenador no se edita', () => {
+    expect(canEditSession(trainer, { ...draftOfMarta, clientId: 'c-otro' }, marta)).toBe(false);
+    expect(canEditSession(trainer, { ...draftOfMarta, trainerId: 't-otro' }, marta)).toBe(false);
+  });
+
+  it('el cliente solo ve sus sesiones publicadas; nunca los borradores ni las de otros', () => {
+    expect(canViewSession(martaActor, publishedOfMarta, marta)).toBe(true);
+    expect(canViewSession(martaActor, draftOfMarta, marta)).toBe(false);
+    const otherClientActor: Actor = { role: 'client', clientId: 'c-otro', trainerId: 't-alex' };
+    expect(canViewSession(otherClientActor, publishedOfMarta, marta)).toBe(false);
+    expect(
+      canViewSession(martaActor, { ...publishedOfMarta, clientId: 'c-otro' }, otherClient),
+    ).toBe(false);
+  });
+
+  it('el entrenador ve también los borradores de sus clientes, pero no los de otro entrenador', () => {
+    expect(canViewSession(trainer, draftOfMarta, marta)).toBe(true);
+    expect(canViewSession(otherTrainer, publishedOfMarta, marta)).toBe(false);
+    expect(canViewSession(admin, publishedOfMarta, marta)).toBe(false);
+  });
+});
+
+describe('datos de la demostración', () => {
+  it('solo un entrenador hace copias o restablece los datos; un cliente no', () => {
+    expect(canManageDemoData(trainer)).toBe(true);
+    expect(canManageDemoData(martaActor)).toBe(false);
+    expect(canManageDemoData({ role: 'admin', adminId: 'adm-1' })).toBe(false);
   });
 });

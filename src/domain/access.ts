@@ -134,3 +134,47 @@ export function canEditExercise(actor: Actor, exercise: OwnedExercise): boolean 
 export function canAdaptExercise(actor: Actor, exercise: OwnedExercise): boolean {
   return actor.role === 'trainer' && exercise.visibility === 'global';
 }
+
+// ── Sesiones de entrenamiento v2 (docs/V1_SPEC.md §7) ─────────────────────────
+
+type SessionRef = { clientId: string; trainerId: string; status: 'draft' | 'published' };
+
+/** Planificar (crear sesiones) para un cliente: solo su entrenador. */
+export function canPlanForClient(actor: Actor, client: ClientRef): boolean {
+  return actor.role === 'trainer' && client.trainerId === actor.trainerId;
+}
+
+/**
+ * Editar una sesión (guardar, publicar, ordenar o borrar su borrador): el entrenador del
+ * cliente, si la sesión es de ese cliente y suya. Las series ya registradas no se cambian nunca:
+ * lo comprueban los bloqueos del dominio (`lockIssues`) en cada publicación.
+ */
+export function canEditSession(actor: Actor, session: SessionRef, client: ClientRef): boolean {
+  return (
+    actor.role === 'trainer' &&
+    canPlanForClient(actor, client) &&
+    session.clientId === client.id &&
+    session.trainerId === actor.trainerId
+  );
+}
+
+/**
+ * Ver una sesión. El entrenador del cliente la ve entera (borradores, versiones y nota privada);
+ * el cliente, solo las suyas publicadas, en su versión vigente y sin la nota privada (eso lo
+ * garantizan los contratos del cliente, que no la incluyen).
+ */
+export function canViewSession(actor: Actor, session: SessionRef, client: ClientRef): boolean {
+  if (session.clientId !== client.id) return false;
+  if (actor.role === 'trainer') return canEditSession(actor, session, client);
+  return (
+    actor.role === 'client' && canAccessClient(actor, client) && session.status === 'published'
+  );
+}
+
+/**
+ * Datos de la demostración local (copias y «Restablecer datos demo»): solo un entrenador, y solo
+ * existe con `TRAINPRO_MODE=local-demo` (el contexto no da identidad fuera de ese modo).
+ */
+export function canManageDemoData(actor: Actor): boolean {
+  return actor.role === 'trainer';
+}
