@@ -24,6 +24,7 @@ const EXECUTION_STYLE: Record<ExecutionStatusV2, { tone: BadgeTone; icon: React.
   planned: { tone: 'outline', icon: <Clock /> },
   overdue: { tone: 'coral', icon: <CircleX /> },
   in_progress: { tone: 'sky', icon: <CirclePlay /> },
+  paused: { tone: 'sky', icon: <CirclePause /> },
   interrupted: { tone: 'sun', icon: <CirclePause /> },
   completed: { tone: 'leaf', icon: <CircleCheck /> },
   partial: { tone: 'sun', icon: <CircleDashed /> },

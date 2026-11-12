@@ -6,15 +6,25 @@
  */
 import { createHash } from 'node:crypto';
 import { MIGRATION_001 } from './migrations/001-v1.ts';
+import { MIGRATION_002 } from './migrations/002-ejecucion.ts';
 import { type SqlDatabase } from './sqlite.ts';
 
 export interface Migration {
   version: number;
   name: string;
   sql: string;
+  /**
+   * Reconstruye tablas referenciadas por otras (procedimiento de SQLite para cambios que ALTER
+   * TABLE no admite): las claves ajenas se desactivan fuera de la transacción y, antes de
+   * confirmar, `foreign_key_check` debe estar vacío; si no, se deshace todo.
+   */
+  rebuildsTables?: boolean;
 }
 
-export const MIGRATIONS: readonly Migration[] = [{ version: 1, name: 'v1', sql: MIGRATION_001 }];
+export const MIGRATIONS: readonly Migration[] = [
+  { version: 1, name: 'v1', sql: MIGRATION_001 },
+  { version: 2, name: 'ejecucion', sql: MIGRATION_002, rebuildsTables: true },
+];
 
 export class MigrationError extends Error {}
 
@@ -81,15 +91,29 @@ export function migrate(
     'INSERT INTO schema_migrations (version, name, checksum, applied_at) VALUES (@version, @name, @checksum, @appliedAt)',
   );
   for (const migration of pending) {
-    db.transaction(() => {
-      db.exec(migration.sql);
-      insert.run({
-        version: migration.version,
-        name: migration.name,
-        checksum: checksum(migration.sql),
-        appliedAt: now(),
+    // PRAGMA foreign_keys no tiene efecto dentro de una transacción: se cambia antes.
+    if (migration.rebuildsTables) db.exec('PRAGMA foreign_keys = OFF');
+    try {
+      db.transaction(() => {
+        db.exec(migration.sql);
+        if (migration.rebuildsTables) {
+          const broken = db.prepare('PRAGMA foreign_key_check').all();
+          if (broken.length > 0) {
+            throw new MigrationError(
+              `La migración ${migration.version} (${migration.name}) dejaría ${broken.length} relaciones rotas: no se aplica.`,
+            );
+          }
+        }
+        insert.run({
+          version: migration.version,
+          name: migration.name,
+          checksum: checksum(migration.sql),
+          appliedAt: now(),
+        });
       });
-    });
+    } finally {
+      if (migration.rebuildsTables) db.exec('PRAGMA foreign_keys = ON');
+    }
   }
   return {
     applied: pending.map((m) => m.version),

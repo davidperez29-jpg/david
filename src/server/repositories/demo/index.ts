@@ -1,6 +1,11 @@
 import 'server-only';
 import { type IsoDate } from '@/domain/time';
-import { type DateRange, type Repositories, type TrainingRepository } from '../ports';
+import {
+  type DateRange,
+  type ExecutionRepository,
+  type Repositories,
+  type TrainingRepository,
+} from '../ports';
 import { type DemoDataset } from './dataset';
 
 const inRange = (date: IsoDate, range: DateRange) => date >= range.from && date <= range.to;
@@ -28,6 +33,15 @@ const noTraining: TrainingRepository = {
   getVersion: readOnly,
   listVersions: readOnly,
   getExecution: readOnly,
+};
+
+/** Sin escritura de la ejecución: la aplicación usa SQLite. */
+const noExecution: ExecutionRepository = {
+  start: readOnly,
+  logSet: readOnly,
+  pause: readOnly,
+  resume: readOnly,
+  finish: readOnly,
 };
 
 /**
@@ -92,5 +106,6 @@ export function createDemoRepositories(data: DemoDataset): Repositories {
         clone(data.sharing.find((s) => s.clientId === clientId) ?? null),
     },
     training: noTraining,
+    execution: noExecution,
   };
 }

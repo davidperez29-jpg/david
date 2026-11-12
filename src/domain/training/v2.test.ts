@@ -383,6 +383,8 @@ describe('compatibilidad con el modelo de la Fase 1', () => {
       startTimeZone: 'Europe/Madrid',
       startUtcOffsetMin: 60,
       startReceivedAt: '2026-11-09T22:50:01.000Z',
+      startedVersion: 1,
+      pausedSeconds: 0,
       lastActivityAt: '2026-11-09T23:05:00.000Z',
     };
     const set = (id: string, setNumber: number, extra: Partial<SetLogV2> = {}): SetLogV2 => ({
@@ -476,7 +478,7 @@ describe('ejecución: correcciones, horas y estados', () => {
     ).toBe('2026-10-25');
   });
 
-  it('deduce los seis estados', () => {
+  it('deduce los siete estados', () => {
     const currentSets = [
       { prescriptionId: 'p', setNumber: 1 },
       { prescriptionId: 'p', setNumber: 2 },
@@ -490,7 +492,9 @@ describe('ejecución: correcciones, horas y estados', () => {
       startTimeZone: 'Europe/Madrid',
       startUtcOffsetMin: 60,
       startReceivedAt: '2026-11-09T09:00:00.000Z',
+      startedVersion: 1,
       lastActivityAt: '2026-11-09T09:10:00.000Z',
+      pausedSeconds: 0,
     };
     const one = [{ ...base, clientSetId: 'a', setNumber: 1 }];
     const both = [...one, { ...base, clientSetId: 'b', setNumber: 2 }];
@@ -508,6 +512,11 @@ describe('ejecución: correcciones, horas y estados', () => {
     expect(status({ plannedDate: '2026-11-08' })).toBe('overdue');
     expect(status({ log, setLogs: one })).toBe('in_progress');
     expect(status({ log, setLogs: one, today: '2026-11-10' })).toBe('interrupted');
+    // Pausa explícita: «Pausada», también otro día; con todo hecho manda «Completada».
+    const paused = { ...log, pausedAt: '2026-11-09T09:12:00.000Z' };
+    expect(status({ log: paused, setLogs: one })).toBe('paused');
+    expect(status({ log: paused, setLogs: one, today: '2026-11-12' })).toBe('paused');
+    expect(status({ log: paused, setLogs: both })).toBe('completed');
     expect(status({ log, setLogs: both })).toBe('completed');
     expect(
       status({

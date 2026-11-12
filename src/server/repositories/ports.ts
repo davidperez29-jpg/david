@@ -14,6 +14,7 @@ import { type RehabCase } from '@/domain/rehab';
 import { type IsoDate } from '@/domain/time';
 import { type PlannedSession, type SessionLog } from '@/domain/training/session';
 import { type SessionLogV2, type SetLogV2 } from '@/domain/training/execution';
+import { type PerformedLoad } from '@/domain/training/load';
 import {
   type SessionContent,
   type SessionVersion,
@@ -154,6 +155,69 @@ export interface TrainingRepository {
   getExecution(sessionId: string): Promise<{ log: SessionLogV2; setLogs: SetLogV2[] } | null>;
 }
 
+/**
+ * Ejecución (bloque 2): cada comando del cliente es UNA transacción que comprueba su
+ * idempotencia (`client_command`) y aplica el cambio. Los permisos y la validación frente a la
+ * prescripción los hace antes el caso de uso; aquí, lo que depende del estado guardado.
+ */
+export interface CommandMeta {
+  commandId: string;
+  /** SHA-256 del comando canónico: el mismo identificador con otro contenido es un error. */
+  payloadHash: string;
+  sessionId: string;
+  clientId: string;
+  /** Hora de recepción en el servidor. */
+  receivedAt: string;
+  device: { recordedAt: string; timeZone: string; utcOffsetMinutes: number };
+}
+
+export interface SetLogInsert {
+  versionNumber: number;
+  prescriptionId: string;
+  variantId: string;
+  setNumber: number;
+  completed: boolean;
+  reps: number | null;
+  durationS: number | null;
+  distanceM: number | null;
+  load: PerformedLoad | null;
+  rir: number | null;
+  rpe: number | null;
+  rpeScale: SetLogV2['rpeScale'] | null;
+  note: string | null;
+  supersedes: string | null;
+}
+
+export type ExecutionWriteResult =
+  | { result: 'applied' }
+  | { result: 'already_applied' }
+  | { result: 'command_id_reused' }
+  | { result: 'not_started' }
+  | { result: 'already_started' }
+  | { result: 'closed' }
+  | { result: 'set_already_logged'; effective: SetLogV2 }
+  | { result: 'not_effective'; effective: SetLogV2 | null }
+  | { result: 'confirmation_required'; pendingSets: number };
+
+export interface ExecutionRepository {
+  start(
+    meta: CommandMeta,
+    input: { logId: string; startedVersion: number },
+  ): Promise<ExecutionWriteResult>;
+  logSet(meta: CommandMeta, input: SetLogInsert): Promise<ExecutionWriteResult>;
+  pause(meta: CommandMeta): Promise<ExecutionWriteResult>;
+  resume(meta: CommandMeta): Promise<ExecutionWriteResult>;
+  /** `currentSets`: las series de la versión vigente, para saber si quedan pendientes. */
+  finish(
+    meta: CommandMeta,
+    input: {
+      currentSets: readonly { prescriptionId: string; setNumber: number }[];
+      confirmEndEarly: boolean;
+      comment: string | null;
+    },
+  ): Promise<ExecutionWriteResult>;
+}
+
 export interface Repositories {
   trainers: TrainerRepository;
   clients: ClientRepository;
@@ -165,4 +229,5 @@ export interface Repositories {
   rehab: RehabRepository;
   sharing: SharingRepository;
   training: TrainingRepository;
+  execution: ExecutionRepository;
 }

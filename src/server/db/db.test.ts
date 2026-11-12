@@ -37,8 +37,8 @@ function seedMinimal(target: SqlDatabase) {
   });
   target
     .prepare(
-      `INSERT INTO session_log (id, session_id, client_id, started_at, start_device_at, start_time_zone, start_utc_offset_min, start_received_at, last_activity_at)
-       VALUES ('l-1', 's-1', 'c-1', @now, @now, 'Europe/Madrid', 60, @now, @now)`,
+      `INSERT INTO session_log (id, session_id, client_id, started_version, started_at, start_device_at, start_time_zone, start_utc_offset_min, start_received_at, last_activity_at)
+       VALUES ('l-1', 's-1', 'c-1', 1, @now, @now, 'Europe/Madrid', 60, @now, @now)`,
     )
     .run({ now: NOW });
 }
@@ -228,15 +228,19 @@ describe('B1-08 · duplicados en las tablas de ejecución', () => {
 });
 
 describe('B1-10 · migraciones', () => {
-  it('una base vacía aplica la 001 y no la vuelve a aplicar', () => {
+  it('una base vacía aplica todas las migraciones en orden y no las vuelve a aplicar', () => {
     const file = join(dir, 'nueva.sqlite');
     const fresh = openSqlite(file);
-    expect(migrate(fresh).applied).toEqual([1]);
+    expect(migrate(fresh).applied).toEqual([1, 2]);
     expect(migrate(fresh).applied).toEqual([]);
-    const row = fresh
-      .prepare('SELECT version, checksum FROM schema_migrations')
-      .get<{ version: number; checksum: string }>();
-    expect(row).toEqual({ version: 1, checksum: checksum(MIGRATIONS[0]!.sql) });
+    const rows = fresh
+      .prepare('SELECT version, checksum FROM schema_migrations ORDER BY version')
+      .all<{ version: number; checksum: string }>();
+    expect(rows).toEqual(
+      MIGRATIONS.map((m) => ({ version: m.version, checksum: checksum(m.sql) })),
+    );
+    // Tras reconstruir tablas, las claves ajenas siguen activas.
+    expect(fresh.pragma('foreign_keys')).toBe(1);
     fresh.close();
   });
 
@@ -246,14 +250,18 @@ describe('B1-10 · migraciones', () => {
   });
 
   it('el arranque falla si la base tiene una migración que el código no conoce', () => {
-    db.prepare("INSERT INTO schema_migrations VALUES (2, 'futura', 'x', @now)").run({ now: NOW });
+    db.prepare("INSERT INTO schema_migrations VALUES (99, 'futura', 'x', @now)").run({ now: NOW });
     expect(() => migrate(db)).toThrow(/no conoce/);
   });
 
   it('avisa antes de migrar una base existente (para hacer la copia previa)', () => {
     const next = [
       ...MIGRATIONS,
-      { version: 2, name: 'prueba', sql: 'CREATE TABLE prueba (x INTEGER) STRICT;' },
+      {
+        version: MIGRATIONS.length + 1,
+        name: 'prueba',
+        sql: 'CREATE TABLE prueba (x INTEGER) STRICT;',
+      },
     ];
     const calls: number[] = [];
     expect(
@@ -261,8 +269,8 @@ describe('B1-10 · migraciones', () => {
         migrations: next,
         beforeMigrate: (p) => calls.push(...p.map((m) => m.version)),
       }).applied,
-    ).toEqual([2]);
-    expect(calls).toEqual([2]);
+    ).toEqual([MIGRATIONS.length + 1]);
+    expect(calls).toEqual([MIGRATIONS.length + 1]);
   });
 });
 

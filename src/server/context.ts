@@ -95,6 +95,16 @@ export async function getClientContext(): Promise<ClientContext> {
   return { actor, today, timeZone: env.timeZone, repos };
 }
 
+/**
+ * Contexto del cliente para la API de comandos: igual que `getClientContext`, pero sin redirigir.
+ * Sin identidad devuelve `null` y la ruta responde como si la sesión no existiera.
+ */
+export async function getClientApiContext(): Promise<ClientContext | null> {
+  const { env, jar, today, repos } = await requestEnvironment();
+  const actor = await clientActor(resolveIdentity('client', env, jar), repos);
+  return actor ? { actor, today, timeZone: env.timeZone, repos } : null;
+}
+
 /** Lo que muestra la portada: si existe «Entrar como…» y con qué personas ficticias. */
 export async function getDemoEntry(): Promise<{
   enabled: boolean;

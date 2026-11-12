@@ -46,7 +46,10 @@ export interface SessionLogRow {
   start_time_zone: string;
   start_utc_offset_min: number;
   start_received_at: string;
+  started_version: number;
   last_activity_at: string;
+  paused_at: string | null;
+  paused_seconds: number;
   finished_at: string | null;
   finish_device_at: string | null;
   finish_received_at: string | null;
@@ -137,7 +140,10 @@ export function toSessionLog(row: SessionLogRow): SessionLogV2 {
     startTimeZone: row.start_time_zone,
     startUtcOffsetMin: row.start_utc_offset_min,
     startReceivedAt: row.start_received_at,
+    startedVersion: row.started_version,
     lastActivityAt: row.last_activity_at,
+    ...(row.paused_at ? { pausedAt: row.paused_at } : {}),
+    pausedSeconds: row.paused_seconds,
     ...(row.finished_at ? { finishedAt: row.finished_at } : {}),
     ...(row.finish_device_at ? { finishDeviceAt: row.finish_device_at } : {}),
     ...(row.finish_received_at ? { finishReceivedAt: row.finish_received_at } : {}),

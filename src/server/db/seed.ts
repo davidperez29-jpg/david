@@ -7,7 +7,7 @@ import { type DemoDataset } from '../repositories/demo/dataset';
 import { type SqlDatabase } from './sqlite.ts';
 
 /** Versión de la semilla: cambia si cambia lo que se siembra (se guarda en `meta`). */
-export const SEED_VERSION = '1';
+export const SEED_VERSION = '2';
 
 const at = (instant: string, seconds: number) =>
   new Date(Date.parse(instant) + seconds * 1000).toISOString();
@@ -92,11 +92,13 @@ export function seedDatabase(
 
     const sessions = new Map(data.sessions.map((s) => [s.id, s]));
     const insertLog = db.prepare(
-      `INSERT INTO session_log (id, session_id, client_id, started_at, start_device_at, start_time_zone,
-         start_utc_offset_min, start_received_at, last_activity_at, finished_at, finish_device_at,
-         finish_received_at, finish_reason, pending_sets_confirmed, perceived_effort, comment)
-       VALUES (@id, @sessionId, @clientId, @startedAt, @startedAt, @tz, @offset, @startedAt, @lastActivity,
-         @finishedAt, @finishedAt, @finishedAt, @finishReason, @pending, @effort, @comment)`,
+      `INSERT INTO session_log (id, session_id, client_id, started_version, started_at, start_device_at,
+         start_time_zone, start_utc_offset_min, start_received_at, last_activity_at, finished_at,
+         finish_device_at, finish_received_at, finish_reason, pending_sets_confirmed, perceived_effort,
+         comment)
+       VALUES (@id, @sessionId, @clientId, 1, @startedAt, @startedAt, @tz, @offset, @startedAt,
+         @lastActivity, @finishedAt, @finishedAt, @finishedAt, @finishReason, @pending, @effort,
+         @comment)`,
     );
     const insertSet = db.prepare(
       `INSERT INTO set_log (client_set_id, session_log_id, session_id, client_id, version_number,

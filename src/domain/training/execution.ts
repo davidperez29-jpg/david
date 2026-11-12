@@ -17,7 +17,13 @@ export interface SessionLogV2 {
   startTimeZone: string;
   startUtcOffsetMin: number;
   startReceivedAt: IsoDateTime;
+  /** Versión publicada con la que se empezó: la que recibió el cliente. */
+  startedVersion: number;
   lastActivityAt: IsoDateTime;
+  /** Pausa explícita en curso (hora de ejecución en que se pausó). */
+  pausedAt?: IsoDateTime;
+  /** Tiempo total de las pausas ya cerradas, en segundos. */
+  pausedSeconds: number;
   finishedAt?: IsoDateTime;
   finishDeviceAt?: IsoDateTime;
   finishReceivedAt?: IsoDateTime;
@@ -84,12 +90,13 @@ export const executionDate = (log: Pick<SessionLogV2, 'startedAt' | 'startTimeZo
 
 /** Estados de ejecución (V1_SPEC §5.8). Se deducen; no se guardan. */
 export type ExecutionStatusV2 =
-  'planned' | 'overdue' | 'in_progress' | 'interrupted' | 'completed' | 'partial';
+  'planned' | 'overdue' | 'in_progress' | 'paused' | 'interrupted' | 'completed' | 'partial';
 
 export const EXECUTION_STATUS_LABELS: Record<ExecutionStatusV2, string> = {
   planned: 'Programada',
   overdue: 'Sin hacer',
   in_progress: 'En curso',
+  paused: 'Pausada',
   interrupted: 'Interrumpida',
   completed: 'Completada',
   partial: 'Parcial',
@@ -117,6 +124,7 @@ export function executionStatus(input: StatusInput): ExecutionStatusV2 {
     input.currentSets.every((set) => done.has(`${set.prescriptionId}#${set.setNumber}`));
   if (input.log && allDone) return 'completed';
   if (input.log?.finishedAt) return 'partial';
+  if (input.log?.pausedAt) return 'paused';
   if (input.log) {
     return localDateOf(input.log.lastActivityAt, input.timeZone) === input.today
       ? 'in_progress'

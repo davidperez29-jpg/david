@@ -178,3 +178,18 @@ export function canViewSession(actor: Actor, session: SessionRef, client: Client
 export function canManageDemoData(actor: Actor): boolean {
   return actor.role === 'trainer';
 }
+
+// ── Ejecución (bloque 2) ──────────────────────────────────────────────────────
+
+/**
+ * Registrar la ejecución de una sesión: solo el propio cliente, en una sesión suya y publicada
+ * (cualquier día). Que no esté terminada lo comprueba la transacción del registro.
+ */
+export function canLogExecution(actor: Actor, session: SessionRef, client: ClientRef): boolean {
+  return actor.role === 'client' && canViewSession(actor, session, client);
+}
+
+/** Leer la ejecución: el entrenador del cliente y el propio cliente (solo si está publicada). */
+export function canReadExecution(actor: Actor, session: SessionRef, client: ClientRef): boolean {
+  return canViewSession(actor, session, client);
+}

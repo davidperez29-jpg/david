@@ -8,6 +8,7 @@ import { createDemoRepositories } from '../demo';
 import { type DemoDataset } from '../demo/dataset';
 import { type DateRange, type Repositories } from '../ports';
 import { parseContent, type SessionLogRow, type SetLogRow, toSessionLog, toSetLog } from './rows';
+import { createSqliteExecution } from './execution';
 import { createSqliteTraining } from './training';
 
 interface ClientRow {
@@ -132,5 +133,6 @@ export function createSqliteRepositories(db: SqlDatabase, reference: DemoDataset
       listByClient: async (clientId, range) => legacyLogs(clientId, range),
     },
     training,
+    execution: createSqliteExecution(db),
   };
 }
