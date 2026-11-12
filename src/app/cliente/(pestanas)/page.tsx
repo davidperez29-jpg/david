@@ -96,13 +96,13 @@ export default async function ClientTodayPage() {
           <div className="space-y-2 px-4 pb-4">
             <Link
               href={heroHref}
-              className="flex h-16 items-center justify-center gap-2 rounded-3xl bg-ink-900 text-lg font-bold text-cream-50 transition-colors hover:bg-ink-700"
+              className="flex min-h-16 items-center justify-center gap-2 rounded-3xl bg-ink-900 px-5 py-3 text-center text-lg leading-snug font-bold text-balance text-cream-50 transition-colors hover:bg-ink-700"
             >
               {ACTION_LABEL[hero.action]}
               {hero.action === 'continue'
                 ? ` · ${hero.execution.completedSets} de ${hero.execution.plannedSets} series`
                 : ''}
-              <ArrowRight aria-hidden className="size-5" />
+              <ArrowRight aria-hidden className="size-5 shrink-0" />
             </Link>
             {hero.action !== 'summary' ? (
               <Link

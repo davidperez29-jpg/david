@@ -29,7 +29,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { type PlayerItemVM, type PlayerSetVM, type PlayerVM } from '@/contracts/execution';
 import { formatDate } from '@/domain/format';
-import { type PerformedSetInput } from '@/domain/training/performance';
+import { describePerformed, type PerformedSetInput } from '@/domain/training/performance';
 import { reviewExecution } from '@/domain/training/review';
 import { ExercisePictogram } from '@/features/brand/pictogram';
 import { ExecutionReview, durationText } from '@/features/shared/execution-review';
@@ -74,33 +74,6 @@ function SetStatusIcon({ entry }: { entry: SetEntry | undefined }) {
   if (entry.record.supersedes) return <PencilLine aria-hidden className="size-5 text-plum-700" />;
   return <CircleCheck aria-hidden className="size-5 text-leaf-700" />;
 }
-
-const performedText = (record: LocalRecord) => {
-  if (!record.completed) return 'No realizada';
-  const amount =
-    record.reps !== undefined
-      ? `${record.reps}`
-      : record.distanceM !== undefined
-        ? `${record.distanceM} m`
-        : record.durationS !== undefined
-          ? `${record.durationS} s`
-          : '';
-  const load =
-    record.load?.kind === 'external'
-      ? ` × ${String(record.load.kg).replace('.', ',')} kg`
-      : record.load?.kind === 'bodyweight_plus'
-        ? ` × +${String(record.load.addedKg).replace('.', ',')} kg`
-        : record.load && 'descriptor' in record.load && record.load.descriptor
-          ? ` · ${record.load.descriptor}`
-          : '';
-  const effort =
-    record.rir !== undefined
-      ? ` · RIR ${record.rir}`
-      : record.rpe !== undefined
-        ? ` · RPE ${String(record.rpe).replace('.', ',')}`
-        : '';
-  return `${amount}${load}${effort}`;
-};
 
 /** Primera serie sin registro (o con error) de un ejercicio. */
 const firstOpenSet = (item: PlayerItemVM, entries: Map<string, SetEntry>) =>
@@ -511,7 +484,7 @@ export function TrainingPlayer({ vm }: { vm: PlayerVM }) {
               {item.name}
             </h1>
             <p className="mt-0.5 text-sm font-semibold text-ink-700">
-              {item.sets.length} series · {itemDone} hechas
+              {item.sets.length} series · {itemDone} {itemDone === 1 ? 'hecha' : 'hechas'}
             </p>
           </div>
         </div>
@@ -615,7 +588,9 @@ export function TrainingPlayer({ vm }: { vm: PlayerVM }) {
                     {record ? (
                       <p className="text-ink-700">
                         Hecho:{' '}
-                        <span className="font-semibold text-ink-900">{performedText(record)}</span>
+                        <span className="font-semibold text-ink-900">
+                          {describePerformed(record)}
+                        </span>
                         <span
                           className={cn(
                             'ml-2 text-xs font-semibold',
