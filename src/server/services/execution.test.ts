@@ -367,7 +367,8 @@ describe('comandos de la ejecución', () => {
     const { repos } = seededTestDatabase(TODAY);
     const { sessionId } = await published(repos);
     await executeClientCommand(client(repos), sessionId, start());
-    await executeClientCommand(client(repos), sessionId, set(1));
+    const first = set(1);
+    await executeClientCommand(client(repos), sessionId, first);
     const finish = (confirmEndEarly: boolean): ClientCommand => ({
       commandId: id('finish'),
       type: 'finish',
@@ -389,6 +390,12 @@ describe('comandos de la ejecución', () => {
     });
     expect((await executeClientCommand(client(repos), sessionId, set(2))).body).toMatchObject({
       error: 'closed',
+    });
+    // El reenvío de un comando que ya se aplicó antes del cierre (respuesta perdida) no es un
+    // error: el servidor responde lo mismo que la primera vez.
+    expect(await executeClientCommand(client(repos), sessionId, first)).toMatchObject({
+      status: 200,
+      body: { ok: true, result: 'already_applied' },
     });
     expect((await executeClientCommand(client(repos), sessionId, finish(true))).body).toMatchObject(
       { error: 'closed' },
