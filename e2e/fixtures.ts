@@ -1,4 +1,10 @@
-import { test as base, type BrowserContext, expect, type Page } from '@playwright/test';
+import {
+  test as base,
+  type Browser,
+  type BrowserContext,
+  expect,
+  type Page,
+} from '@playwright/test';
 
 /**
  * Pruebas que ESCRIBEN datos: cada una trabaja en su propio espacio (un archivo SQLite aparte,
@@ -67,4 +73,84 @@ export async function createSessionForLucia(
     await page.waitForURL(/\/sesiones\/[0-9a-f-]{36}$/);
   }
   return page.url();
+}
+
+/**
+ * Alex (en un contexto de escritorio aparte, en el mismo espacio) publica para Lucía una sesión
+ * de hoy: sentadilla goblet 3 × 10 · 16 kg · RIR 2 y plancha lateral 2 series (por defecto,
+ * 10 repeticiones con peso corporal y sin objetivo de esfuerzo). Devuelve la URL de A7.
+ */
+export async function publishForLucia(
+  browser: Browser,
+  space: string,
+  baseURL: string,
+  options: { date: string; label?: string; title?: string },
+) {
+  const context = await browser.newContext({ baseURL });
+  await joinSpace(context, space, baseURL);
+  const page = await context.newPage();
+  await enterAs(page, 'Alex, entrenador');
+  await page.goto(`/entrenador/clientes/c-lucia/sesiones/nueva?fecha=${options.date}`);
+  await page.getByLabel('Contexto').fill(options.label ?? 'Mañana');
+  await page.getByLabel('Título').fill(options.title ?? 'Fuerza · pierna');
+  await page.getByLabel(/^Objetivo/).fill('Fuerza del tren inferior');
+  await page.getByLabel('Duración (min)').fill('45');
+  await page.getByRole('button', { name: 'Crear borrador' }).click();
+  await page.waitForURL(/\/editar$/);
+  await page.getByRole('searchbox').fill('goblet');
+  await page.getByRole('button', { name: 'Añadir Sentadilla goblet' }).click();
+  await page.getByLabel('Carga de Sentadilla goblet').selectOption('external');
+  await page.getByLabel('Kilogramos de Sentadilla goblet').fill('16');
+  await page.getByLabel('Esfuerzo de Sentadilla goblet').selectOption('rir');
+  await page.getByRole('searchbox').fill('plancha lateral');
+  await page
+    .getByRole('button', { name: /^Añadir Plancha lateral/ })
+    .first()
+    .click();
+  const plank = (await page
+    .getByRole('heading', { level: 3, name: /^Plancha lateral/ })
+    .first()
+    .textContent())!;
+  await page.getByRole('button', { name: `Una serie menos de ${plank}` }).click();
+  await page.getByLabel(`Carga de ${plank}`).selectOption('bodyweight');
+  await page.getByRole('button', { name: 'Guardar' }).click();
+  await expect(page.getByText(/^Borrador guardado/)).toBeVisible();
+  await page.getByRole('button', { name: 'Publicar versión 1' }).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Publicar' }).click();
+  await page.waitForURL(/\/sesiones\/[0-9a-f-]{36}$/);
+  const url = page.url();
+  await context.close();
+  return { url, plank };
+}
+
+const commandResponse = (page: Page, type: string) =>
+  page.waitForResponse(
+    (r) =>
+      r.url().includes('/comandos') &&
+      r.request().method() === 'POST' &&
+      (r.request().postDataJSON() as { type?: string } | null)?.type === type,
+  );
+
+/** Pulsa «Empezar entrenamiento» y espera a que el servidor confirme el inicio. */
+export async function startTraining(page: Page) {
+  const confirmed = commandResponse(page, 'start');
+  await page.getByRole('button', { name: /Empezar (entrenamiento|igualmente)/ }).click();
+  expect((await confirmed).status()).toBe(200);
+}
+
+/**
+ * Desde el reproductor: registra la serie visible con lo que tenga el formulario, espera la
+ * respuesta del servidor (salvo que se pida lo contrario, por ejemplo sin conexión) y salta el
+ * descanso si aparece.
+ */
+export async function logVisibleSet(page: Page, options: { waitForServer?: boolean } = {}) {
+  const confirmed = options.waitForServer === false ? null : commandResponse(page, 'log_set');
+  await page.getByRole('button', { name: 'Serie hecha' }).click();
+  if (confirmed) expect((await confirmed).status()).toBe(200);
+  const skip = page.getByRole('button', { name: /^(Saltar descanso|Continuar)$/ });
+  const resting = await skip
+    .waitFor({ timeout: 1_500 })
+    .then(() => true)
+    .catch(() => false);
+  if (resting) await skip.click();
 }

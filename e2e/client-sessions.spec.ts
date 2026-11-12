@@ -47,9 +47,12 @@ test.describe('Hoy y detalle del cliente (bloque 1)', () => {
     await expect(page.getByText('RIR 2')).toBeVisible();
     await expectNoSeriousA11yIssues(page);
 
-    // El reproductor se mantiene, con el aviso de que aún no guarda.
+    // Bloque 2: el reproductor ya guarda en el servidor; se abre en su pantalla de inicio, sin
+    // empezar nada hasta que ella lo pide (y sin el aviso de la Fase 1).
     await page.getByRole('link', { name: /Empezar entrenamiento/ }).click();
-    await expect(page.getByText('Lo que marques aquí todavía no se guarda')).toBeVisible();
+    await expect(page).toHaveURL(/\/entrenar$/);
+    await expect(page.getByRole('button', { name: 'Empezar entrenamiento' })).toBeVisible();
+    await expect(page.getByText('Lo que marques aquí todavía no se guarda')).toHaveCount(0);
 
     expect(errors).toEqual([]);
 

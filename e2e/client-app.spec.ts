@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { enterAs, logVisibleSet, startTraining, test as spaceTest } from './fixtures';
 import { collectErrors, expectNoSeriousA11yIssues, mondayOf, todayInMadrid } from './helpers';
 
 test.describe('app del cliente (móvil)', () => {
@@ -16,92 +17,74 @@ test.describe('app del cliente (móvil)', () => {
     expect(errors).toEqual([]);
   });
 
-  test('registrar una sesión con pocas acciones', async ({ page }) => {
-    await page.goto('/cliente');
-    // Bloque 1: el reproductor (que aún no guarda) está en /cliente/sesion/<id>/entrenar.
+  // Bloque 2: el reproductor por pasos sustituye al de la Fase 1 y ahora GUARDA en el servidor;
+  // por eso estas dos pruebas trabajan en su propio espacio de datos (fixtures.ts).
+  spaceTest('registrar una sesión con pocas acciones', async ({ page, space }) => {
+    expect(space).toBeTruthy();
+    await enterAs(page, 'Marta, clienta');
     await page.getByRole('link', { name: /Empezar entrenamiento/ }).click();
     await expect(page).toHaveURL(/\/entrenar$/);
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Fuerza · tren inferior');
+    await startTraining(page);
+    await expect(
+      page.getByRole('heading', { level: 1, name: 'Sentadilla trasera con barra' }),
+    ).toBeVisible();
     await expect(page.getByText('0 de 16 series')).toBeVisible();
 
     // Un toque por serie: los valores prescritos vienen ya rellenos.
-    await page
-      .getByRole('button', { name: 'Marcar como hecha la serie 1 de Sentadilla trasera con barra' })
-      .click();
+    await logVisibleSet(page);
     await expect(page.getByText('1 de 16 series')).toBeVisible();
-    await expect(page.getByRole('timer')).toContainText('Descanso');
-    await page.getByRole('button', { name: 'Saltar' }).click();
-    await expect(page.getByRole('timer')).toHaveCount(0);
 
-    // Una entrada no válida no se da por buena.
-    const reps = page.getByLabel('Repeticiones, serie 2 de Sentadilla trasera con barra');
-    await reps.fill('ocho');
-    await page
-      .getByRole('button', { name: 'Marcar como hecha la serie 2 de Sentadilla trasera con barra' })
-      .click();
-    // (Next.js añade su propio role="alert" para anunciar cambios de ruta: filtramos por texto.)
+    // Una entrada no válida no se da por buena: el error aparece junto al campo.
+    await page.getByLabel(/^Repeticiones$/).fill('ocho');
+    await page.getByRole('button', { name: 'Serie hecha' }).click();
     await expect(
-      page.getByRole('alert').filter({ hasText: 'Escribe las repeticiones' }),
+      page
+        .getByRole('alert')
+        .filter({ hasText: 'Las repeticiones deben ser un entero de 1 a 100.' }),
     ).toBeVisible();
     await expect(page.getByText('1 de 16 series')).toBeVisible();
-    await reps.fill('8');
-    await page
-      .getByRole('button', { name: 'Marcar como hecha la serie 2 de Sentadilla trasera con barra' })
-      .click();
+    await page.getByLabel(/^Repeticiones$/).fill('8');
+    await logVisibleSet(page);
     await expect(page.getByText('2 de 16 series')).toBeVisible();
 
-    // RIR real del ejercicio (prescrito con RIR) y un toque para completar el resto de series.
+    // Terminar con series pendientes pide elegir y no la da por completada.
+    await page.getByRole('button', { name: /tu sesión/i }).click();
     await page
-      .getByRole('group', { name: /Repeticiones en reserva de Sentadilla trasera/ })
-      .getByText('2', { exact: true })
+      .getByRole('dialog', { name: 'Tu sesión' })
+      .getByRole('button', { name: 'Terminar sesión' })
       .click();
-    await expect(page.getByRole('radio', { name: '2' }).first()).toBeChecked();
-    await page.getByRole('button', { name: 'Marcar todas como hechas' }).first().click();
-    await expect(page.getByText('4 de 16 series')).toBeVisible();
-
-    // Mientras se entrena, la sesión está «En curso».
-    await expect(page.getByText('En curso').first()).toBeVisible();
-
-    // Terminar con series pendientes pide confirmación y no la da por completada.
-    await page.getByRole('button', { name: 'Terminar sesión' }).click();
-    await expect(page.getByRole('heading', { name: 'Te faltan 12 series' })).toBeVisible();
-    await page.getByRole('button', { name: 'Seguir entrenando' }).click();
-    await page.getByRole('button', { name: 'Terminar sesión' }).click();
-    await page.getByRole('button', { name: 'Terminar igualmente' }).click();
-
+    const dialog = page.getByRole('dialog', { name: 'Te quedan 14 series sin registrar' });
+    await dialog.getByRole('button', { name: 'Seguir entrenando' }).click();
+    await page.getByRole('button', { name: /tu sesión/i }).click();
+    await page
+      .getByRole('dialog', { name: 'Tu sesión' })
+      .getByRole('button', { name: 'Terminar sesión' })
+      .click();
+    await dialog.getByRole('button', { name: 'Terminar igualmente (cierre parcial)' }).click();
     await expect(
       page.getByRole('heading', { name: 'Sesión terminada parcialmente' }),
     ).toBeVisible();
-    await expect(page.getByText('Parcial o interrumpida').first()).toBeVisible();
     await expect(page.getByRole('heading', { name: '¡Sesión completada!' })).toHaveCount(0);
-    await expect(
-      page.getByText('Has completado 4 de 16 series y 1 de 5 ejercicios.'),
-    ).toBeVisible();
-    await expect(page.getByText('4/4 series')).toBeVisible();
-    await expect(page.getByText('0/3 series').first()).toBeVisible();
-    const notes = page.getByLabel('Observaciones para tu entrenador');
-    await notes.fill('La última serie me ha costado.');
-    await expect(page.getByText('30/500')).toBeVisible();
-    // 6 + 8 + 6 + 6 repeticiones (las series sin editar usan el mínimo del rango prescrito: 6).
-    await expect(page.locator('dl dd').nth(1)).toHaveText('26');
+    await expect(page.getByText('2 de 16 series hechas · 14 sin registrar')).toBeVisible();
     await expectNoSeriousA11yIssues(page);
   });
 
-  test('solo se da por completada si están hechas todas las series', async ({ page }) => {
-    await page.goto('/cliente');
-    // Bloque 1: el reproductor (que aún no guarda) está en /cliente/sesion/<id>/entrenar.
-    await page.getByRole('link', { name: /Empezar entrenamiento/ }).click();
-    await expect(page).toHaveURL(/\/entrenar$/);
-    await expect(page.getByText('Pendiente').first()).toBeVisible();
-    const completeAll = page.getByRole('button', { name: 'Marcar todas como hechas' });
-    while ((await completeAll.count()) > 0) await completeAll.first().click();
-    await expect(page.getByText('16 de 16 series')).toBeVisible();
-    await page.getByRole('button', { name: 'Terminar sesión' }).click(); // sin confirmación: no falta nada
-    await expect(page.getByRole('heading', { name: '¡Sesión completada!' })).toBeVisible();
-    await expect(
-      page.getByText('Has completado 16 de 16 series y 5 de 5 ejercicios.'),
-    ).toBeVisible();
-  });
+  spaceTest(
+    'solo se da por completada si están hechas todas las series',
+    async ({ page, space }) => {
+      spaceTest.setTimeout(90_000);
+      expect(space).toBeTruthy();
+      await enterAs(page, 'Marta, clienta');
+      await page.getByRole('link', { name: /Empezar entrenamiento/ }).click();
+      await startTraining(page);
+      for (let set = 1; set <= 16; set += 1) await logVisibleSet(page);
+      const finish = page.getByRole('dialog', { name: 'Terminar la sesión' });
+      await finish.getByRole('button', { name: 'Terminar sesión' }).click();
+      await expect(page.getByRole('heading', { name: '¡Sesión completada!' })).toBeVisible();
+      await expect(page.getByText('16 de 16 series hechas')).toBeVisible();
+    },
+  );
 
   test('el cliente no puede abrir la sesión de otro cliente', async ({ page }) => {
     const today = todayInMadrid();

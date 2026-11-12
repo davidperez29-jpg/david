@@ -3,9 +3,17 @@ import { request as httpRequest } from 'node:http';
 import { createRequire } from 'node:module';
 import { connect } from 'node:net';
 import { networkInterfaces } from 'node:os';
-import { type Browser } from '@playwright/test';
+import { type Browser, devices } from '@playwright/test';
+import Database from 'better-sqlite3';
 import { todayInMadrid } from './helpers';
-import { createSessionForLucia, enterAs, expect, test } from './fixtures';
+import {
+  createSessionForLucia,
+  enterAs,
+  expect,
+  logVisibleSet,
+  startTraining,
+  test,
+} from './fixtures';
 import { E2E_SERVER_ENV } from './server-env';
 
 /**
@@ -158,6 +166,91 @@ test('B1-01 · los datos sobreviven a reiniciar el servidor con SIGTERM y con SI
   expect(status).toContain('Integridad: ok');
   expect(status).toContain(`Semilla: ${today}`);
   expect(status).toContain('Sin servidor usándola.');
+});
+
+test('B2 · reiniciar el servidor a media sesión: lo confirmado sigue y lo pendiente se envía sin duplicar', async ({
+  browser,
+}) => {
+  test.setTimeout(180_000);
+  const port = 3193;
+  const dataDir = `.data/e2e/reinicio-ejecucion-${Date.now()}`;
+  await assertPortFree(port);
+  let server = startServer(port, { TRAINPRO_DATA_DIR: dataDir });
+  await server.ready();
+
+  // Marta en su móvil: el mismo navegador (y su cola local) durante todos los reinicios.
+  const context = await browser.newContext({
+    ...devices['Pixel 7'],
+    baseURL: `http://127.0.0.1:${port}`,
+  });
+  const page = await context.newPage();
+  await enterAs(page, 'Marta, clienta');
+  await page.getByRole('link', { name: /Empezar entrenamiento/ }).click();
+  await startTraining(page);
+  await logVisibleSet(page);
+  await logVisibleSet(page);
+  await expect(page.getByText('Todo guardado en el servidor')).toBeVisible();
+  await expect(page.getByText('2 de 16 series')).toBeVisible();
+
+  // 1) Corte brusco con dos series confirmadas.
+  await stop(server.child, 'SIGKILL');
+  await assertPortFree(port);
+
+  // 2) Con el servidor caído, la tercera serie queda en el móvil, sin confirmar.
+  await logVisibleSet(page, { waitForServer: false });
+  await expect(page.getByText(/1 pendiente de envío/)).toBeVisible({ timeout: 10_000 });
+  await expect(page.getByText('Todo guardado en el servidor')).toHaveCount(0);
+
+  // 3) Nuevo arranque con la misma base: «Reintentar» envía lo pendiente.
+  server = startServer(port, { TRAINPRO_DATA_DIR: dataDir });
+  await server.ready();
+  await page.getByRole('button', { name: 'Reintentar' }).click();
+  await expect(page.getByText('Todo guardado en el servidor')).toBeVisible({ timeout: 15_000 });
+
+  // 4) Lo que dice el servidor (leído de SQLite tras el reinicio): tres series, una por serie.
+  const sessionId = new URL(page.url()).pathname.split('/')[3]!;
+  const response = await page.request.get(`/api/cliente/sesiones/${sessionId}/estado`);
+  expect(response.status()).toBe(200);
+  const state = (await response.json()) as {
+    state: { sets: { prescriptionId: string; setNumber: number }[] };
+  };
+  const keys = state.state.sets.map((s) => `${s.prescriptionId}#${s.setNumber}`);
+  expect(keys).toHaveLength(3);
+  expect(new Set(keys).size).toBe(3);
+  await page.reload();
+  await expect(page.getByText('3 de 16 series')).toBeVisible();
+  await context.close();
+  await stop(server.child, 'SIGTERM');
+
+  // 5) En la base, sin servidor: tres filas de serie y un comando por operación, sin repetidos.
+  const db = new Database(`${dataDir}/trainpro.sqlite`, { readonly: true });
+  try {
+    const rows = db
+      .prepare(
+        `SELECT s.prescription_id, s.set_number, s.supersedes FROM set_log s
+         WHERE s.session_id = ?`,
+      )
+      .all(sessionId) as {
+      prescription_id: string;
+      set_number: number;
+      supersedes: string | null;
+    }[];
+    expect(rows).toHaveLength(3);
+    expect(rows.every((r) => r.supersedes === null)).toBe(true);
+    const commands = db
+      .prepare(
+        `SELECT type, COUNT(*) AS n FROM client_command
+         WHERE session_id = ? GROUP BY type ORDER BY type`,
+      )
+      .all(sessionId);
+    expect(commands).toEqual([
+      { type: 'log_set', n: 3 },
+      { type: 'start', n: 1 },
+    ]);
+  } finally {
+    db.close();
+  }
+  expect(dbStatus(dataDir)).toContain('Integridad: ok');
 });
 
 test('B1-11 · solo 127.0.0.1, Host ajeno → 403 y sin local-demo no hay «Entrar como…»', async ({
