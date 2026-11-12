@@ -278,6 +278,20 @@ export async function getPlayer(ctx: ClientContext, sessionId: string): Promise<
   ]);
   if (!version) return null;
   const trainer = await ctx.repos.trainers.getById(client.trainerId);
+  // ¿Hay otra sesión suya empezada y sin terminar? (la más reciente)
+  let otherActive: PlayerVM['otherActive'] = null;
+  let latest = '';
+  for (const other of await ctx.repos.training.listSessions(client.id)) {
+    if (other.id === sessionId || !canLogExecution(ctx.actor, other, client)) continue;
+    const execution = await ctx.repos.training.getExecution(other.id);
+    if (!execution || execution.log.finishedAt || execution.log.lastActivityAt <= latest) continue;
+    const otherVersion = await ctx.repos.training.getVersion(other.id, other.currentVersion!);
+    latest = execution.log.lastActivityAt;
+    otherActive = {
+      id: other.id,
+      name: [otherVersion?.content.label, otherVersion?.content.title].filter(Boolean).join(' · '),
+    };
+  }
   const content = version.content;
   const variants = await loadSessionVariants(
     ctx,
@@ -296,6 +310,12 @@ export async function getPlayer(ctx: ClientContext, sessionId: string): Promise<
     estimatedMinutes: content.estimatedMinutes ?? null,
     coachNote: content.coachNote ?? null,
     version: version.number,
+    // Sin notas privadas: nunca salen hacia el cliente.
+    otherActive,
+    content: {
+      ...content,
+      items: content.items.map(({ privateNote: _privateNote, ...rest }) => rest),
+    },
     state,
     items: ordered.map((item) => {
       const variant = variants.byId.get(item.variantId);

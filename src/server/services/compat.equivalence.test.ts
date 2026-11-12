@@ -5,7 +5,7 @@ import { seededTestDatabase } from '../db/test-support';
 import { createDemoRepositories } from '../repositories/demo';
 import { buildDemoDataset, DEMO_TRAINER_ID } from '../repositories/demo/dataset';
 import { type Repositories } from '../repositories/ports';
-import { getClientProgress, getClientSession, getClientWeek } from './client';
+import { getClientProgress, getClientWeek } from './client';
 import {
   getClientEvaluations,
   getClientGoals,
@@ -112,17 +112,13 @@ for (const today of ['2026-11-04', '2026-11-09', '2026-11-15']) {
       }
     });
 
-    it('la app de cada cliente: Semana, Progreso y cada sesión (reproductor)', async () => {
+    it('la app de cada cliente: Semana y Progreso', async () => {
       for (const { id } of data.clients) {
         for (const view of [getClientWeek, getClientProgress] as ((
           ctx: ClientContext,
         ) => Promise<unknown>)[]) {
           const result = await both((repos) => view(client(repos, id)));
           expect(result.sqlite, `${view.name} · ${id}`).toEqual(result.memory);
-        }
-        for (const session of data.sessions.filter((s) => s.clientId === id)) {
-          const result = await both((repos) => getClientSession(client(repos, id), session.id));
-          expect(result.sqlite, `getClientSession · ${session.id}`).toEqual(result.memory);
         }
       }
     });

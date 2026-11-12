@@ -10,7 +10,8 @@ import { prescriptionIssues } from '@/domain/training/prescription';
 import { type ClientContext, type TrainerContext } from '../context';
 import { seededTestDatabase } from '../db/test-support';
 import { buildDemoDataset, DEMO_CLIENT_ID, DEMO_TRAINER_ID } from '../repositories/demo/dataset';
-import { getClientProgress, getClientSession, getClientWeek } from './client';
+import { getClientProgress, getClientWeek } from './client';
+import { getPlayer } from './client-execution';
 import { getClientSessionDetail, getClientToday } from './client-sessions';
 import {
   getClientGoals,
@@ -115,19 +116,18 @@ describe('experiencia del cliente', () => {
     const detail = await getClientSessionDetail(clientCtx(), home.hero!.id);
     expect(detail?.items.map((i) => i.slot)).toEqual(['A1', 'A2', 'B1', 'B2', 'C1']);
     expect(detail?.items[0]).toMatchObject({ setsAndReps: '4 × 6–8', tempoLabel: '3-1-X-0' });
-    const session = await getClientSession(clientCtx(), home.hero!.id);
-    expect(session?.exercises[0]).toMatchObject({
-      name: 'Sentadilla trasera con barra',
-      setsAndReps: '4 × 6–8',
-    });
-    expect(session?.exercises[0]?.tempo?.code).toBe('3-1-X-0');
-    expect(session?.exercises.map((e) => e.slot)).toEqual(['A1', 'A2', 'B1', 'B2', 'C1']);
+    // El reproductor (bloque 2) recibe lo mismo, serie a serie.
+    const player = await getPlayer(clientCtx(), home.hero!.id);
+    expect(player?.items[0]).toMatchObject({ name: 'Sentadilla trasera con barra', slot: 'A1' });
+    expect(player?.items[0]?.sets[0]).toMatchObject({ repsLabel: '6–8', tempoLabel: '3-1-X-0' });
+    expect(player?.items.map((i) => i.slot)).toEqual(['A1', 'A2', 'B1', 'B2', 'C1']);
   });
 
   it('no puede abrir la sesión de otro cliente (se trata como inexistente)', async () => {
     const foreign = data.sessions.find((s) => s.clientId !== DEMO_CLIENT_ID)!;
-    expect(await getClientSession(clientCtx(), foreign.id)).toBeNull();
-    expect(await getClientSession(clientCtx(), 'no-existe')).toBeNull();
+    expect(await getClientSessionDetail(clientCtx(), foreign.id)).toBeNull();
+    expect(await getPlayer(clientCtx(), foreign.id)).toBeNull();
+    expect(await getPlayer(clientCtx(), 'no-existe')).toBeNull();
   });
 
   it('la semana tiene siete días y contiene la sesión de hoy', async () => {
@@ -356,10 +356,7 @@ describe('biblioteca de ejercicios', () => {
   });
 
   it('los clientes no acceden a la biblioteca, solo a sus sesiones', async () => {
-    const session = await getClientSession(
-      clientCtx(),
-      (await getClientToday(clientCtx())).hero!.id,
-    );
-    expect(session?.exercises[0]?.silhouette).toBe('squat');
+    const player = await getPlayer(clientCtx(), (await getClientToday(clientCtx())).hero!.id);
+    expect(player?.items[0]?.silhouette).toBe('squat');
   });
 });

@@ -8,7 +8,7 @@ import { type IsoDate, type IsoDateTime } from '@/domain/time';
 import { type ExecutionStatusV2 } from '@/domain/training/execution';
 import { type PerformedLoad } from '@/domain/training/load';
 import { type PerformedSetInput } from '@/domain/training/performance';
-import { type SetTarget } from '@/domain/training/session-v2';
+import { type SessionContent, type SetTarget } from '@/domain/training/session-v2';
 
 /** Reloj del dispositivo en el momento del comando (V1_SPEC §5.5, P-86). */
 export interface DeviceClock {
@@ -167,7 +167,11 @@ export interface PlayerVM {
   coachNote: string | null;
   /** Número de la versión que muestra el reproductor. */
   version: number;
+  /** El contenido de esa versión sin notas privadas (para el resumen calculado en el móvil). */
+  content: SessionContent;
   items: PlayerItemVM[];
+  /** Otra sesión empezada y sin terminar (al empezar esta se pide confirmación, P-21). */
+  otherActive: { id: string; name: string } | null;
   state: ExecutionStateVM;
 }
 

@@ -1,19 +1,11 @@
 import 'server-only';
 import { type ClientProgressVM, type ClientWeekVM } from '@/contracts/client';
-import { type SessionDetailVM } from '@/contracts/shared';
 import { canAccessClient, canReadResource, visibleAssessmentTestIds } from '@/domain/access';
 import { addDays, startOfIsoWeek } from '@/domain/time';
 import { sortSessions } from '@/domain/training/session';
 import { weeklyVolume } from '@/domain/training/volume';
 import { type ClientContext } from '../context';
-import { loadSessionVariants } from './library';
-import {
-  loggedSets,
-  logsBySession,
-  toAssessmentSeries,
-  toSessionCard,
-  toSessionDetail,
-} from './mappers';
+import { loggedSets, logsBySession, toAssessmentSeries, toSessionCard } from './mappers';
 
 async function loadSelf(ctx: ClientContext) {
   const client = await ctx.repos.clients.getById(ctx.actor.clientId);
@@ -21,32 +13,6 @@ async function loadSelf(ctx: ClientContext) {
     throw new Error('La sesión no corresponde a ningún cliente accesible.');
   }
   return client;
-}
-
-/** Detalle de una sesión. Devuelve `null` si no existe o no pertenece al cliente. */
-export async function getClientSession(
-  ctx: ClientContext,
-  sessionId: string,
-): Promise<SessionDetailVM | null> {
-  const session = await ctx.repos.sessions.getById(sessionId);
-  if (!session || session.clientId !== ctx.actor.clientId) return null;
-  const client = await loadSelf(ctx);
-  if (!canReadResource(ctx.actor, client, 'plan', null)) return null;
-
-  const [logs, variants] = await Promise.all([
-    ctx.repos.logs.listByClient(client.id, { from: session.date, to: session.date }),
-    loadSessionVariants(
-      ctx,
-      session.exercises.map((rx) => rx.variantId),
-    ),
-  ]);
-  return toSessionDetail(
-    session,
-    logsBySession(logs).get(session.id),
-    variants.byId,
-    variants.stepsOf,
-    ctx.today,
-  );
 }
 
 export async function getClientWeek(ctx: ClientContext): Promise<ClientWeekVM> {
