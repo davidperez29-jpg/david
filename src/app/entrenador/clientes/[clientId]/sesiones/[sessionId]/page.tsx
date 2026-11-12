@@ -97,7 +97,9 @@ export default async function PublishedSessionPage(
               <dt className="text-ink-500">Series</dt>
               <dd className="font-semibold text-ink-900">
                 {vm.review.completedSets} de {vm.review.plannedSets} hechas
-                {vm.review.notDoneSets > 0 ? ` · ${vm.review.notDoneSets} no realizadas` : ''}
+                {vm.review.notDoneSets > 0
+                  ? ` · ${vm.review.notDoneSets} no ${vm.review.notDoneSets === 1 ? 'realizada' : 'realizadas'}`
+                  : ''}
                 {vm.review.pendingSets > 0 ? ` · ${vm.review.pendingSets} sin registrar` : ''}
               </dd>
             </div>
@@ -127,6 +129,12 @@ export default async function PublishedSessionPage(
               </div>
             ) : null}
           </dl>
+          {vm.review.finishReason === null ? (
+            <p className="mt-2 text-xs text-ink-500">
+              Solo se muestra lo confirmado por el servidor. Lo que {vm.clientFirstName} registre
+              sin conexión aparecerá aquí cuando su móvil lo envíe.
+            </p>
+          ) : null}
           {vm.review.comment ? (
             <p className="mt-3 flex gap-3 rounded-3xl bg-white p-4 text-sm text-ink-700 shadow-soft">
               <MessageCircle aria-hidden className="mt-0.5 size-5 shrink-0 text-sun-700" />
