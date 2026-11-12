@@ -32,6 +32,8 @@ export interface QueuedCommand {
 export interface LocalStore {
   kind: 'indexeddb' | 'memory';
   list(sessionId: string): Promise<QueuedCommand[]>;
+  /** Todos los comandos pendientes, de cualquier sesión. */
+  listAll(): Promise<QueuedCommand[]>;
   put(entry: QueuedCommand): Promise<void>;
   remove(commandId: string): Promise<void>;
   getUi<T>(key: string): Promise<T | undefined>;
@@ -83,6 +85,12 @@ function indexedDbStore(db: IDBDatabase): LocalStore {
       const all = await request(tx.objectStore('commands').index('bySession').getAll(sessionId));
       return (all as QueuedCommand[]).sort(byOrder);
     },
+    async listAll() {
+      const tx = db.transaction('commands', 'readonly');
+      return ((await request(tx.objectStore('commands').getAll())) as QueuedCommand[]).sort(
+        byOrder,
+      );
+    },
     async put(entry) {
       const tx = db.transaction('commands', 'readwrite');
       tx.objectStore('commands').put(entry);
@@ -118,6 +126,7 @@ function memoryStore(): LocalStore {
     kind: 'memory',
     list: async (sessionId) =>
       [...commands.values()].filter((c) => c.sessionId === sessionId).sort(byOrder),
+    listAll: async () => [...commands.values()].sort(byOrder),
     put: async (entry) => void commands.set(entry.commandId, structuredClone(entry)),
     remove: async (commandId) => void commands.delete(commandId),
     getUi: async <T>(key: string) => ui.get(key) as T | undefined,

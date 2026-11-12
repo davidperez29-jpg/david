@@ -185,9 +185,13 @@ export function TrainingPlayer({ vm }: { vm: PlayerVM }) {
       device: deviceNow(),
     });
 
-  const pauseAndLeave = () => {
+  const [leaving, setLeaving] = useState(false);
+  const pauseAndLeave = async () => {
+    setLeaving(true);
+    timer.skip();
     if (flags.started && !flags.finished && !flags.paused) {
-      send({ commandId: newCommandId(), type: 'pause', device: deviceNow() });
+      // Se intenta enviar antes de salir; si no hay conexión, queda en el móvil.
+      await sync.sendNow({ commandId: newCommandId(), type: 'pause', device: deviceNow() });
     }
     router.push('/cliente');
   };
@@ -390,8 +394,10 @@ export function TrainingPlayer({ vm }: { vm: PlayerVM }) {
         <div className="flex items-center justify-between gap-2">
           <button
             type="button"
-            onClick={pauseAndLeave}
-            className="inline-flex min-h-12 items-center gap-1.5 rounded-2xl pr-2 text-sm font-semibold text-ink-700 hover:text-ink-900"
+            onClick={() => void pauseAndLeave()}
+            disabled={leaving}
+            aria-label="Pausar la sesión y volver a Hoy"
+            className="inline-flex min-h-12 items-center gap-1.5 rounded-2xl pr-2 text-sm font-semibold text-ink-700 hover:text-ink-900 disabled:opacity-50"
           >
             <X aria-hidden className="size-5" /> Pausar
           </button>

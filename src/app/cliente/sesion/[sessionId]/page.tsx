@@ -3,6 +3,7 @@ import { type Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { formatDate, formatRelativeDay } from '@/domain/format';
+import { PendingSync } from '@/features/client/pending-sync';
 import { ExecutionReview, durationText } from '@/features/shared/execution-review';
 import { PrescriptionList } from '@/features/shared/prescription-list';
 import { ExecutionStatusBadge } from '@/features/shared/status-badge';
@@ -39,6 +40,7 @@ export default async function ClientSessionPage(props: PageProps<'/cliente/sesio
       >
         <ArrowLeft aria-hidden className="size-4" /> Hoy
       </Link>
+      <PendingSync />
       <header className="mt-2">
         <p className="text-sm font-semibold text-sun-700 first-letter:uppercase">
           {formatRelativeDay(session.plannedDate, session.today)}
