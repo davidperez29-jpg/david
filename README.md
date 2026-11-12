@@ -8,14 +8,14 @@ Ciclo de trabajo: **crear cliente → evaluar → interpretar → planificar →
 
 ## Requisitos
 
-- **Node.js 26.13.0** (Node 26 LTS). La versión exacta está en `.nvmrc`, que leen `nvm`, `fnm` y Volta. `package.json` exige `>=26.13.0 <27` y `.npmrc` (`engine-strict=true`) impide instalar con otra versión. Política de actualización: `docs/V1_SPEC.md` §8.7.
+- **Node.js 26.13.1** (Node 26 LTS). La versión exacta está en `.nvmrc`, que leen `nvm`, `fnm` y Volta. `package.json` exige `>=26.13.1 <27` y `.npmrc` (`engine-strict=true`) impide instalar con otra versión. Política de actualización: `docs/V1_SPEC.md` §8.7.
 - **pnpm 10.28** mediante Corepack. Desde Node 25, Corepack ya no viene incluido: se instala una vez con `npm install -g corepack@0.36.0` y se activa con `corepack enable`. El proyecto fija la versión de pnpm en `package.json`.
 - Solo para las pruebas E2E: el navegador Chromium de Playwright (`pnpm exec playwright install chromium`).
 
 ## Puesta en marcha
 
 ```bash
-nvm use                             # o fnm use: Node 26.13.0 según .nvmrc
+nvm use                             # o fnm use: Node 26.13.1 según .nvmrc
 npm install -g corepack@0.36.0      # una vez por equipo (Node 26 no incluye Corepack)
 corepack enable                     # una vez por equipo
 pnpm install                        # instala las dependencias exactas del lockfile
