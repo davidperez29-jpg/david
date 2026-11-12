@@ -100,7 +100,7 @@ export function TrainerMobileNav() {
           id="menu-entrenador"
           aria-label="Secciones"
           key={pathname}
-          className="absolute inset-x-0 top-full z-40 border-b border-line bg-cream-50 px-4 pt-2 pb-5 shadow-lift"
+          className="absolute inset-x-0 top-full z-40 max-h-[calc(100dvh-4.5rem)] overflow-y-auto overscroll-contain border-b border-line bg-cream-50 px-4 pt-2 pb-[calc(1.25rem+env(safe-area-inset-bottom))] shadow-lift"
         >
           <TrainerNavList onNavigate={() => setOpen(false)} />
         </nav>

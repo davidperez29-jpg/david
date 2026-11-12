@@ -189,7 +189,7 @@ export function SessionBuilder({
   }).format(new Date(savedAt));
 
   return (
-    <div className="pb-28 lg:pb-0">
+    <div className="pb-[calc(8rem+env(safe-area-inset-bottom))] lg:pb-0">
       {problem === 'conflict' ? (
         <Notice
           tone="sun"
@@ -371,7 +371,7 @@ export function SessionBuilder({
       </div>
 
       {/* Barra de acciones: fija abajo en el móvil, al pie en el escritorio. */}
-      <div className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-cream-50/95 px-4 py-3 backdrop-blur lg:static lg:mt-6 lg:rounded-3xl lg:border lg:bg-white">
+      <div className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-cream-50/95 px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur lg:static lg:mt-6 lg:rounded-3xl lg:border lg:bg-white lg:pb-3">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3">
           <p role="status" className="text-sm font-semibold text-ink-500">
             {pending

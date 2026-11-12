@@ -15,7 +15,7 @@ export default function ClientTabsLayout({ children }: { children: ReactNode }) 
           <span className="sr-only"> (ir al inicio)</span>
         </Link>
       </header>
-      <main id="contenido" className="px-4 pt-5 pb-28">
+      <main id="contenido" className="px-4 pt-5 pb-[calc(7.5rem+env(safe-area-inset-bottom))]">
         {children}
       </main>
       <ClientBottomNav />
