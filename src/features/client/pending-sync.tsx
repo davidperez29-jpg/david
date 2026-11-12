@@ -3,14 +3,15 @@
 import { CloudUpload, RefreshCw, TriangleAlert } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { openLocalStore } from './player/local-store';
-import { flushSession } from './player/sync-engine';
+import { flushSession, resetBackoff } from './player/sync-engine';
 
 /**
  * Fuera del reproductor (Hoy, Semana, Progreso y el detalle): envía lo que haya quedado
  * pendiente en el móvil (al abrir, al recuperar la conexión, al volver a la pestaña y con
- * «Reintentar») y, cuando el servidor lo confirma, actualiza la pantalla. Si no hay nada
+ * «Reintentar», sin esperar; tras un fallo, con la misma espera creciente que el reproductor) y,
+ * cuando el servidor lo confirma, actualiza la pantalla. Si no hay nada
  * pendiente, no muestra nada.
  */
 export function PendingSync() {
@@ -21,19 +22,24 @@ export function PendingSync() {
     sessionId: string;
   } | null>(null);
 
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  /** El último `run`, para reprogramarlo desde un temporizador sin referenciarse a sí mismo. */
+  const runRef = useRef<(wake?: boolean) => Promise<void>>(async () => undefined);
+
+  /** `wake`: abrir, recuperar la conexión, volver a la pestaña o «Reintentar» (sin esperar). */
   const run = useCallback(
-    async (retry = false) => {
+    async (wake = false) => {
+      if (timer.current) clearTimeout(timer.current);
       const store = await openLocalStore();
       const all = await store.listAll();
       let confirmed = false;
+      let waitMs: number | null = null;
       for (const sessionId of [...new Set(all.map((e) => e.sessionId))]) {
-        if (retry) {
-          for (const entry of await store.list(sessionId)) {
-            if (entry.status === 'queued') await store.put({ ...entry, nextAttemptAt: 0 });
-          }
-        }
-        await flushSession(store, sessionId, { onState: () => (confirmed = true) });
+        if (wake) await resetBackoff(store, sessionId);
+        const result = await flushSession(store, sessionId, { onState: () => (confirmed = true) });
+        if (result.waitMs !== null) waitMs = Math.min(waitMs ?? result.waitMs, result.waitMs);
       }
+      if (waitMs !== null) timer.current = setTimeout(() => void runRef.current(), waitMs);
       const after = await store.listAll();
       setPending(
         after.length > 0
@@ -48,13 +54,16 @@ export function PendingSync() {
     },
     [router],
   );
+  useEffect(() => {
+    runRef.current = run;
+  }, [run]);
 
   useEffect(() => {
     // Sincroniza con un sistema externo (el servidor): el estado cambia cuando llega su respuesta.
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    void run();
-    const onOnline = () => void run();
-    const onVisible = () => document.visibilityState === 'visible' && void run();
+    void run(true);
+    const onOnline = () => void run(true);
+    const onVisible = () => document.visibilityState === 'visible' && void run(true);
     window.addEventListener('online', onOnline);
     document.addEventListener('visibilitychange', onVisible);
     const interval = setInterval(() => void run(), 30_000);
@@ -62,6 +71,7 @@ export function PendingSync() {
       window.removeEventListener('online', onOnline);
       document.removeEventListener('visibilitychange', onVisible);
       clearInterval(interval);
+      if (timer.current) clearTimeout(timer.current);
     };
   }, [run]);
 

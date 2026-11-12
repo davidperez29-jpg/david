@@ -27,6 +27,19 @@ export const stateUrl = (sessionId: string) =>
   `/api/cliente/sesiones/${encodeURIComponent(sessionId)}/estado`;
 
 /**
+ * Un suceso que indica que puede haber conexión (abrir la app, recuperar la red, volver a la
+ * pestaña o «Reintentar») anula la espera entre reintentos: lo pendiente se intenta ya. La espera
+ * creciente solo separa los fallos seguidos mientras nada cambia.
+ */
+export async function resetBackoff(store: LocalStore, sessionId: string): Promise<void> {
+  for (const entry of await store.list(sessionId)) {
+    if (entry.status === 'queued' && entry.nextAttemptAt > 0) {
+      await store.put({ ...entry, nextAttemptAt: 0 });
+    }
+  }
+}
+
+/**
  * Envía en orden los comandos pendientes de una sesión. Devuelve cuánto esperar antes del
  * siguiente intento (si un fallo de red obliga a esperar), o `null` si no queda nada que enviar
  * ahora (o si otra parte de la app ya está enviando esa cola).

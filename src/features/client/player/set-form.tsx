@@ -14,6 +14,7 @@ import {
 } from '@/domain/training/performance';
 import { cn } from '@/ui/cn';
 import { type LocalRecord } from './player-model';
+import { useArmed } from './use-armed';
 
 const parse = (value: string): number | null => {
   const n = Number(value.replace(',', '.'));
@@ -148,7 +149,9 @@ export function SetForm({
   const setLoad = (patch: Partial<PerformedLoad>) =>
     update({ load: { ...(load ?? { kind: fields.loadKind }), ...patch } as PerformedLoad });
 
+  const armed = useArmed();
   const submit = () => {
+    if (!armed) return;
     const found = performedSetIssues(set.target, input);
     setIssues(found);
     if (found.length === 0) onDone(input);
@@ -372,6 +375,7 @@ export function SetForm({
       <button
         type="button"
         disabled={disabled}
+        aria-disabled={armed ? undefined : true}
         onClick={submit}
         className="mt-4 flex h-14 w-full items-center justify-center gap-2 rounded-3xl bg-ink-900 text-lg font-bold text-cream-50 hover:bg-ink-700 disabled:opacity-50"
       >
@@ -381,7 +385,10 @@ export function SetForm({
         <button
           type="button"
           disabled={disabled}
-          onClick={() => onSkip(input.note?.trim() ? input.note.trim() : null)}
+          aria-disabled={armed ? undefined : true}
+          onClick={() => {
+            if (armed) onSkip(input.note?.trim() ? input.note.trim() : null);
+          }}
           className="mt-2 flex h-12 w-full items-center justify-center rounded-2xl text-sm font-semibold text-ink-500 hover:bg-cream-100 hover:text-ink-900 disabled:opacity-50"
         >
           No la he hecho

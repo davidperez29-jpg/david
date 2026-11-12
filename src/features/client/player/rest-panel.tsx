@@ -2,6 +2,7 @@
 
 import { Pause, Play, RotateCcw, SkipForward } from 'lucide-react';
 import { formatClock } from '@/domain/format';
+import { useArmed } from './use-armed';
 import { type RestTimer } from './use-rest-timer';
 
 /**
@@ -10,6 +11,12 @@ import { type RestTimer } from './use-rest-timer';
  * sola vez (la región `aria-live` solo cambia entonces).
  */
 export function RestPanel({ timer }: { timer: RestTimer }) {
+  // Recién aparecido, no acepta toques: el segundo de un doble toque en «Serie hecha» caería aquí.
+  const armed = useArmed();
+  const guard = (action: () => void) => () => {
+    if (armed) action();
+  };
+  const lock = armed ? undefined : true;
   const rest = timer.rest;
   if (!rest) return null;
   const paused = rest.endsAt === null;
@@ -57,14 +64,16 @@ export function RestPanel({ timer }: { timer: RestTimer }) {
       <div className="mt-4 grid grid-cols-3 gap-2">
         <button
           type="button"
-          onClick={() => timer.adjust(-15)}
+          aria-disabled={lock}
+          onClick={guard(() => timer.adjust(-15))}
           className="h-12 rounded-2xl bg-white/10 font-semibold hover:bg-white/20"
         >
           −15 s
         </button>
         <button
           type="button"
-          onClick={paused ? timer.resume : timer.pause}
+          aria-disabled={lock}
+          onClick={guard(paused ? timer.resume : timer.pause)}
           disabled={timer.finished}
           className="flex h-12 items-center justify-center gap-1.5 rounded-2xl bg-white/10 font-semibold hover:bg-white/20 disabled:opacity-40"
         >
@@ -77,21 +86,24 @@ export function RestPanel({ timer }: { timer: RestTimer }) {
         </button>
         <button
           type="button"
-          onClick={() => timer.adjust(15)}
+          aria-disabled={lock}
+          onClick={guard(() => timer.adjust(15))}
           className="h-12 rounded-2xl bg-white/10 font-semibold hover:bg-white/20"
         >
           +15 s
         </button>
         <button
           type="button"
-          onClick={timer.restart}
+          aria-disabled={lock}
+          onClick={guard(timer.restart)}
           className="col-span-1 flex h-12 items-center justify-center gap-1.5 rounded-2xl bg-white/10 text-sm font-semibold hover:bg-white/20"
         >
           <RotateCcw aria-hidden className="size-4" /> Reiniciar
         </button>
         <button
           type="button"
-          onClick={timer.skip}
+          aria-disabled={lock}
+          onClick={guard(timer.skip)}
           className="col-span-2 flex h-12 items-center justify-center gap-1.5 rounded-2xl bg-sun-400 font-bold text-ink-900 hover:bg-sun-300"
         >
           <SkipForward aria-hidden className="size-4" />{' '}

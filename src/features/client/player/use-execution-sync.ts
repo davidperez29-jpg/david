@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { type ClientCommand, type ExecutionStateVM } from '@/contracts/execution';
 import { type LocalStore, openLocalStore, type QueuedCommand } from './local-store';
-import { flushSession, stateUrl } from './sync-engine';
+import { flushSession, resetBackoff, stateUrl } from './sync-engine';
 
 /**
  * Sincronización de la ejecución en el reproductor (V1_SPEC §5.7, docs/EXECUTION.md):
@@ -11,8 +11,8 @@ import { flushSession, stateUrl } from './sync-engine';
  * 2. Se envían en orden, de uno en uno, con su identificador estable (los reintentos no duplican).
  * 3. Solo se borra del dispositivo cuando el servidor lo confirma (200); el estado que devuelve
  *    el servidor manda sobre lo local.
- * 4. Un fallo de red o del servidor (5xx) se reintenta solo: a los 2, 4, 8, 16 y 30 s, al
- *    recuperar la conexión, al volver a la pestaña y con «Reintentar».
+ * 4. Un fallo de red o del servidor (5xx) se reintenta solo a los 2, 4, 8, 16 y 30 s; abrir el
+ *    reproductor, recuperar la conexión, volver a la pestaña y «Reintentar» lo intentan ya.
  * 5. Un rechazo (4xx) no se descarta en silencio: queda visible con su motivo.
  */
 export type SyncSummary = 'idle' | 'pending' | 'sending' | 'error';
@@ -99,22 +99,30 @@ export function useExecutionSync(sessionId: string, initial: ExecutionStateVM): 
     };
   }, [reload, sessionId]);
 
+  /** Puede haber conexión: se intenta ya lo pendiente (sin esperar) y se pide el estado. */
+  const wake = useCallback(async () => {
+    if (!store) return;
+    await resetBackoff(store, sessionId);
+    await reload(store);
+    await refresh();
+    await flush();
+  }, [flush, refresh, reload, sessionId, store]);
+
   // En cuanto hay almacén: enviar lo pendiente y pedir el estado confirmado.
   useEffect(() => {
-    if (!store) return;
     // Sincroniza con un sistema externo (el servidor): el estado cambia cuando llega su respuesta.
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    void refresh().then(() => flush());
-  }, [flush, refresh, store]);
+    void wake();
+  }, [wake]);
 
   useEffect(() => {
     const onOnline = () => {
       setOnline(true);
-      void refresh().then(() => flush());
+      void wake();
     };
     const onOffline = () => setOnline(false);
     const onVisible = () => {
-      if (document.visibilityState === 'visible') void refresh().then(() => flush());
+      if (document.visibilityState === 'visible') void wake();
     };
     window.addEventListener('online', onOnline);
     window.addEventListener('offline', onOffline);
@@ -125,7 +133,7 @@ export function useExecutionSync(sessionId: string, initial: ExecutionStateVM): 
       document.removeEventListener('visibilitychange', onVisible);
       if (timer.current) clearTimeout(timer.current);
     };
-  }, [flush, refresh]);
+  }, [wake]);
 
   // Aviso al salir de la página con registros sin confirmar.
   const unsent = queue.some((e) => e.status !== 'error');
@@ -170,17 +178,7 @@ export function useExecutionSync(sessionId: string, initial: ExecutionStateVM): 
     [enqueue, flush, sessionId, store],
   );
 
-  const retryNow = useCallback(() => {
-    if (!store) return;
-    void (async () => {
-      for (const entry of await store.list(sessionId)) {
-        if (entry.status === 'queued') await store.put({ ...entry, nextAttemptAt: 0 });
-      }
-      await reload(store);
-      await refresh();
-      await flush();
-    })();
-  }, [flush, refresh, reload, sessionId, store]);
+  const retryNow = useCallback(() => void wake(), [wake]);
 
   const discard = useCallback(
     async (commandId: string) => {

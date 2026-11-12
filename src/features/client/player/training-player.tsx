@@ -269,7 +269,9 @@ export function TrainingPlayer({ vm }: { vm: PlayerVM }) {
           </h1>
           <p className="mt-2 font-semibold text-ink-900">
             {review.completedSets} de {review.plannedSets} series hechas
-            {review.notDoneSets > 0 ? ` · ${review.notDoneSets} no realizadas` : ''}
+            {review.notDoneSets > 0
+              ? ` · ${review.notDoneSets} no ${review.notDoneSets === 1 ? 'realizada' : 'realizadas'}`
+              : ''}
             {review.pendingSets > 0 ? ` · ${review.pendingSets} sin registrar` : ''}
           </p>
           {sync.serverState.finishedAt && sync.serverState.startedAt ? (
@@ -1006,7 +1008,7 @@ function SyncBar({
           <button
             type="button"
             onClick={onRetry}
-            className="ml-auto inline-flex min-h-9 items-center gap-1 rounded-xl px-2 font-bold underline"
+            className="ml-auto inline-flex min-h-11 items-center gap-1 rounded-xl px-2 font-bold underline"
           >
             <RefreshCw aria-hidden className="size-3.5" /> Reintentar
           </button>
