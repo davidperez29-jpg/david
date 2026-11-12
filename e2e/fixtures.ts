@@ -143,10 +143,14 @@ export async function startTraining(page: Page) {
  * respuesta del servidor (salvo que se pida lo contrario, por ejemplo sin conexión) y salta el
  * descanso si aparece.
  */
-export async function logVisibleSet(page: Page, options: { waitForServer?: boolean } = {}) {
+export async function logVisibleSet(
+  page: Page,
+  options: { waitForServer?: boolean; skipRest?: boolean } = {},
+) {
   const confirmed = options.waitForServer === false ? null : commandResponse(page, 'log_set');
   await page.getByRole('button', { name: 'Serie hecha' }).click();
   if (confirmed) expect((await confirmed).status()).toBe(200);
+  if (options.skipRest === false) return;
   const skip = page.getByRole('button', { name: /^(Saltar descanso|Continuar)$/ });
   const resting = await skip
     .waitFor({ timeout: 1_500 })

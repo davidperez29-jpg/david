@@ -1,5 +1,6 @@
 import { collectErrors, expectNoSeriousA11yIssues, todayInMadrid } from './helpers';
 import {
+  addDays,
   enterAs,
   expect,
   joinSpace,
@@ -8,6 +9,8 @@ import {
   startTraining,
   test,
 } from './fixtures';
+
+const escapeRegExp = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 /**
  * Bloque 2 · ejecución real en el móvil (Pixel 7) y consulta del entrenador (escritorio).
@@ -198,9 +201,12 @@ test.describe('ejecución del entrenamiento (bloque 2)', () => {
     await expect(page.getByText('Pendiente de envío')).toHaveCount(2);
     await expect(page.getByText('2 de 5 series')).toBeVisible();
 
-    // Vuelve el servidor: «Reintentar» (o la espera) los envía, en orden.
+    // Vuelve el servidor: «Reintentar» (o el reintento automático, que puede adelantarse) los
+    // envía, en orden.
+    const retry = page.getByRole('button', { name: 'Reintentar' });
+    await expect(retry).toBeVisible();
     await page.unroute('**/api/cliente/sesiones/*/comandos');
-    await page.getByRole('button', { name: 'Reintentar' }).click();
+    if (await retry.isVisible()) await retry.click({ timeout: 2_000 }).catch(() => undefined);
     await expect(
       page.getByRole('status').filter({ hasText: 'Todo guardado en el servidor' }),
     ).toBeVisible({ timeout: 15_000 });
@@ -214,7 +220,7 @@ test.describe('ejecución del entrenamiento (bloque 2)', () => {
     expect(state.state.sets.map((s) => s.setNumber)).toEqual([1, 2]);
   });
 
-  test('respuesta perdida y reenvío del mismo comando: una sola serie', async ({
+  test('respuesta perdida y reenvío del mismo comando: una sola serie; un duplicado se rechaza', async ({
     page,
     browser,
     space,
@@ -243,37 +249,57 @@ test.describe('ejecución del entrenamiento (bloque 2)', () => {
     await expect(page.getByText('Confirmada')).toHaveCount(1, { timeout: 15_000 });
     expect(dropped).toBe(true);
 
-    // Y dos envíos idénticos a mano: el segundo es «ya aplicado».
+    // E2E-23 · A mano: la misma serie con otro identificador (y sin `supersedes`) es un
+    // duplicado → 409 set_already_logged, con el registro que ya tiene el servidor; reenviarlo
+    // tampoco la aplica. Y un comando nuevo reenviado dos veces se aplica una sola vez.
     const result = await page.evaluate(async () => {
       const id = location.pathname.split('/').at(-2)!;
-      const body = JSON.stringify({
-        commandId: 'manual-duplicado-0001',
-        type: 'log_set',
-        versionNumber: 1,
-        prescriptionId: 'x',
-        setNumber: 1,
-        supersedes: null,
-        completed: false,
-        device: {
-          recordedAt: new Date().toISOString(),
-          timeZone: 'Europe/Madrid',
-          utcOffsetMinutes: 60,
-        },
-      });
-      const send = () =>
+      const state = await (await fetch(`/api/cliente/sesiones/${id}/estado`)).json();
+      const done = state.state.sets[0] as { prescriptionId: string; setNumber: number };
+      const command = (commandId: string, setNumber: number) =>
+        JSON.stringify({
+          commandId,
+          type: 'log_set',
+          versionNumber: 1,
+          prescriptionId: done.prescriptionId,
+          setNumber,
+          supersedes: null,
+          completed: true,
+          reps: 10,
+          load: { kind: 'external', kg: 16 },
+          rir: 2,
+          device: {
+            recordedAt: new Date().toISOString(),
+            timeZone: 'Europe/Madrid',
+            utcOffsetMinutes: 60,
+          },
+        });
+      const send = (body: string) =>
         fetch(`/api/cliente/sesiones/${id}/comandos`, {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
           body,
         }).then(async (r) => ({ status: r.status, body: await r.json() }));
-      const state = await (await fetch(`/api/cliente/sesiones/${id}/estado`)).json();
-      return { first: await send(), second: await send(), sets: state.state.sets.length };
+      const duplicate = command('manual-duplicado-0001', done.setNumber);
+      const second = command('manual-serie-2-0001', done.setNumber + 1);
+      const out = {
+        duplicate: await send(duplicate),
+        duplicateAgain: await send(duplicate),
+        second: await send(second),
+        secondAgain: await send(second),
+        sets: 0,
+      };
+      const after = await (await fetch(`/api/cliente/sesiones/${id}/estado`)).json();
+      out.sets = after.state.sets.length;
+      return out;
     });
-    // La serie de un ejercicio inexistente se rechaza (409) las dos veces, sin efectos.
-    expect(result.first.status).toBe(409);
-    expect(result.first.body.error).toBe('unknown_set_in_version');
-    expect(result.second.body.error).toBe('unknown_set_in_version');
-    expect(result.sets).toBe(1);
+    expect(result.duplicate.status).toBe(409);
+    expect(result.duplicate.body.error).toBe('set_already_logged');
+    expect(result.duplicate.body.effective.setNumber).toBe(1);
+    expect(result.duplicateAgain.body.error).toBe('set_already_logged');
+    expect(result.second).toMatchObject({ status: 200, body: { result: 'applied' } });
+    expect(result.secondAgain).toMatchObject({ status: 200, body: { result: 'already_applied' } });
+    expect(result.sets).toBe(2);
   });
 
   test('cierre parcial: terminar con series pendientes exige elegirlo', async ({
@@ -307,7 +333,7 @@ test.describe('ejecución del entrenamiento (bloque 2)', () => {
       page.getByRole('heading', { name: 'Sesión terminada parcialmente' }),
     ).toBeVisible();
     await expect(
-      page.getByText('1 de 5 series hechas · 1 no realizadas · 3 sin registrar'),
+      page.getByText('1 de 5 series hechas · 1 no realizada · 3 sin registrar'),
     ).toBeVisible();
     await expect(
       page.getByRole('status').filter({ hasText: 'Todo guardado en el servidor' }),
@@ -390,7 +416,11 @@ test.describe('ejecución del entrenamiento (bloque 2)', () => {
     await expect(page.getByRole('heading', { level: 1, name: 'Sentadilla goblet' })).toBeVisible();
     expect(await overflow()).toBeLessThanOrEqual(0);
     await expectNoSeriousA11yIssues(page);
-    // Con el teclado: «Serie hecha» y el descanso.
+    // Con el teclado: «Serie hecha» y el descanso (el formulario acepta pulsaciones a los 400 ms).
+    await expect(page.getByRole('button', { name: 'Serie hecha' })).not.toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
     await page.getByRole('button', { name: 'Serie hecha' }).focus();
     await page.keyboard.press('Enter');
     await expect(page.getByRole('timer')).toBeVisible();
@@ -400,9 +430,248 @@ test.describe('ejecución del entrenamiento (bloque 2)', () => {
     const sizes = await page
       .locator('main button:visible')
       .evaluateAll((buttons) => buttons.map((b) => Math.round(b.getBoundingClientRect().height)));
-    expect(Math.min(...sizes)).toBeGreaterThanOrEqual(36);
+    expect(Math.min(...sizes)).toBeGreaterThanOrEqual(44);
     await page.getByRole('button', { name: 'Saltar descanso' }).click();
     const logButton = await page.getByRole('button', { name: 'Serie hecha' }).boundingBox();
     expect(logButton!.height).toBeGreaterThanOrEqual(48);
+  });
+
+  test('E2E-2 · doble toque en «Serie hecha»: una sola serie, y el descanso no se salta', async ({
+    page,
+    browser,
+    space,
+    baseURL,
+  }) => {
+    await publishForLucia(browser, space, baseURL!, { date: todayInMadrid() });
+    await enterAs(page, 'Lucía, clienta');
+    await page.getByRole('link', { name: /Empezar entrenamiento/ }).click();
+    await startTraining(page);
+    const sent: string[] = [];
+    page.on('request', (r) => {
+      if (r.url().includes('/comandos') && r.method() === 'POST') {
+        sent.push((r.postDataJSON() as { type: string }).type);
+      }
+    });
+    const done = page.getByRole('button', { name: 'Serie hecha' });
+    await expect(done).not.toHaveAttribute('aria-disabled', 'true');
+    await done.dblclick();
+    await expect(page.getByText('Confirmada')).toHaveCount(1);
+    await expect(
+      page.getByRole('status').filter({ hasText: 'Todo guardado en el servidor' }),
+    ).toBeVisible();
+    // El segundo toque cayó en el descanso recién aparecido y no hizo nada.
+    await expect(page.getByRole('heading', { name: 'Descanso', exact: true })).toBeVisible();
+    await expect(page.getByText('1 de 5 series')).toBeVisible();
+    expect(sent.filter((type) => type === 'log_set')).toHaveLength(1);
+  });
+
+  test('E2E-4 · recargar durante el descanso: la cuenta sigue y se vuelve a la misma serie', async ({
+    page,
+    browser,
+    space,
+    baseURL,
+  }) => {
+    await publishForLucia(browser, space, baseURL!, { date: todayInMadrid() });
+    await enterAs(page, 'Lucía, clienta');
+    await page.getByRole('link', { name: /Empezar entrenamiento/ }).click();
+    await startTraining(page);
+    await logVisibleSet(page, { skipRest: false });
+    const timer = page.getByRole('timer');
+    const remaining = async () =>
+      Number((await timer.getAttribute('aria-label'))!.match(/quedan (\d+) segundos/)![1]);
+    const before = await remaining();
+    expect(before).toBeGreaterThan(10);
+    await page.waitForTimeout(2_000);
+    await page.reload();
+    await expect(timer).toBeVisible();
+    const after = await remaining();
+    // La cuenta se calcula con la hora de fin guardada: ha seguido corriendo durante la recarga.
+    expect(before - after).toBeGreaterThanOrEqual(2);
+    expect(before - after).toBeLessThanOrEqual(6);
+    await page.getByRole('button', { name: 'Saltar descanso' }).click();
+    await expect(
+      page.getByRole('region', { name: /Serie 2 de 3 de Sentadilla goblet/ }),
+    ).toBeVisible();
+  });
+
+  test('E2E-5 · navegación: «Tu sesión» a otro ejercicio, «Anterior» y «Siguiente ejercicio»', async ({
+    page,
+    browser,
+    space,
+    baseURL,
+  }) => {
+    const { plank } = await publishForLucia(browser, space, baseURL!, { date: todayInMadrid() });
+    await enterAs(page, 'Lucía, clienta');
+    await page.getByRole('link', { name: /Empezar entrenamiento/ }).click();
+    await startTraining(page);
+    await logVisibleSet(page);
+    await page.getByRole('button', { name: /tu sesión/i }).click();
+    const dialog = page.getByRole('dialog', { name: 'Tu sesión' });
+    await expect(dialog.getByRole('button', { name: /Sentadilla goblet\s*1\/3/ })).toBeVisible();
+    await dialog.getByRole('button', { name: new RegExp(escapeRegExp(plank)) }).click();
+    await expect(page.getByRole('heading', { level: 1, name: plank })).toBeVisible();
+    await expect(page.getByText('Ejercicio 2 de 2')).toBeVisible();
+    await page.getByRole('button', { name: 'Anterior' }).click();
+    await expect(page.getByRole('heading', { level: 1, name: 'Sentadilla goblet' })).toBeVisible();
+    // Vuelve a la primera serie sin registrar, con lo confirmado intacto.
+    await expect(
+      page.getByRole('region', { name: /Serie 2 de 3 de Sentadilla goblet/ }),
+    ).toBeVisible();
+    await expect(page.getByText('Confirmada')).toHaveCount(1);
+    await page.getByRole('button', { name: 'Siguiente ejercicio' }).click();
+    await expect(page.getByRole('heading', { level: 1, name: plank })).toBeVisible();
+  });
+
+  test('E2E-18 · empezar antes o después del día previsto: se permite y el entrenador lo ve', async ({
+    page,
+    browser,
+    space,
+    baseURL,
+  }) => {
+    const today = todayInMadrid();
+    const late = await publishForLucia(browser, space, baseURL!, {
+      date: addDays(today, -1),
+      title: 'De ayer',
+    });
+    const early = await publishForLucia(browser, space, baseURL!, {
+      date: addDays(today, 2),
+      title: 'De pasado mañana',
+    });
+    await enterAs(page, 'Lucía, clienta');
+    for (const { url } of [late, early]) {
+      const sessionId = url.split('/').at(-1)!;
+      await page.goto(`/cliente/sesion/${sessionId}/entrenar`);
+      await startTraining(page);
+      await logVisibleSet(page);
+    }
+
+    const trainer = await browser.newContext({ baseURL });
+    await joinSpace(trainer, space, baseURL!);
+    const alex = await trainer.newPage();
+    await enterAs(alex, 'Alex, entrenador');
+    await alex.goto('/entrenador/clientes/c-lucia/sesiones');
+    await expect(alex.locator('li', { hasText: 'De ayer' }).first()).toContainText(
+      '(1 día después)',
+    );
+    await expect(alex.locator('li', { hasText: 'De pasado mañana' }).first()).toContainText(
+      '(2 días antes)',
+    );
+    await trainer.close();
+  });
+
+  test('E2E-19 · pasada la medianoche: las series siguen en la sesión de su día, con su hora', async ({
+    page,
+    browser,
+    space,
+    baseURL,
+  }) => {
+    // Dos días atrás para que todas las horas del dispositivo queden en el pasado.
+    const day = addDays(todayInMadrid(), -2);
+    const next = addDays(day, 1);
+    const { url } = await publishForLucia(browser, space, baseURL!, {
+      date: day,
+      title: 'Hasta medianoche',
+    });
+    const sessionId = url.split('/').at(-1)!;
+    // Madrid en noviembre: UTC+1. Solo se fija la hora del navegador; los temporizadores siguen.
+    await page.clock.setFixedTime(new Date(`${day}T23:50:00+01:00`));
+    await enterAs(page, 'Lucía, clienta');
+    await page.goto(`/cliente/sesion/${sessionId}/entrenar`);
+    await startTraining(page);
+    await page.clock.setFixedTime(new Date(`${day}T23:58:00+01:00`));
+    await logVisibleSet(page);
+    await page.clock.setFixedTime(new Date(`${next}T00:03:00+01:00`));
+    await logVisibleSet(page);
+    await expect(page.getByText('Confirmada')).toHaveCount(2);
+
+    const trainer = await browser.newContext({ baseURL, timezoneId: 'Europe/Madrid' });
+    await joinSpace(trainer, space, baseURL!);
+    const alex = await trainer.newPage();
+    await enterAs(alex, 'Alex, entrenador');
+    await alex.goto(url);
+    const goblet = alex
+      .getByRole('region', { name: 'Sentadilla goblet' })
+      .filter({ hasText: 'Previsto' });
+    await expect(goblet.getByRole('listitem').nth(0)).toContainText('23:58');
+    await expect(goblet.getByRole('listitem').nth(1)).toContainText('00:03');
+    await expect(goblet).not.toContainText('hora ajustada');
+    // Se empezó el día previsto: A3 no la marca como hecha otro día.
+    await alex.goto('/entrenador/clientes/c-lucia/sesiones');
+    const row = alex.locator('li', { hasText: 'Hasta medianoche' }).first();
+    // Sin actividad hoy: «Interrumpida» (se puede continuar); empezada el día previsto.
+    await expect(row).toContainText('Interrumpida');
+    await expect(row).not.toContainText(/días? (después|antes)/);
+    await trainer.close();
+  });
+
+  test('E2E-21 · sin conexión, registrar, cerrar la página y abrir otra: lo pendiente se envía solo', async ({
+    page,
+    browser,
+    space,
+    baseURL,
+  }) => {
+    const { url } = await publishForLucia(browser, space, baseURL!, { date: todayInMadrid() });
+    await enterAs(page, 'Lucía, clienta');
+    await page.getByRole('link', { name: /Empezar entrenamiento/ }).click();
+    await startTraining(page);
+    await page.context().setOffline(true);
+    await logVisibleSet(page, { waitForServer: false });
+    await expect(page.getByText('Pendiente de envío').first()).toBeVisible();
+    const context = page.context();
+    await page.close();
+    await context.setOffline(false);
+
+    // Otra página del mismo navegador (el mismo almacén local): Hoy envía lo pendiente.
+    const again = await context.newPage();
+    await again.goto('/cliente');
+    await expect(
+      again.getByRole('link', { name: /Continuar entrenamiento · 1 de 5 series/ }),
+    ).toBeVisible({ timeout: 15_000 });
+    await expect(again.getByText(/pendientes? de envío en este móvil/)).toHaveCount(0);
+
+    const trainer = await browser.newContext({ baseURL });
+    await joinSpace(trainer, space, baseURL!);
+    const alex = await trainer.newPage();
+    await enterAs(alex, 'Alex, entrenador');
+    await alex.goto(url);
+    await expect(alex.getByText('1 de 5 series').first()).toBeVisible();
+    await trainer.close();
+  });
+
+  test('E2E-22 · el servidor falla dos veces (503): se reintenta solo y queda una serie', async ({
+    page,
+    browser,
+    space,
+    baseURL,
+  }) => {
+    await publishForLucia(browser, space, baseURL!, { date: todayInMadrid() });
+    await enterAs(page, 'Lucía, clienta');
+    await page.getByRole('link', { name: /Empezar entrenamiento/ }).click();
+    await startTraining(page);
+    let failures = 0;
+    let attempts = 0;
+    await page.route('**/api/cliente/sesiones/*/comandos', async (route) => {
+      if (route.request().postDataJSON()?.type !== 'log_set') return route.continue();
+      attempts += 1;
+      if (failures < 2) {
+        failures += 1;
+        return route.fulfill({ status: 503, body: 'no disponible' });
+      }
+      return route.continue();
+    });
+    await logVisibleSet(page, { waitForServer: false });
+    await expect(page.getByText('Pendiente de envío').first()).toBeVisible();
+    await expect(page.getByText('Confirmada')).toHaveCount(0);
+    // Reintentos automáticos a los 2 y 4 s, con el mismo identificador.
+    await expect(page.getByText('Confirmada')).toHaveCount(1, { timeout: 20_000 });
+    expect(failures).toBe(2);
+    expect(attempts).toBe(3);
+    const state = await page.evaluate(async () => {
+      const id = location.pathname.split('/').at(-2);
+      return (await (await fetch(`/api/cliente/sesiones/${id}/estado`)).json()) as {
+        state: { sets: unknown[] };
+      };
+    });
+    expect(state.state.sets).toHaveLength(1);
   });
 });
