@@ -145,6 +145,32 @@ test.describe('app del cliente (móvil)', () => {
     },
   );
 
+  test('a 360 px, la barra inferior no tapa el final del contenido', async ({ page }) => {
+    await page.setViewportSize({ width: 360, height: 740 });
+    await page.goto('/cliente');
+    const detail = await page
+      .getByRole('link', { name: 'Ver el detalle de la sesión' })
+      .first()
+      .getAttribute('href');
+    for (const route of ['/cliente', '/cliente/semana', '/cliente/progreso', detail!]) {
+      await page.goto(route);
+      await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+      const gap = await page.evaluate(() => {
+        const nav = document.querySelector('nav[aria-label="Secciones"]');
+        const main = document.querySelector('main');
+        // El último elemento visible del contenido.
+        const items = [...(main?.querySelectorAll('*') ?? [])].filter((el) => {
+          const box = el.getBoundingClientRect();
+          return box.height > 0 && box.width > 0;
+        });
+        const contentBottom = Math.max(...items.map((el) => el.getBoundingClientRect().bottom));
+        const navTop = nav ? nav.getBoundingClientRect().top : window.innerHeight;
+        return navTop - contentBottom;
+      });
+      expect(gap, `espacio entre el contenido y la barra en ${route}`).toBeGreaterThanOrEqual(0);
+    }
+  });
+
   test('el cliente no puede abrir la sesión de otro cliente', async ({ page }) => {
     const today = todayInMadrid();
     const own = await page.goto(`/cliente/sesion/s-marta-${today}`);
