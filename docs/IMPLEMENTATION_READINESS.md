@@ -1,5 +1,13 @@
 # Preparación para implementar: auditoría y plan de la primera versión
 
+> **Estado de la implementación (12 de noviembre de 2026):** V1 se está construyendo por los bloques de `V1_SPEC.md` §9.
+>
+> - **Bloque 1** (base persistente): terminado y aceptado.
+> - **Bloque 2** (ejecutar y registrar): implementado y pendiente de tu revisión (`V1_SPEC.md` §9.3, `EXECUTION.md`). Adelanta de la entrega V2 la cola local en IndexedDB, la cola idempotente, las correcciones, la reanudación y el aviso al salir.
+> - **Bloque 3 y siguientes:** sin empezar.
+>
+> El texto que sigue es la propuesta original y se conserva como referencia.
+
 > **Estado: propuesta pendiente de aprobación (7 de noviembre de 2026).** Este documento no autoriza a programar. Cierra el alcance de la primera versión funcional (Fase 1B), separa lo imprescindible de lo que puede esperar y propone el orden de desarrollo por **entregas verticales**. Las decisiones están en `DECISIONS.md` y el detalle de las fases, en `ROADMAP.md`.
 
 ## 1. Auditoría del repositorio
@@ -333,6 +341,13 @@ Cada entrega deja un flujo **funcional y comprobable** de extremo a extremo, ent
   - plantillas.
 
 ### V2 · Interrupciones, cambios y mala conexión
+
+> **Tras el bloque 2 de V1 (12 de noviembre de 2026):** ya están hechos IndexedDB, la cola idempotente, las correcciones con `supersedes`, la reanudación, el aviso al salir y empezar sin conexión con la página abierta (`EXECUTION.md`). De V2 quedan:
+>
+> - abrir la app sin conexión;
+> - el almacenamiento persistente;
+> - el registro simultáneo desde dos dispositivos (hoy gana el primero, con `set_already_logged`);
+> - la edición de sesiones publicadas con aviso y resumen de cambios (bloque 5 de V1).
 
 > **Tras `V1_SPEC.md` (versión 2):** V2 conserva IndexedDB y el registro completo sin conexión, y el registro desde dos dispositivos. Dos sesiones el mismo día, editar una sesión publicada y la lista de versiones pasan a V1.
 

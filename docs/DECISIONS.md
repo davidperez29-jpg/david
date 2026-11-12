@@ -147,7 +147,7 @@ Los saltos y aterrizajes se clasifican por dirección (patrón). La ejecución u
 - MP4 + H.264 con el elemento `<video>` nativo, sin dependencias nuevas ni reproductores de terceros incrustados.
 - Detalle en `MEDIA.md`.
 
-## ADR-22 · Registro primero en el dispositivo, con envío idempotente · Propuesta
+## ADR-22 · Registro primero en el dispositivo, con envío idempotente · Adoptada (bloque 2, 12 nov 2026; ver ADR-24)
 
 - Cada serie se guarda en el dispositivo (IndexedDB) con un identificador propio y se envía cuando hay conexión. El servidor la acepta una sola vez.
 - Las correcciones son versiones nuevas que sustituyen a la anterior y la conservan.
@@ -168,6 +168,30 @@ Los saltos y aterrizajes se clasifican por dirección (patrón). La ejecución u
 - **Verificación:** en Linux x64 con Next.js 16.4.5, Vitest 5 y pnpm 10.28. En Windows solo se han comprobado los binarios, sin ejecutarlos.
 - **Detalle:** `V1_SPEC.md` §8.3 y §9.2.
 - **Técnicas aplicadas:** P-80 (espacios E2E como archivos aparte), P-84 (RIR por serie en la semilla) y P-87 (protección local: `127.0.0.1`, `TRAINPRO_MODE`, `Host` permitido y permisos del archivo).
+
+## ADR-24 · Ejecución del bloque 2: comandos idempotentes, cola en IndexedDB y versión de inicio · Adoptada (12 nov 2026, pendiente de tu revisión)
+
+**Autorización:** tu mensaje del bloque 2, que acepta la dirección técnica y autoriza solo ese bloque. Al terminar hay que parar y esperar tu revisión.
+
+**Decisiones:**
+
+- **Una API de comandos** (`start`, `log_set`, `pause`, `resume`, `finish`) con identificador del dispositivo.
+- **Idempotencia** en la aplicación (`payload_hash`) y en la base: `client_command` y el índice parcial de `set_log`, en una transacción `BEGIN IMMEDIATE`.
+- **Errores tipados:** `400`, `403`, `404`, `409`, `413` y `422`.
+- **IndexedDB en lugar de `localStorage`**, por tu indicación. Es memoria, con aviso permanente, si el navegador no lo permite.
+- **`session_log.started_version`**: la ejecución queda ligada a la versión exacta con la que se empezó.
+  - Cada serie guarda su versión.
+  - Una versión nueva no cambia la prescripción en pantalla hasta que la clienta lo pide.
+- **Estado «Pausada»** con pausas acumuladas.
+- **Migraciones que reconstruyen tablas** (`rebuildsTables`): claves foráneas desactivadas fuera de la transacción y `foreign_key_check` antes de confirmar.
+
+**Alternativas descartadas:**
+
+- **Acciones de servidor para el cliente:** su identificador cambia al compilar, y eso rompe una cola de reintentos.
+- **Guardar el estado de la sesión:** se sigue deduciendo de los registros (ADR-16).
+- **Último registro gana:** gana el primero y el segundo recibe `set_already_logged`. Así no se pierde nada sin avisar.
+
+**Detalle:** `EXECUTION.md` y `V1_SPEC.md` §9.3.
 
 ## Decisiones pendientes
 

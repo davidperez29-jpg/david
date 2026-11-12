@@ -584,27 +584,27 @@ Ejemplo (S-05): la versión 1 prescribe 4 × 6 × 80 kg; se registran las series
 
 ### 5.7 Guardado local temporal, persistencia confirmada y sincronización (Q4)
 
-| Capa                        | V1                                                                                                                                                                                                                                                                         |
-| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Guardado local temporal** | En el móvil (`localStorage`): los comandos pendientes con su identificador y la hora de fin del descanso. **Se escriben antes de enviar.** Se conservan si se cierra la app o se pierde la conexión. Se borran al confirmarse o al salir del modo demostración (con aviso) |
-| **Persistencia confirmada** | El servidor guarda el comando en una transacción SQLite y responde `200`. Es lo único que la interfaz llama «Guardada». Sobrevive a cerrar la app y a reiniciar el servidor                                                                                                |
-| **Sincronización**          | En orden: al abrir el reproductor, con el evento `online`, al volver a la pestaña y con reintentos cada 2, 4, 8, 16 y 30 s, además de «Reintentar». Aviso al salir de la página con pendientes                                                                             |
+| Capa                        | V1                                                                                                                                                                                                                                                                                                     |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Guardado local temporal** | En el móvil (**IndexedDB**, base `trainpro-ejecucion`; bloque 2, §9.3): los comandos pendientes con su identificador, la hora de fin del descanso y la posición en el reproductor. **Se escriben antes de enviar.** Se conservan si se cierra la app o se pierde la conexión. Se borran al confirmarse |
+| **Persistencia confirmada** | El servidor guarda el comando en una transacción SQLite y responde `200`. Es lo único que la interfaz llama «Confirmada» o «Todo guardado en el servidor». Sobrevive a cerrar la app y a reiniciar el servidor                                                                                         |
+| **Sincronización**          | En orden y de uno en uno. Reintentos cada 2, 4, 8, 16 y 30 s; al abrir, con el evento `online`, al volver a la pestaña y con «Reintentar», sin esperar. También desde Hoy, Semana, Progreso y el detalle. Aviso al salir de la página con pendientes                                                   |
 
 **Garantías para el cliente:**
 
-| Situación                                    | Comportamiento                                                                                                                                                                                        |
-| -------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Registro pendiente                           | Se muestra como «Guardando…» o «Sin enviar», **nunca** como «Guardada»                                                                                                                                |
-| Operación confirmada (`200`)                 | Está en la base y no se pierde. El estado de la sesión que devuelve el servidor manda sobre lo local                                                                                                  |
-| Falla el envío (red, `5xx` o tiempo agotado) | El comando sigue en el móvil y se reintenta con el **mismo** identificador. El servidor responde «ya aplicado» si ya lo tenía, así que el reintento nunca duplica la serie                            |
-| El servidor lo rechaza (`422` o `409`)       | No se descarta en silencio: queda visible como «No se ha podido guardar», con el motivo y «Corregir». `set_already_logged` se reconcilia con el registro del servidor                                 |
-| El navegador no permite guardar en local     | Por ejemplo, sin espacio o en navegación privada restringida. Aviso permanente: «Este navegador no puede guardar temporalmente: no cierres hasta ver "Guardada"». Lo pendiente se mantiene en memoria |
+| Situación                                    | Comportamiento                                                                                                                                                                                           |
+| -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Registro pendiente                           | Se muestra como «Pendiente de envío» o «Enviando…», **nunca** como «Confirmada»                                                                                                                          |
+| Operación confirmada (`200`)                 | Está en la base y no se pierde. El estado de la sesión que devuelve el servidor manda sobre lo local                                                                                                     |
+| Falla el envío (red, `5xx` o tiempo agotado) | El comando sigue en el móvil y se reintenta con el **mismo** identificador. El servidor responde «ya aplicado» si ya lo tenía, así que el reintento nunca duplica la serie                               |
+| El servidor lo rechaza (`422` o `409`)       | No se descarta en silencio: queda visible como «Error de envío», con el motivo y «Descartar y volver a registrar». `set_already_logged` se reconcilia con el registro del servidor                       |
+| El navegador no permite guardar en local     | Por ejemplo, sin IndexedDB en navegación privada. Aviso permanente: «Este navegador no puede guardar temporalmente: no cierres la página hasta ver "Todo guardado"». Lo pendiente se mantiene en memoria |
 
-**Límites que hay que aceptar en V1** (se resuelven en V2, con IndexedDB y almacenamiento persistente):
+**Límites que hay que aceptar en V1** (el bloque 2 ya usa IndexedDB; el almacenamiento persistente queda para después):
 
 - lo **pendiente** se pierde si se borran los datos del navegador o se cambia de dispositivo antes de enviarlo;
 - Safari puede borrar ese almacenamiento si la web pasa días sin usarse;
-- no se puede empezar una sesión sin conexión.
+- no se puede **abrir** la app sin conexión. Con el reproductor ya abierto, sí se puede empezar, registrar, pausar y terminar: todo queda en la cola y se envía al volver.
 
 Lo confirmado nunca se pierde.
 
@@ -617,6 +617,7 @@ Se deducen de los registros efectivos y de las marcas de inicio y fin (ADR-16); 
 | Programada   | Sin ejecución y la fecha prevista es hoy o futura                                                       | Pendiente                                             |
 | Sin hacer    | Sin ejecución y la fecha prevista ya pasó (se puede hacer)                                              | No realizada                                          |
 | En curso     | Empezada, sin terminar, con actividad hoy                                                               | En curso                                              |
+| Pausada      | Empezada, sin terminar, con una pausa abierta («Pausar»; bloque 2, §9.3)                                | Pausada                                               |
 | Interrumpida | Empezada, sin terminar y sin actividad hoy (se puede continuar)                                         | Parcial o interrumpida                                |
 | Completada   | Todas las series de la versión vigente hechas                                                           | Completada                                            |
 | Parcial      | Terminada con series pendientes o no realizadas, tras la confirmación (`finish_reason = 'ended_early'`) | Parcial o interrumpida                                |
@@ -888,20 +889,24 @@ Se conservan las mismas `CHECK`, claves ajenas e índices parciales. Los dispara
 { "commandId": "uuid", "type": "log_set", "device": { "…": "…" }, "versionNumber": 1, "prescriptionId": "itm_…",
   "setNumber": 3, "completed": true, "reps": 9, "load": { "kind": "external", "kg": 60 },
   "rir": 1, "rpe": null, "note": null, "supersedes": null }
+{ "commandId": "uuid", "type": "pause", "device": { "…": "…" } }
+{ "commandId": "uuid", "type": "resume", "device": { "…": "…" } }
 { "commandId": "uuid", "type": "finish", "device": { "…": "…" }, "confirmEndEarly": false, "comment": "…" }
 ```
 
-**`GET /api/cliente/sesiones/{sessionId}/estado?desde={versión}`:** devuelve el estado de la ejecución y la versión vigente y, si ha cambiado desde la indicada, el resumen de cambios de lo pendiente. Se usa al volver a la pestaña y al recuperar la conexión.
+`start` lleva además `versionNumber` (la versión que la clienta tiene en pantalla). `pause` y `resume` llegan con el bloque 2 (§9.3); el detalle de cada respuesta está en `docs/EXECUTION.md` §5.
 
-| Respuesta                                               | Cuándo                                                                                                                                                                                 |
-| ------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `200 { result: 'applied' \| 'already_applied', state }` | Aplicado, o ya lo estaba. `state` incluye `currentVersion`                                                                                                                             |
-| `400 bad_request`                                       | JSON no válido, tipo desconocido o faltan campos                                                                                                                                       |
-| `403 forbidden_origin` · `403 forbidden_host`           | Origen o `Host` no permitidos                                                                                                                                                          |
-| `404 not_found`                                         | La sesión no existe, no es del cliente o no está publicada                                                                                                                             |
-| `409`                                                   | `closed` (terminada), `set_already_logged` (con el registro efectivo), `command_id_reused` (mismo identificador con otro contenido), `unknown_set_in_version`, `confirmation_required` |
-| `413 payload_too_large`                                 | Más de 16 KB                                                                                                                                                                           |
-| `422 invalid { issues }`                                | Rangos, modalidad o esfuerzo que no corresponden                                                                                                                                       |
+**`GET /api/cliente/sesiones/{sessionId}/estado`:** devuelve el estado de la ejecución y la versión vigente. Se usa al volver a la pestaña y al recuperar la conexión. El resumen de cambios entre versiones (`?desde=`) llega con el bloque 5; en el bloque 2, el reproductor avisa de que hay una versión nueva y la carga solo si la clienta lo pide (§9.3).
+
+| Respuesta                                               | Cuándo                                                                                                                                                                                                                                     |
+| ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `200 { result: 'applied' \| 'already_applied', state }` | Aplicado, o ya lo estaba. `state` incluye `currentVersion`                                                                                                                                                                                 |
+| `400 bad_request`                                       | JSON no válido, tipo desconocido o faltan campos                                                                                                                                                                                           |
+| `403 forbidden_origin` · `403 forbidden_host`           | Origen o `Host` no permitidos                                                                                                                                                                                                              |
+| `404 not_found`                                         | La sesión no existe, no es del cliente o no está publicada                                                                                                                                                                                 |
+| `409`                                                   | `not_started`, `closed` (terminada), `set_already_logged` y `not_effective` (con el registro efectivo), `command_id_reused` (mismo identificador con otro contenido), `unknown_version`, `unknown_set_in_version`, `confirmation_required` |
+| `413 payload_too_large`                                 | Más de 16 KB                                                                                                                                                                                                                               |
+| `422 invalid { issues }`                                | Rangos, modalidad o esfuerzo que no corresponden                                                                                                                                                                                           |
 
 **Por qué un manejador de rutas para el cliente:** según la guía de Next.js 16, los identificadores de las acciones de servidor cambian al desplegar y se envían de una en una. Una cola de reintentos necesita una URL estable.
 
@@ -1072,7 +1077,7 @@ Después, **tu revisión antes del bloque 2**.
 
 ### 9.2 Bloque 1: lo implementado y sus desviaciones
 
-**Estado (9 de noviembre de 2026):** implementado, con `pnpm check` y `pnpm test:e2e` en verde. **Pendiente de tu revisión;** el bloque 2 no ha empezado.
+**Estado (9 de noviembre de 2026):** implementado, con `pnpm check` y `pnpm test:e2e` en verde. Revisado y aceptado; el bloque 2 está en el §9.3.
 
 **Lo que hay:**
 
@@ -1119,6 +1124,64 @@ Después, **tu revisión antes del bloque 2**.
 - **Datos pendientes del navegador (Q4):** cuando llegue el registro (bloque 2), lo que esté «Pendiente de envío» vive en el navegador; borrar los datos del sitio antes de que se confirme lo pierde. En el bloque 1 el cliente no escribe nada.
 - **Entorno en la nube efímero:** la base sobrevive a los reinicios, pero no a que se vuelva a crear el entorno. En tu ordenador persiste en `.data/`.
 - **Un solo proceso de servidor;** sin cifrado en reposo ni copias programadas (§8.3.8).
+
+### 9.3 Bloque 2: lo implementado y sus desviaciones
+
+**Estado (12 de noviembre de 2026):** implementado, con `pnpm check` y `pnpm test:e2e` en verde. **Pendiente de tu revisión;** el bloque 3 no ha empezado. El funcionamiento detallado está en `docs/EXECUTION.md`.
+
+**Lo que hay:**
+
+| Tarea | Implementado                                                                                                                                                                                                                                                                                                                                                                                    |
+| ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.1   | **Dominio de ejecución y de tiempo:**<ul><li>estados con «Pausada»;</li><li>qué se registra según el ejercicio, validación y diferencias (`performance.ts`);</li><li>prescrito frente a realizado serie a serie, con la versión de cada serie (`review.ts`);</li><li>hora del dispositivo con el límite de P-86;</li><li>políticas `canLogExecution` y `canReadExecution`.</li></ul>            |
+| 2.2   | **Migración `002`:** versión de inicio, pausas y comandos `pause`/`resume`.<br>**Repositorio transaccional e idempotente:**<ul><li>`POST …/comandos` (mismo origen, 16 KB, errores tipados);</li><li>`GET …/estado`.</li></ul>                                                                                                                                                                  |
+| 2.3   | **Reproductor por pasos** en `/cliente/sesion/<id>/entrenar`:<ul><li>inicio (con aviso de otra sesión a medias, P-21);</li><li>ejercicio con la prescripción completa (carga y esfuerzo destacados), lista de series y formulario relleno con lo prescrito;</li><li>descanso con hora de fin;</li><li>«Tu sesión», «Anterior» y «Siguiente ejercicio»;</li><li>«Pausar» y «Reanudar».</li></ul> |
+| 2.4   | **Cola en IndexedDB:**<ul><li>motor de envío con cerrojo y espera creciente;</li><li>estado por serie y barra de sincronización;</li><li>envío también desde Hoy, Semana, Progreso y el detalle;</li><li>correcciones con historial;</li><li>«No la he hecho»;</li><li>protección frente al doble toque.</li></ul>                                                                              |
+| 2.5   | **Terminar:** confirmación del cierre parcial.<br>**Resumen:** «¡Sesión completada!» o «Sesión terminada parcialmente», por ejercicio y serie, con la duración.<br>**Entrenador:** en A7, prescrito frente a realizado, versiones, duración, cierre y mensaje; en A3, estados y «(1 día después)».                                                                                              |
+
+**Desviaciones y aclaraciones** (ninguna cambia una decisión aprobada sin decírtelo):
+
+| Tema                         | Especificación                                                        | Implementado y motivo                                                                                                                                                                                                                        |
+| ---------------------------- | --------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Guardado local               | `localStorage` (§5.7)                                                 | **IndexedDB.** Lo pide tu indicación del bloque 2 y admite más datos sin bloquear la página. Sin IndexedDB, memoria con aviso permanente                                                                                                     |
+| Pausa                        | Sin pausa explícita                                                   | Estado **«Pausada»** y comandos `pause` y `resume`, que pedías («interrumpida/pausada»). Columnas `paused_at` y `paused_seconds` (solo crece). La duración se da con y sin pausas                                                            |
+| Versión de inicio            | La ejecución se liga a la sesión                                      | **`session_log.started_version`**, clave foránea a la versión exacta. Las ejecuciones antiguas se rellenan con la última versión publicada antes del inicio                                                                                  |
+| Migración                    | Añadir columnas                                                       | La `002` **reconstruye** `session_log` y `client_command`: SQLite no añade una clave foránea ni cambia un `CHECK` con `ALTER TABLE`. Nuevo procedimiento `rebuildsTables` (`docs/EXECUTION.md` §2), con copia previa                         |
+| Empezar sin conexión         | «No se puede» (§5.7)                                                  | Si el reproductor ya está abierto, sí: el inicio se encola como cualquier comando y se confirma al volver la conexión. Abrir la app sin conexión sigue sin ser posible                                                                       |
+| Versión nueva a media sesión | Aviso con el resumen de cambios (E2E-14, bloque 5)                    | Aviso «… ha actualizado la sesión» y «Ver la versión nueva». Hasta pulsarlo, se registra con la versión que tiene en pantalla (el servidor lo acepta, S-07). Nunca cambia sola. El resumen de cambios llega con el bloque 5                  |
+| Textos de estado             | «Guardada», «Sin enviar», «Guardando…»                                | «Confirmada», «Pendiente de envío», «Enviando…», «Error de envío» y «Todo guardado en el servidor»: separan mejor lo que solo está en el móvil de lo confirmado                                                                              |
+| Empezar dos veces            | —                                                                     | Empezar una sesión ya empezada (por ejemplo, desde otro móvil) responde `200 already_applied`, no un error                                                                                                                                   |
+| `GET …/estado`               | `?desde={versión}` con resumen de cambios                             | Sin parámetro: estado y versión vigente (el resumen es del bloque 5)                                                                                                                                                                         |
+| E2E-1                        | Sentadilla trasera 3 × 10 × 60 kg; el paso 8 compara 1.800 → 1.740 kg | Con la **sentadilla goblet 3 × 10 · 16 kg · RIR 2** de tu indicación y una plancha. Los pasos 1 a 7 y la comparación serie a serie del 8 están probados. Los totales (repeticiones y tonelaje) son el análisis del bloque 3 y no se calculan |
+| Doble toque                  | «Un registro»                                                         | El formulario y el descanso ignoran toques en sus primeros 400 ms. Así, el segundo toque no registra la serie siguiente ni salta el descanso                                                                                                 |
+
+**Escenarios del §10.2 asignados al bloque 2 y dónde se prueban** (todos en verde):
+
+| Escenario                  | Prueba                                                                                                                                                          |
+| -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| E2E-1 (lado del cliente)   | `client-execution` «recorrido completo» y «cerrar y volver a abrir el navegador»                                                                                |
+| E2E-2                      | `client-execution` «E2E-2 · doble toque» y «respuesta perdida…»; `execution-api` (mismo comando dos veces)                                                      |
+| E2E-3                      | `client-execution` «sin conexión»                                                                                                                               |
+| E2E-4                      | `client-execution` «E2E-4 · recargar durante el descanso»                                                                                                       |
+| E2E-5                      | `client-execution` «E2E-5 · navegación» y «pausar vuelve a Hoy»                                                                                                 |
+| E2E-6 y E2E-10             | `client-execution` «cierre parcial» («No la he hecho», «Seguir entrenando», Parcial); `client-app` «solo se da por completada si están hechas todas las series» |
+| E2E-9                      | `client-execution` «corregir una serie confirmada…» (A7: «corregida» y «Antes: 10 × 16 kg»)                                                                     |
+| E2E-18                     | `client-execution` «E2E-18» («(1 día después)» y «(2 días antes)» en A3)                                                                                        |
+| E2E-19                     | `client-execution` «E2E-19» (23:58 y 00:03 con el reloj del navegador); `v2.test.ts` (reloj adelantado)                                                         |
+| E2E-20 (ampliado)          | `restart` «B2 · reiniciar el servidor a media sesión» (`SIGKILL`)                                                                                               |
+| E2E-21                     | `client-execution` «E2E-21» y «recargar con series pendientes»                                                                                                  |
+| E2E-22                     | `client-execution` «E2E-22» (dos `503` y reintentos automáticos)                                                                                                |
+| E2E-23                     | `client-execution` «respuesta perdida…» (`set_already_logged`); `execution.test.ts`; `execution-api` (`command_id_reused`)                                      |
+| E2E-7 (la parte de la API) | `execution-api` (Lucía → `404`, origen ajeno → `403`); `execution.test.ts` (permisos)                                                                           |
+
+**Windows:** **no se ha ejecutado en Windows** (este entorno es Linux x64, sin Windows ni Wine). Que el paquete traiga los binarios `win32-x64` y `win32-arm64` no lo prueba. Para comprobarlo en tu equipo:
+
+1. `pnpm verify:env`: Node, carga de `better-sqlite3`, migraciones, integridad, claves foráneas, copia y restauración, y persistencia tras reabrir.
+2. Después, `pnpm test` y `pnpm test:e2e`.
+
+Un ejecutor de Windows en CI necesitaría tu aprobación (P-04).
+
+**Limitaciones conocidas:** `docs/EXECUTION.md` §11.
 
 ## 10. Pruebas y criterios de aceptación
 

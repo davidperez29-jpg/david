@@ -4,7 +4,16 @@ Plataforma web para gestionar el entrenamiento, la evaluación, el rendimiento, 
 
 Ciclo de trabajo: **crear cliente → evaluar → interpretar → planificar → registrar ejecución → analizar carga y evolución → ajustar el plan**.
 
-> **Estado: V1, bloque 1 implementado y pendiente de revisión (9 de noviembre de 2026).** Prototipo **local** con **datos ficticios** guardados en **SQLite** en tu equipo: el entrenador crea y publica sesiones (varias el mismo día) y la clienta las ve en el móvil. **No hay inicio de sesión real** («Entrar como…» elige una persona ficticia), ni servicios externos, ni despliegue. El registro de series todavía no se guarda (bloque 2). Detalle: [`docs/V1_SPEC.md`](docs/V1_SPEC.md) §9.2; la Fase 1: [`docs/PHASE1_REPORT.md`](docs/PHASE1_REPORT.md).
+> **Estado: V1, bloque 2 implementado y pendiente de revisión (12 de noviembre de 2026).** Prototipo **local** con **datos ficticios** guardados en **SQLite** en tu equipo:
+>
+> - el entrenador crea y publica sesiones (varias el mismo día);
+> - la clienta las entrena en el móvil, paso a paso: registra cada serie, descansa, pausa y termina;
+> - lo registrado se guarda primero en el móvil y se envía al servidor sin duplicarse, también tras perder la conexión;
+> - el entrenador compara lo prescrito con lo realizado.
+>
+> **No hay inicio de sesión real** («Entrar como…» elige una persona ficticia), ni servicios externos, ni despliegue. Tampoco hay análisis de carga ni tonelaje (bloque 3).
+>
+> Detalle: [`docs/V1_SPEC.md`](docs/V1_SPEC.md) §9.2–9.3 y [`docs/EXECUTION.md`](docs/EXECUTION.md). La Fase 1: [`docs/PHASE1_REPORT.md`](docs/PHASE1_REPORT.md).
 
 ## Requisitos
 
@@ -28,33 +37,39 @@ pnpm dev                            # http://127.0.0.1:3000 (solo en este equipo
 - El servidor **solo escucha en 127.0.0.1** y rechaza cualquier otro nombre de host (`TRAINPRO_ALLOWED_HOSTS`): no es accesible desde la red local.
 - `better-sqlite3` trae los binarios compilados para Linux, macOS y Windows (x64 y arm64): `pnpm install` no compila nada y avisa de que ha ignorado su script de compilación, que no hace falta.
 
-**Datos:** la primera vez se crea `.data/trainpro.sqlite` (fuera de Git, solo legible por tu usuario) con los datos ficticios del día. Se conservan al recargar, al cerrar el navegador y al reiniciar el servidor. «Restablecer datos demo» (Configuración) guarda una copia y vuelve a sembrar con la fecha de hoy.
+**Datos:**
+
+- La primera vez se crea `<proyecto>/.data/trainpro.sqlite` (fuera de Git, solo legible por tu usuario) con los datos ficticios del día. Configuración muestra la ruta real.
+- Se conservan al recargar, al cerrar el navegador y al reiniciar el servidor.
+- «Restablecer datos demo» (Configuración) guarda una copia y vuelve a sembrar con la fecha de hoy.
+- Lo que la clienta registra sin conexión espera en el navegador (IndexedDB) hasta que el servidor lo confirma: [`docs/EXECUTION.md`](docs/EXECUTION.md) §6.
 
 Entradas de la demo (en la portada, «Entrar como…»):
 
 | Persona          | Experiencia                                                                                                   |
 | ---------------- | ------------------------------------------------------------------------------------------------------------- |
 | Alex, entrenador | Panel, clientes con ficha por pestañas, sesiones (crear, prescribir y publicar), biblioteca, carga, informes… |
-| Marta, clienta   | App pensada para el móvil, con historial: Hoy, detalle de cada sesión, semana y progreso                      |
-| Lucía, clienta   | Clienta nueva, sin historial: ve lo que Alex le publica                                                       |
+| Marta, clienta   | App pensada para el móvil, con historial: Hoy, entrenar la sesión de hoy, detalle, semana y progreso          |
+| Lucía, clienta   | Clienta nueva, sin historial: entrena lo que Alex le publica                                                  |
 
 ## Scripts
 
-| Comando                   | Qué hace                                                                                 |
-| ------------------------- | ---------------------------------------------------------------------------------------- |
-| `pnpm dev`                | Servidor de desarrollo                                                                   |
-| `pnpm build`              | Compilación de producción                                                                |
-| `pnpm start`              | Sirve la compilación de producción                                                       |
-| `pnpm lint`               | ESLint, incluidas las reglas que impiden saltarse las capas                              |
-| `pnpm typecheck`          | Genera los tipos de rutas y comprueba TypeScript                                         |
-| `pnpm format`             | Formatea con Prettier (`format:check` solo comprueba)                                    |
-| `pnpm test`               | Tests unitarios y de integración (Vitest)                                                |
-| `pnpm test:e2e`           | Compila y ejecuta las pruebas de extremo a extremo (Playwright + axe)                    |
-| `pnpm check`              | Formato + lint + tipos + tests + compilación: lo que debe pasar antes de un commit       |
-| `pnpm icons`              | Regenera los iconos PNG de la PWA a partir de `public/icons/icon.svg`                    |
-| `pnpm db:status`          | Dónde está la base, migraciones, semilla, recuento, integridad y copias                  |
-| `pnpm db:backup`          | Copia de seguridad verificada en `.data/backups/` (también con el servidor en marcha)    |
-| `pnpm db:restore <copia>` | Restaura una copia verificada. **Con el servidor parado**; guarda antes el estado actual |
+| Comando                   | Qué hace                                                                                     |
+| ------------------------- | -------------------------------------------------------------------------------------------- |
+| `pnpm dev`                | Servidor de desarrollo                                                                       |
+| `pnpm build`              | Compilación de producción                                                                    |
+| `pnpm start`              | Sirve la compilación de producción                                                           |
+| `pnpm lint`               | ESLint, incluidas las reglas que impiden saltarse las capas                                  |
+| `pnpm typecheck`          | Genera los tipos de rutas y comprueba TypeScript                                             |
+| `pnpm format`             | Formatea con Prettier (`format:check` solo comprueba)                                        |
+| `pnpm test`               | Tests unitarios y de integración (Vitest)                                                    |
+| `pnpm test:e2e`           | Compila y ejecuta las pruebas de extremo a extremo (Playwright + axe)                        |
+| `pnpm check`              | Formato + lint + tipos + tests + compilación: lo que debe pasar antes de un commit           |
+| `pnpm icons`              | Regenera los iconos PNG de la PWA a partir de `public/icons/icon.svg`                        |
+| `pnpm db:status`          | Dónde está la base, migraciones, semilla, recuento, integridad y copias                      |
+| `pnpm db:backup`          | Copia de seguridad verificada en `.data/backups/` (también con el servidor en marcha)        |
+| `pnpm db:restore <copia>` | Restaura una copia verificada. **Con el servidor parado**; guarda antes el estado actual     |
+| `pnpm verify:env`         | Comprueba Node, la carga de SQLite, migraciones, copia y restauración (pensado para Windows) |
 
 ## Estructura
 
@@ -100,6 +115,7 @@ scripts/       Utilidades de mantenimiento (copias de la base, limpieza de datos
 | [`docs/ROADMAP.md`](docs/ROADMAP.md)                                               | Fases propuestas                                                                                                            |
 | [`docs/IMPLEMENTATION_READINESS.md`](docs/IMPLEMENTATION_READINESS.md)             | Auditoría de preparación: primera versión funcional, decisiones para aprobar, entregas verticales y definición de terminado |
 | [`docs/V1_SPEC.md`](docs/V1_SPEC.md)                                               | Especificación técnica y funcional de V1: pantallas, modelo de datos, API, plan por bloques y pruebas                       |
+| [`docs/EXECUTION.md`](docs/EXECUTION.md)                                           | Ejecución del entrenamiento: modelo, estados, API de comandos, cola local, sincronización y conflictos (bloque 2)           |
 
 ## Costes
 
