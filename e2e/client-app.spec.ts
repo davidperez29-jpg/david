@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { enterAs, logVisibleSet, startTraining, test as spaceTest } from './fixtures';
+import { enterAs, joinSpace, logVisibleSet, startTraining, test as spaceTest } from './fixtures';
 import { collectErrors, expectNoSeriousA11yIssues, mondayOf, todayInMadrid } from './helpers';
 
 test.describe('app del cliente (móvil)', () => {
@@ -83,6 +83,65 @@ test.describe('app del cliente (móvil)', () => {
       await finish.getByRole('button', { name: 'Terminar sesión' }).click();
       await expect(page.getByRole('heading', { name: '¡Sesión completada!' })).toBeVisible();
       await expect(page.getByText('16 de 16 series hechas')).toBeVisible();
+    },
+  );
+
+  spaceTest(
+    'se registra lo que pide cada ejercicio: segundos, metros con tiempo opcional y carga descrita',
+    async ({ page, browser, space, baseURL }) => {
+      // 1) Plancha lateral (30 s, peso corporal) de la sesión de hoy: segundos y ningún kg.
+      await enterAs(page, 'Marta, clienta');
+      await page.getByRole('link', { name: /Empezar entrenamiento/ }).click();
+      await startTraining(page);
+      await page.getByRole('button', { name: /tu sesión/i }).click();
+      await page
+        .getByRole('dialog', { name: 'Tu sesión' })
+        .getByRole('button', { name: /Plancha lateral/ })
+        .click();
+      await expect(page.getByRole('heading', { level: 1, name: 'Plancha lateral' })).toBeVisible();
+      await expect(page.getByLabel(/^Segundos$/)).toHaveValue('30');
+      await expect(page.getByLabel(/^Repeticiones$/)).toHaveCount(0);
+      await expect(page.getByLabel(/^Carga$/)).toHaveCount(0);
+      await expect(page.getByText('Con tu peso corporal')).toBeVisible();
+      await page.getByLabel(/^Segundos$/).fill('35');
+      await logVisibleSet(page);
+      await expect(page.getByText(/Hecho:\s*35 s/)).toBeVisible();
+      await expect(page.getByText('Confirmada')).toHaveCount(1);
+
+      // 2) Paseo del granjero (30 m, «2 × 16 kg») de una sesión próxima: metros, tiempo
+      //    opcional y la carga como descripción, sin kg.
+      const trainer = await browser.newContext({ baseURL });
+      await joinSpace(trainer, space, baseURL!);
+      const alex = await trainer.newPage();
+      await enterAs(alex, 'Alex, entrenador');
+      await alex.goto('/entrenador/clientes/c-marta/sesiones');
+      const href = await alex
+        .locator('li li')
+        .filter({ hasText: 'Fuerza · tren superior y core' })
+        .filter({ hasText: 'Programada' })
+        .first()
+        .locator('a[href*="/sesiones/"]')
+        .first()
+        .getAttribute('href');
+      await trainer.close();
+      const sessionId = href!.split('/').filter(Boolean).at(-1)!;
+      await page.goto(`/cliente/sesion/${sessionId}/entrenar`);
+      await startTraining(page);
+      await page.getByRole('button', { name: /tu sesión/i }).click();
+      await page
+        .getByRole('dialog', { name: 'Tu sesión' })
+        .getByRole('button', { name: /Paseo del granjero/ })
+        .click();
+      await expect(
+        page.getByRole('heading', { level: 1, name: 'Paseo del granjero' }),
+      ).toBeVisible();
+      await expect(page.getByLabel(/^Metros$/)).toHaveValue('30');
+      await expect(page.getByLabel(/^Carga: menos/)).toHaveCount(0);
+      await expect(page.getByPlaceholder('Banda verde, nivel 3…')).toBeVisible();
+      await page.getByLabel('Tiempo (opcional)', { exact: true }).fill('40');
+      await logVisibleSet(page);
+      await expect(page.getByText(/Hecho:\s*30 m en 40 s/)).toBeVisible();
+      await expect(page.getByText('Confirmada')).toHaveCount(1);
     },
   );
 
