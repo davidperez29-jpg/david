@@ -3,10 +3,12 @@ import { type Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { formatDate, formatRelativeDay } from '@/domain/format';
+import { ExecutionReview, durationText } from '@/features/shared/execution-review';
 import { PrescriptionList } from '@/features/shared/prescription-list';
 import { ExecutionStatusBadge } from '@/features/shared/status-badge';
 import { Badge } from '@/ui/badge';
 import { getClientContext } from '@/server/context';
+import { readServerEnv } from '@/server/env';
 import { getClientSessionDetail } from '@/server/services/client-sessions';
 
 export const metadata: Metadata = { title: 'Sesión' };
@@ -21,11 +23,16 @@ export default async function ClientSessionPage(props: PageProps<'/cliente/sesio
   if (!session) notFound();
   const { execution } = session;
   const finished = FINISHED.has(execution.status);
-  const active = execution.status === 'in_progress' || execution.status === 'interrupted';
+  const active =
+    execution.status === 'in_progress' ||
+    execution.status === 'paused' ||
+    execution.status === 'interrupted';
+  const review = session.review;
+  const timeZone = readServerEnv().timeZone;
   const otherDay = session.plannedDate !== session.today;
 
   return (
-    <main id="contenido" className="px-4 pt-4 pb-32">
+    <main id="contenido" className="px-4 pt-4 pb-[calc(9rem+env(safe-area-inset-bottom))]">
       <Link
         href="/cliente"
         className="inline-flex h-11 items-center gap-1.5 rounded-2xl pr-3 text-sm font-semibold text-ink-700 hover:text-ink-900"
@@ -72,15 +79,41 @@ export default async function ClientSessionPage(props: PageProps<'/cliente/sesio
         </div>
       ) : null}
 
-      <section aria-labelledby="ejercicios" className="mt-6">
-        <h2 id="ejercicios" className="text-lg font-bold text-ink-900">
-          {session.exerciseCount} {session.exerciseCount === 1 ? 'ejercicio' : 'ejercicios'}
-        </h2>
-        <PrescriptionList items={session.items} className="mt-3" />
-      </section>
+      {review ? (
+        <section aria-labelledby="resumen" className="mt-6">
+          <h2 id="resumen" className="text-lg font-bold text-ink-900">
+            {finished
+              ? review.completedSets === review.plannedSets
+                ? '¡Sesión completada!'
+                : 'Sesión terminada parcialmente'
+              : 'Lo que llevas'}
+          </h2>
+          <p className="mt-1 text-sm text-ink-700">
+            {review.completedSets} de {review.plannedSets} series hechas
+            {review.notDoneSets > 0 ? ` · ${review.notDoneSets} no realizadas` : ''}
+            {review.pendingSets > 0 ? ` · ${review.pendingSets} sin registrar` : ''}
+            {durationText(review) ? ` · Duración: ${durationText(review)}` : ''}
+          </p>
+          {review.comment ? (
+            <p className="mt-2 text-sm text-ink-700">
+              <span className="font-semibold text-ink-900">Tu mensaje: </span>«{review.comment}»
+            </p>
+          ) : null}
+          <div className="mt-3">
+            <ExecutionReview review={review} audience="client" timeZone={timeZone} />
+          </div>
+        </section>
+      ) : (
+        <section aria-labelledby="ejercicios" className="mt-6">
+          <h2 id="ejercicios" className="text-lg font-bold text-ink-900">
+            {session.exerciseCount} {session.exerciseCount === 1 ? 'ejercicio' : 'ejercicios'}
+          </h2>
+          <PrescriptionList items={session.items} className="mt-3" />
+        </section>
+      )}
 
       {finished ? null : (
-        <div className="fixed inset-x-0 bottom-0 z-10 border-t border-line bg-cream-100/95 px-4 py-3 backdrop-blur">
+        <div className="fixed inset-x-0 bottom-0 z-10 border-t border-line bg-cream-100/95 px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur">
           <div className="mx-auto max-w-md">
             {otherDay && !active ? (
               <p className="mb-2 text-center text-sm text-ink-700">

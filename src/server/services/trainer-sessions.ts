@@ -30,6 +30,7 @@ import {
   type ValidationContext,
 } from '@/domain/training/session-v2';
 import { type TrainerContext } from '../context';
+import { reviewSessionExecution } from './client-execution';
 import { visibleVariants } from './library';
 import { publishedState, toPrescriptionItems } from './session-views';
 import { ownClient } from './trainer-access';
@@ -477,6 +478,7 @@ export async function getPublishedSession(
     hasUnpublishedChanges: own.session.draft !== null,
     execution: state.summary,
     items: toPrescriptionItems(content, byId),
+    review: await reviewSessionExecution(ctx, own.session, own.client),
   };
 }
 

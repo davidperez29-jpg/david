@@ -7,10 +7,11 @@ import {
 import { canAccessClient, canViewSession } from '@/domain/access';
 import { formatSetsAndReps } from '@/domain/training/prescription';
 import { firstName } from '@/domain/text';
-import { addDays, startOfIsoWeek } from '@/domain/time';
+import { addDays, localDateOf, startOfIsoWeek } from '@/domain/time';
 import { type SessionVersion, type TrainingSession } from '@/domain/training/session-v2';
 import { type ClientContext } from '../context';
 import { loadSessionVariants } from './library';
+import { reviewSessionExecution } from './client-execution';
 import { forClient, publishedState, toPrescriptionItems } from './session-views';
 
 /**
@@ -69,8 +70,8 @@ async function visibleSessions(ctx: ClientContext, range: { from: string; to: st
   return { client, visible };
 }
 
-const UNFINISHED = new Set(['overdue', 'interrupted']);
-const ACTIVE = new Set(['in_progress', 'interrupted']);
+const UNFINISHED = new Set(['overdue', 'interrupted', 'paused']);
+const ACTIVE = new Set(['in_progress', 'paused', 'interrupted']);
 
 /** B1 · Hoy: la sesión protagonista, las demás del día, lo pendiente de días anteriores y la semana. */
 export async function getClientToday(ctx: ClientContext): Promise<ClientTodayVM> {
@@ -86,7 +87,10 @@ export async function getClientToday(ctx: ClientContext): Promise<ClientTodayVM>
     .filter(
       (v) =>
         v.line.execution.status === 'in_progress' ||
-        (v.line.execution.status === 'interrupted' && v.line.plannedDate === ctx.today),
+        ((v.line.execution.status === 'interrupted' || v.line.execution.status === 'paused') &&
+          (v.line.plannedDate === ctx.today ||
+            (v.lastActivityAt !== null &&
+              localDateOf(v.lastActivityAt, ctx.timeZone) === ctx.today))),
     )
     .sort((a, b) => (b.lastActivityAt ?? '').localeCompare(a.lastActivityAt ?? ''));
   const hero =
@@ -172,5 +176,7 @@ export async function getClientSessionDetail(
     today: ctx.today,
     coachNote: found.version.content.coachNote ?? null,
     items: forClient(toPrescriptionItems(found.version.content, byId)),
+    // Lo registrado frente a lo prescrito (B6), si ya se ha empezado.
+    review: await reviewSessionExecution(ctx, session, client),
   };
 }

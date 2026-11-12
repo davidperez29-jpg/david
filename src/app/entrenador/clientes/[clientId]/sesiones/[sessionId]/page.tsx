@@ -3,6 +3,7 @@ import { type Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { formatDate } from '@/domain/format';
+import { ExecutionReview, durationText } from '@/features/shared/execution-review';
 import { PendingFeature } from '@/features/shared/pending-feature';
 import { PrescriptionList } from '@/features/shared/prescription-list';
 import { ExecutionStatusBadge } from '@/features/shared/status-badge';
@@ -86,9 +87,64 @@ export default async function PublishedSessionPage(
         </div>
       ) : null}
 
+      {vm.review ? (
+        <section aria-labelledby="ejecucion" className="mt-6">
+          <h2 id="ejecucion" className="text-lg font-bold text-ink-900">
+            Ejecución: prescrito frente a realizado
+          </h2>
+          <dl className="mt-2 grid gap-x-6 gap-y-1 text-sm sm:grid-cols-2">
+            <div className="flex gap-2">
+              <dt className="text-ink-500">Series</dt>
+              <dd className="font-semibold text-ink-900">
+                {vm.review.completedSets} de {vm.review.plannedSets} hechas
+                {vm.review.notDoneSets > 0 ? ` · ${vm.review.notDoneSets} no realizadas` : ''}
+                {vm.review.pendingSets > 0 ? ` · ${vm.review.pendingSets} sin registrar` : ''}
+              </dd>
+            </div>
+            <div className="flex gap-2">
+              <dt className="text-ink-500">Versiones</dt>
+              <dd className="font-semibold text-ink-900">
+                empezada con la v{vm.review.startedVersion}
+                {vm.review.versionsUsed.length > 0
+                  ? ` · series registradas con ${vm.review.versionsUsed.map((v) => `v${v}`).join(' y ')}`
+                  : ''}
+              </dd>
+            </div>
+            {durationText(vm.review) ? (
+              <div className="flex gap-2">
+                <dt className="text-ink-500">Duración</dt>
+                <dd className="font-semibold text-ink-900">{durationText(vm.review)}</dd>
+              </div>
+            ) : null}
+            {vm.review.finishReason ? (
+              <div className="flex gap-2">
+                <dt className="text-ink-500">Cierre</dt>
+                <dd className="font-semibold text-ink-900">
+                  {vm.review.finishReason === 'all_done'
+                    ? 'Completada'
+                    : 'Cerrada parcialmente por la clienta'}
+                </dd>
+              </div>
+            ) : null}
+          </dl>
+          {vm.review.comment ? (
+            <p className="mt-3 flex gap-3 rounded-3xl bg-white p-4 text-sm text-ink-700 shadow-soft">
+              <MessageCircle aria-hidden className="mt-0.5 size-5 shrink-0 text-sun-700" />
+              <span>
+                <span className="font-bold text-ink-900">Mensaje de {vm.clientFirstName}: </span>
+                {vm.review.comment}
+              </span>
+            </p>
+          ) : null}
+          <div className="mt-3">
+            <ExecutionReview review={vm.review} audience="trainer" timeZone={ctx.timeZone} />
+          </div>
+        </section>
+      ) : null}
+
       <section aria-labelledby="prescripcion" className="mt-6">
         <h2 id="prescripcion" className="text-lg font-bold text-ink-900">
-          Prescripción
+          Prescripción (versión vigente)
         </h2>
         <PrescriptionList items={vm.items} className="mt-3" />
       </section>
@@ -100,11 +156,11 @@ export default async function PublishedSessionPage(
           items={[
             'Editar: borrador de cambios con lo registrado bloqueado y publicar la versión 2',
             'Historial de versiones con el resumen de cambios',
-            'Análisis de la sesión: prescrito frente a realizado',
+            'Análisis de la sesión: totales por tipo (series, repeticiones y tonelaje) con sus fórmulas',
           ]}
         >
-          El modelo ya guarda cada versión publicada sin modificarla; la interfaz para editarlas
-          llega en los bloques siguientes.
+          El modelo ya guarda cada versión publicada sin modificarla y cada serie registrada con su
+          versión; la interfaz para editarlas y el análisis llegan en los bloques siguientes.
         </PendingFeature>
       </div>
     </>

@@ -8,6 +8,7 @@ import { type Silhouette } from '@/domain/library/exercise';
 import { type IsoDate, type IsoDateTime } from '@/domain/time';
 import { type ExecutionStatusV2 } from '@/domain/training/execution';
 import { type SessionContent } from '@/domain/training/session-v2';
+import { type ExecutionReviewVM } from './execution';
 
 /** Estado y avance de una sesión publicada (V1_SPEC §5.8). */
 export interface ExecutionVM {
@@ -158,6 +159,8 @@ export interface PublishedSessionVM {
   hasUnpublishedChanges: boolean;
   execution: ExecutionVM;
   items: TrainerPrescriptionItemVM[];
+  /** Prescrito frente a realizado, si la sesión ya se ha empezado. */
+  review: ExecutionReviewVM | null;
 }
 
 // ── Cliente ──────────────────────────────────────────────────────────────────
@@ -201,6 +204,8 @@ export interface ClientSessionDetailVM extends ClientSessionLineVM {
   today: IsoDate;
   coachNote: string | null;
   items: PrescriptionItemVM[];
+  /** Lo registrado frente a lo prescrito, si ya se ha empezado (B6). */
+  review: ExecutionReviewVM | null;
 }
 
 // ── Datos de la demostración (Configuración) ─────────────────────────────────
