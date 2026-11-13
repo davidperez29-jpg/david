@@ -1,4 +1,6 @@
-import { type ChildProcess, execFileSync, spawn } from 'node:child_process';
+import { type ChildProcess, execFileSync, spawn, spawnSync } from 'node:child_process';
+import { randomUUID } from 'node:crypto';
+import { existsSync, rmSync } from 'node:fs';
 import { request as httpRequest } from 'node:http';
 import { createRequire } from 'node:module';
 import { connect } from 'node:net';
@@ -41,21 +43,25 @@ async function assertPortFree(port: number) {
   if (answered) throw new Error(`El puerto ${port} ya está ocupado por otro servidor.`);
 }
 
-function startServer(port: number, env: Record<string, string>) {
-  const child = spawn(
-    process.execPath,
-    [NEXT_BIN, 'start', '-H', '127.0.0.1', '--port', String(port)],
-    {
-      env: { ...process.env, ...E2E_SERVER_ENV, TRAINPRO_DEMO_SPACES: 'off', ...env },
-      stdio: 'pipe',
-    },
-  );
+function startServer(port: number, env: Record<string, string>, host = '127.0.0.1') {
+  const child = spawn(process.execPath, [NEXT_BIN, 'start', '-H', host, '--port', String(port)], {
+    env: { ...process.env, ...E2E_SERVER_ENV, TRAINPRO_DEMO_SPACES: 'off', ...env },
+    stdio: 'pipe',
+  });
+  running.add(child);
+  child.once('exit', () => running.delete(child));
   let output = '';
   child.stdout?.on('data', (chunk) => (output += chunk));
   child.stderr?.on('data', (chunk) => (output += chunk));
   return {
     child,
     output: () => output,
+    /** Código de salida cuando el proceso termine (para los arranques que deben fallar). */
+    exited: () =>
+      new Promise<number | null>((resolve) => {
+        if (child.exitCode !== null || child.signalCode !== null) resolve(child.exitCode);
+        else child.once('exit', (code) => resolve(code));
+      }),
     ready: async () => {
       for (let i = 0; i < 150; i += 1) {
         // Si el proceso ha terminado (por ejemplo, el puerto estaba ocupado), no vale otro servidor.
@@ -103,6 +109,15 @@ const dbStatus = (dataDir: string) =>
     env: { ...process.env, TRAINPRO_DATA_DIR: dataDir },
     encoding: 'utf8',
   });
+
+/** `scripts/db.ts` con su código de salida y toda su salida (para los casos que deben fallar). */
+const dbScript = (dataDir: string, ...args: string[]) => {
+  const result = spawnSync(process.execPath, ['scripts/db.ts', ...args], {
+    env: { ...process.env, TRAINPRO_DATA_DIR: dataDir },
+    encoding: 'utf8',
+  });
+  return { code: result.status, output: `${result.stdout}${result.stderr}` };
+};
 
 test('B1-01 · los datos sobreviven a reiniciar el servidor con SIGTERM y con SIGKILL', async ({
   browser,
@@ -315,4 +330,273 @@ test('B1-11 · solo 127.0.0.1, Host ajeno → 403 y sin local-demo no hay «Entr
   } finally {
     await stop(server.child, 'SIGTERM');
   }
+});
+
+test('A-03 · un segundo servidor con la misma base no arranca, dice quién la usa y no invalida al primero', async ({
+  browser,
+}) => {
+  test.setTimeout(150_000);
+  const [port, otherPort] = [3194, 3195];
+  const dataDir = `.data/e2e/dos-servidores-${Date.now()}`;
+  await assertPortFree(port);
+  await assertPortFree(otherPort);
+  const first = startServer(port, { TRAINPRO_DATA_DIR: dataDir });
+  await first.ready();
+
+  // Mientras el primero la usa, `db:status` dice quién es.
+  const status = dbStatus(dataDir);
+  const holder = status.match(/En uso por el servidor de TrainPro \(proceso (\d+)/)?.[1];
+  expect(holder, status).toBeTruthy();
+
+  // Segundo servidor sobre la misma carpeta: se niega a arrancar y nombra al titular.
+  const second = startServer(otherPort, { TRAINPRO_DATA_DIR: dataDir });
+  expect(await second.exited()).toBe(1);
+  expect(second.output()).toContain('TrainPro no arranca');
+  expect(second.output()).toContain(`está en uso por el servidor de TrainPro (proceso ${holder}`);
+  await assertPortFree(otherPort);
+
+  // La ficha del titular es solo informativa: aunque se borre, el bloqueo (del sistema
+  // operativo) sigue, y un tercer intento tampoco arranca.
+  rmSync(`${dataDir}/trainpro.sqlite.lock.json`);
+  const third = startServer(otherPort, { TRAINPRO_DATA_DIR: dataDir });
+  expect(await third.exited()).toBe(1);
+  expect(third.output()).toContain('está en uso por otro proceso');
+
+  // Tampoco una restauración puede quitarle la base.
+  const backup = dbScript(dataDir, 'backup');
+  expect(backup.code, backup.output).toBe(0);
+  const copy = backup.output.match(/: (\S+\.sqlite)\s*$/m)?.[1];
+  expect(copy, backup.output).toBeTruthy();
+  const restore = dbScript(dataDir, 'restore', copy!);
+  expect(restore.code).not.toBe(0);
+  expect(restore.output).toContain('está en uso por');
+  expect(existsSync(`${dataDir}/trainpro.sqlite.restauracion.json`)).toBe(false);
+
+  // El primero sigue sirviendo y escribiendo con normalidad.
+  const context = await contextFor(browser, port);
+  const page = await context.newPage();
+  await enterAs(page, 'Alex, entrenador');
+  await createSessionForLucia(page, {
+    date: todayInMadrid(),
+    label: 'Mañana',
+    title: 'Tras el segundo servidor',
+  });
+  await context.close();
+  await stop(first.child, 'SIGTERM');
+  const after = dbStatus(dataDir);
+  expect(after).toContain('Sin servidor usándola.');
+  expect(after).toContain('Integridad: ok');
+});
+
+test('A-12 · el modo local-demo no arranca si escucha fuera de esta máquina (-H 0.0.0.0)', async () => {
+  test.setTimeout(90_000);
+  const port = 3196;
+  const dataDir = `.data/e2e/interfaz-${Date.now()}`;
+  await assertPortFree(port);
+  const server = startServer(port, { TRAINPRO_DATA_DIR: dataDir }, '0.0.0.0');
+  expect(await server.exited()).toBe(1);
+  expect(server.output()).toContain('el modo local-demo solo puede escuchar en esta máquina');
+  expect(server.output()).toContain('0.0.0.0');
+  await assertPortFree(port);
+  // Se comprueba antes de abrir la base: no ha llegado a crearla.
+  expect(existsSync(`${dataDir}/trainpro.sqlite`)).toBe(false);
+});
+
+/** Sesiones publicadas de Marta sin empezar, con sus series (leídas de la base). */
+function unstartedSessions(file: string) {
+  const db = new Database(file, { readonly: true, fileMustExist: true });
+  try {
+    const rows = db
+      .prepare(
+        `SELECT s.id, v.number, v.content FROM session s
+         JOIN session_version v ON v.session_id = s.id AND v.number = s.current_version
+         WHERE s.client_id = 'c-marta'
+           AND NOT EXISTS (SELECT 1 FROM session_log l WHERE l.session_id = s.id)
+         ORDER BY s.planned_date, s.day_order`,
+      )
+      .all() as { id: string; number: number; content: string }[];
+    return rows.map((row) => {
+      const content = JSON.parse(row.content) as { items: { id: string; sets: number }[] };
+      return {
+        id: row.id,
+        version: row.number,
+        sets: content.items.flatMap((item) =>
+          Array.from({ length: item.sets }, (_, k) => ({
+            prescriptionId: item.id,
+            setNumber: k + 1,
+          })),
+        ),
+      };
+    });
+  } finally {
+    db.close();
+  }
+}
+
+test('A-04 · corte brusco con escritores concurrentes: lo confirmado sigue, nada queda a medias y reenviar no duplica', async () => {
+  test.setTimeout(240_000);
+  const port = 3197;
+  const dataDir = `.data/e2e/corte-carga-${Date.now()}`;
+  const file = `${dataDir}/trainpro.sqlite`;
+  const base = `http://127.0.0.1:${port}`;
+  await assertPortFree(port);
+  let server = startServer(port, { TRAINPRO_DATA_DIR: dataDir });
+  await server.ready();
+
+  // Marta registra todas sus sesiones pendientes a la vez desde 8 «móviles».
+  const device = () => ({
+    recordedAt: new Date().toISOString(),
+    timeZone: 'Europe/Madrid',
+    utcOffsetMinutes: 60,
+  });
+  const sessions = unstartedSessions(file);
+  expect(sessions.length).toBeGreaterThan(2);
+  const plan = sessions.map((session) => [
+    {
+      sessionId: session.id,
+      body: {
+        commandId: `st-${randomUUID()}`,
+        clientId: 'c-marta',
+        type: 'start',
+        versionNumber: session.version,
+        device: device(),
+      },
+    },
+    ...session.sets.map((set) => ({
+      sessionId: session.id,
+      body: {
+        commandId: `ls-${randomUUID()}`,
+        clientId: 'c-marta',
+        type: 'log_set',
+        versionNumber: session.version,
+        prescriptionId: set.prescriptionId,
+        setNumber: set.setNumber,
+        supersedes: null,
+        // Sin valores medidos: vale para cualquier tipo de ejercicio prescrito.
+        completed: false,
+        note: null,
+        device: device(),
+      },
+    })),
+  ]);
+  const commands = plan.flat();
+  const send = async (command: (typeof commands)[number]) => {
+    try {
+      const response = await fetch(`${base}/api/cliente/sesiones/${command.sessionId}/comandos`, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          origin: base,
+          cookie: 'trainpro-cliente=c-marta',
+        },
+        body: JSON.stringify(command.body),
+        signal: AbortSignal.timeout(20_000),
+      });
+      return { status: response.status, body: (await response.json()) as Record<string, unknown> };
+    } catch {
+      return { status: 0, body: {} }; // sin respuesta: estaba en vuelo al cortar
+    }
+  };
+
+  // Se corta con SIGKILL a mitad de carga: cuando hay un tercio confirmado y siguen en vuelo.
+  const acked = new Set<string>();
+  const rejected: string[] = [];
+  const queue = plan.slice();
+  let killed = false;
+  const workers = Array.from({ length: 8 }, async () => {
+    while (queue.length > 0 && !killed) {
+      for (const command of queue.shift()!) {
+        if (killed) break;
+        const response = await send(command);
+        if (response.status === 200) acked.add(command.body.commandId);
+        else
+          rejected.push(`${command.body.type} ${response.status} ${String(response.body.error)}`);
+      }
+    }
+  });
+  const cutAt = Math.ceil(commands.length / 3);
+  let finished = false;
+  const done = Promise.all(workers).then(() => (finished = true));
+  for (let waited = 0; acked.size < cutAt && !finished && waited < 60_000; waited += 10) {
+    await new Promise((resolve) => setTimeout(resolve, 10));
+  }
+  expect(rejected, 'durante la carga, todo lo que responde es 200').toEqual([]);
+  expect(finished, 'el corte llega con escritores aún en vuelo').toBe(false);
+  expect(acked.size).toBeGreaterThanOrEqual(cutAt);
+  killed = true;
+  await stop(server.child, 'SIGKILL');
+  await done;
+  expect(acked.size).toBeLessThan(commands.length);
+
+  // En la base, sin reabrir con la app: lo confirmado está, y cada comando con su efecto entero.
+  const check = () => {
+    const db = new Database(file, { readonly: true, fileMustExist: true });
+    try {
+      const stored = new Set(
+        (db.prepare('SELECT command_id FROM client_command').all() as { command_id: string }[]).map(
+          (r) => r.command_id,
+        ),
+      );
+      const one = (sql: string) => (db.prepare(sql).get() as { n: number }).n;
+      return {
+        integrity: db.pragma('integrity_check', { simple: true }),
+        brokenKeys: (db.prepare('PRAGMA foreign_key_check').all() as unknown[]).length,
+        lostAfterAck: [...acked].filter((id) => !stored.has(id)).length,
+        commandWithoutSet: one(
+          `SELECT COUNT(*) n FROM client_command c WHERE c.type = 'log_set'
+           AND NOT EXISTS (SELECT 1 FROM set_log s WHERE s.client_set_id = c.command_id)`,
+        ),
+        setWithoutCommand: one(
+          `SELECT COUNT(*) n FROM set_log s WHERE s.client_set_id LIKE 'ls-%'
+           AND NOT EXISTS (SELECT 1 FROM client_command c WHERE c.command_id = s.client_set_id)`,
+        ),
+        duplicatedSets: one(
+          `SELECT COUNT(*) n FROM (SELECT session_log_id, prescription_id, set_number FROM set_log
+           WHERE supersedes IS NULL GROUP BY 1, 2, 3 HAVING COUNT(*) > 1)`,
+        ),
+        startWithoutLog: one(
+          `SELECT COUNT(*) n FROM client_command c WHERE c.type = 'start'
+           AND NOT EXISTS (SELECT 1 FROM session_log l WHERE l.session_id = c.session_id)`,
+        ),
+        sets: one(`SELECT COUNT(*) n FROM set_log WHERE client_set_id LIKE 'ls-%'`),
+        starts: one(`SELECT COUNT(*) n FROM client_command WHERE type = 'start'`),
+      };
+    } finally {
+      db.close();
+    }
+  };
+  const clean = {
+    integrity: 'ok',
+    brokenKeys: 0,
+    lostAfterAck: 0,
+    commandWithoutSet: 0,
+    setWithoutCommand: 0,
+    duplicatedSets: 0,
+    startWithoutLog: 0,
+  };
+  expect(check()).toMatchObject(clean);
+
+  // Nuevo arranque y reenvío de TODO (como haría cada cola): lo confirmado responde
+  // «already_applied», lo que no llegó se aplica, y nada se duplica.
+  await assertPortFree(port);
+  server = startServer(port, { TRAINPRO_DATA_DIR: dataDir });
+  await server.ready();
+  for (const command of commands) {
+    const response = await send(command);
+    expect(response.status, JSON.stringify(response.body)).toBe(200);
+    if (acked.has(command.body.commandId)) {
+      expect(response.body.result).toBe('already_applied');
+    } else {
+      expect(['applied', 'already_applied']).toContain(response.body.result);
+    }
+  }
+  for (const command of commands) {
+    expect((await send(command)).body.result).toBe('already_applied');
+  }
+  await stop(server.child, 'SIGTERM');
+  const final = check();
+  expect(final).toMatchObject(clean);
+  expect(final.sets).toBe(commands.filter((c) => c.body.type === 'log_set').length);
+  expect(final.starts).toBe(sessions.length);
+  expect(dbStatus(dataDir)).toContain('Integridad: ok');
 });
