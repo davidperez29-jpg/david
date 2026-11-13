@@ -169,7 +169,7 @@ Los saltos y aterrizajes se clasifican por dirección (patrón). La ejecución u
 - **Detalle:** `V1_SPEC.md` §8.3 y §9.2.
 - **Técnicas aplicadas:** P-80 (espacios E2E como archivos aparte), P-84 (RIR por serie en la semilla) y P-87 (protección local: `127.0.0.1`, `TRAINPRO_MODE`, `Host` permitido y permisos del archivo).
 
-## ADR-24 · Ejecución del bloque 2: comandos idempotentes, cola en IndexedDB y versión de inicio · Adoptada (12 nov 2026, pendiente de tu revisión)
+## ADR-24 · Ejecución del bloque 2: comandos idempotentes, cola en IndexedDB y versión de inicio · Adoptada (12 nov 2026, pendiente de tu revisión) · Ampliada por ADR-27, ADR-28, ADR-29 y ADR-31
 
 **Autorización:** tu mensaje del bloque 2, que acepta la dirección técnica y autoriza solo ese bloque. Al terminar hay que parar y esperar tu revisión.
 
@@ -193,9 +193,157 @@ Los saltos y aterrizajes se clasifican por dirección (patrón). La ejecución u
 
 **Detalle:** `EXECUTION.md` y `V1_SPEC.md` §9.3.
 
+## ADR-25 · Un solo proceso por base con un bloqueo del sistema operativo, y restauración con diario · Adoptada (13 nov 2026, PROMPT 14)
+
+**Contexto:** la auditoría (A-01 a A-04, A-20) mostró dos servidores sobre la misma base, una restauración con el servidor activo y una restauración no atómica que perdía el WAL. Tu decisión: «exclusividad real para el proceso que utiliza la base de datos», sin depender de una variable de entorno ni de una marca que se pueda borrar.
+
+**Decisión:**
+
+- **Exclusividad:** bloqueo del sistema operativo sobre `<base>.lock`, obtenido con SQLite (`locking_mode=EXCLUSIVE` y una escritura): `fcntl` en Linux y macOS, `LockFileEx` en Windows.
+  - Lo toman el servidor, `db:restore` y `db:recover`.
+  - El sistema lo libera si el proceso muere, así que nunca hay que borrar un bloqueo «obsoleto».
+  - `<base>.lock.json` solo informa del titular.
+  - El servidor comprueba en cada uso que la base y el bloqueo siguen siendo los mismos archivos.
+- **Restauración:** copia verificada → diario → copia previa con la API de copia (incluye el WAL) → temporal escrito, sincronizado y validado → `rename` atómico → verificación final o vuelta a la copia previa. La recuperación decide por la fase del diario y es repetible.
+
+**Cambio respecto a la propuesta de la auditoría (§14.3):** la auditoría proponía una marca exclusiva con comprobación de proceso, o `locking_mode=EXCLUSIVE` **sobre la base**, que impedía `db:backup` desde fuera.
+
+- La marca no cumple tu requisito: se puede borrar, y un PID puede reutilizarse.
+- El bloqueo se pone sobre un **archivo aparte**. Así es igual de real, y la base sigue legible para `db:backup` y `db:status`.
+
+**Alternativas descartadas:**
+
+- `.pid` con `wx`: borrable, con PID reutilizados.
+- Bloqueo con `flock` mediante una dependencia nueva: no autorizada.
+- Bloqueo sobre la base: sin copias en línea.
+
+**Limitaciones:** en sistemas de archivos de red no protege. En Windows está documentado, no probado (A-23).
+
+**Detalle:** `AUDIT_BLOCK1.md` §15.2–15.3; código en `src/server/db/lock.ts` y `backup.ts`.
+
+## ADR-26 · Constructor: guardado automático en el servidor y copia local recuperable · Adoptada (13 nov 2026, PROMPT 14)
+
+**Contexto:** A-05 a A-07. Tu decisión coincide con la opción recomendada en la auditoría (§14.4).
+
+**Decisión:**
+
+- **Guardado automático** a los 2 s del último cambio, de uno en uno, con la revisión del borrador. «Guardado» solo con la confirmación del servidor.
+- **Errores tipados** de las acciones de servidor, en lugar de excepciones que desmontan la pantalla.
+- **Copia local** en `localStorage` por entrenador, cliente y sesión, que se borra al confirmarse.
+  - Si el servidor tiene una revisión posterior, decide la persona.
+  - Mientras decide, no se edita.
+- **Aviso al salir:** `beforeunload` y diálogo en los enlaces internos.
+
+**Por qué 2 s:** guarda casi en cuanto se deja de escribir, sin una petición por tecla. La copia local cubre ese intervalo.
+
+**Por qué `localStorage` y no IndexedDB:** el borrador es un solo documento pequeño, se lee de forma síncrona al abrir y no necesita cola. La ejecución sí usa IndexedDB (ADR-24).
+
+**Detalle:** `AUDIT_BLOCK1.md` §15.4.
+
+## ADR-27 · La identidad forma parte de cada comando y se valida en el servidor · Adoptada (13 nov 2026, PROMPT 14)
+
+**Contexto:** A-08 y A-09. Tu requisito: no basta con filtrar en la interfaz.
+
+**Decisión:**
+
+- Cada comando lleva `clientId`. El servidor responde `409 identity_mismatch` si no es la identidad de la petición, antes de cualquier efecto. `payload_hash` no lo incluye.
+- La cola del móvil guarda el titular y solo envía lo suyo. Lo de otra persona espera a que esa persona vuelva y no se descarta nunca en silencio.
+- **«Reintentar»** vuelve a poner en cola los errores recuperables con su identificador original.
+
+**Detalle:** `EXECUTION.md` §5 y §6; `AUDIT_BLOCK1.md` §15.5–15.6.
+
+## ADR-28 · Reglas de la hora de ejecución T1–T4 · Adoptada (13 nov 2026, PROMPT 14)
+
+**Contexto:** A-10. Tu requisito: no confiar ciegamente en el reloj del móvil, pero no impedir sesiones legítimas empezadas antes.
+
+**Decisión:**
+
+- **T1:** imposible (antes de 2020 o desde 2100) → `422`.
+- **T2:** adelantada respecto al servidor → recepción.
+- **T3:** más de 5 min antes de la publicación (inicio) o del inicio (lo demás) → recepción.
+- **T4:** en otro caso, la del dispositivo.
+
+Se guardan siempre la hora del dispositivo, su zona, su desfase, la recepción y el motivo del ajuste.
+
+**Por qué 5 min de tolerancia:** cubren la deriva normal entre relojes sin sincronizar, sin aceptar fechas de días antes.
+
+**Por qué 2020–2100:** un reloj que marca 1970 o 2000 (típico tras perder la batería) es claramente imposible para esta aplicación. Cualquier sesión real cae dentro.
+
+**Detalle:** `EXECUTION.md` §7.1.
+
+## ADR-29 · Espera de 1 s ante una base ocupada y errores de almacenamiento clasificados · Adoptada (13 nov 2026, PROMPT 14)
+
+**Contexto:** A-11. Tu requisito: no reducir los tiempos de espera sin comprobar sus consecuencias.
+
+**Decisión:** `busy_timeout` de 5 s → **1 s** (`BUSY_TIMEOUT_MS`). Los errores de almacenamiento se clasifican:
+
+- `storage_busy` → `503`, `Retry-After: 2`;
+- `storage_unavailable` → `503`, `Retry-After: 10`;
+- `storage_error` → `500`, definitivo.
+
+**Justificación y consecuencias comprobadas:**
+
+- **Sin espera en el uso normal:** con ADR-25 no hay otro escritor de TrainPro, y dentro del proceso el controlador es síncrono. La prueba de carga con 8 escritores concurrentes no da ningún `storage_busy`.
+- **La espera detiene todo el servidor:** 1 s la acota.
+- **Las operaciones que fallan no dejan nada:** la transacción se deshace entera y el cliente reintenta con el mismo identificador. Probado: falla en menos de 2,5 s y el reintento entra una vez.
+- **Punto de control antes de una copia** (migrar, restablecer): si una herramienta ajena lo impide, la operación se detiene con un mensaje y no copia nada a medias.
+
+**Limitación:** el controlador sigue siendo síncrono. Para varios usuarios, PostgreSQL en la Fase 2.
+
+## ADR-30 · `local-demo` se niega a arrancar fuera de la propia máquina · Adoptada (13 nov 2026, PROMPT 14)
+
+**Contexto:** A-12. Tu decisión: negarse a arrancar, no solo documentarlo (§14.5).
+
+**Decisión:** al arrancar (`instrumentation.ts` → `startup.ts`), en `local-demo` se leen las direcciones reales de los sockets abiertos del proceso. Si alguna no es loopback (127.0.0.0/8 o `::1`), o no se puede comprobar, el proceso termina con un mensaje. Se mantiene la comprobación de `Host`.
+
+**Por qué el socket y no los argumentos:** los argumentos se pueden pasar de muchas formas (`-H`, variables, otro script). El socket es la verdad.
+
+**Coste:** usa `process._getActiveHandles`, que no está documentado. Si desapareciera, la comprobación falla de forma segura: no arranca.
+
+**Detalle:** `AUDIT_BLOCK1.md` §15.9.
+
+## ADR-31 · La procedencia se guarda con cada registro · Adoptada (13 nov 2026, PROMPT 14)
+
+**Contexto:** A-14 y la regla de `AGENTS.md`.
+
+**Decisión:** migración `003-procedencia` con `origin`, `recorded_by` y `origin_method` en `session_log` y `set_log`, más el motivo del ajuste del reloj.
+
+- Hoy todo es `self_reported` y `client`, y lo escribe el servidor.
+- Lo importado, calculado o estimado exige `origin_method`.
+- No se inventa ninguna otra procedencia mientras no haya integraciones.
+
+**Detalle:** `DATA_MODEL.md` §5 y `EXECUTION.md` §2.
+
+## ADR-32 · Semilla relativa a la fecha de siembra · Adoptada (13 nov 2026, PROMPT 14)
+
+**Contexto:** A-13. Las pruebas dependían del día de la semana.
+
+**Decisión:** el azar y el calendario de la semilla dependen de los días desde la fecha de siembra, no de la fecha absoluta ni del día de la semana (`SEED_VERSION` 3). Las E2E que necesitan una hora concreta la fijan con el reloj del navegador.
+
+**Detalle:** `AUDIT_BLOCK1.md` §15.10.
+
 ## Decisiones pendientes
 
-**Auditoría del 13 de noviembre de 2026:** las decisiones que plantea (bloque 2 ya implementado, correcciones R1–R13, instancia única, guardado del constructor, definición de cumplimiento, correcciones justificadas, Windows) están en `AUDIT_BLOCK1.md` §14. Ninguna se ha aplicado.
+**Auditoría del 13 de noviembre de 2026:** las decisiones que plantea están en `AUDIT_BLOCK1.md` §14.
+
+**Tus decisiones del PROMPT 14** (13 nov 2026):
+
+- conservar el bloque 2 (§14.1);
+- autorizar las correcciones (§14.2);
+- exclusividad real del proceso (§14.3, ADR-25);
+- guardado automático con copia local (§14.4, ADR-26);
+- `local-demo` se niega a arrancar fuera de la propia máquina (§14.5, ADR-30);
+- convertir las pruebas de la auditoría en permanentes (§14.9).
+
+**Siguen pendientes:**
+
+- definición de «cumplimiento» y ajuste del descanso (§14.6);
+- correcciones justificadas (§14.7);
+- verificación en Windows (§14.8);
+- copias programadas y rotación (A-18);
+- página de error de la base (A-15).
+
+**El bloque 3 no está autorizado.**
 
 **Revisión del 6 de noviembre de 2026 (segunda).** **No he marcado ninguna decisión como aprobada.** Cuando indico «tu indicación», se trata de algo que has escrito expresamente en tus mensajes.
 

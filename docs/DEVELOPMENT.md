@@ -54,8 +54,11 @@ Los tests de servicios fijan la fecha (`2026-11-04`; los de la ejecución, `2026
 | `TRAINPRO_ALLOWED_HOSTS` | `localhost,127.0.0.1` | Nombres de host aceptados (sin puerto ni comodines). Cualquier otro recibe `403`                    |
 | `TRAINPRO_TIME_ZONE`     | `Europe/Madrid`       | Zona horaria IANA para calcular «hoy»                                                               |
 | `TRAINPRO_DEMO_SPACES`   | `off`                 | `on` solo en las E2E (exige `local-demo`): un archivo SQLite por espacio                            |
+| `TRAINPRO_TEST_PAUSE_AT` | (vacío)               | **Solo pruebas:** `scripts/db.ts` se detiene en esa fase de la restauración para interrumpirla      |
 
 Se validan al arrancar (`src/server/env.ts`): un valor inválido detiene la aplicación con un mensaje claro.
+
+**Comprobaciones de arranque** (`src/server/startup.ts`, desde `src/instrumentation.ts`): en `local-demo`, si el servidor escucha en una dirección que no es de esta máquina, no arranca; y si otro proceso tiene la base, tampoco, y dice cuál.
 
 ## Base de datos local, copias y restauración
 
@@ -64,8 +67,11 @@ Se validan al arrancar (`src/server/env.ts`): un valor inválido detiene la apli
   - `pnpm db:backup` o «Hacer una copia ahora» (Configuración), con el servidor en marcha o parado;
   - automáticamente antes de migrar, de restablecer y de restaurar.
   - Cada copia se verifica: `integrity_check`, claves ajenas y migraciones iguales a las del código.
-- **Restaurar:** para el servidor y ejecuta `pnpm db:restore <nombre o ruta>`. Se niega si el servidor tiene la base abierta (marca `.data/trainpro.sqlite.pid`), verifica la copia, guarda el estado actual como `antes-de-restaurar`, sustituye el archivo y vuelve a verificar.
-- **Estado:** `pnpm db:status` muestra la ubicación, las migraciones, la fecha de la semilla, los recuentos, la integridad y las copias.
+- **Un solo proceso por base:** el servidor, `db:restore` y `db:recover` toman la base en exclusiva con un bloqueo del sistema operativo sobre `.data/trainpro.sqlite.lock` (el archivo no se borra nunca). Si el proceso muere, el sistema libera el bloqueo: no hay bloqueos obsoletos que borrar. `.data/trainpro.sqlite.lock.json` solo informa de quién lo tiene. `pnpm db:backup` y `pnpm db:status` solo leen y no lo necesitan (`AUDIT_BLOCK1.md` §15.3, ADR-25).
+- **Restaurar:** para el servidor y ejecuta `pnpm db:restore <nombre o ruta>`. Se niega si otro proceso tiene la base (y dice cuál). Verifica la copia; guarda el estado actual (también lo del WAL) como `antes-de-restaurar`; construye la base nueva en `trainpro.sqlite.restaurando`, la valida y la sustituye con un `rename` atómico; solo la da por terminada si la verifica. Un diario (`trainpro.sqlite.restauracion.json`) permite terminarla o anularla si se interrumpe.
+- **Restauración interrumpida:** `pnpm db:recover`, o simplemente arrancar el servidor, que lo hace antes de abrir la base. Nunca deja una base a medias: anula, termina o vuelve a la copia previa (`AUDIT_BLOCK1.md` §15.2).
+- **Base ocupada por una herramienta ajena** (por ejemplo, un visor de SQLite con una escritura abierta): el servidor espera como mucho 1 s y responde un error recuperable (`storage_busy`); el móvil y el constructor lo reintentan.
+- **Estado:** `pnpm db:status` muestra la ubicación, las migraciones, la fecha de la semilla, los recuentos, la integridad, qué proceso usa la base, si hay una restauración interrumpida y las copias.
 - **Empezar de cero:** «Restablecer datos demo» en Configuración: guarda una copia y vuelve a sembrar con la fecha de hoy.
 - **Migraciones:** solo hacia delante. Una nueva va en `src/server/db/migrations/` y se añade a `MIGRATIONS` en `migrate.ts`. Nunca se edita una ya aplicada: el arranque falla si su suma de comprobación cambia.
 

@@ -47,6 +47,8 @@ La ficha del cliente solo contiene lo necesario para entrenar (nombre, objetivo,
 - **Sin terceros en el navegador**: las fuentes se sirven desde el propio dominio y no hay analítica, píxeles ni CDN.
 - **Service worker sin datos personales**: solo guarda en caché la página sin conexión y un icono.
 - **Configuración validada al arrancar** (`src/server/env.ts`).
+- **`local-demo` solo en esta máquina** (13 nov 2026, A-12, ADR-30): al arrancar se lee la dirección real de los sockets del servidor y, si alguna no es loopback (127.0.0.0/8 o `::1`), **no arranca**. Se mantiene la comprobación de `Host` (`proxy.ts`) contra el DNS rebinding. **`local-demo` no equivale a autenticación:** quien use el navegador de este equipo puede entrar como cualquier persona ficticia.
+- **Un solo proceso por base** (ADR-25) y **cola del móvil por persona**: un comando de otra identidad se rechaza en el servidor (`identity_mismatch`, ADR-27).
 - **Telemetría de Next.js**: está activada por defecto y envía datos anónimos de compilación a Vercel. Se recomienda desactivarla (`pnpm exec next telemetry disable`). Se comprobó que **no** se desactiva poniendo la variable en `.env.local`.
 
 ## Pendiente (fases posteriores)

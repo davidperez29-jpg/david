@@ -17,6 +17,25 @@ Fases definidas en la especificación maestra (`MASTER_SPEC.md`). Cada fase empi
 | 9      | **Readaptación e informes**: procesos, fases, criterios, informes                                                                                                                                                                                                                                                     | Pendiente                                                                        |
 | 10     | **Validación y despliegue**: seguridad, pruebas, rendimiento, accesibilidad, PWA (incluido iOS real) y despliegue (solo tras autorización). _Propuesta (P-57): dividirla en 10a, antes de la primera beta con datos reales, y 10b, validación a escala._                                                              | Pendiente                                                                        |
 
+> **Estado de V1 (13 de noviembre de 2026):**
+>
+> - **Bloques 1 y 2:** implementados y auditados (`AUDIT_BLOCK1.md`).
+> - **Bloque de correcciones** (PROMPT 14, R1–R11; detalle en `AUDIT_BLOCK1.md` §15 y ADR-25 a ADR-32), aplicado y probado:
+>   - restauración segura y recuperable;
+>   - un solo proceso por base;
+>   - constructor sin pérdida de trabajo;
+>   - cola por persona y reintentos;
+>   - reglas de la hora;
+>   - base ocupada acotada;
+>   - `local-demo` solo en esta máquina;
+>   - procedencia guardada;
+>   - pruebas deterministas.
+> - **Bloque 3 (análisis): no autorizado.** Antes necesita la definición de «cumplimiento» (`AUDIT_BLOCK1.md` §14.6).
+> - **Pendiente fuera de este bloque:**
+>   - verificación en Windows (A-23);
+>   - página de error de la base (A-15);
+>   - copias programadas y rotación (A-18, a decidir).
+
 Algunas pantallas de fases posteriores ya existen como **propuesta visual con datos ficticios**. Su lógica de dominio está probada, pero no tienen persistencia ni edición. `PHASE1_REPORT.md` detalla qué funciona de verdad y qué no.
 
 ## Hoja de ruta estratégica (propuesta, 6 de noviembre de 2026)

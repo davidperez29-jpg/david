@@ -4,6 +4,8 @@
 
 **Alcance:** entorno, persistencia, integridad, migraciones, copias, constructor, sesiones y versiones, y seguridad local. Incluye una especificación del bloque 2 contrastada con el código y criterios de aceptación verificables.
 
+> **Actualización (13 nov 2026, PROMPT 14):** las correcciones R1–R11 están aplicadas y probadas. El estado de cada problema, con su causa raíz, la solución y las pruebas, está en el **§15**. Lo que sigue (§1–§14) es el registro original de la auditoría.
+
 **Sin cambios de código:** las pruebas se han hecho con scripts propios en un directorio temporal, contra servidores de producción arrancados aparte con datos ficticios en `.data/auditoria/`. No se ha tocado la base principal ni ningún archivo del proyecto salvo esta documentación.
 
 > **Contradicción de partida.** El encargo de esta auditoría (PROMPT 13) da por hecho que el bloque 2 no existe. En la rama sí existe: se implementó con el PROMPT 11 (commits `c8c0d90` a `a5799dd`; `EXECUTION.md`, `V1_SPEC.md` §9.3). No se ha retirado ni modificado. Esta auditoría lo trata como parte del estado real. Por eso el §11 contrasta tus requisitos del bloque 2 con lo que ya hay, en lugar de redactar otra especificación que duplicaría `EXECUTION.md`. Qué hacer con él es una decisión tuya (§14).
@@ -286,6 +288,8 @@ Todo lo anterior es **P** salvo donde se indica.
 - **Media:** fiabilidad, seguridad o integridad con condiciones especiales.
 - **Baja:** calidad, claridad o defensa en profundidad.
 
+> Estado actual de cada problema: §15.1.
+
 No se ha encontrado ningún problema crítico: en el uso normal (un servidor, sin restaurar copias) no se ha perdido ni duplicado nada.
 
 | Id   | Gravedad | Área                  | Problema                                                                                                                                                                                   | Evidencia                                                                             | Propuesta                                                                         |
@@ -503,3 +507,327 @@ El detalle del diseño está en `EXECUTION.md` (modelo, estados, API, cola, conf
 7. **Correcciones justificadas:** motivo opcional en las correcciones de la clienta y anotaciones del entrenador (`set_annotation`).
 8. **Verificar en Windows:** en tu equipo, o con una máquina Windows en CI (P-04).
 9. **Convertir las pruebas de esta auditoría** (cortes con carga, restauración interrumpida, dos servidores, navegador compartido, hora del dispositivo) en pruebas permanentes del proyecto.
+
+## 15. Correcciones aplicadas (PROMPT 14, 13 de noviembre de 2026)
+
+**Autorización:** tu PROMPT 14 acepta conservar el bloque 2 (§14.1), autoriza las correcciones R1–R11 y decide tres cosas: exclusividad real del proceso que usa la base (§14.3), guardado automático con copia local (§14.4) y que `local-demo` **se niegue a arrancar** fuera de la propia máquina (§14.5). **No autoriza el bloque 3**, que no se ha empezado.
+
+**Restricciones respetadas:** ninguna dependencia nueva; Node 26.13.1, Next.js 16.4.5, React 19.3.1 y SQLite 3.53.4 (de `better-sqlite3` 13.0.3) sin cambios; sin servicios externos ni despliegues; solo datos ficticios; sin reescribir el historial de Git.
+
+Lo anterior de este documento (§1–§14) se conserva tal cual, como registro de la auditoría. El estado actual es el de esta sección.
+
+### 15.1 Estado de cada problema
+
+| Id   | Estado                                                                                                       | Evidencia                                  | Commit                       |
+| ---- | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------ | ---------------------------- |
+| A-01 | Corregido                                                                                                    | P                                          | `099f0e7`                    |
+| A-02 | Corregido                                                                                                    | P                                          | `099f0e7`                    |
+| A-03 | Corregido                                                                                                    | P                                          | `8067eff`, pruebas `07dd83a` |
+| A-04 | Corregido                                                                                                    | P                                          | `8067eff`, `099f0e7`         |
+| A-05 | Corregido                                                                                                    | P                                          | `e61be28`                    |
+| A-06 | Corregido para enlaces internos, recargar y cerrar; el botón «atrás» del navegador lo protege la copia local | P (enlaces, recarga, cierre) · I («atrás») | `e61be28`                    |
+| A-07 | Corregido                                                                                                    | P                                          | `e61be28`                    |
+| A-08 | Corregido                                                                                                    | P                                          | `7d9d168`                    |
+| A-09 | Corregido                                                                                                    | P                                          | `7d9d168`                    |
+| A-10 | Corregido (reglas T1–T4)                                                                                     | P                                          | `7d9d168`                    |
+| A-11 | Acotado a 1 s con error controlado; el controlador sigue siendo síncrono                                     | P                                          | `7d9d168`                    |
+| A-12 | Corregido                                                                                                    | P                                          | `8067eff`, pruebas `07dd83a` |
+| A-13 | Corregido                                                                                                    | P                                          | `a990b2b`                    |
+| A-14 | Corregido (migración `003`)                                                                                  | P                                          | `7d9d168`                    |
+| A-15 | Sin cambios (fuera del alcance de este encargo)                                                              | N                                          | —                            |
+| A-16 | Corregido: copias y copia previa con permisos `600`                                                          | P                                          | `099f0e7`                    |
+| A-17 | Corregido: las copias quedan sin `-wal` ni `-shm`                                                            | P                                          | `099f0e7`                    |
+| A-18 | En parte: cada copia se sincroniza a disco; sin copias programadas ni rotación                               | I (`fsync`) · N (resto) · ?                | `099f0e7`                    |
+| A-19 | Aceptado: la aplicación valida la prescripción (probado); la base no                                         | P                                          | —                            |
+| A-20 | Corregido: si la base o su bloqueo se borran por fuera, deja de escribir                                     | P                                          | `8067eff`                    |
+| A-21 | En parte: corregidas las afirmaciones que estas correcciones dejaban obsoletas                               | I                                          | este commit de documentación |
+| A-22 | Sin cambios (no se cambian versiones)                                                                        | P                                          | —                            |
+| A-23 | Pendiente: Windows sigue sin ejecutarse en Windows                                                           | N                                          | —                            |
+
+### 15.2 Restauración segura y recuperable (A-01, A-02)
+
+**Problema:** tras un corte, `db:restore` perdía lo confirmado que estaba en el WAL, y la restauración sobrescribía el archivo en el sitio: interrumpida, podía dejar una base que no abría o distinta e «íntegra».
+
+**Causa raíz:**
+
+- La copia «antes-de-restaurar» copiaba solo el archivo principal; lo confirmado que seguía en el WAL no estaba en ella, y después se borraba el WAL.
+- El nuevo estado se escribía directamente sobre la base activa, sin archivo temporal ni diario: no había forma de saber en qué punto se había quedado.
+
+**Solución** (`src/server/db/backup.ts`, `restoreBackup`):
+
+1. **Exige el bloqueo exclusivo** de la ubicación de datos (§15.3): con el servidor en marcha, se rechaza.
+2. **Verifica la copia elegida** antes de tocar nada: `integrity_check`, claves ajenas y migraciones iguales a las del código (versión y suma de comprobación).
+3. **Diario** `<base>.restauracion.json`, escrito de forma atómica, con la fase (`preparando` → `listo-para-sustituir` → `sustituido`).
+4. **Copia previa** con la API de copia de SQLite sobre la base abierta, así que **incluye el WAL**. Queda autosuficiente (diario `DELETE`), verificada, con permisos `600` y en `backups/`. Si la base actual está dañada, se guardan sus archivos tal cual (con su WAL) y se indica que esa copia no está verificada.
+5. **Archivo temporal** `<base>.restaurando`: se escribe por bloques, `fsync` y se cierra; se valida abierto en modo `DELETE` y se vuelve a sincronizar.
+6. **Sustitución atómica** con `rename` y `fsync` del directorio (en Windows, Node sustituye el archivo con `MoveFileEx`, cuya atomicidad no está garantizada formalmente, y no hay `fsync` del directorio; no se ha probado allí). Antes, si junto a la base hubiera un WAL con contenido, se para: aplicarlo a la base nueva la dañaría.
+7. **Solo se da por terminada** si la base sustituida se verifica. Si no, se vuelve a la copia previa.
+
+**Recuperación** (`recoverInterruptedRestore`): la ejecutan el servidor al arrancar y `pnpm db:recover`, siempre con el bloqueo. Decide por la fase del diario y los archivos que existen:
+
+- **No se llegó a sustituir:** se anula (`anulada`). La base no se tocó; se borran el temporal y una copia previa a medias.
+- **Ya se sustituyó y la base es válida:** se da por terminada (`completada`).
+- **La base sustituida no es válida:** se vuelve a la copia previa (`revertida`).
+
+Es repetible: si se interrumpe la propia recuperación, la siguiente llega al mismo resultado.
+
+**Pruebas:**
+
+- `src/server/db/restore.test.ts`:
+  - recupera exactamente la copia y guarda verificada la previa, con `600` y sin `-wal`;
+  - A-01: la copia previa conserva lo que solo estaba en el WAL tras un corte;
+  - interrupción en cada fase (`preparando`, `copia-previa`, `escribiendo`, `escrito`, `validando`, `sustituyendo`, `sustituido`) y durante la recuperación;
+  - vuelta atrás si la base sustituida está dañada;
+  - una copia dañada se rechaza sin crear diario ni temporal;
+  - sin bloqueo no se restaura.
+- `src/server/db/concurrency.test.ts`, con **procesos reales**: `pnpm db:restore` se mata con `SIGKILL` en cada fase (punto de pausa de pruebas `TRAINPRO_TEST_PAUSE_AT`) y después `pnpm db:recover`; también se mata la recuperación, y una restauración nueva recupera antes la anterior. Pasada tres veces seguidas sin fallos.
+
+**Limitaciones:**
+
+- En sistemas de archivos de red, `rename` y los bloqueos no son fiables: la base debe estar en un disco local.
+- En Windows solo está **documentado** [D] (A-23).
+
+### 15.3 Un solo proceso por base (A-03, A-04, A-20)
+
+**Problema:** podían arrancar dos servidores sobre la misma base y uno confirmaba escrituras que se perdían; la marca `.pid` se sobrescribía o la borraba otro proceso, y `db:restore` se ejecutaba con un servidor activo; si se borraba `.data` con el servidor en marcha, seguía aceptando datos.
+
+**Causa raíz:** la exclusividad dependía de una marca en un archivo, no de un mecanismo del sistema: cualquiera podía sobrescribirla o borrarla, y un PID puede reutilizarse.
+
+**Solución** (`src/server/db/lock.ts`, `acquireOsLock` en `sqlite.ts`; ADR-25):
+
+- **Bloqueo del sistema operativo** sobre `<base>.lock`, obtenido a través de SQLite (`locking_mode=EXCLUSIVE` más una escritura): `fcntl` en Linux y macOS, `LockFileEx` en Windows. No es una marca: lo tiene un solo proceso y nadie más puede liberarlo.
+- **Cierres inesperados:** si el titular muere (también con `SIGKILL`), el sistema libera el bloqueo. No hay bloqueos obsoletos ni PID reutilizados que interpretar, así que **nunca se borra un bloqueo automáticamente**. El archivo `.lock` no se borra nunca.
+- **Quién lo tiene:** `<base>.lock.json` (proceso, equipo, función, desde cuándo). Es solo informativo: borrarlo no libera nada. `pnpm db:status` lo muestra.
+- **Quién lo toma:** el servidor al arrancar (si está ocupado, no arranca y nombra al titular), `pnpm db:restore` y `pnpm db:recover`. `pnpm db:backup` no lo necesita: solo lee una instantánea coherente con la API de copia.
+- **Detección de manipulación (A-20):** en cada uso, el servidor comprueba que la base y el bloqueo siguen siendo los mismos archivos (dispositivo e inodo). Si alguien los borra o los sustituye por fuera, deja de escribir y responde `storage_unavailable` en lugar de perder datos.
+- **Recuperación administrativa:** no hace falta borrar nada a mano. Si un proceso murió, el bloqueo ya está libre; si sigue vivo, `db:status` dice cuál es y hay que pararlo.
+
+**Pruebas:**
+
+- `src/server/db/concurrency.test.ts`: otro proceso no puede tomar el bloqueo y recibe quién lo tiene; `db:restore` se rechaza mientras otro lo tiene; tras `SIGKILL` del titular, el bloqueo queda libre.
+- `src/server/db/store.test.ts`: el bloqueo se toma y se libera; borrar la base o el `.lock` detiene las escrituras.
+- `e2e/restart.spec.ts` (A-03), con servidores reales: el segundo servidor no arranca y nombra al titular; borrar `.lock.json` no libera el bloqueo; `db:restore` se rechaza; el primero sigue escribiendo; al pararlo, `db:status` dice «Sin servidor usándola.».
+
+**Limitaciones:**
+
+- En Linux y macOS, alguien con permisos puede borrar `.lock` a mano. El titular lo detecta y deja de escribir, pero un proceso nuevo podría tomar un bloqueo sobre el archivo nuevo. **Nunca escriben dos**, pero el primero queda inutilizable hasta reiniciarlo.
+- Sistemas de archivos de red: sin bloqueos fiables, no protege.
+
+### 15.4 Constructor sin pérdida de trabajo (A-05, A-06, A-07)
+
+**Problema:** un error al guardar sustituía la página por «Algo no ha ido bien» y se perdía lo no guardado; cambiar de sección desde el menú no avisaba; no había guardado automático ni copia local.
+
+**Causa raíz:** las acciones de servidor lanzaban la excepción hasta el límite de error de Next.js, que desmonta la pantalla; el estado del constructor solo vivía en memoria; la navegación interna de Next.js no dispara `beforeunload`.
+
+**Solución:**
+
+- **Errores tipados** (`actions.ts`, `safely`): guardar y publicar devuelven `{ ok: false, reason }` (`storage_busy`, `storage_unavailable`, `storage_error`, `server_error`) en lugar de lanzar. El contenido sigue en pantalla.
+- **Guardado automático** (`use-draft-autosave.ts`): 2 s después del último cambio.
+  - Un solo guardado a la vez: lo que cambie mientras tanto se guarda después.
+  - Cada respuesta solo da por guardado el contenido que **envió**, así que una respuesta antigua no puede pisar cambios recientes.
+  - Estados visibles: «Cambios pendientes de guardar…», «Guardando…», «Borrador guardado · hh:mm» (**solo** con la confirmación del servidor), «No se ha podido guardar…» con «reintentar ahora» y reintento automático a los 5 s si es recuperable.
+  - Si otra pestaña guardó antes, el servidor responde conflicto por revisión y no se pisa nada.
+- **Copia local** (`draft-backup.ts`): `localStorage` con la clave `trainpro:borrador:v1:<entrenador>:<cliente>:<sesión>`, que guarda también la identidad y la revisión base. Se escribe en cada cambio y se borra cuando el servidor confirma ese contenido.
+  - Al volver, «Tienes cambios sin guardar de una visita anterior»: «Recuperar mis cambios» o «Descartarlos».
+  - Si el servidor tiene una revisión posterior: «Usar mi copia» o «Quedarme con la versión guardada». Mientras se decide, **no se edita**, y nada se sustituye en silencio.
+  - Nunca se ofrece la copia de otra identidad: está en la clave y se comprueba al leer.
+  - Si otra pestaña del mismo navegador guarda o borra esa copia, el aviso se actualiza o se retira.
+- **Salida segura** (`leave-guard.tsx`): con cambios sin confirmar, cerrar o recargar avisa (`beforeunload`), y los enlaces internos (menú, migas) abren un diálogo: «Guardar y salir» (si falla, lo dice y no sale), «Salir (se conserva una copia)» o «Seguir editando».
+
+**Pruebas** (`e2e/builder-protection.spec.ts`, 8, y `src/features/trainer/draft-backup.test.ts`, 3):
+
+- guardado automático confirmado y conservado al recargar;
+- **el caso de la auditoría:** base bloqueada por otro proceso (`BEGIN IMMEDIATE`) al guardar → aviso, el trabajo sigue y se guarda al liberarse;
+- error `500` de las acciones → aviso y «reintentar ahora»;
+- cerrar con `beforeunload` y recuperar en otra pestaña;
+- salir por el menú: aviso, «Guardar y salir» sin servidor, salir con copia y recuperarla;
+- copia local frente a una versión posterior de otro navegador: «Quedarme con la versión guardada» y «Usar mi copia»;
+- dos pestañas del mismo navegador.
+
+Repetidas tres veces seguidas: 24 de 24.
+
+**Limitaciones:**
+
+- **Botón «atrás»** del navegador: no se puede bloquear con fiabilidad en una aplicación de una sola página. Protege la copia local, que se ofrece al volver [I].
+- **Sin almacenamiento local** (algunas navegaciones privadas): el diálogo de salida lo dice («Salir sin guardar»).
+- **Dos pestañas con cambios sin guardar del mismo borrador** comparten la copia local: queda la última escrita. Cada pestaña conserva su contenido en pantalla y avisa al cerrar.
+
+### 15.5 Cola de registros por persona (A-08)
+
+**Problema:** en un móvil compartido, lo pendiente de Marta se enviaba con la identidad de Lucía.
+
+**Causa raíz:** los comandos pendientes no guardaban quién los creó, la cola enviaba todo lo de la sesión, y el servidor tomaba la identidad solo de la cookie.
+
+**Solución:**
+
+- **En el servidor**, que es donde se valida: cada comando lleva `clientId`. Es obligatorio (`400` sin él) y, si no coincide con la identidad de la petición, se responde `409 identity_mismatch` **antes de nada**, sin efectos. El `payload_hash` no incluye `clientId`, así que un reintento legítimo sigue siendo idempotente.
+- **En el móvil:** IndexedDB versión 2 con el índice `byOwnerSession`. Cada comando guarda su titular, y la cola solo lista y envía los de la identidad actual.
+  - Los comandos antiguos sin titular solo los adopta la persona de esa sesión.
+  - Si llega `identity_mismatch` (la identidad cambió en otra pestaña), el comando se queda guardado, sin aplicar, a la espera de su titular.
+  - Hoy, Semana y Progreso muestran: «Hay … de otra persona en este dispositivo. Se enviarán cuando esa persona vuelva a entrar.».
+  - La posición y el descanso del reproductor también van por persona.
+- **Cómo se resuelven:** lo de otra persona solo lo envía o descarta esa persona cuando vuelve a entrar en ese dispositivo. **Nunca se descarta en silencio**, y nadie puede descartar lo de otra persona.
+
+**Pruebas:**
+
+- `execution.test.ts` (A-08): un comando de otra identidad nunca se aplica.
+- `e2e/execution-api.spec.ts`: `400` sin `clientId`; `409 identity_mismatch` con el comando de Marta enviado como Lucía; Lucía con su propio identificador → `404`.
+- `e2e/client-execution.spec.ts` (A-08), **el escenario exacto**: Marta registra sin conexión, se cambia a Lucía, vuelve la conexión y la cola procesa. La serie de Marta no se envía como de Lucía, y se envía cuando Marta vuelve.
+
+**Limitación:** si esa persona no vuelve a entrar en ese dispositivo, lo suyo sigue guardado en él (se ve el aviso). Con autenticación real (Fase 2) la regla es la misma.
+
+### 15.6 Reintentos de registros fallidos (A-09)
+
+**Problema:** «Reintentar» solo reintentaba los pendientes; los registros en error necesitaban «Descartar y volver a registrar».
+
+**Causa raíz:** `resetBackoff` solo tocaba los `queued`, y la cola saltaba los `error`.
+
+**Solución** (`sync-engine.ts`, `retryRecoverable`):
+
+- Los errores **recuperables** (`server_error`, `storage_busy`, `storage_unavailable`, `not_found`, `not_started`, `http_404`, `http_408` y `http_429`) vuelven a la cola con su **identificador original**. Si ya se hubiera aplicado, el servidor responde `already_applied`: no hay duplicados.
+- Los demás (datos no válidos, sesión cerrada…) se quedan con su motivo hasta que la persona decide. Nunca se borran solos.
+- El estado está en IndexedDB y sobrevive a recargar.
+
+**Pruebas:** `e2e/client-execution.spec.ts` (A-09): error recuperable → «Reintentar» → una sola serie, confirmada.
+
+### 15.7 Hora de ejecución (A-10)
+
+**Problema:** se aceptaban un inicio en 2020 y una serie en 2019, anteriores a la publicación y al propio inicio.
+
+**Causa raíz:** solo había límite superior (la hora de recepción, P-86); no había límite inferior.
+
+**Solución:** reglas T1–T4 en `resolveExecutionInstant` (`src/domain/training/execution.ts`), detalladas en `EXECUTION.md` §7.1:
+
+- **T1:** una hora imposible (antes de 2020 o desde 2100) se rechaza con `422`.
+- **T2:** por delante del servidor → hora de recepción, motivo `ahead_of_server`.
+- **T3:** más de 5 min antes del límite inferior (la publicación de la versión para el inicio; el inicio para lo demás) → hora de recepción, motivo `before_lower_bound`.
+- **T4:** en otro caso, la del dispositivo. Esto incluye lo registrado sin conexión y una sesión reanudada al día siguiente.
+
+La hora del dispositivo, su zona, su desfase, la recepción y el motivo se guardan siempre. El entrenador ve «hora de llegada (…)».
+
+**Pruebas:**
+
+- `v2.test.ts` (A-10, T1–T4);
+- `execution.test.ts`: T1, T3, y T2 con T4;
+- E2E A-10, con el reloj anterior a la publicación;
+- E2E-19, pasada la medianoche con una sesión publicada antes.
+
+### 15.8 Base ocupada (A-11)
+
+**Problema:** un bloqueo externo de SQLite detenía todo el servidor (la portada tardó 4,7 s con `busy_timeout` de 5 s).
+
+**Causa raíz:** el controlador es síncrono, así que mientras SQLite espera se detiene todo el proceso; y 5 s era demasiado para una petición.
+
+**Solución:**
+
+- **`BUSY_TIMEOUT_MS = 1000`** (`sqlite.ts`), con la justificación en el código y en ADR-29:
+  - con el bloqueo exclusivo, ningún otro proceso de TrainPro escribe, y dentro del proceso no hay esperas;
+  - solo espera ante una herramienta ajena;
+  - 1 s acota la parada y basta para un punto de control.
+- **Errores clasificados** (`storage-errors.ts`):
+  - `storage_busy` (`503`, `Retry-After: 2`) y `storage_unavailable` (`503`, `Retry-After: 10`) son recuperables;
+  - `storage_error` (`500`: disco lleno, solo lectura, E/S, base dañada) es definitivo hasta que se arregle.
+  - En todos los casos la transacción se deshizo entera y nada se da por guardado.
+- El móvil reintenta los recuperables; el constructor, también.
+
+**Pruebas:**
+
+- `execution.test.ts`: con otro proceso que tiene la escritura, el comando falla en menos de 2,5 s como `storage_busy`, sin aplicar nada, y el reintento entra una sola vez.
+- E2E A-05: base bloqueada al guardar en el constructor.
+- E2E A-04: carga concurrente sin ningún `storage_busy`.
+
+**Limitación:** el controlador sigue siendo síncrono. Con varias personas a la vez no escala; está decidido PostgreSQL para la Fase 2.
+
+### 15.9 `local-demo` solo en esta máquina (A-12)
+
+**Problema:** arrancado sin `-H 127.0.0.1`, un `Host` falsificado desde la red daba acceso completo.
+
+**Causa raíz:** la protección dependía de la cabecera `Host` y de un argumento de arranque que se podía omitir.
+
+**Solución** (`src/server/startup.ts`, llamado desde `src/instrumentation.ts` antes de atender peticiones):
+
+- En `local-demo` se lee la dirección **real** de los sockets abiertos del proceso. Si alguna no es de la propia máquina (127.0.0.0/8 o `::1`), el servidor **no arranca** y explica por qué. Si no se puede comprobar, tampoco arranca.
+- Se mantiene la comprobación de `Host` de `proxy.ts` (contra el DNS rebinding), que se aplica a todas las rutas, archivos estáticos y acciones.
+- **Revisión de rutas y acciones** [I]: las dos rutas de la API, las acciones del constructor, de Configuración (copia y restablecer) y «Entrar como…» resuelven la identidad en el servidor (`getTrainerContext`, `getClientApiContext`). «Entrar como…» solo existe en `local-demo`.
+- **`local-demo` no es autenticación:** cualquiera que pueda usar el navegador de este equipo puede entrar como cualquier identidad ficticia. Así lo dicen el README y `SECURITY_PRIVACY.md`.
+
+**Pruebas:**
+
+- `src/server/startup.test.ts`: qué direcciones son de esta máquina; la dirección real del socket; `0.0.0.0` → no arranca, también si además escucha en `127.0.0.1`.
+- `e2e/restart.spec.ts`:
+  - A-12, con un servidor real y `-H 0.0.0.0`: no arranca y no llega a abrir la base;
+  - B1-11: `Host` ajeno → `403`, también en archivos estáticos, y sin conexión desde otra interfaz.
+
+### 15.10 Pruebas deterministas (A-13)
+
+**Problema:** una E2E dependía del día de la semana y fallaba («Empezar igualmente» en lugar de «Empezar entrenamiento»). Además, había otra E2E que fallaba: E2E-19 planteaba un caso imposible tras las reglas de A-10.
+
+**Causa raíz:**
+
+- La semilla calculaba los identificadores y el azar a partir de la fecha absoluta, y el calendario se basaba en días de la semana. Por eso cada día de la semana daba otra estructura.
+- E2E-19 ejecutaba una sesión antes de su publicación.
+
+**Solución:**
+
+- **Semilla relativa** a la fecha de siembra (`dataset.ts`, `SEED_VERSION` 3): el azar sale de `cliente:días-desde-hoy`, y el calendario de los días desde hoy módulo 7. Cualquier día da la misma estructura relativa.
+- **E2E-19** reescrita con una sesión sembrada y publicada antes, y una E2E aparte para A-10.
+- **Barra inferior:** la prueba daba un falso positivo con contenido dentro de un `<details>` cerrado. Ahora usa `checkVisibility` y mide también con el `<details>` abierto.
+
+**Pruebas:** `sessions.test.ts` comprueba la misma estructura en cuatro fechas (lunes, jueves, viernes y sábado). Los scripts de la auditoría que eran útiles son ahora pruebas permanentes:
+
+| Script de la auditoría             | Prueba permanente                                                      |
+| ---------------------------------- | ---------------------------------------------------------------------- |
+| corte con escrituras (P1)          | `e2e/restart.spec.ts` A-04                                             |
+| restauración interrumpida (B5, B6) | `restore.test.ts` y `concurrency.test.ts`                              |
+| dos servidores y marca (S, S2)     | `concurrency.test.ts` y `restart.spec.ts` A-03                         |
+| navegador compartido (U)           | `client-execution.spec.ts` A-08                                        |
+| constructor (U4, U8)               | `builder-protection.spec.ts`                                           |
+| base bloqueada (P2)                | `execution.test.ts` (base ocupada) y `builder-protection.spec.ts` A-05 |
+| seguridad local                    | `startup.test.ts` y `restart.spec.ts` A-12 y B1-11                     |
+
+### 15.11 Procedencia de lo registrado (A-14)
+
+**Problema:** la procedencia (`self_reported`) no se guardaba ni se mostraba.
+
+**Solución:** migración `003-procedencia` (`DATA_MODEL.md` §5 y `EXECUTION.md` §2):
+
+- **`origin`:** `self_reported`, `direct`, `imported`, `calculated` o `estimated`.
+- **`recorded_by`:** `client`, `trainer`, `device` o `system`.
+- **`origin_method`:** obligatorio para lo importado, calculado o estimado (fuente, o fórmula y versión).
+- Las tres columnas están en `session_log` y `set_log`, con `CHECK`.
+- **Motivo del ajuste del reloj:** `clock_adjustment`, `start_clock_adjustment` y `finish_clock_adjustment`.
+
+Hoy todo lo registrado lo autodeclara el cliente (`self_reported`, `client`): lo dice el servidor al escribir, no se deduce en la interfaz. No se inventa ninguna otra procedencia, porque no hay integraciones. A7 y la revisión muestran «Autodeclarado».
+
+**Pruebas:**
+
+- `execution.test.ts`: la migración desde la `002` con valores por defecto, el disparador de inmutabilidad, y que lo que registra el cliente queda autodeclarado en la base y en la vista;
+- E2E A-10, con «Autodeclarado».
+
+### 15.12 Copias (A-16, A-17, A-18)
+
+**Hecho:** cada copia queda autosuficiente (diario `DELETE`, sin `-wal` ni `-shm`), con permisos `600`, sincronizada a disco y verificada. La verificación borra los archivos auxiliares que ella misma crea.
+
+**Pendiente (?):** copias programadas y rotación. No están autorizadas.
+
+### 15.13 Validación final
+
+| Prueba                                                                                                                   | Resultado                                                                                                                               |
+| ------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm check` (formato, lint con capas, tipos, pruebas unitarias y de integración, compilación)                           | Correcto: 23 archivos y 290 pruebas                                                                                                     |
+| Compilación de producción desde cero                                                                                     | Sin avisos. Los tres de Turbopack que introdujo la restauración segura se corrigieron en `e060b8f`                                      |
+| `pnpm test:e2e` (escritorio y móvil, Pixel 7)                                                                            | 135 correctas y 2 omitidas, dos ejecuciones completas. Las omitidas son pruebas solo de móvil, que se saltan en escritorio (como antes) |
+| Persistencia, restauración, concurrencia, arranque y ejecución (`src/server/db`, `startup.test.ts`, `execution.test.ts`) | 91 de 91, tres veces seguidas                                                                                                           |
+| `e2e/restart.spec.ts` (servidores reales: reinicios, dos servidores, `0.0.0.0`, corte bajo carga)                        | 18 de 18 (tres repeticiones en serie)                                                                                                   |
+| `e2e/builder-protection.spec.ts`                                                                                         | 24 de 24 (tres repeticiones)                                                                                                            |
+
+`restart.spec.ts` usa puertos fijos: sus repeticiones deben ir en serie (`--workers 1`). En una ejecución normal es el único archivo que los usa.
+
+### 15.14 Riesgos que permanecen
+
+1. **Windows sin ejecutar en Windows** (A-23): el bloqueo (`LockFileEx`), `rename` y la ausencia de `fsync` del directorio están documentados, no probados.
+2. **Controlador síncrono** (A-11): adecuado para una persona en un equipo, no para varios usuarios.
+3. **Lo pendiente vive en el navegador:** se pierde si se borran los datos del sitio antes de enviarlo (Q4, `EXECUTION.md` §11).
+4. **`local-demo` no es autenticación:** solo para datos ficticios.
+5. **Página de error de la base** (A-15) sin hacer.
+6. **Historial de Git:** `8067eff` no compila por sí solo (usa la restauración de `099f0e7`). No se ha reescrito el historial.

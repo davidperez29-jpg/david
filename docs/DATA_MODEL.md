@@ -237,7 +237,19 @@ Los clientes no navegan por la biblioteca: ven los ejercicios a través de las s
 | `exercise_feedback` | Se conserva solo para el RPE del ejercicio completo (opcional, con su escala) y la observación. **El RIR es siempre por serie** (`set_log`) y no se guarda por ejercicio, para no mezclar magnitudes                                                                                                                                                                      |
 | `exercise_skip`     | session_log_id, session_item_id, reason (`no_equipment`, `discomfort`, `other`), note                                                                                                                                                                                                                                                                                     |
 
-> **Nota (13 nov 2026):** V1 implementa un subconjunto de este diseño (`EXECUTION.md` §2): sin `set_role`, `reps_per_side`, `stop_reason`, `exercise_feedback`, `exercise_skip` ni `set_annotation`, y sin guardar la procedencia en cada registro. Ver `AUDIT_BLOCK1.md` §5 y §11.6.
+> **Nota (13 nov 2026):** V1 implementa un subconjunto de este diseño (`EXECUTION.md` §2): sin `set_role`, `reps_per_side`, `stop_reason`, `exercise_feedback`, `exercise_skip` ni `set_annotation`. Ver `AUDIT_BLOCK1.md` §5 y §11.6.
+>
+> **Procedencia guardada (13 nov 2026, migración `003-procedencia`, A-14, ADR-31):** `set_log` y `session_log` guardan con cada registro:
+>
+> - `origin`: `self_reported`, `direct`, `imported`, `calculated` o `estimated`;
+> - `recorded_by`: `client`, `trainer`, `device` o `system`;
+> - `origin_method`: obligatorio (con `CHECK`) para lo importado, calculado o estimado: la fuente, o la fórmula y su versión.
+>
+> Guardan también el motivo de usar la hora de recepción: `clock_adjustment`, `start_clock_adjustment` y `finish_clock_adjustment` (`ahead_of_server` o `before_lower_bound`, `EXECUTION.md` §7.1).
+>
+> - Hoy todo lo registrado es `self_reported` por el `client`. Lo escribe el servidor al aplicar el comando; no se deduce en la interfaz.
+> - Las demás procedencias existen en el modelo para cuando haya instrumentos, importaciones o fórmulas, pero no se usan ni se inventan.
+> - **Migración:** solo añade columnas (los registros existentes quedan como lo que eran: autodeclarados) y un disparador que impide cambiar la procedencia de una ejecución. Antes de migrar se hace la copia automática `antes-de-migrar`.
 
 Reglas: las series efectivas son la última versión válida por (session_log_id, session_item_id, set_number), siguiendo `supersedes`; un `client_set_id` repetido no crea otra fila; el entrenador **no edita** `set_log` (anota con `set_annotation`). Todo lo realizado es `self_reported` salvo lo que mide un instrumento o se importa.
 

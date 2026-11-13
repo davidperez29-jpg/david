@@ -4,7 +4,7 @@ Plataforma web para gestionar el entrenamiento, la evaluación, el rendimiento, 
 
 Ciclo de trabajo: **crear cliente → evaluar → interpretar → planificar → registrar ejecución → analizar carga y evolución → ajustar el plan**.
 
-> **Estado: V1, bloque 2 implementado y pendiente de revisión (12 de noviembre de 2026).** Prototipo **local** con **datos ficticios** guardados en **SQLite** en tu equipo:
+> **Estado: V1, bloques 1 y 2 implementados y corregidos tras la auditoría (13 de noviembre de 2026), pendientes de tu revisión. El bloque 3 no está autorizado.** Prototipo **local** con **datos ficticios** guardados en **SQLite** en tu equipo:
 >
 > - el entrenador crea y publica sesiones (varias el mismo día);
 > - la clienta las entrena en el móvil, paso a paso: registra cada serie, descansa, pausa y termina;
@@ -13,7 +13,7 @@ Ciclo de trabajo: **crear cliente → evaluar → interpretar → planificar →
 >
 > **No hay inicio de sesión real** («Entrar como…» elige una persona ficticia), ni servicios externos, ni despliegue. Tampoco hay análisis de carga ni tonelaje (bloque 3).
 >
-> Detalle: [`docs/V1_SPEC.md`](docs/V1_SPEC.md) §9.2–9.3 y [`docs/EXECUTION.md`](docs/EXECUTION.md). La Fase 1: [`docs/PHASE1_REPORT.md`](docs/PHASE1_REPORT.md).
+> Detalle: [`docs/V1_SPEC.md`](docs/V1_SPEC.md) §9.2–9.3, [`docs/EXECUTION.md`](docs/EXECUTION.md) y las correcciones de la auditoría en [`docs/AUDIT_BLOCK1.md`](docs/AUDIT_BLOCK1.md) §15. La Fase 1: [`docs/PHASE1_REPORT.md`](docs/PHASE1_REPORT.md).
 
 ## Requisitos
 
@@ -34,7 +34,9 @@ pnpm dev                            # http://127.0.0.1:3000 (solo en este equipo
 ```
 
 - **`.env.local` con `TRAINPRO_MODE=local-demo`** es necesario para entrar: sin él la aplicación arranca, pero no hay forma de entrar (no hay autenticación hasta la Fase 2). El resto de variables tienen un valor por defecto seguro (`docs/DEVELOPMENT.md`).
-- El servidor **solo escucha en 127.0.0.1** y rechaza cualquier otro nombre de host (`TRAINPRO_ALLOWED_HOSTS`): no es accesible desde la red local.
+- El servidor **solo escucha en 127.0.0.1** y rechaza cualquier otro nombre de host (`TRAINPRO_ALLOWED_HOSTS`): no es accesible desde la red local. En `local-demo`, si se arranca escuchando en otra interfaz (por ejemplo, `-H 0.0.0.0`), **no arranca**: comprueba la dirección real del socket.
+- **`local-demo` no es autenticación:** quien use el navegador de este equipo puede entrar como cualquiera de las personas ficticias. Solo vale para datos ficticios.
+- **Un solo servidor por base:** el servidor toma la base en exclusiva con un bloqueo del sistema operativo. Un segundo servidor (o una restauración) sobre la misma carpeta de datos no arranca y dice qué proceso la usa (`pnpm db:status`).
 - `better-sqlite3` trae los binarios compilados para Linux, macOS y Windows (x64 y arm64): `pnpm install` no compila nada y avisa de que ha ignorado su script de compilación, que no hace falta.
 
 **Datos:**
@@ -54,22 +56,23 @@ Entradas de la demo (en la portada, «Entrar como…»):
 
 ## Scripts
 
-| Comando                   | Qué hace                                                                                     |
-| ------------------------- | -------------------------------------------------------------------------------------------- |
-| `pnpm dev`                | Servidor de desarrollo                                                                       |
-| `pnpm build`              | Compilación de producción                                                                    |
-| `pnpm start`              | Sirve la compilación de producción                                                           |
-| `pnpm lint`               | ESLint, incluidas las reglas que impiden saltarse las capas                                  |
-| `pnpm typecheck`          | Genera los tipos de rutas y comprueba TypeScript                                             |
-| `pnpm format`             | Formatea con Prettier (`format:check` solo comprueba)                                        |
-| `pnpm test`               | Tests unitarios y de integración (Vitest)                                                    |
-| `pnpm test:e2e`           | Compila y ejecuta las pruebas de extremo a extremo (Playwright + axe)                        |
-| `pnpm check`              | Formato + lint + tipos + tests + compilación: lo que debe pasar antes de un commit           |
-| `pnpm icons`              | Regenera los iconos PNG de la PWA a partir de `public/icons/icon.svg`                        |
-| `pnpm db:status`          | Dónde está la base, migraciones, semilla, recuento, integridad y copias                      |
-| `pnpm db:backup`          | Copia de seguridad verificada en `.data/backups/` (también con el servidor en marcha)        |
-| `pnpm db:restore <copia>` | Restaura una copia verificada. **Con el servidor parado**; guarda antes el estado actual     |
-| `pnpm verify:env`         | Comprueba Node, la carga de SQLite, migraciones, copia y restauración (pensado para Windows) |
+| Comando                   | Qué hace                                                                                                                                                                 |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `pnpm dev`                | Servidor de desarrollo                                                                                                                                                   |
+| `pnpm build`              | Compilación de producción                                                                                                                                                |
+| `pnpm start`              | Sirve la compilación de producción                                                                                                                                       |
+| `pnpm lint`               | ESLint, incluidas las reglas que impiden saltarse las capas                                                                                                              |
+| `pnpm typecheck`          | Genera los tipos de rutas y comprueba TypeScript                                                                                                                         |
+| `pnpm format`             | Formatea con Prettier (`format:check` solo comprueba)                                                                                                                    |
+| `pnpm test`               | Tests unitarios y de integración (Vitest)                                                                                                                                |
+| `pnpm test:e2e`           | Compila y ejecuta las pruebas de extremo a extremo (Playwright + axe)                                                                                                    |
+| `pnpm check`              | Formato + lint + tipos + tests + compilación: lo que debe pasar antes de un commit                                                                                       |
+| `pnpm icons`              | Regenera los iconos PNG de la PWA a partir de `public/icons/icon.svg`                                                                                                    |
+| `pnpm db:status`          | Dónde está la base, migraciones, semilla, recuento, integridad y copias                                                                                                  |
+| `pnpm db:backup`          | Copia de seguridad verificada en `.data/backups/` (también con el servidor en marcha)                                                                                    |
+| `pnpm db:restore <copia>` | Restauración segura y recuperable de una copia verificada. **Con el servidor parado** (si no, se niega); guarda antes el estado actual, también lo que hubiera en el WAL |
+| `pnpm db:recover`         | Termina o anula una restauración interrumpida (el servidor también lo hace al arrancar)                                                                                  |
+| `pnpm verify:env`         | Comprueba Node, la carga de SQLite, migraciones, copia y restauración (pensado para Windows)                                                                             |
 
 ## Estructura
 

@@ -62,8 +62,11 @@ dominio (puro) → casos de uso (políticas) → puertos → adaptador SQLite �
 
 - **Puertos** (`src/server/repositories/ports.ts`): interfaces asíncronas por agregado. Desde V1, `TrainingRepository` cubre la prescripción v2: borradores con revisión, publicación idempotente, versiones inmutables y lectura de la ejecución. Cada escritura es **una transacción `BEGIN IMMEDIATE`** y devuelve un resultado explícito (`created`/`exists`, `saved`/`unchanged`/`conflict`, `published`/`already_published`/`conflict`…).
 - **Adaptador SQLite** (`src/server/repositories/sqlite/`): todo el SQL vive aquí, en un subconjunto portable a PostgreSQL (sin `rowid`, sin `INSERT OR REPLACE`, sin funciones de fecha en la lógica). Las pantallas de la Fase 1 leen a través de la **capa de compatibilidad** (`src/domain/training/compat.ts`): solo ven sesiones publicadas, en su versión vigente.
-- **Composición** (`src/server/db/store.ts`): una conexión por archivo, guardada en `globalThis`. Al abrir aplica las migraciones pendientes, con una copia previa si la base ya tenía datos, y siembra la base si está vacía. Los datos de referencia de solo lectura (biblioteca, objetivos, evaluaciones, readaptación, compartición) siguen en el código y se generan con la **fecha de la semilla** (`meta.seed_date`).
-- **Base** (`src/server/db/`): `sqlite.ts` abre con WAL, `synchronous=FULL`, `foreign_keys=ON` y `busy_timeout=5000`. `migrate.ts` aplica las migraciones en orden y con suma de comprobación; si una ya aplicada cambia, el arranque falla. `backup.ts` hace copias en línea verificadas y restaura (`integrity_check`, claves ajenas y migraciones). `seed.ts` convierte la demostración al modelo v2. La migración `001` tiene `CHECK`, claves ajenas compuestas, un índice único parcial y disparadores de inmutabilidad.
+- **Composición** (`src/server/db/store.ts`): una conexión por archivo, guardada en `globalThis`. Antes de abrir toma la base **en exclusiva** (`lock.ts`, abajo) y termina o anula una restauración interrumpida. Al abrir aplica las migraciones pendientes, con una copia previa si la base ya tenía datos, y siembra la base si está vacía. Los datos de referencia de solo lectura (biblioteca, objetivos, evaluaciones, readaptación, compartición) siguen en el código y se generan con la **fecha de la semilla** (`meta.seed_date`).
+- **Base** (`src/server/db/`): `sqlite.ts` abre con WAL, `synchronous=FULL`, `foreign_keys=ON` y `busy_timeout=1000` (ADR-29). `migrate.ts` aplica las migraciones en orden y con suma de comprobación; si una ya aplicada cambia, el arranque falla. `backup.ts` hace copias en línea verificadas y restaura (`integrity_check`, claves ajenas y migraciones). `seed.ts` convierte la demostración al modelo v2. La migración `001` tiene `CHECK`, claves ajenas compuestas, un índice único parcial y disparadores de inmutabilidad.
+- **Un solo proceso por base** (`lock.ts`, ADR-25): bloqueo del sistema operativo sobre `<base>.lock`, que el sistema libera si el proceso muere. Lo toman el servidor, `db:restore` y `db:recover`; `db:backup` y `db:status` solo leen. En cada uso, el servidor comprueba que la base y el bloqueo siguen siendo los mismos archivos; si no, deja de escribir (`storage_unavailable`).
+- **Restauración segura** (`backup.ts`, ADR-25): copia verificada → diario `<base>.restauracion.json` → copia previa con la API de copia (incluye el WAL) → temporal escrito, sincronizado y validado → `rename` atómico → verificación final o vuelta atrás. `recoverInterruptedRestore` termina o anula una restauración interrumpida y se puede repetir.
+- **Errores de almacenamiento** (`src/server/storage-errors.ts`, ADR-29): `storage_busy`, `storage_unavailable` y `storage_error`, con la transacción siempre deshecha entera. La API de comandos los devuelve como JSON tipado; el constructor, como resultado de la acción.
 - **Adaptador en memoria** (`src/server/repositories/demo/`): ya no lo usa la aplicación. Queda como **referencia de la prueba de equivalencia**: las pantallas existentes deben ver lo mismo con los dos adaptadores (`compat.equivalence.test.ts`).
 - Los repositorios **no deciden permisos**: lo hacen los casos de uso con las políticas del dominio. Con PostgreSQL se añadirá una segunda barrera en la base de datos (Row Level Security).
 - `TRAINPRO_DATA_SOURCE` solo acepta `sqlite`. La migración a PostgreSQL (Fase 2) sigue el plan de `V1_SPEC.md` §8.3.4: un adaptador nuevo de los mismos puertos que pase las mismas pruebas de contrato.
@@ -77,6 +80,7 @@ Diseño pendiente de aprobación para el portal del cliente (`TRAINING_EXPERIENC
 3. La cola se envía al abrir la app, al volver a ella (`visibilitychange`) y al recuperar la conexión (`online`). iOS no admite la sincronización en segundo plano, así que no se depende de ella.
 4. El servidor recibe los envíos en un **caso de uso idempotente** (`recordSetLogs`): comprueba con `canLogExecution` que el actor es el cliente de esa sesión publicada, ignora los `clientSetId` ya recibidos y guarda las correcciones como versiones (`supersedes`). La restricción única de la base de datos es la segunda barrera.
 5. La interfaz distingue «Guardado en el móvil» de «Enviado». Si al cerrar sesión quedan series sin enviar, se avisa antes de borrar los datos locales.
+   - **Implementado (13 nov 2026, ADR-27):** cada comando guarda su titular (`clientId`), la cola es por persona y el servidor rechaza un comando de otra identidad (`identity_mismatch`). Lo de otra persona espera en el dispositivo a que vuelva.
 6. Las series efectivas se calculan con la misma función del dominio en el servidor y en el portal, como ya ocurre con `effectiveSetRecords`.
 
 El temporizador de descanso se calcula a partir de la hora de fin y del reloj monótono (`performance.now()`), así que es correcto aunque se bloquee la pantalla. Mantener la pantalla encendida (API Wake Lock) se usará donde el navegador lo permita.
@@ -195,6 +199,10 @@ flowchart LR
 
 Si en el futuro un cliente trabaja con un centro y una clínica distintos, cada organización conserva sus datos. Compartirlos exigirá una **concesión explícita** (`access_grant`: quién, qué alcance, hasta cuándo) con el consentimiento del cliente. No se implementa hasta E7, pero las políticas de permisos ya reciben la organización del recurso, así que añadirlo no exigirá rehacerlas.
 
+## Constructor: guardado sin pérdidas (ADR-26)
+
+`src/features/trainer/`: `use-draft-autosave.ts` (guardado automático, uno a la vez, cada respuesta solo confirma lo que envió), `draft-backup.ts` (copia local por entrenador, cliente y sesión) y `leave-guard.tsx` (aviso al cerrar y en los enlaces internos). Las acciones de servidor devuelven los fallos tipados en lugar de lanzar. Detalle: `AUDIT_BLOCK1.md` §15.4.
+
 ## Sesión de demostración y protección local
 
 No hay autenticación. Identidad, rol y permiso están separados (`V1_SPEC.md` §7):
@@ -208,6 +216,7 @@ En la Fase 2 solo cambia el paso 1: la identidad saldrá de una sesión verifica
 **Protección del prototipo local (P-87):**
 
 - `next dev` y `next start` escuchan solo en `127.0.0.1` (`-H 127.0.0.1` en los scripts).
+- **Comprobación de arranque** (`src/instrumentation.ts` → `src/server/startup.ts`, ADR-30): en `local-demo`, el servidor lee la dirección real de sus sockets y **no arranca** si alguna no es de esta máquina (127.0.0.0/8 o `::1`). Después toma la base en exclusiva; si otro proceso la tiene, no arranca y dice cuál.
 - `src/proxy.ts` rechaza con `403` cualquier `Host` o `X-Forwarded-Host` que no esté en `TRAINPRO_ALLOWED_HOSTS` (por defecto `localhost` y `127.0.0.1`), también los archivos estáticos: protege frente al DNS rebinding.
 - Las acciones de servidor comprueban el origen (Next.js compara `Origin` con `Host`).
 - El archivo de datos tiene permisos `600` y la carpeta `700` (Linux y macOS).

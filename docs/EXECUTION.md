@@ -65,6 +65,21 @@ Probado:
 - con una base de la `001` con ejecuciones (`execution.test.ts`);
 - sobre una copia de la base de las E2E: 38 ejecuciones y 428 series conservadas.
 
+**Migración `003-procedencia`** (13 nov 2026; A-10 y A-14; ADR-28 y ADR-31). Solo añade columnas (`ALTER TABLE ADD COLUMN`) y un disparador; no reescribe filas:
+
+| Tabla         | Columnas nuevas                                                                               | Para qué                                                                                                                                                                      |
+| ------------- | --------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `set_log`     | `origin`, `recorded_by`, `origin_method`                                                      | Procedencia de cada registro: `self_reported`, `direct`, `imported`, `calculated` o `estimated`; quién lo registró (`client`, `trainer`, `device`, `system`); método o fuente |
+| `set_log`     | `clock_adjustment`                                                                            | Por qué se usó la hora de recepción: `ahead_of_server` o `before_lower_bound` (§7.1). La hora del dispositivo se sigue guardando aparte                                       |
+| `session_log` | `origin`, `recorded_by`, `origin_method`, `start_clock_adjustment`, `finish_clock_adjustment` | Lo mismo para el inicio y el fin                                                                                                                                              |
+
+- **Valores:** `origin` y `recorded_by` tienen `CHECK` con la lista cerrada. `origin_method` es obligatorio para lo importado, calculado o estimado. Los registros existentes son lo que eran: autodeclarados por el cliente (valores por defecto).
+- **Inmutable:** disparador `session_log_provenance_is_immutable`; en `set_log` ya no se modifica nada.
+- **Quién lo escribe:** el servidor, al aplicar el comando. No se deduce en la interfaz.
+- **Registros antiguos con `clock_adjusted = 1`:** su motivo era `ahead_of_server`, el único que existía; se lee así sin reescribirlos.
+- **Antes de migrar** se hace la copia automática `antes-de-migrar`.
+- **Probado:** migración desde la `002` con datos, valores por defecto, disparador y `CHECK` (`execution.test.ts`).
+
 **Fechas prevista y real, separadas:**
 
 - `session.planned_date` es la fecha prevista.
@@ -150,11 +165,11 @@ Un manejador de rutas con URL estable: las acciones de servidor cambian de ident
 **`POST /api/cliente/sesiones/{sessionId}/comandos`**
 
 - **Petición:** un comando por petición, JSON, del mismo origen, como mucho 16 KB.
-- **Campos comunes:** cada comando lleva `commandId` (generado en el móvil, el mismo en todos los reintentos) y `device: { recordedAt, timeZone, utcOffsetMinutes }`.
-- **Quién es el cliente:** sale siempre de la identidad del servidor, nunca del cuerpo.
+- **Campos comunes:** cada comando lleva `commandId` (generado en el móvil, el mismo en todos los reintentos), `clientId` (quién lo creó) y `device: { recordedAt, timeZone, utcOffsetMinutes }`.
+- **Quién es el cliente:** sale siempre de la identidad del servidor. Además, el `clientId` del comando debe ser esa identidad: si no, `409 identity_mismatch` y no se aplica nada (A-08, ADR-27). `payload_hash` no incluye `clientId`.
 
 ```json
-{ "commandId": "…", "type": "start", "versionNumber": 1, "device": { "recordedAt": "2026-11-12T17:00:00.000Z", "timeZone": "Europe/Madrid", "utcOffsetMinutes": 60 } }
+{ "commandId": "…", "clientId": "c-lucia", "type": "start", "versionNumber": 1, "device": { "recordedAt": "2026-11-12T17:00:00.000Z", "timeZone": "Europe/Madrid", "utcOffsetMinutes": 60 } }
 { "commandId": "…", "type": "log_set", "versionNumber": 1, "prescriptionId": "itm_…", "setNumber": 1, "supersedes": null,
   "completed": true, "reps": 10, "load": { "kind": "external", "kg": 16 }, "rir": 2, "rpe": null, "note": null, "device": { "…": "…" } }
 { "commandId": "…", "type": "pause", "device": { "…": "…" } }
@@ -166,25 +181,29 @@ Un manejador de rutas con URL estable: las acciones de servidor cambian de ident
 
 **Respuestas:**
 
-| HTTP  | Cuerpo                                           | Cuándo                                                                                          |
-| ----- | ------------------------------------------------ | ----------------------------------------------------------------------------------------------- |
-| `200` | `{ ok: true, result: 'applied', state }`         | Aplicado ahora                                                                                  |
-| `200` | `{ ok: true, result: 'already_applied', state }` | Ese comando ya estaba aplicado (reintento), o «empezar» una sesión ya empezada                  |
-| `400` | `bad_request` (+ `issues`)                       | JSON roto o forma inválida (falta el identificador o el reloj, tipo desconocido…)               |
-| `403` | `forbidden_origin`                               | Sin `Origin` o con otro origen. Un `Host` ajeno lo para antes `proxy.ts`                        |
-| `404` | `not_found`                                      | La sesión no existe, no es del cliente o no está publicada (no se distingue)                    |
-| `409` | `not_started`                                    | Registrar, pausar o terminar sin haber empezado                                                 |
-| `409` | `closed`                                         | La sesión ya está terminada                                                                     |
-| `409` | `set_already_logged` (+ `effective`)             | Otro registro original de esa serie (otro identificador sin `supersedes`)                       |
-| `409` | `not_effective` (+ `effective`)                  | Corrección de un registro que ya se había corregido                                             |
-| `409` | `command_id_reused`                              | El mismo identificador con otro contenido                                                       |
-| `409` | `unknown_version`, `unknown_set_in_version`      | La versión no existe, o la serie no existe en esa versión                                       |
-| `409` | `confirmation_required` (+ `pendingSets`)        | Terminar con series sin registrar sin `confirmEndEarly`                                         |
-| `413` | `payload_too_large`                              | Más de 16 KB                                                                                    |
-| `422` | `invalid` (+ `issues`)                           | Datos fuera de rango o que no corresponden a lo prescrito (kg en peso corporal, RIR no pedido…) |
-| `500` | `server_error`                                   | Error inesperado. El móvil lo reintenta                                                         |
+| HTTP  | Cuerpo                                           | Cuándo                                                                                                                                     |
+| ----- | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `200` | `{ ok: true, result: 'applied', state }`         | Aplicado ahora                                                                                                                             |
+| `200` | `{ ok: true, result: 'already_applied', state }` | Ese comando ya estaba aplicado (reintento), o «empezar» una sesión ya empezada                                                             |
+| `400` | `bad_request` (+ `issues`)                       | JSON roto o forma inválida (falta el identificador o el reloj, tipo desconocido…)                                                          |
+| `403` | `forbidden_origin`                               | Sin `Origin` o con otro origen. Un `Host` ajeno lo para antes `proxy.ts`                                                                   |
+| `404` | `not_found`                                      | La sesión no existe, no es del cliente o no está publicada (no se distingue)                                                               |
+| `409` | `not_started`                                    | Registrar, pausar o terminar sin haber empezado                                                                                            |
+| `409` | `closed`                                         | La sesión ya está terminada                                                                                                                |
+| `409` | `set_already_logged` (+ `effective`)             | Otro registro original de esa serie (otro identificador sin `supersedes`)                                                                  |
+| `409` | `not_effective` (+ `effective`)                  | Corrección de un registro que ya se había corregido                                                                                        |
+| `409` | `command_id_reused`                              | El mismo identificador con otro contenido                                                                                                  |
+| `409` | `unknown_version`, `unknown_set_in_version`      | La versión no existe, o la serie no existe en esa versión                                                                                  |
+| `409` | `confirmation_required` (+ `pendingSets`)        | Terminar con series sin registrar sin `confirmEndEarly`                                                                                    |
+| `409` | `identity_mismatch`                              | El comando lo creó otra identidad (móvil compartido). No se aplica; el móvil lo guarda para su titular                                     |
+| `413` | `payload_too_large`                              | Más de 16 KB                                                                                                                               |
+| `422` | `invalid` (+ `issues`)                           | Datos fuera de rango o que no corresponden a lo prescrito (kg en peso corporal, RIR no pedido…), o una hora del móvil imposible (T1, §7.1) |
+| `503` | `storage_busy` (`Retry-After: 2`)                | Otra herramienta tiene la escritura de la base más de 1 s. No se aplicó nada; el móvil lo reintenta                                        |
+| `503` | `storage_unavailable` (`Retry-After: 10`)        | La base o su bloqueo se borraron o sustituyeron por fuera. No se aplicó nada                                                               |
+| `500` | `storage_error`                                  | Disco lleno, solo lectura, error de E/S o base dañada. No se aplicó nada                                                                   |
+| `500` | `server_error`                                   | Error inesperado. El móvil lo reintenta                                                                                                    |
 
-Las respuestas de error llevan `state` cuando la sesión es del cliente, para reconciliar.
+Las respuestas de error llevan `state` cuando la sesión es del cliente, para reconciliar. Los errores de almacenamiento (ADR-29) significan siempre que la transacción se deshizo entera: nada queda a medias ni se da por guardado.
 
 ### 5.1 Idempotencia
 
@@ -205,8 +224,8 @@ Las respuestas de error llevan `state` cuando la sesión es del cliente, para re
 
 **Almacén:** IndexedDB, base `trainpro-ejecucion` (`src/features/client/player/local-store.ts`), con dos almacenes:
 
-- `commands`: los comandos pendientes, con índice `bySession`;
-- `ui`: la hora de fin del descanso (`descanso:<sesión>`) y la posición en el reproductor (`posicion:<sesión>`).
+- `commands`: los comandos pendientes, cada uno con su titular (`clientId`), con los índices `bySession` y `byOwnerSession` (versión 2 de la base, A-08);
+- `ui`: la hora de fin del descanso y la posición en el reproductor, por persona y sesión.
 
 Si el navegador no permite IndexedDB, el almacén pasa a memoria y se muestra un aviso permanente: «Este navegador no puede guardar temporalmente: no cierres la página hasta ver "Todo guardado"».
 
@@ -217,11 +236,18 @@ Si el navegador no permite IndexedDB, el almacén pasa a memoria y se muestra un
 3. **Solo se borra con `200`.** El estado que devuelve el servidor manda sobre lo local.
 4. **Fallo de red, `5xx` o tiempo agotado (15 s):** el comando sigue en el móvil y se reintenta solo, con el mismo identificador, a los 2, 4, 8, 16 y 30 s.
 5. **Abrir, recuperar la conexión, volver a la pestaña o «Reintentar»** anulan esa espera: se intenta ya.
-6. **Rechazo `4xx`:** no se descarta en silencio. Queda como «Error de envío», con el motivo, hasta que la clienta lo descarta y vuelve a registrar.
+6. **Rechazo `4xx`:** no se descarta en silencio. Queda como «Error de envío», con el motivo.
+   - Si el error es **recuperable** (`server_error`, `storage_busy`, `storage_unavailable`, `not_found`, `not_started`, `http_404`, `http_408` o `http_429`), «Reintentar» lo vuelve a poner en cola con su **identificador original**, así que no puede duplicarse (A-09, ADR-27).
+   - Si no lo es, queda hasta que la clienta lo descarta y vuelve a registrar.
 7. **`set_already_logged`:** se reconcilia. Se quita de la cola, se muestra lo que tiene el servidor y se avisa: «Esa serie ya estaba registrada…».
 8. **Al salir:** si queda algo sin confirmar, el navegador avisa al cerrar la pestaña. «Pausar» espera al primer intento de envío antes de volver a Hoy.
 9. **Fuera del reproductor:** `PendingSync` (Hoy, Semana, Progreso y el detalle) envía lo que quedó pendiente al abrir, al recuperar la conexión, al volver a la pestaña y cada 30 s, y refresca la pantalla cuando se confirma.
 10. **Un comando que se estaba enviando al cerrar** vuelve a «pendiente» al abrir. Si el servidor ya lo tenía, responde `already_applied`.
+11. **Cada persona, su cola** (A-08, ADR-27). La cola solo lista y envía los comandos de la identidad actual.
+    - Lo de otra persona se queda en el dispositivo, sin enviarse, y Hoy, Semana y Progreso lo dicen: «Hay … de otra persona en este dispositivo. Se enviarán cuando esa persona vuelva a entrar.».
+    - Si la identidad cambia en otra pestaña y el servidor responde `identity_mismatch`, el comando sigue guardado para su titular.
+    - Los comandos antiguos sin titular solo los adopta la persona de esa sesión.
+    - Nadie puede descartar lo de otra persona.
 
 **Descanso:**
 
@@ -243,8 +269,30 @@ Si el navegador no permite IndexedDB, el almacén pasa a memoria y se muestra un
 | Sesión cerrada                                           | `409 closed`. Un reenvío de algo ya aplicado sigue siendo `already_applied` | `execution.test.ts`                                           |
 | Terminar con series pendientes                           | `409 confirmation_required`. Solo con `confirmEndEarly` queda «Parcial»     | `execution.test.ts`, E2E «cierre parcial»                     |
 | El entrenador publica otra versión a media sesión        | Ver §8                                                                      | `execution.test.ts` (v2 a media ejecución)                    |
-| Reloj del móvil adelantado                               | Se usa la hora de recepción y se marca («hora ajustada»)                    | `v2.test.ts`                                                  |
-| Pasada la medianoche                                     | Se acepta; la serie conserva su hora y la sesión su día                     | E2E-19                                                        |
+| Reloj del móvil adelantado                               | Se usa la hora de recepción y se anota el motivo (T2, §7.1)                 | `v2.test.ts`, `execution.test.ts`                             |
+| Reloj anterior a la publicación o al inicio              | Se usa la hora de recepción y se anota el motivo (T3)                       | `v2.test.ts`, `execution.test.ts`, E2E A-10                   |
+| Hora del móvil imposible (antes de 2020 o desde 2100)    | `422 invalid`, sin aplicar nada (T1)                                        | `execution.test.ts`                                           |
+| Pasada la medianoche o reanudada al día siguiente        | Se acepta con su hora; la sesión conserva su día previsto (T4)              | E2E-19, `execution.test.ts`                                   |
+| Comando de otra persona (móvil compartido)               | `409 identity_mismatch`: no se aplica a nadie                               | `execution.test.ts`, B2-API, E2E A-08                         |
+| Base ocupada por otra herramienta                        | `503 storage_busy` en menos de 2,5 s, sin aplicar nada; se reintenta        | `execution.test.ts`                                           |
+
+### 7.1 Reglas de la hora de ejecución (A-10, ADR-28)
+
+No se confía ciegamente en el reloj del móvil, pero tampoco se impone la hora del servidor a lo que se registró sin conexión. Para cada comando, con `device.recordedAt` (dispositivo) y la hora de recepción en el servidor:
+
+| Regla  | Condición                                                                                                                                                       | Hora que se usa    | Se anota             |
+| ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ | -------------------- |
+| **T1** | Antes del 1 de enero de 2020 o desde 2100: imposible (reloj perdido)                                                                                            | Ninguna: `422`     | —                    |
+| **T2** | Posterior a la recepción: el reloj va adelantado                                                                                                                | Recepción          | `ahead_of_server`    |
+| **T3** | Más de 5 min antes del límite inferior: la **publicación de la versión** para el inicio; el **inicio de la ejecución** para series, pausas, reanudaciones y fin | Recepción          | `before_lower_bound` |
+| **T4** | En cualquier otro caso                                                                                                                                          | La del dispositivo | —                    |
+
+- **Lo legítimo se acepta (T4):** lo registrado sin conexión horas antes, lo que pasa de la medianoche y una sesión reanudada al día siguiente.
+- **Siempre se guardan** la hora del dispositivo, su zona y su desfase, la recepción y el motivo del ajuste (migración `003`), para auditar cualquier discrepancia. El entrenador ve «hora de llegada (el reloj del móvil iba adelantado)» o «(… marcaba una hora imposible, anterior)».
+- **Zonas horarias:** los instantes son UTC, así que un cambio de zona no altera el orden. La fecha local de cada registro se calcula con su propia zona; la fecha real de la sesión es la local de su inicio.
+- **Fecha prevista y real:** se guardan por separado (`planned_date` frente a `started_at`).
+- **Por qué 5 min:** cubren la deriva normal entre relojes sin sincronizar.
+- **Código:** `resolveExecutionInstant` en `src/domain/training/execution.ts`.
 
 ## 8. Versiones durante la ejecución
 
@@ -276,16 +324,18 @@ Editar una sesión publicada desde la interfaz es el bloque 5: hoy la v2 solo se
 
 ## 10. Pruebas
 
-| Dónde                                          | Qué cubre                                                                                                                                                                                                                                                                                                                          |
-| ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/domain/training/performance.test.ts` (15) | Campos por tipo de ejercicio, validación, valores por defecto, diferencias, sin tonelaje                                                                                                                                                                                                                                           |
-| `src/server/services/execution.test.ts` (16)   | Inicio y versión; registro y reenvío; `command_id_reused`; `set_already_logged`; correcciones; `422`/`409`; pausas; cierre parcial y reenvío tras cerrar; completada y revisión; v2 a media ejecución; permisos; nota privada; transacción fallida; índice parcial; reapertura de la base; migración desde la `001`; forma (`400`) |
-| `src/server/db/db.test.ts`                     | Migraciones `[1, 2]`, sumas de comprobación, copias y restauración                                                                                                                                                                                                                                                                 |
-| `e2e/client-execution.spec.ts` (16, Pixel 7)   | Recorrido Alex → Lucía → Alex; cerrar y reabrir el navegador; sin conexión; recarga con pendientes; respuesta perdida y duplicados; cierre parcial; pausa; corrección; 360 px, teclado y accesibilidad; E2E-2, 4, 5, 18, 19, 21 y 22                                                                                               |
-| `e2e/client-app.spec.ts`                       | Registrar con pocas acciones, validación y «Completada» solo con las 16 series; lo que pide cada ejercicio: plancha en segundos sin kg, paseo del granjero en metros con tiempo opcional y carga descrita                                                                                                                          |
-| `e2e/execution-api.spec.ts`                    | Origen (`403`), tamaño (`413`), forma (`400`), idempotencia, `command_id_reused`, sesión ajena (`404`)                                                                                                                                                                                                                             |
-| `e2e/restart.spec.ts`                          | `SIGKILL` a media sesión: lo confirmado sigue, lo registrado con el servidor caído se envía al volver y en SQLite hay una fila por serie y un comando por operación                                                                                                                                                                |
-| `e2e/responsive.spec.ts`                       | Detalle B2, inicio del reproductor y A7 con ejecución, en móvil y escritorio                                                                                                                                                                                                                                                       |
+| Dónde                                                             | Qué cubre                                                                                                                                                                                                                                                                                                                          |
+| ----------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/domain/training/performance.test.ts` (15)                    | Campos por tipo de ejercicio, validación, valores por defecto, diferencias, sin tonelaje                                                                                                                                                                                                                                           |
+| `src/server/services/execution.test.ts` (16)                      | Inicio y versión; registro y reenvío; `command_id_reused`; `set_already_logged`; correcciones; `422`/`409`; pausas; cierre parcial y reenvío tras cerrar; completada y revisión; v2 a media ejecución; permisos; nota privada; transacción fallida; índice parcial; reapertura de la base; migración desde la `001`; forma (`400`) |
+| `src/server/services/execution.test.ts` (A-08, T1–T4, A-14, A-11) | Identidad en cada comando; reglas de la hora; procedencia en la base y en la vista; base ocupada (`storage_busy` en menos de 2,5 s y reintento una vez); migración `003`                                                                                                                                                           |
+| `src/server/db/db.test.ts`                                        | Migraciones `[1, 2, 3]`, sumas de comprobación, copias y restauración                                                                                                                                                                                                                                                              |
+| `e2e/client-execution.spec.ts` (16, Pixel 7)                      | Recorrido Alex → Lucía → Alex; cerrar y reabrir el navegador; sin conexión; recarga con pendientes; respuesta perdida y duplicados; cierre parcial; pausa; corrección; 360 px, teclado y accesibilidad; E2E-2, 4, 5, 18, 19, 21 y 22                                                                                               |
+| `e2e/client-app.spec.ts`                                          | Registrar con pocas acciones, validación y «Completada» solo con las 16 series; lo que pide cada ejercicio: plancha en segundos sin kg, paseo del granjero en metros con tiempo opcional y carga descrita                                                                                                                          |
+| `e2e/client-execution.spec.ts` (A-08, A-09, A-10)                 | Móvil compartido: lo pendiente de Marta nunca se envía como de Lucía y se envía al volver Marta; «Reintentar» de un error recuperable (una sola serie); reloj anterior a la publicación                                                                                                                                            |
+| `e2e/execution-api.spec.ts`                                       | Origen (`403`), tamaño (`413`), forma (`400`, también sin `clientId`), idempotencia, `command_id_reused`, `identity_mismatch` y sesión ajena (`404`)                                                                                                                                                                               |
+| `e2e/restart.spec.ts`                                             | `SIGKILL` a media sesión: lo confirmado sigue, lo registrado con el servidor caído se envía al volver y en SQLite hay una fila por serie y un comando por operación. A-04: `SIGKILL` con 8 escritores concurrentes, sin nada a medias ni duplicados, y reenviar todo da `already_applied` a lo confirmado                          |
+| `e2e/responsive.spec.ts`                                          | Detalle B2, inicio del reproductor y A7 con ejecución, en móvil y escritorio                                                                                                                                                                                                                                                       |
 
 ## 11. Limitaciones conocidas
 
@@ -293,6 +343,7 @@ Editar una sesión publicada desde la interfaz es el bloque 5: hoy la v2 solo se
 - **No se pide almacenamiento persistente** (`navigator.storage.persist()`). Firefox lo pregunta a la persona, y conviene decidir cuándo pedirlo. Safari puede borrar IndexedDB si la web pasa unos días sin usarse.
 - **Sin IndexedDB** (algunas navegaciones privadas) la cola está en memoria, con aviso permanente: cerrar la página pierde lo no enviado.
 - **Una sola pestaña o dispositivo a la vez.** Dos dispositivos que registran la misma serie se resuelven con `set_already_logged` (gana el primero). No hay mezcla de ediciones.
+- **Lo pendiente de otra persona** en un móvil compartido solo se envía cuando esa persona vuelve a entrar en ese móvil. Mientras, sigue guardado y se ve el aviso.
 - **No funciona sin conexión desde cero.** El service worker no guarda las páginas para abrirlas sin red: sin conexión muestra la página «Sin conexión». Si la página ya está abierta, se puede empezar, registrar, pausar y terminar sin conexión, y todo se envía al volver.
 - **Windows no se ha probado en Windows.** Ver `V1_SPEC.md` §9.3: `pnpm verify:env` está listo para ejecutarlo allí.
 - **La v2 durante la ejecución** solo se puede publicar desde el servicio (bloque 5).
