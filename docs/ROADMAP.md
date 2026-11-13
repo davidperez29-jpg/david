@@ -30,7 +30,12 @@ Fases definidas en la especificación maestra (`MASTER_SPEC.md`). Cada fase empi
 >   - `local-demo` solo en esta máquina;
 >   - procedencia guardada;
 >   - pruebas deterministas.
-> - **Bloque 3 (análisis): en diseño, implementación no autorizada.** Especificación propuesta en `BLOCK3_SPEC.md` (13 nov 2026, PROMPT 15), con la definición de cumplimiento multidimensional (P-90) y las decisiones P-90 a P-113 pendientes de tu aprobación.
+> - **Bloque 3 (análisis): en diseño, implementación no autorizada.**
+>   - Especificación consolidada en `BLOCK3_SPEC.md`, versión 2 (13 nov 2026, PROMPT 16).
+>   - P-90 a P-95 **aprobadas** (ADR-33).
+>   - Plan en cuatro etapas (B3.0 a B3.3), cada una pendiente de tu autorización.
+>   - Para B3.0 y B3.1 faltan P-108, P-116 y P-117.
+>   - Los porcentajes de avance de abajo **no cambian**: la documentación terminada no es funcionalidad.
 > - **Pendiente fuera de este bloque:**
 >   - verificación en Windows (A-23);
 >   - página de error de la base (A-15);

@@ -1,16 +1,23 @@
 # Bloque 3 · Análisis del entrenamiento
 
-**Estado: propuesta pendiente de tu aprobación (13 de noviembre de 2026, PROMPT 15).** Nada de este documento está implementado. El PROMPT 15 autoriza la auditoría, el diseño y la documentación del bloque 3, **no su implementación**.
+**Estado:** especificación consolidada, versión 2 (13 de noviembre de 2026, PROMPT 16).
 
-**Punto de partida comprobado:** rama `claude/vigilant-bardeen-qfycp4` en `47f173a`, igual que el remoto y con el árbol limpio. Batería en verde al cerrar el PROMPT 14: 290 pruebas unitarias y de integración, y 135 E2E (más 2 omitidas por ser solo de móvil) (`AUDIT_BLOCK1.md` §15.13).
+- **Aprobadas:** las decisiones P-90 a P-95 (ADR-33).
+- **No autorizada:** la implementación de cualquier etapa (B3.0 a B3.3).
+- **Sin cambios:** este documento no modifica código, base de datos ni dependencias.
+
+| Versión | Fecha       | Cambios                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| ------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1       | 13 nov 2026 | Propuesta inicial (commit `cd2aa52`, PROMPT 15): inventario de datos, cumplimiento multidimensional, volumen, carga interna, pantallas, decisiones P-90 a P-113                                                                                                                                                                                                                                                                    |
+| 2       | 13 nov 2026 | <ul><li>P-90 a P-95 aprobadas e incorporadas con tus matices: tres niveles (diferencia, condición e interpretación), dos perspectivas de la prescripción, fechas, semana ISO y duración.</li><li>Auditoría de volumen y tonelaje, y del modelo por origen del dato.</li><li>Contradicciones encontradas y su resolución.</li><li>Decisiones clasificadas por etapa.</li><li>Plan B3.0–B3.3.</li><li>Revisión científica.</li></ul> |
 
 **Relación con otros documentos:**
 
-- Refina `V1_SPEC.md` §6 (análisis de V1) y su bloque 3 (§9).
+- Refina `V1_SPEC.md` §6 y el bloque 3 de su §9.
 - Toma las definiciones de volumen de `EFFORT_AND_LOAD.md` §10 y las de carga interna de `PROGRESSION_AND_AUTOREGULATION.md` §6 y §7.
-- Si algo choca, manda este documento para el bloque 3 y se corrige el otro (`MASTER_SPEC.md`).
+- Si algo choca, manda este documento para el bloque 3 y el otro se corrige; las contradicciones encontradas están en el §18.
 
-**Leyenda** (la misma de `AUDIT_BLOCK1.md`):
+**Leyenda:**
 
 | Marca | Significado                                             |
 | ----- | ------------------------------------------------------- |
@@ -18,758 +25,857 @@
 | **I** | Comprobado mediante inspección del código o del esquema |
 | **D** | Documentado, pero no verificado                         |
 | **N** | No existe                                               |
-| **?** | Pendiente de tu decisión (decisiones P-90 a P-113, §16) |
+| **?** | Pendiente de tu decisión (§16)                          |
 
 ## 1. Resumen
 
-El bloque 3 convierte lo registrado en el bloque 2 en herramientas de análisis para el entrenador. Responde a cinco preguntas: qué se planificó, qué se hizo, cómo se hizo, en qué se diferenció y qué conviene revisar.
+El bloque 3 convierte lo registrado en el bloque 2 en análisis para el entrenador. Responde a cinco preguntas:
 
-**Propuesta en tres partes:**
+1. Qué se había planificado.
+2. Qué se ha realizado.
+3. Qué diferencias hay.
+4. Qué información falta.
+5. Qué se puede concluir y qué no.
 
-| Parte    | Contenido                                                                                                                | Modelo de datos                                      | Necesita                    |
-| -------- | ------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------- | --------------------------- |
-| **B3.1** | Análisis de una sesión (A8): cumplimiento por dimensiones, volumen por magnitud y diferencias serie a serie. Día y panel | Sin cambios: todo se calcula al leer                 | P-90 a P-95                 |
-| **B3.2** | Cliente por semanas y por periodo (A9), evolución de un ejercicio (A10), volumen por patrón y página «Carga» corregida   | Sin cambios (o una tabla de ajustes si P-91 lo pide) | P-96 a P-100, P-104, P-106  |
-| **B3.3** | RPE de la sesión y carga interna estimada (RPE de la sesión × minutos)                                                   | Una tabla nueva, solo de añadir (§11.3)              | Q2, P-101, P-112 (opcional) |
+| Etapa    | Contenido                                                                                                                                                           | Esquema de la base                           |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
+| **B3.0** | Página de error de la base; errores tipados en las acciones del entrenador que no los tienen; generadores de datos de prueba para el análisis                       | Sin cambios                                  |
+| **B3.1** | Análisis de una sesión (A8): prescripción frente a ejecución, cumplimiento por dimensiones, volumen por magnitud, duración con advertencias; totales diarios; panel | Sin cambios                                  |
+| **B3.2** | Cliente por semanas y periodos (A9); evolución de un ejercicio (A10); volumen por patrón; vistas existentes corregidas («Carga», «Resultados» y «Progreso»)         | Sin cambios                                  |
+| **B3.3** | RPE global de la sesión y carga interna estimada                                                                                                                    | Tabla nueva, solo de añadir (si se autoriza) |
 
-**Lo que no hace el bloque 3:**
+**Exclusiones:**
 
-- un porcentaje único de «cumplimiento»;
+- índice o puntuación global de cumplimiento;
 - recomendaciones o cambios automáticos de la prescripción;
-- diagnósticos de fatiga;
+- diagnóstico de fatiga;
 - estimación del 1RM;
-- cociente agudo:crónico;
-- volumen por grupo muscular;
-- convertir datos subjetivos en mediciones.
+- cociente agudo:crónico, monotonía y _strain_;
+- trabajo mecánico;
+- volumen por grupo muscular o por cualidad;
+- rankings de clientes;
+- análisis nuevo para la clienta.
 
-## 2. Datos disponibles hoy
+## 2. Datos: qué existe de verdad
 
-Revisado en el esquema (`src/server/db/migrations/001`–`003`), el dominio y los servicios. Que un dato aparezca en la documentación no basta: se ha comprobado dónde se guarda y quién lo escribe.
+Comprobado en el esquema (migraciones `001`–`003`), el dominio, los servicios y una base sembrada. Que un dato aparezca en la documentación o en la semilla no basta.
 
-### 2.1 Almacenado: por serie (`set_log`)
+### 2.1 Por origen del dato
 
-| Dato                                                              | Estado | Notas para el análisis                                                                                                                                                                                                                |
-| ----------------------------------------------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Serie registrada (`client_set_id`), ejercicio, variante, nº serie | I, P   | Un único registro original por serie; las correcciones forman una cadena (`supersedes`). La **serie efectiva** es la que nadie sustituye                                                                                              |
-| Versión de la prescripción con la que se registró                 | I, P   | `version_number`: cada serie se compara con **su** versión                                                                                                                                                                            |
-| Hecha o no realizada (`completed`)                                | I, P   | «No realizada» es una decisión explícita de la clienta. Una serie sin registro es otra cosa: «sin registrar»                                                                                                                          |
-| Repeticiones, segundos o metros                                   | I, P   | Uno de los tres según lo prescrito; en series por distancia, el tiempo es opcional                                                                                                                                                    |
-| Carga realizada: `load_kind`, `load_kg`, `load_descriptor`        | I, P   | **`load_kg` cambia de significado según `load_kind`**: kg totales (`external`), kg de lastre (`bodyweight_plus`), kg de asistencia (`assisted`) o kg opcionales (`self_selected` y otros). Se interpreta siempre junto a su modalidad |
-| Base de la carga (total, por lado, por implemento)                | I      | **No está en la serie**: está en la prescripción de su versión. La serie se registra en la misma base que lo prescrito                                                                                                                |
-| RIR; RPE con su escala                                            | I, P   | Autodeclarados. El RPE siempre con escala (`rir_based`, `omni_res` o `borg_cr10`)                                                                                                                                                     |
-| Observación de la serie                                           | I, P   | Texto libre, como mucho 300 caracteres                                                                                                                                                                                                |
-| Hora de ejecución, del dispositivo, zona, desfase y recepción     | I, P   | Reglas T1–T4 (`EXECUTION.md` §7.1), con el motivo si se usó la hora de recepción                                                                                                                                                      |
-| Procedencia (`origin`, `recorded_by`)                             | I, P   | Hoy siempre `self_reported` por el `client` (migración `003`)                                                                                                                                                                         |
+| Origen                                                | Qué incluye                                                                                                                                                                                                                                                                              | Estado |
+| ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| **Persistido, registrado por la clienta al ejecutar** | <ul><li>Cada serie: hecha o no; repeticiones, segundos o metros; carga en su modalidad; RIR y RPE con escala; observación; horas.</li><li>Inicio y fin, total de pausas, motivo del fin y comentario final.</li><li>Procedencia `self_reported` · `client`.</li></ul>                    | I, P   |
+| **Introducido por el entrenador**                     | <ul><li>La prescripción de cada versión (series, repeticiones o rango, carga y base, esfuerzo objetivo, descanso, tempo, duración estimada).</li><li>Notas de la sesión y de cada ejercicio (visibles y privadas).</li><li>Fecha prevista y orden, **dentro de cada versión**.</li></ul> | I, P   |
+| **Derivado por cálculo**                              | Serie efectiva, fecha de ejecución, estado de la sesión, diferencias por serie, totales y duraciones                                                                                                                                                                                     | I, P   |
+| **Importado**                                         | Nada (0 filas con `origin = imported`)                                                                                                                                                                                                                                                   | I      |
+| **Estimado**                                          | Nada                                                                                                                                                                                                                                                                                     | I      |
+| **Generado por la semilla (ficticio)**                | <ul><li>Ejecuciones y series de ejemplo, con la procedencia por defecto `self_reported` (simulada).</li><li>**`perceived_effort` (0–10) sin escala**: en una base sembrada aparece en 31 de 44 ejecuciones. **El bloque 2 nunca lo registra.**</li></ul>                                 | I      |
+| **Datos de referencia en el código**                  | La biblioteca: patrón principal y secundarios, región corporal y etiquetas de cualidad de cada variante                                                                                                                                                                                  | I      |
 
-### 2.2 Almacenado: por sesión y por versión
+### 2.2 Dato a dato
 
-| Dato                                                                     | Estado | Notas                                                                                                                                       |
-| ------------------------------------------------------------------------ | ------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| Fecha prevista y orden en el día (`session`)                             | I, P   | Varias sesiones el mismo día                                                                                                                |
-| Prescripción de cada versión (`session_version.content`, JSON)           | I, P   | Inmutable. Series, repeticiones o rango, carga, esfuerzo objetivo, descanso, tempo y notas; `estimatedMinutes` (opcional) y `focus` (texto) |
-| Autor, fecha, motivo y resumen de cambios de cada versión                | I, P   |                                                                                                                                             |
-| Inicio, versión de inicio, fin, motivo del fin, series pendientes        | I, P   | `finish_reason`: `all_done` o `ended_early`; `pending_sets_confirmed` al cerrar parcialmente                                                |
-| Pausas: total acumulado (`paused_seconds`) y pausa abierta (`paused_at`) | I, P   | **Solo el total**: no se guarda la hora de cada pausa ni de cada reanudación                                                                |
-| Última actividad (`last_activity_at`)                                    | I      | Solo la última, no la serie de actividades                                                                                                  |
-| Comentario final de la clienta (`comment`)                               | I, P   |                                                                                                                                             |
-| `perceived_effort` (0–10)                                                | I      | **Solo lo rellena la semilla, con valores ficticios y sin escala.** El bloque 2 no lo registra. **No hay hoy ningún RPE de sesión real**    |
+| Dato                                                | Estado                                 | Detalle                                                                                                                                                                |
+| --------------------------------------------------- | -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **RPE de la sesión**                                | **N** (solo en la semilla, sin escala) | No se puede usar para carga interna (§7)                                                                                                                               |
+| **RIR por serie**                                   | I, P                                   | Opcional, y **solo si se prescribió**: sin objetivo no se puede registrar. **Nunca se rellena por defecto**                                                            |
+| **RPE por serie**                                   | I, P                                   | Igual que el RIR, con la escala de la prescripción                                                                                                                     |
+| **Descanso real**                                   | **N**                                  | El temporizador vive en el móvil y no se envía                                                                                                                         |
+| **Duración**                                        | I, P (parcial)                         | Inicio, fin y **total** de pausas. **No se guarda la hora de cada pausa** (`client_command` solo guarda la hora de recepción, no la del dispositivo)                   |
+| **Fecha de ejecución**                              | I, P                                   | Fecha local del inicio en la **zona del dispositivo** (`executionDate`)                                                                                                |
+| **Fecha prevista**                                  | I, P                                   | En **cada versión** (`content.plannedDate`). `session.planned_date` guarda **solo la vigente**: publicar una versión con otra fecha la sobrescribe                     |
+| **Carga y modalidad**                               | I, P                                   | `load_kg` cambia de significado según `load_kind`: kg totales, lastre, asistencia u opcionales. La base (total, por lado, por implemento) solo está en la prescripción |
+| **Versiones de la prescripción**                    | I, P                                   | Inmutables, con autor y hora de publicación; cada serie guarda la suya; la ejecución guarda la de inicio                                                               |
+| **Motivo de una serie no realizada**                | **N**                                  | Solo «no realizada»                                                                                                                                                    |
+| **Observaciones de la clienta**                     | I, P                                   | Por serie (300 caracteres) y comentario final (500)                                                                                                                    |
+| **Observaciones del entrenador sobre la ejecución** | **N**                                  | Solo las notas de la prescripción. Anotaciones: §13                                                                                                                    |
+| **Valores propuestos frente a editados**            | **N**                                  | Repeticiones, tiempo, distancia y carga **se rellenan con lo prescrito** (en los rangos, con el mínimo). No se sabe si la clienta los cambió                           |
 
-### 2.3 Almacenado: biblioteca (en el código, no en la base)
+### 2.3 Lo que hay en una base sembrada
 
-| Dato                                               | Estado | Utilidad para el análisis                                                                                                     |
-| -------------------------------------------------- | ------ | ----------------------------------------------------------------------------------------------------------------------------- |
-| Patrón principal y secundarios de cada variante    | I      | Volumen por patrón (§6.4)                                                                                                     |
-| Región corporal (tren superior, inferior, tronco…) | I      | Demasiado general para hablar de «grupos musculares»                                                                          |
-| Etiquetas de cualidad (`capacity`) por variante    | I      | Varias por variante: describen **para qué sirve** el ejercicio, **no** con qué intención se prescribió en una sesión concreta |
-| Grupos musculares                                  | **N**  | No hay taxonomía de músculos (P-53)                                                                                           |
+Consulta de solo lectura sobre una base de las pruebas:
 
-### 2.4 Calculable sin estimaciones
+- **Modalidades prescritas:** solo kg externos con base «total», peso corporal y «otra». No hay lastre, asistida, bandas, dispositivo, autoseleccionada, %1RM, «por implemento», «por lado», prescripción por serie ni repeticiones «por lado».
+- **Tipos de serie:** repeticiones fijas y en rango, segundos y metros.
+- **Esfuerzo:** RIR, RPE y **5 objetivos de tipo «carácter»**, que no tienen nada registrable con lo que compararlos.
+- **Ejecución:** no hay pausas, ni versiones posteriores a la primera, ni correcciones.
 
-| Cálculo                                                             | Con qué datos                                        | Condición                                                  |
-| ------------------------------------------------------------------- | ---------------------------------------------------- | ---------------------------------------------------------- |
-| Series prescritas, hechas, no realizadas y sin registrar            | Prescripción de referencia (§4.2) y series efectivas | Siempre                                                    |
-| Repeticiones, segundos y metros prescritos frente a hechos          | Ídem                                                 | Cada magnitud por separado                                 |
-| Diferencias por serie: repeticiones, kg, RIR y RPE                  | Serie frente a su versión                            | Kg solo en la misma modalidad; RPE solo en la misma escala |
-| Tonelaje externo prescrito y ejecutado                              | kg externos **totales**                              | Base total, o por implemento con el número de implementos  |
-| Lastre y asistencia                                                 | `bodyweight_plus` y `assisted`                       | Aparte del tonelaje                                        |
-| Duración bruta (inicio → fin) y activa (menos pausas)               | `session_log`                                        | Sesión terminada; aviso si no es representativa (§4.6)     |
-| Fecha prevista frente a real, adelanto o retraso                    | `planned_date` y la fecha local del inicio           | Siempre                                                    |
-| Versiones usadas, correcciones y series fuera de la versión vigente | `version_number` y `supersedes`                      | Siempre                                                    |
-| Recuento de series por patrón                                       | Biblioteca                                           | Principal, y principal con secundarios, por separado       |
+**Las pruebas del bloque 3 necesitarán escenarios generados** (B3.0).
 
-### 2.5 No existe todavía
+### 2.4 Qué se puede construir sin cambiar el esquema
 
-| Dato                                                        | Consecuencia en el bloque 3                                | Qué haría falta                                                                |
-| ----------------------------------------------------------- | ---------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| **Descanso realmente hecho**                                | Solo se muestra el previsto, con «no registrado»           | Registrar el descanso en el reproductor (comando nuevo) en un bloque posterior |
-| **RPE de la sesión**                                        | Sin carga interna                                          | B3.3 (Q2, P-48, P-49), §7                                                      |
-| Motivo de una serie no realizada o de un ejercicio no hecho | «No realizada» sin motivo                                  | `stop_reason` o `exercise_skip` (`DATA_MODEL.md` §5), más adelante             |
-| Series de calentamiento (`set_role`)                        | Todas son de trabajo                                       | Bloque 4 o posterior (P-20)                                                    |
-| Criterios de finalización, calidad o velocidad medida       | Sin cumplimiento «cualitativo» por criterios               | Bloque 4 y posteriores                                                         |
-| Hora de cada pausa y reanudación                            | La duración activa solo resta el total de pausas           | No hace falta para B3                                                          |
-| Peso corporal medido, 1RM de referencia en la base          | Sin intensidad relativa ni carga respecto al peso corporal | Evaluaciones (V3) y prescripción completa (bloque 4)                           |
-| Entidad «bloque» o plan de entrenamiento                    | El «bloque» es un rango de fechas que elige el entrenador  | Planificación (Fase 6 y V4)                                                    |
-| Frecuencia cardiaca u otros fisiológicos                    | Nada                                                       | Integraciones verificadas (E5)                                                 |
-| Motivo de una corrección y anotaciones del entrenador       | Se ven las correcciones, pero no su porqué                 | §13 (P-109)                                                                    |
+| Funcionalidad                                       | ¿Sin cambios?                      | Condición                                       |
+| --------------------------------------------------- | ---------------------------------- | ----------------------------------------------- |
+| B3.0 completo                                       | Sí                                 | —                                               |
+| A8, totales diarios y panel (B3.1)                  | Sí                                 | Con la advertencia de huecos aproximada (P-116) |
+| A9, A10, patrones y vistas corregidas (B3.2)        | Sí                                 | Patrones desde la biblioteca del código         |
+| «Pendientes de revisar» exacto en el panel          | No: necesita marcas de lectura     | Aproximación sin esquema en B3.1 (P-111)        |
+| Advertencia de huecos exacta                        | No: necesita la hora de cada pausa | P-116 c)                                        |
+| Saber si un valor se editó o se aceptó el propuesto | No                                 | P-119                                           |
+| RPE de la sesión y carga interna (B3.3)             | No: tabla nueva                    | Q2, P-101, P-112                                |
+| Correcciones justificadas y anotaciones             | No                                 | P-109                                           |
 
-### 2.6 Hallazgos que afectan al análisis
+### 2.5 Hallazgos
 
-1. **`perceived_effort` es de la semilla** [I]: valores inventados sin escala, que la pestaña «Registro» muestra como «esfuerzo percibido X/10». No sirven para carga interna (P-102).
-2. **La página «Carga» de la Fase 1 cuenta por fecha prevista** [I] (`getLoadOverview`): una sesión hecha otro día suma a la semana prevista, no a la real (P-93, P-106).
-3. **El tonelaje 1.0.0 toma los kg «externos» sin mirar la base** [I] (`performedKg` en `compat.ts`). Con «por implemento» o «por lado» daría una cifra errónea. Hoy no ocurre, porque la semilla y el constructor solo usan «total», pero el modelo lo admite.
-4. **Las vistas de la Fase 1 comparan con la versión vigente** [I] (capa de compatibilidad), no con la versión de cada serie. A7 sí lo hace bien (`review.ts`). El análisis nuevo seguirá a A7.
-5. **La duración incluye los cortes sin pausa** [I]: si la clienta cierra la aplicación sin pausar y vuelve al día siguiente, «inicio → fin» abarca la noche. Hace falta el aviso del §4.6.
-6. **Otras acciones del entrenador ante una base ocupada** [I]: crear sesión, borrar o mover un borrador, copia y restablecer no devuelven el error tipado de ADR-29 y acaban en la página de error genérica. Es residual de A-11 y se propone resolverlo con la página de error de la base (P-108).
+1. **`perceived_effort` es de la semilla** y la pestaña «Registro» lo muestra como «esfuerzo percibido X/10» sin escala [I]. P-102.
+2. **Las vistas de volumen existentes no usan la misma fecha** [I]:
+   - «Carga» y la pestaña «Resultados» del entrenador agrupan por fecha **prevista**;
+   - el «Progreso» de la clienta, por fecha **de ejecución**.
 
-## 3. Objetivos, alcance y exclusiones
+   P-93 lo resuelve a favor de la fecha de ejecución; se corrige en B3.2.
 
-### 3.1 Objetivos
+3. **El tonelaje 1.0.0 toma los kg «externos» sin mirar la base** [I]. Hoy no se nota porque solo hay base «total».
+4. **Las vistas de la Fase 1 comparan con la versión vigente**, no con la de cada serie [I]. A7 sí lo hace bien.
+5. **La duración incluye los cortes sin pausa** [I], y con horas ajustadas (ADR-28) puede salir incoherente (fin anterior al inicio en hasta 5 min). Hace falta una protección (§4.5).
+6. **Los valores se proponen con lo prescrito** [I]: una «coincidencia» de repeticiones o carga puede significar que no se cambió el valor. El esfuerzo no tiene este problema porque no se rellena.
+7. **La fecha prevista cambia con las versiones** [I], y `session.planned_date` solo conserva la vigente. La original se reconstruye desde el contenido de las versiones.
+8. **Residual de A-11** [I]: crear sesión, borrar o mover un borrador, copia y restablecer no devuelven el error tipado de base ocupada. Se aborda en B3.0.
+9. **`EXECUTION.md` §2 decía «zona de la aplicación»** para la fecha de ejecución; el código y `V1_SPEC.md` usan la zona del dispositivo. Corregido en la documentación (§18).
 
-1. Ver en una pantalla qué se prescribió, qué se hizo y en qué se diferenció cada serie, **sin mezclar magnitudes**.
-2. Medir el cumplimiento por **dimensiones separadas** y transparentes, sin un porcentaje que lo resuma todo (§5).
-3. Seguir el volumen y la evolución de un cliente por sesión, día, semana y periodo, con lo **prescrito** (original o vigente) y lo **ejecutado**.
-4. Dejar preparados los datos y las vistas que necesitará la autorregulación supervisada (1C), sin tomar decisiones automáticas (§10).
-5. Todo cálculo, con su fórmula y versión del registro (`src/domain/formulas.ts`) y la insignia «Cálculo».
+## 3. Decisiones aprobadas y cómo se aplican
 
-### 3.2 Alcance por partes
+### 3.1 P-90 · Cumplimiento multidimensional
 
-| Parte    | Incluye                                                                                                                                                                                                                                                                                        |
-| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **B3.0** | (Previa, si apruebas P-108) Página de error de la base y errores tipados en las acciones del entrenador que aún no los tienen                                                                                                                                                                  |
-| **B3.1** | <ul><li>Dominio de análisis y fórmulas registradas (§12).</li><li>A8 · Análisis de la sesión.</li><li>Totales por día en A3.</li><li>Panel A1: sesiones de hoy y pendientes de revisar.</li><li>Resumen prescrito en el constructor (E2E-1, paso 1).</li></ul>                                 |
-| **B3.2** | <ul><li>A9 · Análisis del cliente: semana y periodo, con filtros.</li><li>A10 · Evolución de un ejercicio.</li><li>Volumen por patrón.</li><li>Incumplimientos repetidos como listas descriptivas.</li><li>La página «Carga» de todos los clientes, rehecha con las fórmulas nuevas.</li></ul> |
-| **B3.3** | (Opcional) Pregunta del RPE de la sesión a la clienta al terminar, migración `004`, carga interna estimada por sesión y semana                                                                                                                                                                 |
+- **Cuatro dimensiones independientes:**
+  - **estructural:** ejercicios y series;
+  - **cuantitativa:** repeticiones, segundos y metros;
+  - **intensidad:** carga;
+  - **esfuerzo:** RIR y RPE.
+- **Un apartado cualitativo descriptivo**, sin puntuación.
+- **Sin índice global** ni puntuación compuesta.
+- **Valores observados con su denominador.**
 
-### 3.3 Exclusiones
+### 3.2 P-91 · Diferencias con tolerancia cero, en tres niveles
 
-- Recomendaciones de carga, progresiones y cambios automáticos de la prescripción (1C, P-45).
-- Diagnóstico de fatiga, «riesgo de lesión» y cociente agudo:crónico (`PROGRESSION_AND_AUTOREGULATION.md` §6.3).
-- Monotonía y _strain_ de Foster: no se calculan en este bloque.
-- Estimación del 1RM, intensidad relativa (% 1RM) y carga respecto al peso corporal (necesitan evaluaciones y el bloque 4).
-- Volumen por grupo muscular (P-53) y por cualidad (P-99).
-- Análisis para la clienta: su «Progreso» no cambia, salvo la corrección de fórmulas que la afecte (§9.7).
-- Informes imprimibles (V6), tiempo real e integraciones.
+| Nivel                             | Qué es                                                                                                             | Lo calcula TrainPro                      |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------ | ---------------------------------------- |
+| **1. Diferencia observada**       | El número: «−3 kg», «+1 RIR», «7 rep. (rango 8–10, −1 respecto al mínimo)»                                         | Sí, siempre, sin márgenes que la oculten |
+| **2. Condición prescrita**        | Si lo hecho satisface la forma de lo prescrito: un valor fijo (coincide o es distinto) o un rango (dentro o fuera) | Sí, factual                              |
+| **3. Interpretación profesional** | Si la diferencia importa y por qué                                                                                 | **No: la hace el entrenador**            |
 
-## 4. Reglas comunes del análisis
+**Tus ejemplos, tal como se mostrarán:**
+
+| Prescrito | Hecho | Nivel 1               | Nivel 2                         |
+| --------- | ----- | --------------------- | ------------------------------- |
+| 8–10 rep. | 9     | —                     | **Dentro del rango**            |
+| 8–10 rep. | 7     | −1 respecto al mínimo | **Fuera del rango, por debajo** |
+| 40 kg     | 37 kg | **−3 kg** (−7,5 %)    | Distinto de lo prescrito        |
+| RIR 2     | RIR 2 | —                     | **Coincide**                    |
+| RIR 2     | RIR 3 | **+1**                | Distinto de lo prescrito        |
+
+**Vocabulario permitido:** «coincide», «distinto de lo prescrito», «dentro del rango», «fuera del rango (por debajo o por encima)», «sin dato», «no aplica», «no realizada» y «sin registrar».
+
+**Vocabulario que no se usa:** «incumplimiento», «no cumplido», «mal», «más o menos exigente», ni colores de semáforo. Las diferencias se destacan con un estilo neutro.
+
+### 3.3 P-92 · Prescripción original y vigente
+
+| Perspectiva  | Definición aprobada                                                 | Cómo se reconstruye                                                                                                                      |
+| ------------ | ------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| **Original** | La instrucción que recibió la clienta en el momento correspondiente | **Serie registrada:** la versión de su registro (`set_log.version_number`) [I, P]. **Lo no registrado:** regla propuesta en P-117 (§4.2) |
+| **Vigente**  | La prescripción actual del entrenador                               | `session.current_version` [I, P]                                                                                                         |
+
+**Comprobación A:** las versiones se pueden vincular de forma fiable a cada ejecución [I, P].
+
+- Son inmutables (disparadores probados).
+- Cada serie guarda la suya.
+- La ejecución guarda la de inicio.
+- Cada versión tiene su hora de publicación.
+
+La vista histórica no cambia aunque el entrenador publique después: la nueva versión es otra fila.
+
+**Límite:** para lo **no registrado**, lo que vio la clienta no se guarda; se deduce con la regla de P-117.
+
+**Cambio respecto a la versión 1:** se retira la tercera vista («primera versión publicada»), que no está en lo aprobado. El historial de versiones (bloque 5) ya permite ver cada versión.
+
+### 3.4 P-93 · Fecha prevista y fecha de ejecución
+
+- **La planificación** (lo prescrito, sesiones previstas y cumplimiento de lo planificado) se organiza por **fecha prevista**.
+- **La carga ejecutada** (volumen y tonelaje hechos) se organiza por **fecha de ejecución**.
+- Se conservan y se muestran **las dos**.
+
+**Comprobación B:** la fecha de ejecución se recupera de forma fiable y no se confunde con la prevista [I, P].
+
+- Es la fecha local del inicio en la zona del dispositivo, guardada con la ejecución.
+- Las series de después de medianoche pertenecen a su sesión (probado: E2E-19).
+- Si el inicio usó la hora de recepción (ADR-28, T2/T3), la fecha sale de esa hora y se marca como «hora ajustada».
+
+**Consecuencias en consultas, agregaciones, filtros y gráficos:**
+
+| Ámbito           | Regla                                                                                                                                                                                                                                                                        |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Consultas**    | Dos ventanas: por `planned_date` (vigente), y por `session_log.started_at` con un margen de ±1 día en UTC, filtrando después por la fecha local. Para la fecha prevista original se leen las versiones (P-118)                                                               |
+| **Agregaciones** | <ul><li>Lo planificado y su cumplimiento, por fecha prevista.</li><li>Lo ejecutado, por fecha de ejecución.</li><li>**Nunca** se suman en un mismo total magnitudes agrupadas por fechas distintas.</li></ul>                                                                |
+| **Filtros**      | Cada bloque de la pantalla indica su base: «según fecha prevista» o «según fecha de ejecución». Un filtro de periodo se aplica a cada bloque sobre su propia base                                                                                                            |
+| **Gráficos**     | En «planificado frente a ejecutado» por semana, una sesión trasladada aparece en la semana prevista (planificado) y en la de ejecución (ejecutado), marcada «trasladada», y la tabla equivalente lo lista. Sin esa marca, una semana parecería con déficit y otra con exceso |
+| **A3**           | Es una vista de planificación: su cabecera muestra **el estado de las sesiones previstas** ese día, no «el total realizado del día». Lo hecho de esas sesiones se muestra con su fecha real                                                                                  |
+
+### 3.5 P-94 · Semana ISO
+
+- Lunes a domingo, numerada según ISO 8601.
+- Se calcula **sobre fechas locales** (las de ejecución o las previstas), no sobre instantes UTC.
+
+**Comprobación C** [P]: `isoWeekKey` y `startOfIsoWeek` coinciden con una implementación independiente de ISO 8601 en los **5.114 días de 2019 a 2032**, sin ninguna discrepancia (verificación de solo lectura, 13 nov 2026).
+
+| Caso                                                  | Resultado                            |
+| ----------------------------------------------------- | ------------------------------------ |
+| 28 dic 2026 – 3 ene 2027                              | **2026-W53** (2026 tiene 53 semanas) |
+| 4 ene 2027                                            | 2027-W01                             |
+| 31 dic 2020 – 3 ene 2021                              | 2020-W53                             |
+| 29 dic 2025                                           | 2026-W01                             |
+| Inicio a las 23:50 del 31 dic 2026 en Madrid          | 31 dic → 2026-W53                    |
+| Inicio a las 00:10 del 1 ene 2027 en Madrid           | 1 ene → 2026-W53                     |
+| El mismo instante en Nueva York                       | 31 dic (la zona del inicio importa)  |
+| Domingo 3 ene, 23:30, y lunes 4 ene, 00:30, en Madrid | 2026-W53 y 2027-W01                  |
+
+**Para la interfaz:**
+
+- Una semana que cruza el año se rotula con sus fechas («28 dic 2026 – 3 ene 2027»), no solo con «W53».
+- El cambio de hora no afecta, porque se trabaja con fechas locales; ya está probado.
+
+### 3.6 P-95 · Duración
+
+| Dato                      | Definición                                                               |
+| ------------------------- | ------------------------------------------------------------------------ |
+| **Duración transcurrida** | Fin − inicio                                                             |
+| **Pausas registradas**    | `paused_seconds`, la suma de las pausas que la clienta hizo con «Pausar» |
+| **Duración calculada**    | Transcurrida − pausas registradas                                        |
+| **Advertencias**          | Sobre la fiabilidad del dato (§4.5)                                      |
+
+**Lo que no se hace:**
+
+- descontar los huecos;
+- suponer que la clienta estuvo inactiva;
+- modificar ningún registro.
+
+**Comprobación D:** sin protecciones habría resultados absurdos. El §4.5 define qué se muestra en cada caso.
+
+**Límite:** el modelo no guarda dónde ocurrió cada pausa, así que no se puede saber con certeza si un hueco tuvo una pausa registrada (P-116).
+
+**Cambio respecto a la versión 1:** se deja de llamar «activa» a la duración calculada, porque eso presupone actividad. Que una duración con advertencia entre o no en medias y totales de periodo queda pendiente (P-114).
+
+**Comprobación E:** con el §3.2, ninguna diferencia numérica se convierte en un juicio. Las listas de «incumplimientos repetidos» de la versión 1 pasan a «diferencias repetidas respecto a lo prescrito» (P-104).
+
+## 4. Reglas comunes
 
 ### 4.1 Qué cuenta
 
 - **Solo las series efectivas:** un reenvío o una corrección cuentan una vez.
-- **Una serie «no realizada»** no suma magnitudes, pero sí cuenta como prescrita y no hecha.
-- **Una sesión en curso o interrumpida** se analiza con lo confirmado y lo dice: «En curso: lo pendiente en el móvil de la clienta no se ve».
-- **Solo lo confirmado por el servidor.** Lo pendiente en el móvil no existe para el análisis.
-- **Los datos de la semilla** se analizan igual que los demás (son ficticios), salvo `perceived_effort` (P-102).
+- **Una serie «no realizada»** no suma magnitudes, pero cuenta como prescrita.
+- **Una sesión en curso o interrumpida** se analiza con lo confirmado, y la pantalla lo dice.
+- **Solo lo confirmado por el servidor.**
+- **`perceived_effort` de la semilla no se usa.**
 
-### 4.2 Prescripción de referencia (P-92)
+### 4.2 Prescripción de referencia (P-92 aprobada; P-117 pendiente)
 
-Una sesión puede tener varias versiones, y una serie puede registrarse con una versión que ya no es la vigente. Para comparar:
+| Caso                                            | Original                                                                                                                                        | Vigente           |
+| ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | ----------------- |
+| Serie registrada                                | La versión de su registro (dato)                                                                                                                | `current_version` |
+| Serie sin registrar en una sesión empezada      | **P-117 (propuesta):** la versión del último registro de la sesión o, si no hay, la de inicio                                                   | `current_version` |
+| Sesión sin empezar                              | **P-117 (propuesta):** la versión vigente al terminar el día previsto (23:59:59 en la zona de la aplicación); si se publicó después, la primera | `current_version` |
+| Serie registrada que ya no existe en la vigente | Su versión; se lista como «fuera de la versión vigente»                                                                                         | No existe en ella |
 
-| Caso                                            | Se compara con                                           |
-| ----------------------------------------------- | -------------------------------------------------------- |
-| Serie registrada                                | La prescripción de **la versión con la que se registró** |
-| Serie sin registrar                             | La de la **versión vigente**                             |
-| Serie registrada que ya no existe en la vigente | Su versión; se lista como «fuera de la versión vigente»  |
+Los **totales prescritos** de cada perspectiva se calculan serie a serie con su referencia.
 
-Los **totales prescritos** de la sesión salen de esa referencia, serie a serie. Además, A8 y A9 permiten ver **lo prescrito originalmente** (la primera versión publicada) y **lo prescrito vigente**, para que un cambio de prescripción nunca borre lo que se planificó.
+### 4.3 Fechas
 
-### 4.3 Fechas (P-93, P-94)
+Además de P-93 (§3.4):
 
-| Concepto               | Regla                                                                                                                                                                                 |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Fecha prevista**     | `session.planned_date`                                                                                                                                                                |
-| **Fecha de ejecución** | La fecha local del **inicio**, en la zona horaria del dispositivo al empezar (`executionDate`, ya implementado y probado). Las series de después de medianoche pertenecen a la sesión |
-| **Día y semana**       | Lo **ejecutado** se atribuye a la fecha de ejecución; lo **planificado**, a la fecha prevista. Son dos vistas y no se mezclan                                                         |
-| **Semana**             | ISO 8601, de lunes a domingo, calculada sobre esas fechas locales                                                                                                                     |
-| **Sesión trasladada**  | En la semana prevista: «prevista aquí, hecha el 14 (otra semana)». En la semana real, cuenta lo ejecutado                                                                             |
-| **Zonas horarias**     | Cada sesión usa la zona de su inicio. Un viaje no mueve sesiones ya hechas. Los instantes se comparan en UTC                                                                          |
+- **Varias sesiones el mismo día:** cada magnitud se suma por separado; nunca se promedian porcentajes.
+- **Semanas con distinto número de sesiones:** totales con el número de sesiones; una media solo con su denominador.
+- **Sesión trasladada:** prevista aquí y hecha el día X (con fecha); su carga ejecutada cuenta el día X.
+- **Fecha prevista que cambia entre versiones:** la planificación original usa la de la versión original y la vigente, la vigente (P-118, antes de B3.2). Hoy no hay ninguna interfaz que cambie la fecha de una sesión publicada (bloque 5).
 
-### 4.4 Varias sesiones el mismo día
+### 4.4 Semana
 
-El día suma cada magnitud de sus sesiones (por fecha de ejecución). Nunca promedia los porcentajes de cada sesión: vuelve a calcular con los totales. Las sesiones siguen distinguiéndose por su orden y su contexto («Mañana», «Tarde»).
+Semana ISO (§3.5). Una entidad «bloque» de entrenamiento no existe: el entrenador elige un rango de fechas, sin guardarlo, hasta que exista la planificación (Fase 6 y V4).
 
-### 4.5 Semanas con distinto número de sesiones
+### 4.5 Duración: casos y advertencias
 
-No se normaliza por defecto: se muestran los totales y el número de sesiones (prescritas, empezadas, completadas y parciales). Una media por sesión se ofrece solo junto a su denominador («media de 3 sesiones»).
+| Situación                                                                                           | Qué se muestra                                                                                                                                                              |
+| --------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Terminada, sin huecos de más de 30 min                                                              | Transcurrida, pausas registradas y calculada                                                                                                                                |
+| Terminada, con un hueco entre actividades consecutivas (inicio, cada serie, fin) mayor de 30 min    | Lo mismo, más la advertencia: «La duración puede no representar el tiempo real de entrenamiento: hubo X min sin actividad entre las 21:10 y las 06:15». Niveles según P-116 |
+| Sin terminar (en curso o interrumpida)                                                              | «Sin duración: la sesión no se ha terminado», con el inicio y la última actividad                                                                                           |
+| Incoherente: fin anterior al inicio, o pausas mayores que la transcurrida (horas ajustadas, ADR-28) | «Datos de tiempo incoherentes», con las horas tal como están. No se calcula nada                                                                                            |
+| Prevista (`estimatedMinutes`)                                                                       | Al lado, si existe; sin calcular ninguna diferencia porcentual                                                                                                              |
 
-### 4.6 Duración (P-95)
+**G = 30 min** es tu decisión (P-95), no un valor científico.
 
-| Métrica              | Definición                                                                                                                          | Unidad |
-| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | ------ |
-| **Prevista**         | `estimatedMinutes` de la versión, si existe                                                                                         | min    |
-| **Bruta**            | Fin − inicio                                                                                                                        | min    |
-| **Activa**           | Bruta − pausas registradas                                                                                                          | min    |
-| **¿Representativa?** | No, si entre dos actividades consecutivas (inicio, cada serie, fin) hay un hueco mayor que **G** minutos que las pausas no explican | —      |
+## 5. Cumplimiento: definición aprobada aplicada
 
-- **G es un parámetro de diseño, no un valor científico.** Se propone G = 30 min (P-95).
-- Si no es representativa, se muestra «Duración no representativa: 9 h 05 min sin actividad entre las 21:10 y las 06:15» y no entra en medias ni en la carga interna (§7).
-- Como solo se guarda el total de pausas, la regla es conservadora: compara cada hueco con el total de pausas, no con la pausa concreta.
+### 5.1 Dimensiones
 
-## 5. Cumplimiento: propuesta multidimensional (P-90)
+| Dimensión                              | Unidad de cálculo                     | Nivel 2 (condición)                                                                                                                                                                                                                                                                          | Resumen con denominador                                                                              |
+| -------------------------------------- | ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| **Estructural**                        | Ejercicio y serie de la referencia    | <ul><li>Serie: hecha, no realizada o sin registrar.</li><li>Ejercicio: completo, parcial, no realizado o sin registrar.</li></ul>                                                                                                                                                            | «5 de 6 series hechas · 1 no realizada»                                                              |
+| **Cuantitativa**                       | Serie hecha, según su tipo            | Repeticiones, segundos o metros: coincide o distinto (valor fijo); dentro o fuera del rango                                                                                                                                                                                                  | «29 de 30 rep.» · «60 de 90 s» · «2 de 3 series en el rango»                                         |
+| **Intensidad**                         | Serie hecha con carga comparable      | <ul><li>Kg (misma modalidad y base): coincide, distinto, o dentro o fuera del rango.</li><li>Lastre y asistencia: lo mismo, en su magnitud.</li><li>Bandas, dispositivo y «otra»: mismo descriptor o distinto.</li><li>Autoseleccionada, peso corporal o sin carga: **no aplica**.</li></ul> | «2 de 3 series con una carga distinta de la prescrita»                                               |
+| **Esfuerzo**                           | Serie hecha con objetivo de RIR o RPE | <ul><li>Coincide, distinto, o dentro o fuera del rango.</li><li>**Sin dato** si se prescribió y no se registró.</li><li>**No aplica** con escalas distintas o con objetivos de carácter o de calidad (no hay nada registrable que comparar).</li></ul>                                       | «1 de 3 series con el RIR prescrito · 2 distintas · 0 sin dato»                                      |
+| **Cualitativa** (apartado descriptivo) | Sesión, ejercicio y serie             | Sin condición ni puntuación                                                                                                                                                                                                                                                                  | Observaciones, comentario, correcciones, versiones, cierre parcial, horas ajustadas y datos ausentes |
 
-### 5.1 Principios
+### 5.2 Ejemplo (E2E-1 ampliado)
 
-1. **No hay un número único.** «10 de 10 ejercicios» no es «100 % de la sesión» si las cargas, las repeticiones o el esfuerzo fueron otros.
-2. **Cada dimensión se mide en su unidad** y se muestra como **fracción con su denominador** («14 de 16 series»). Un porcentaje solo acompaña a la fracción, nunca la sustituye.
-3. **Sin dato no es incumplimiento.** Si se pidió RIR y no se registró, es «sin dato», no «no cumplido».
-4. **Solo se compara lo comparable:** kg con kg en la misma modalidad y base, y RPE con RPE en la misma escala.
-5. **Es una definición operativa** (decisión de diseño), no un indicador validado científicamente. Se registra en el registro de fórmulas como `operational_definition`.
+**Prescripción v1:**
 
-### 5.2 Dimensiones
-
-| Dimensión                          | Qué responde                             | Unidad de cálculo                          | Resultado                                                                                                                                                                          |
-| ---------------------------------- | ---------------------------------------- | ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **1. Estructural · ejercicios**    | ¿Qué ejercicios se hicieron?             | Ejercicio de la prescripción de referencia | Completo (todas sus series hechas) · parcial · no realizado (todas marcadas «no realizada») · sin registrar                                                                        |
-| **1. Estructural · series**        | ¿Qué series se hicieron?                 | Serie prescrita                            | Hechas / no realizadas / sin registrar, sobre las prescritas                                                                                                                       |
-| **2. Cuantitativa · repeticiones** | ¿Cuánto se hizo respecto a lo previsto?  | Serie hecha, prescrita por repeticiones    | Por serie: igual (o dentro del rango) / menos / más, con la diferencia. Total: Σ hechas frente a Σ previstas (rango: [Σ mín., Σ máx.])                                             |
-| **2. Cuantitativa · tiempo**       | Ídem, por tiempo                         | Serie hecha, prescrita en segundos         | Igual / menos / más. Total en s                                                                                                                                                    |
-| **2. Cuantitativa · distancia**    | Ídem, por distancia                      | Serie hecha, prescrita en metros           | Igual / menos / más. Total en m                                                                                                                                                    |
-| **3. Intensidad · carga**          | ¿Con qué carga, respecto a la prevista?  | Serie hecha con carga comparable           | Igual / menos / más, con la diferencia en kg y en % de lo previsto. Asistencia: «más asistencia» significa **menos carga**. Bandas, dispositivo u «otra»: igual o distinta (texto) |
-| **3. Intensidad · esfuerzo**       | ¿Con qué esfuerzo, respecto al objetivo? | Serie hecha con objetivo de RIR o RPE      | RIR: igual / **más exigente** (RIR menor) / **menos exigente** (RIR mayor). RPE en la misma escala: igual / más / menos. Sin registro: «sin dato»                                  |
-| **4. Cualitativa**                 | ¿Qué pasó además?                        | Sesión, ejercicio y serie                  | Observaciones, comentario final, correcciones, versiones usadas, cierre parcial, horas ajustadas. **Sin puntuación**                                                               |
-
-**Rangos:** dentro del rango cuenta como «igual». Por debajo, la diferencia es respecto al mínimo; por encima, respecto al máximo.
-
-**Carga autoseleccionada:** no hay kg previstos, así que no hay diferencia. Se muestra «carga elegida: 18 kg».
-
-### 5.3 Tolerancias (P-91)
-
-Cada dimensión numérica tiene una tolerancia: repeticiones (rep.), carga (% de lo previsto), RIR (rep.) y RPE (puntos). **Se propone empezar con tolerancia 0**, es decir, comparación exacta mostrando siempre la diferencia numérica, y permitir que el entrenador la ajuste más adelante.
-
-Cualquier tolerancia distinta de 0 es una preferencia del entrenador, no un valor científico. Por ejemplo, la imprecisión del RIR aumenta lejos del fallo (Zourdos et al., 2021; `EFFORT_AND_LOAD.md` §4.3), pero eso no fija ningún margen concreto.
-
-### 5.4 Agregación
-
-- **Por ejercicio y por sesión:** recuentos por estado en cada dimensión, sobre las series en las que la dimensión **aplica**, con «sin dato» y «no aplica» aparte.
-- **Por día, semana y periodo:** se suman recuentos y magnitudes y se recalculan las fracciones. Nunca se promedian porcentajes.
-- **Entre dimensiones: nada.** No se suman, no se ponderan y no se combinan.
-
-### 5.5 ¿Índice global? (P-103)
-
-**Recomendación: no** en el bloque 3. Si en el futuro lo quieres, solo como opción:
-
-- con los pesos que elija el entrenador;
-- con cada componente visible al lado;
-- con el nombre «índice configurado por el entrenador (no validado)»;
-- nunca como valor por defecto ni para comparar clientes.
-
-TrainPro no propondrá pesos: cualquier ponderación sería arbitraria.
-
-### 5.6 Ejemplo verificable (E2E-1 ampliado)
-
-**Prescripción (v1):**
-
-- Sentadilla trasera: 3 × 10 × 60 kg, RIR 2, descanso 2 min.
-- Plancha: 3 × 30 s, sin carga externa ni objetivo de esfuerzo.
+- Sentadilla trasera: 3 × 10 × 60 kg, RIR 2.
+- Plancha: 3 × 30 s.
 
 **Realizado:**
 
-| Ejercicio  | Serie 1           | Serie 2           | Serie 3                |
-| ---------- | ----------------- | ----------------- | ---------------------- |
-| Sentadilla | 10 × 60 kg, RIR 2 | 10 × 60 kg, RIR 1 | 9 × 60 kg, RIR 0       |
-| Plancha    | 30 s              | 30 s              | Marcada «no realizada» |
+- Sentadilla: 10 × 60 RIR 2 · 10 × 60 RIR 1 · 9 × 60 RIR 0.
+- Plancha: 30 s · 30 s · no realizada.
+- Terminada como parcial.
 
-La sesión se termina como parcial.
+| Dimensión    | Se muestra                                                                                           |
+| ------------ | ---------------------------------------------------------------------------------------------------- |
+| Estructural  | Sentadilla completa · plancha parcial · **5 de 6 series** · 1 no realizada                           |
+| Cuantitativa | Sentadilla **29 de 30 rep.** (serie 3: −1) · plancha **60 de 90 s** (2 de 2 series hechas coinciden) |
+| Intensidad   | **3 de 3** series de sentadilla con la carga prescrita                                               |
+| Esfuerzo     | **1 de 3** con el RIR prescrito · **2 distintas** (RIR 1, −1; RIR 0, −2) · 0 sin dato                |
+| Tonelaje     | Prescrito **1.800 kg** · ejecutado **1.740 kg**                                                      |
+| Cualitativo  | Cierre parcial; versión v1; sin correcciones ni observaciones                                        |
 
-| Dimensión        | Resultado                                                                       |
-| ---------------- | ------------------------------------------------------------------------------- |
-| Ejercicios       | Sentadilla **completa** · Plancha **parcial**                                   |
-| Series           | **5 de 6** hechas · 1 no realizada · 0 sin registrar                            |
-| Repeticiones     | Sentadilla **29 de 30** · serie 3: **−1**                                       |
-| Tiempo           | Plancha **60 de 90 s**: las 2 series hechas, iguales; la 3.ª no se hizo         |
-| Carga            | **3 de 3** series de sentadilla con la carga prevista                           |
-| Esfuerzo (RIR)   | **1 de 3** igual · **2 de 3 más exigentes** (RIR 1 y 0 frente a 2) · 0 sin dato |
-| Tonelaje externo | Previsto **1.800 kg** · ejecutado **1.740 kg** (`training.volume-load` 2.0.0)   |
-| Cualitativa      | Cierre parcial con 1 serie no realizada; sin correcciones; versión v1           |
+No se muestra ningún porcentaje global, ni «más exigente», ni ningún juicio.
 
-**Lo que no se muestra:** «83 % de cumplimiento». La sesión se lee así: «Hizo todo lo de la sentadilla, con una repetición menos al final y más cerca del fallo de lo previsto; la plancha se quedó en 2 de 3 series».
+### 5.3 Agregación
 
-### 5.7 Limitaciones
+- Por ejercicio, sesión, día, semana y periodo: se suman recuentos y magnitudes y se recalculan las fracciones. Nunca se promedian porcentajes.
+- Entre dimensiones: nada.
+- «Sin dato» y «no aplica» se muestran siempre aparte y no entran en el denominador de la condición.
 
-- El RIR y el RPE son estimaciones de la clienta, con error, sobre todo lejos del fallo (Zourdos et al., 2021) y con poca experiencia (Helms et al., 2016). Las diferencias de esfuerzo no son mediciones.
-- No se sabe **por qué** se hizo menos: no hay motivo estructurado (§2.5). Las observaciones son la única pista.
-- La dimensión cualitativa no puntúa criterios (calidad, velocidad, técnica) porque no se registran.
-- Más series «más exigentes» no implican fatiga: puede ser una carga prevista demasiado alta, una mala estimación del RIR o un mal día. **El análisis describe; el entrenador interpreta.**
+### 5.4 Límites que la pantalla dice
 
-## 6. Volumen
+- **Valores propuestos:** las repeticiones, el tiempo y la carga se proponen con lo prescrito. Una coincidencia indica que no se cambiaron, no que se midieran (§2.5.6). El esfuerzo no se propone.
+- **RIR y RPE:** son estimaciones de la propia persona, con error, mayor lejos del fallo (Zourdos et al., 2021) y con poca experiencia (Helms et al., 2016).
+- **Sin motivos:** no se sabe por qué algo no se hizo.
+- **Sin interpretación automática:** el análisis describe y no interpreta. Tampoco indica fatiga ni adaptación.
 
-### 6.1 Validez de cada cálculo
+## 6. Volumen y tonelaje: auditoría
 
-| Tipo de serie                                 | Series | Repeticiones | Tiempo / distancia | Tonelaje externo                                      | Otra magnitud                                                                      |
-| --------------------------------------------- | ------ | ------------ | ------------------ | ----------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| Carga externa, base **total**                 | Sí     | Sí           | —                  | **Sí**: repeticiones × kg                             | —                                                                                  |
-| Carga externa, **por implemento** (n)         | Sí     | Sí           | —                  | **Sí**: repeticiones × kg × n                         | —                                                                                  |
-| Carga externa, **por lado** (discos por lado) | Sí     | Sí           | —                  | **No**: falta el peso de la barra o del soporte       | «Tonelaje sin calcular: carga por lado» (P-97)                                     |
-| %1RM con kg congelados                        | Sí     | Sí           | —                  | Sí, con los kg **realizados**                         | (La intensidad relativa necesita un 1RM de referencia en la base: bloque 4)        |
-| Peso corporal sin lastre                      | Sí     | Sí           | —                  | **No** (`EFFORT_AND_LOAD.md` §10.3)                   | Repeticiones con peso corporal                                                     |
-| Peso corporal + lastre                        | Sí     | Sí           | —                  | **No** se suma al tonelaje                            | **Lastre**: Σ repeticiones × kg añadidos (`training.added-load-volume`)            |
-| Asistida                                      | Sí     | Sí           | —                  | **No**                                                | **Asistencia**: series, repeticiones y asistencia media ponderada por repeticiones |
-| Bandas elásticas, dispositivo u «otra»        | Sí     | Sí           | —                  | **No**: resistencia no cuantificada en kg             | Recuento de series y de repeticiones, con el descriptor                            |
-| Isométrico (por tiempo)                       | Sí     | **No**       | **Segundos**       | **No**                                                | Tiempo bajo tensión prescrito frente a hecho (Σ s)                                 |
-| Por distancia                                 | Sí     | **No**       | **Metros**         | **No** (aunque haya carga, p. ej. paseo del granjero) | Σ m; con carga: «Σ m con 2 × 24 kg» como texto, sin multiplicar                    |
-| Sin carga externa                             | Sí     | Sí           | Según el tipo      | **No**                                                | —                                                                                  |
-| Carga autoseleccionada con kg anotados        | Sí     | Sí           | —                  | **Sí**, con los kg realizados (base total)            | Sin prescrito en kg: no hay tonelaje previsto                                      |
+### 6.1 Conceptos que no se confunden
 
-**Reglas que no se rompen** (V1_SPEC §6 y P-36):
+| Concepto                       | Qué es                                                         | En el bloque 3                                                                                                |
+| ------------------------------ | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| **Volumen cuantitativo**       | Series, repeticiones, segundos y metros, cada uno en su unidad | Sí                                                                                                            |
+| **Tonelaje externo (nominal)** | Σ repeticiones × kg externos **declarados**, totales           | Sí, solo cuando el total se conoce (§6.2)                                                                     |
+| **Lastre y asistencia**        | kg añadidos o de ayuda, en su propia magnitud                  | Sí, aparte                                                                                                    |
+| **Carga interna**              | RPE de la sesión × duración (UA)                               | Solo en B3.3, si se autoriza (§7)                                                                             |
+| **Intensidad relativa**        | kg ÷ 1RM de referencia                                         | **No:** no hay 1RM en la base (V3 y bloque 4)                                                                 |
+| **Trabajo mecánico**           | Fuerza × desplazamiento                                        | **No calculable:** no hay recorrido, fuerza ni instrumentos. **Nunca se presentará el tonelaje como trabajo** |
 
-- no se suman repeticiones de tipos distintos, ni segundos con repeticiones, ni metros con nada;
-- no se suma tonelaje con lastre, asistencia ni peso corporal × repeticiones;
-- las series se pueden sumar entre tipos, **pero se muestran desglosadas** porque una serie de 30 s de plancha y una de 5 × 100 kg no son equivalentes;
-- el tonelaje de ejercicios distintos se puede sumar como orientación general, con esa limitación escrita; no es trabajo mecánico.
+El tonelaje **no** representa por sí solo la carga mecánica, el estímulo, la fatiga ni la adaptación. Es una suma de kg declarados.
 
-### 6.2 Repeticiones por lado (P-96)
+### 6.2 Caso a caso
 
-Una serie de «10 por lado» se registra como 10.
+| Caso                                     | Hoy en los datos                                    | Tonelaje                                                                                                                                          | Otras magnitudes                                             | ¿Fiable?                                                                                    |
+| ---------------------------------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------- |
+| **1. kg por implemento** (n implementos) | No aparece (el constructor no lo ofrece)            | rep. × kg × n, con n prescrito                                                                                                                    | —                                                            | Sí, si la clienta usó implementos iguales (no se puede registrar uno distinto en cada mano) |
+| **2. kg por lado** (discos por lado)     | No aparece                                          | **Sin calcular**, con el motivo «falta el peso de la barra o del soporte»                                                                         | —                                                            | **No** (P-97)                                                                               |
+| **3. Carga total realmente desplazada**  | —                                                   | **No determinable.** Con base «total» se usan los kg **declarados**. En máquinas, el peso de la pila no es la carga desplazada (poleas, palancas) | —                                                            | Nominal, no físico                                                                          |
+| **4. Lastre** (peso corporal + kg)       | No aparece                                          | **No** se suma al tonelaje                                                                                                                        | Σ rep. × kg de lastre                                        | Sí                                                                                          |
+| **5. Asistencia**                        | No aparece                                          | **No**                                                                                                                                            | Series, rep. y asistencia media ponderada por repeticiones   | Sí, si se anotan los kg (son opcionales: sin ellos, «sin dato»)                             |
+| **6. Unilaterales**                      | Las variantes tienen lateralidad; no hay «por lado» | Tal como se registran. Con «por lado», **sin calcular** hasta decidir P-96                                                                        | Rep. tal como se registran, marcadas «por lado» si lo son    | Sí sin «por lado»; con «por lado», pendiente                                                |
+| **7. Bilaterales**                       | Sí                                                  | rep. × kg (total)                                                                                                                                 | —                                                            | Sí (nominal)                                                                                |
+| **8. Bandas elásticas**                  | No aparece                                          | **No**: la resistencia no está en kg                                                                                                              | Series y rep.; el descriptor, comparable solo si es idéntico | Recuentos, sí                                                                               |
+| **9. Peso corporal**                     | Sí (110 ejercicios en la semilla)                   | **No** (`EFFORT_AND_LOAD.md` §10.3): no se sabe qué parte del cuerpo se mueve y no hay peso corporal medido                                       | Series y rep. con peso corporal                              | Recuentos, sí                                                                               |
+| **10. Unidades distintas de kg**         | «Otra» (15 en la semilla); dispositivo, sin datos   | **No**                                                                                                                                            | Descriptor de texto; segundos y metros en su magnitud        | Solo descriptivo; nada se suma entre unidades                                               |
+| Carga autoseleccionada con kg anotados   | No aparece                                          | **Sin calcular** por defecto: su prescripción no tiene base (P-115)                                                                               | «Carga elegida: X kg»                                        | No, sin base                                                                                |
+| Series por tiempo o distancia con carga  | Paseo del granjero (metros)                         | **No** (no se multiplican metros por kg)                                                                                                          | Σ s o Σ m, con la carga como texto                           | Sí, por separado                                                                            |
 
-- **Repeticiones:** se cuentan 10, con la marca «por lado», y se muestran aparte del resto.
-- **Tonelaje:** se cuentan los dos lados (30 kg × 10 × 2), como ya decía `EFFORT_AND_LOAD.md` §3.
+**Reglas que no se rompen:**
 
-Hoy el constructor no ofrece «por lado» (solo el modelo lo admite), así que esta regla no afecta a ningún dato actual.
+- no se suman repeticiones con segundos o metros;
+- no se suma tonelaje con lastre, asistencia ni peso corporal;
+- las series se pueden contar juntas, **pero se muestran desglosadas por tipo**;
+- el tonelaje de ejercicios distintos solo es una orientación general.
 
-### 6.3 Escalas
+### 6.3 Lo que hoy no se puede calcular de forma fiable
 
-Cada magnitud se calcula por ejercicio, sesión, día, semana y periodo, siempre **prescrita frente a ejecutada**, con las reglas de fechas del §4.3.
+- tonelaje con carga por lado;
+- carga desplazada real;
+- trabajo mecánico;
+- intensidad relativa;
+- carga respecto al peso corporal;
+- volumen por grupo muscular (no hay taxonomía) y por cualidad (las etiquetas no son la intención);
+- descanso real;
+- carga interna (sin RPE de sesión real).
+
+**No se inventa nada para cubrir estas carencias:** se muestran como «sin calcular» con su motivo.
 
 ### 6.4 Por patrón, cualidad y grupo muscular
 
-| Agrupación                          | Propuesta                                                                                                                                                                                                                                                                                                        |
-| ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Por patrón de movimiento** (P-98) | En B3.2. Dos recuentos **separados** (`TAXONOMY.md`):<ul><li>«solo patrón principal»: cada serie suma 1 a su patrón principal;</li><li>«principal y secundarios»: suma 1 a cada patrón de la variante.</li></ul>No se inventan pesos para los secundarios. Series y magnitudes por tipo, igual que en §6.1       |
-| **Por cualidad u objetivo** (P-99)  | **No en el bloque 3.** Las etiquetas de cualidad describen usos posibles de la variante, y una serie contaría a la vez en «fuerza máxima» e «hipertrofia» sin que esa fuera la intención. Propuesta: una intención estructurada por ejercicio en la prescripción (bloque 4) y, con ella, el volumen por objetivo |
-| **Por grupo muscular** (P-100)      | **No en el bloque 3** (P-53, E3): no hay taxonomía de músculos. La región corporal es demasiado general para llamarla «grupo muscular»                                                                                                                                                                           |
+| Agrupación         | Propuesta                                                                                                    | Decisión             |
+| ------------------ | ------------------------------------------------------------------------------------------------------------ | -------------------- |
+| **Patrón**         | Dos recuentos separados: «solo patrón principal» y «principal y secundarios». Sin pesos para los secundarios | P-98 (antes de B3.2) |
+| **Cualidad**       | No en el bloque 3: las etiquetas describen usos de la variante, no la intención de la sesión                 | P-99 (posponible)    |
+| **Grupo muscular** | No en el bloque 3: no hay taxonomía de músculos                                                              | P-100 (posponible)   |
 
-## 7. Carga interna
+## 7. Carga interna (B3.3)
 
 ### 7.1 Variables que no se confunden
 
-| Variable                          | Qué es                                          | Unidad                    | Escala                                | Cuándo                 | Estado           |
-| --------------------------------- | ----------------------------------------------- | ------------------------- | ------------------------------------- | ---------------------- | ---------------- |
-| **RIR de una serie**              | Repeticiones que quedaban antes del fallo       | repeticiones              | Enteros de 0 a 10                     | Al registrar la serie  | Existe (I, P)    |
-| **RPE de una serie**              | Esfuerzo percibido en esa serie                 | puntos de su escala       | `rir_based`, `omni_res` o `borg_cr10` | Al registrar la serie  | Existe (I, P)    |
-| **RPE de la sesión**              | Esfuerzo global de toda la sesión               | puntos                    | CR-10 modificada de Foster            | Tras terminar (§7.3)   | **N** (B3.3)     |
-| **Duración**                      | Tiempo de la sesión                             | min                       | —                                     | Inicio, fin y pausas   | Existe (I)       |
-| **Carga interna estimada (sRPE)** | RPE de la sesión × duración                     | unidades arbitrarias (UA) | —                                     | Al existir las dos     | **N** (B3.3)     |
-| Frecuencia cardiaca y otras       | Respuesta fisiológica medida por un instrumento | lpm u otras               | —                                     | Importación verificada | **N** (E5)       |
-| Valoración previa                 | Energía y recuperación antes de la sesión       | puntos (ítems propios)    | 1–10, sin validar                     | Antes de empezar       | **N** (P-47, Q2) |
+| Variable                    | Unidad               | Escala                                                  | Estado                |
+| --------------------------- | -------------------- | ------------------------------------------------------- | --------------------- |
+| RIR de una serie            | repeticiones         | Enteros 0–10                                            | Existe (I, P)         |
+| RPE de una serie            | puntos de su escala  | `rir_based`, `omni_res` o `borg_cr10`                   | Existe (I, P)         |
+| **RPE global de la sesión** | puntos               | CR-10 modificada de Foster (**pendiente de verificar**) | **N**                 |
+| Duración calculada          | min                  | —                                                       | Existe (§3.6)         |
+| **Carga interna estimada**  | UA                   | —                                                       | **N**                 |
+| Frecuencia cardiaca y otras | lpm u otras          | —                                                       | **N** (integraciones) |
+| Valoración previa           | puntos (sin validar) | 1–10                                                    | **N** (P-47, Q2)      |
 
-- **El RPE de la sesión no es la media de los RPE de las series.** Sweet et al. (2004) observaron que el RPE de la sesión puede subestimar la media de los RPE tomados tras cada serie. Ni se calcula uno a partir de otro ni se sustituyen.
-- **La carga interna no se suma al tonelaje:** son constructos distintos (Impellizzeri et al., 2019).
+- El RPE de la sesión **no** es la media de los RPE de las series: puede subestimarla (Sweet et al., 2004).
+- La carga interna **no** se suma al tonelaje (Impellizzeri et al., 2019).
 
-### 7.2 Carga interna estimada por el método del RPE de la sesión
+### 7.2 Antes de implementar B3.3 hay que tener
 
-| Elemento                 | Definición propuesta                                                                                                                                                                                                                                                                                                                           |
-| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Qué calcula**          | Una puntuación de la carga interna de una sesión: intensidad global percibida × tiempo                                                                                                                                                                                                                                                         |
-| **Fórmula**              | `carga interna (UA) = RPE de la sesión (0–10) × duración activa (min)`                                                                                                                                                                                                                                                                         |
-| **Variables**            | RPE de la sesión: entero 0–10, escala CR-10 modificada por Foster et al. (2001). Duración activa: §4.6, en minutos enteros (redondeo al más próximo)                                                                                                                                                                                           |
-| **Unidades**             | Unidades arbitrarias (UA). No son kg, ni julios, ni comparables con el tonelaje                                                                                                                                                                                                                                                                |
-| **Supuestos**            | <ul><li>La persona conoce la escala.</li><li>El RPE refleja la sesión entera.</li><li>La duración es representativa (§4.6).</li></ul>                                                                                                                                                                                                          |
-| **Escala y pregunta**    | «¿Cómo ha ido tu entrenamiento?» con la CR-10 modificada. Anclas según la tabla que reproduce Haddad et al. (2017): 0 reposo, 1 muy, muy fácil, 2 fácil, 3 moderado, 4 algo duro, 5 duro, 7 muy duro, 10 máximo (6, 8 y 9 sin rótulo). La traducción es propia y entra en la revisión de textos (Q6). **Pendiente de cotejar con el original** |
-| **Momento**              | Al terminar, con «Responder más tarde» durante 24 h, guardando los minutos desde el fin (P-48). La tradición son unos 30 min después (Day et al., 2004, midieron a los 30 min). El momento queda registrado para poder analizar su efecto                                                                                                      |
-| **Duración**             | Activa: fin − inicio − pausas. Haddad et al. (2017) recogen estudios que incluyeron y que excluyeron los descansos de la duración. Es una **decisión de diseño** (P-49) y se documenta                                                                                                                                                         |
-| **Sin calcular**         | Si falta el RPE, si la sesión no terminó o si la duración no es representativa: «sin calcular», con el motivo                                                                                                                                                                                                                                  |
-| **Semana**               | Σ de las sesiones con carga calculada, junto al número de sesiones incluidas y excluidas                                                                                                                                                                                                                                                       |
-| **Contextos apropiados** | Seguir tendencias **de la misma persona** entre sesiones y semanas, con muchos tipos de ejercicio (Haddad et al., 2017). En fuerza es fiable (CCI 0,88; Day et al., 2004)                                                                                                                                                                      |
-| **Limitaciones**         | <ul><li>Es una percepción, no una medición fisiológica.</li><li>Cambia con factores psicológicos y del entorno (Haddad et al., 2017).</li><li>No sirve para comparar personas.</li><li>Sesiones cortas e intensas y largas y suaves pueden dar la misma cifra.</li><li>Sin la duración bien definida, la cifra no es comparable.</li></ul>     |
-| **Procedencia**          | RPE de la sesión: `self_reported`. Carga interna: `calculated` con `training.session-internal-load` 1.0.0                                                                                                                                                                                                                                      |
+1. **La fuente original verificada.** El resumen de Foster et al. (2001, PMID 11708692) no detalla la fórmula, y su texto completo no está en PubMed Central. La fórmula, la escala con sus anclas y el ejemplo 87 × 4 = 348 UA solo se han comprobado en una revisión secundaria con texto completo (Haddad et al., 2017, [doi:10.3389/fnins.2017.00612](https://doi.org/10.3389/fnins.2017.00612)). **Hay que conseguir el original** (biblioteca o editorial) y cotejar con él:
+   - la pregunta;
+   - la escala y sus anclas;
+   - el momento de la respuesta;
+   - qué duración se usa (con o sin descansos);
+   - las unidades. (P-112)
+2. **Escala y textos:** traducción de las anclas revisada por ti (Q6).
+3. **Procedimiento de recogida:** al terminar, con «Responder más tarde» durante 24 h y los minutos desde el fin (P-48).
+4. **Datos ausentes:** sin respuesta en 24 h → «sin valorar», sin rellenar nada. Si la duración tiene advertencia, se aplica lo que decidas en P-114.
+5. **Autorización expresa** de Q2 y P-101.
 
-**Verificación de la fuente** (13 nov 2026, PubMed):
+**Lo que no se hará:** cociente agudo:crónico (Impellizzeri et al., 2020), monotonía, _strain_, «riesgo», ni conversiones a RIR o %1RM.
 
-- **Foster et al. (2001), PMID 11708692:** el resumen confirma que el método del RPE de la sesión cuantifica el entrenamiento y es válido frente a la frecuencia cardiaca, pero **no detalla la fórmula**, y el texto completo no está en PubMed Central.
-- **Haddad et al. (2017), [doi:10.3389/fnins.2017.00612](https://doi.org/10.3389/fnins.2017.00612), texto completo:** describe la multiplicación del RPE por la duración en minutos, con el ejemplo 87 min × 4 = 348 UA, y la escala con sus anclas.
+### 7.3 Modelo previsto (solo si se autoriza)
 
-**Es una fuente secundaria.** Según `SCIENTIFIC_RIGOR.md`, una fórmula científica se registra tras leer la fuente primaria, así que **B3.3 queda bloqueado hasta cotejar el original** (P-112). El ejemplo 87 × 4 = 348 servirá como prueba numérica.
+Tabla `session_rpe`, solo de añadir:
 
-### 7.3 Registro del RPE de la sesión (B3.3, si se aprueba)
+- una valoración por ejecución; la corrección es otra fila con `supersedes`;
+- `rpe` entero 0–10 y `scale` (identificador y versión);
+- hora del dispositivo, zona y recepción;
+- `minutes_after_finish`;
+- procedencia `self_reported` · `client`.
 
-1. Al terminar, el resumen del reproductor pregunta «¿Cómo ha ido tu entrenamiento?» con la escala de 0 a 10 y sus anclas, y la opción «Responder más tarde».
-2. La respuesta va por la cola local, con un comando idempotente nuevo (`rate_session`), identidad (A-08) y reglas de hora.
-3. Durante 24 h desde el fin, Hoy recuerda «Valora tu sesión de ayer». Después, la pregunta caduca y queda «sin valorar»: no se inventa nada.
-4. Una sola respuesta por sesión. Una corrección es otra fila que sustituye a la anterior, con el mismo patrón que las series.
-5. El entrenador puede desactivar la pregunta para un cliente indicando el motivo (P-48).
-
-### 7.4 Lo que no se hace
-
-- No se calcula sin RPE de sesión real: **`perceived_effort` de la semilla no se usa** (P-102).
-- No se calculan el cociente agudo:crónico, la monotonía ni el _strain_.
-- No se habla de «riesgo», «fatiga» ni «sobreentrenamiento».
-- No se convierte el RPE de la sesión en RIR ni en % del 1RM.
+No va en `session_log` porque una ejecución terminada no se modifica.
 
 ## 8. Escalas temporales
 
-| Escala             | Qué se ve                                                                                                                                            | Notas                                                              |
-| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| **Sesión**         | A8 completo (§9.2)                                                                                                                                   | Con su versión de referencia                                       |
-| **Día**            | Totales del día por magnitud, cada sesión con su estado, y la lista de sesiones                                                                      | Por fecha de ejecución; las previstas ese día y no hechas, aparte  |
-| **Semana**         | Planificado frente a ejecutado por magnitud; sesiones prescritas, empezadas, completadas, parciales y sin hacer; perfil de cumplimiento; trasladadas | ISO, de lunes a domingo                                            |
-| **Varias semanas** | Serie semanal de cada magnitud (prescrita y ejecutada), con las semanas vacías visibles                                                              | Ya hay una base (`weeklyVolume`), que se ampliará                  |
-| **Bloque**         | Un rango de fechas elegido por el entrenador, con nombre opcional, sin guardar; los mismos totales y el perfil del periodo                           | Una entidad «bloque» real llega con la planificación (Fase 6 y V4) |
-
-**Casos especiales:**
-
-- **Sesiones incompletas:** cuentan con lo hecho; el perfil de cumplimiento muestra lo no hecho.
-- **Cambios de prescripción:** el ejecutado se compara con la versión de cada serie. El planificado de la semana se puede ver como **original** (primera versión) o **vigente**. Si difieren, la semana muestra «La prescripción cambió en 2 sesiones: ver diferencias».
-- **Sesiones que cruzan la medianoche:** cuentan en el día de su inicio.
+| Escala             | Planificado (fecha prevista)                                                    | Ejecutado (fecha de ejecución)                                 |
+| ------------------ | ------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| **Sesión**         | Su prescripción original y vigente                                              | Lo hecho, con su fecha                                         |
+| **Día**            | Sesiones previstas ese día y su estado                                          | Magnitudes de las sesiones empezadas ese día                   |
+| **Semana (ISO)**   | Sesiones previstas, empezadas, completadas, parciales y sin hacer; cumplimiento | Volumen por magnitud y por patrón                              |
+| **Varias semanas** | Serie semanal de lo prescrito                                                   | Serie semanal de lo ejecutado, con las semanas vacías visibles |
+| **«Bloque»**       | Rango de fechas libre                                                           | Ídem                                                           |
 
 ## 9. Experiencia del entrenador
 
-### 9.1 Principio
+### 9.1 Principios
 
-**Cada visualización responde a una pregunta y ayuda a una decisión.** Si no hay pregunta, no hay gráfico. Los gráficos son componentes propios (ADR-12), sin dependencias nuevas, accesibles (tabla equivalente y texto alternativo) y con la identidad de `DESIGN_SYSTEM.md`.
+- **Cada visualización responde a una pregunta** y tiene su **tabla equivalente**.
+- Cada pantalla tiene un recuadro **«Qué se puede concluir y qué no»**, con los límites del §5.4.
+- **Sin** tartas, velocímetros, semáforos, puntuaciones globales, rankings ni diagnósticos.
+- Componentes propios (ADR-12), accesibles, con la identidad de `DESIGN_SYSTEM.md`.
 
-| Pregunta del entrenador                        | Visualización                                                                                             | Decisión que facilita                               | Dónde   |
-| ---------------------------------------------- | --------------------------------------------------------------------------------------------------------- | --------------------------------------------------- | ------- |
-| ¿Cómo fue la sesión de hoy?                    | Tarjeta de estado y **perfil de cumplimiento** (barras de estado por dimensión con fracciones)            | Revisar o seguir adelante                           | A8      |
-| ¿En qué series se desvió y cuánto?             | **Tabla** prescrito \| realizado \| diferencia, con la versión; las diferencias resaltadas                | Ajustar la carga o el objetivo de la próxima sesión | A8      |
-| ¿Se hizo lo planificado esta semana?           | Barras **planificado frente a ejecutado** por magnitud, y lista de sesiones con estado                    | Recolocar sesiones o reducir la carga de la semana  | A9      |
-| ¿Cómo evoluciona el volumen?                   | **Serie semanal** por magnitud (una por gráfico), prescrito como línea y ejecutado como barras            | Mantener, aumentar o descargar                      | A9      |
-| ¿Cómo evoluciona la carga en este ejercicio?   | **Puntos por sesión** con los kg de cada serie (mejor serie y rango) y las repeticiones; esfuerzo anotado | Progresar o mantener la carga                       | A10     |
-| ¿Se repite un incumplimiento?                  | **Lista descriptiva** filtrable: «ejercicios con series por debajo en ≥ N de las últimas M sesiones»      | Revisar la prescripción con el cliente              | A9      |
-| ¿Cómo se reparte por patrones?                 | **Barras horizontales** por patrón, con el conmutador «solo principal» o «principal y secundarios»        | Equilibrar la semana                                | A9      |
-| ¿El esfuerzo registrado se aleja del objetivo? | Por ejercicio: recuento de series igual, más exigente y menos exigente en el periodo, con «sin dato»      | Revisar el objetivo o la carga, o enseñar la escala | A9, A10 |
+### 9.2 Pregunta → vista
 
-**Lo que no se hace:** tartas, indicadores de tipo velocímetro, puntuaciones globales, rankings de clientes y gráficos sin la tabla equivalente.
+| Pregunta                                        | Vista                                                                                                                                                 | Tabla equivalente  | Dónde       |
+| ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ | ----------- |
+| ¿Qué se planificó y qué se hizo en esta sesión? | Cabecera con las fechas (prevista y real), el estado, las versiones y la duración con advertencias                                                    | Es texto           | A8          |
+| ¿En qué se diferenció, dimensión a dimensión?   | Perfil de cumplimiento: fracciones por dimensión en barras de recuento, con «sin dato» y «no aplica» aparte                                           | Tabla de recuentos | A8          |
+| ¿Dónde y cuánto, serie a serie?                 | Tabla prescrito \| realizado \| diferencia (nivel 1) \| condición (nivel 2) \| versión                                                                | Es una tabla       | A8          |
+| ¿Qué falta o no es fiable?                      | Recuadro **«Datos ausentes y advertencias»**: series sin registrar, esfuerzo sin dato, duración con advertencia, horas ajustadas, sesión sin terminar | Es una lista       | A8, A9      |
+| ¿Cómo fue el día?                               | Totales del día por magnitud (fecha de ejecución) y sesiones previstas (fecha prevista)                                                               | Tabla              | A9 «Día»    |
+| ¿Se hizo lo planificado esta semana?            | Barras planificado frente a ejecutado por magnitud, con las trasladadas marcadas                                                                      | Tabla por sesión   | A9 «Semana» |
+| ¿Cómo evoluciona el volumen?                    | Una serie semanal por magnitud: prescrito como línea y ejecutado como barras                                                                          | Tabla por semana   | A9          |
+| ¿Cómo se comparan las sesiones del periodo?     | **Tabla de sesiones** del periodo, una por fila, con las mismas columnas por dimensión y magnitud, ordenable por fecha (sin ordenar por «mejor»)      | Es una tabla       | A9          |
+| ¿Cómo se reparte por patrones?                  | Barras horizontales por patrón, con el conmutador «solo principal» o «principal y secundarios»                                                        | Tabla              | A9          |
+| ¿Se repiten diferencias?                        | Lista descriptiva: «ejercicios con series fuera de la condición prescrita en ≥ N de las últimas M sesiones»                                           | Es una lista       | A9 (P-104)  |
+| ¿Cómo evoluciona este ejercicio?                | Puntos por sesión con los kg de cada serie y las repeticiones; esfuerzo frente a objetivo; la versión                                                 | Tabla por sesión   | A10         |
 
-### 9.2 A8 · Análisis de la sesión (`…/sesiones/[sessionId]/analisis`)
+### 9.3 A8 · Análisis de la sesión (`…/sesiones/[sessionId]/analisis`)
 
 ```
-Fuerza · pierna · Mañana · prevista el 7 nov · hecha el 7 nov (en su día)          [Parcial]
-Duración 49 min (activa 44 · pausas 5) · prevista 40 min · versión v1 · terminada antes
-┌ Cumplimiento ────────────────────────────────────────────────────────────────────────┐
-│ Ejercicios   ██████████░░░░  1 completo · 1 parcial · 0 sin hacer                    │
-│ Series       █████████████░  5 de 6 · 1 no realizada                                 │
-│ Repeticiones 29 de 30 (sentadilla)          Tiempo  60 de 90 s (plancha)            │
-│ Carga        3 de 3 como estaba prevista                                             │
-│ Esfuerzo     RIR: 1 igual · 2 más exigentes · 0 sin dato                             │
-└──────────────────────────────────────────────────────────── ⓒ fórmulas y versiones ─┘
-Volumen, sin mezclar magnitudes            Previsto   Hecho
-  Series                                   6          5
-  Repeticiones (por repeticiones)          30         29        ⓒ training.total-reps 2.0.0
-  Tiempo (isométricos)                     90 s       60 s      ⓒ training.duration-total 1.0.0
-  Tonelaje externo                         1.800 kg   1.740 kg  ⓒ training.volume-load 2.0.0
-A · Sentadilla trasera con barra                                    [completo]
-  Serie │ Versión │ Prescrito          │ Realizado          │ Diferencia
-    1   │ v1      │ 10 × 60 kg · RIR 2 │ 10 × 60 kg · RIR 2 │ —
-    2   │ v1      │ 10 × 60 kg · RIR 2 │ 10 × 60 kg · RIR 1 │ más exigente (RIR 1)
-    3   │ v1      │ 10 × 60 kg · RIR 2 │ 9 × 60 kg · RIR 0  │ −1 rep. · más exigente (RIR 0)
-  Descanso previsto 2 min · real: no registrado
-B · Plancha                                                          [parcial]
+Fuerza · pierna · Mañana                                                   [Parcial]
+Prevista: lun 9 nov · Realizada: lun 9 nov (en su día) · versión v1
+Duración: transcurrida 49 min · pausas registradas 5 min · calculada 44 min · prevista 40 min
+Comparar con: (●) prescripción original  ( ) prescripción vigente
+┌ Cumplimiento ──────────────────────────────────────────────────────────────────────┐
+│ Estructural    5 de 6 series hechas · 1 no realizada · 0 sin registrar               │
+│ Cuantitativa   Repeticiones 29 de 30 · Tiempo 60 de 90 s                             │
+│ Intensidad     3 de 3 series con la carga prescrita                                  │
+│ Esfuerzo       RIR: 1 de 3 coincide · 2 distintas · 0 sin dato                       │
+└──────────────────────────────────────────────────────────── ⓒ fórmulas y versiones ┘
+Datos ausentes y advertencias: ninguna
+Volumen (sin mezclar magnitudes)       Prescrito  Realizado
+  Series                               6          5
+  Repeticiones                         30         29         ⓒ training.total-reps 2.0.0
+  Tiempo (isométricos)                 90 s       60 s       ⓒ training.duration-total 1.0.0
+  Tonelaje externo (nominal)           1.800 kg   1.740 kg   ⓒ training.volume-load 2.0.0
+A · Sentadilla trasera con barra                                        completo
+  Serie │ Versión │ Prescrito          │ Realizado          │ Diferencia │ Condición
+    1   │ v1      │ 10 × 60 kg · RIR 2 │ 10 × 60 kg · RIR 2 │ —          │ coincide
+    2   │ v1      │ 10 × 60 kg · RIR 2 │ 10 × 60 kg · RIR 1 │ RIR −1     │ RIR distinto
+    3   │ v1      │ 10 × 60 kg · RIR 2 │ 9 × 60 kg · RIR 0  │ −1 rep. · RIR −2 │ rep. y RIR distintos
+  Descanso prescrito 2 min · real: no registrado
+B · Plancha                                                             parcial
   …
-Comentario de Lucía: «La última de sentadilla costó mucho»
-Total del día 7 nov: 2 sesiones · … (enlace al día)
+Comentario de la clienta: —
+Qué se puede concluir y qué no: los valores se proponen con lo prescrito; el RIR es autodeclarado; no hay motivos registrados; esta vista no indica fatiga.
+Día de ejecución (lun 9 nov): 2 sesiones · … → A9 «Día»
 ```
 
-- **Jerarquía:**
-  1. Estado y fechas.
-  2. Perfil de cumplimiento.
-  3. Volumen por magnitud.
-  4. Tabla por ejercicio.
-  5. Series fuera de la versión vigente.
-  6. Comentario.
-  7. Enlace al día y a la semana.
-- **Selector de prescripción:** «Comparar con: la versión de cada serie (por defecto) · la original · la vigente».
+- **En el móvil:** las dimensiones se apilan; cada serie es una tarjeta con «Prescrito», «Realizado», «Diferencia» y «Condición».
 - **Estados:**
-  - **Sin empezar:** «Lucía aún no ha empezado esta sesión».
+  - **Sin empezar:** «La clienta aún no ha empezado esta sesión», con la prescripción.
   - **En curso:** aviso de que lo pendiente en el móvil no se ve.
-  - **Error de la base:** página de error (P-108).
-- **En el móvil:** el perfil se apila; la tabla pasa a tarjetas por serie con «Prescrito» y «Realizado» uno debajo de otro.
+  - **Error de la base:** la página de B3.0.
 
-### 9.3 A3 · Sesiones por día (ampliación)
+### 9.4 A3 y A1
 
-Cada día de la ficha muestra en su cabecera el total realizado por magnitud, como ya preveía V1_SPEC §3, y «2 sesiones · 1 completada · 1 parcial». Cada sesión enlaza con A8.
+- **A3** (planificación, por fecha prevista): la cabecera de cada día muestra las sesiones previstas con su estado. Las hechas otro día dicen «hecha el mar 10». **No** muestra totales ejecutados del día (§3.4).
+- **A1 · Panel (primera versión, B3.1):**
+  1. sesiones de hoy de todos los clientes, con su estado;
+  2. sesiones terminadas en los últimos 7 días, con enlace a A8 (un «pendientes de revisar» exacto necesita marcas de lectura, P-111);
+  3. borradores.
 
-### 9.4 A1 · Panel
+### 9.5 A9 · Análisis del cliente (pestaña «Análisis» de la ficha)
 
-1. Sesiones de hoy de todos los clientes, con su estado.
-2. **Pendientes de revisar:** sesiones terminadas desde la última vez que se abrió su análisis.
-3. Borradores.
-
-Saber qué análisis se ha abierto requiere guardar una marca de lectura (P-111). Sin ella, «pendientes de revisar» se reduce a «terminadas en los últimos 7 días».
-
-### 9.5 A9 · Análisis del cliente (nueva pestaña «Análisis» de la ficha)
-
-- **Filtros:**
-  - periodo: esta semana, 4 semanas, 12 semanas o un rango libre como «bloque»;
-  - vista: planificado o ejecutado, y prescripción original o vigente;
-  - patrón;
-  - ejercicio.
+- **Periodos:** día, semana, 4 semanas, 12 semanas o un rango libre.
+- **Perspectiva:** prescripción original o vigente.
+- **Filtros:** patrón y ejercicio.
+- **Base de fecha:** cada bloque indica la suya.
 - **Secciones:**
-  1. Resumen del periodo: sesiones prescritas, empezadas, completadas, parciales y sin hacer; perfil de cumplimiento del periodo.
-  2. Volumen semanal: una serie por magnitud.
-  3. Patrones.
-  4. Ejercicios del periodo: series, magnitudes y esfuerzo frente al objetivo, con enlace a A10.
-  5. Incumplimientos repetidos (lista descriptiva; P-104).
-  6. Carga interna semanal (solo con B3.3).
+  1. Resumen del periodo (por fecha prevista).
+  2. Datos ausentes y advertencias.
+  3. Volumen ejecutado por semana (por fecha de ejecución).
+  4. Tabla de sesiones.
+  5. Patrones.
+  6. Ejercicios, con enlace a A10.
+  7. Diferencias repetidas (P-104).
+  8. Qué se puede concluir y qué no.
 - **En el móvil:** un gráfico por pantalla, con su tabla debajo y los filtros en una hoja inferior.
 
-### 9.6 A10 · Evolución de un ejercicio (variante) para un cliente
+### 9.6 A10 · Evolución de un ejercicio
 
-Por sesión, en orden de ejecución:
+- Por sesión, en orden de ejecución: series hechas frente a prescritas, kg de cada serie, repeticiones, esfuerzo frente a objetivo, versión y notas.
+- Solo con la **misma variante y modalidad**: si cambia la modalidad, la serie se corta y se avisa.
+- Sin estimación del 1RM.
 
-- series hechas frente a prescritas;
-- kg de cada serie (mejor y rango) y repeticiones;
-- RIR o RPE frente al objetivo;
-- las versiones;
-- las notas.
+### 9.7 Vistas existentes que se corrigen en B3.2
 
-Solo con datos de la **misma variante** y la **misma modalidad de carga**. Si cambia la modalidad, la serie se corta y se avisa. Sin estimación del 1RM.
-
-### 9.7 «Carga» de todos los clientes y lo que ve la clienta
-
-- **`/entrenador/carga`** pasa a las fórmulas nuevas: fecha de ejecución, base de la carga y versión de cada serie (P-106). Sigue siendo un resumen semanal por cliente, con enlaces a su A9.
-- **La clienta no tiene análisis nuevo.** Su «Progreso» usa hoy `training.volume-load` 1.0.0. Al pasar a 2.0.0, lo verá con la misma fórmula que el entrenador. Con los datos actuales, todos con base «total», las cifras no cambian.
+| Vista                            | Hoy                                             | Tras B3.2 (P-106)                                                                                                             |
+| -------------------------------- | ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| «Carga» (`/entrenador/carga`)    | Fecha prevista; tonelaje 1.0.0; versión vigente | Fecha de ejecución; tonelaje 2.0.0; versión de cada serie                                                                     |
+| Pestaña «Resultados» de la ficha | Fecha prevista                                  | Fecha de ejecución                                                                                                            |
+| «Progreso» de la clienta         | Fecha de ejecución; tonelaje 1.0.0              | El mismo dominio y la misma fórmula que el entrenador. Con los datos actuales (todos con base «total»), las cifras no cambian |
 
 ## 10. Preparación para la autorregulación (1C)
 
-| Lo que necesitará la 1C              | Qué deja el bloque 3                                                                          | Qué falta                                                 |
-| ------------------------------------ | --------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
-| Detectar incumplimientos repetidos   | Clasificación por serie y dimensión, consultable por ejercicio y periodo; listas descriptivas | Reglas que configure el entrenador (P-45)                 |
-| Tendencias de esfuerzo               | Serie por ejercicio del RIR/RPE frente al objetivo, en la misma escala                        | Comprobar la familiaridad con el RIR (Helms et al., 2016) |
-| Carga planificada frente a ejecutada | Diferencias en kg y en %, por serie y agregadas                                               | —                                                         |
-| Evolución del volumen                | Series semanales por magnitud y por patrón                                                    | —                                                         |
-| Posibles señales de fatiga           | **Nada automático.** Se ven juntos esfuerzo, cumplimiento y carga interna (B3.3)              | La valoración previa (Q2) y el criterio del entrenador    |
-| Decisiones del entrenador            | Vistas que explican cada cifra con su fórmula                                                 | El registro de decisiones (1C)                            |
-
-**Salvaguardas:**
-
-- no hay recomendaciones ni cambios automáticos;
-- ningún indicador aislado se presenta como fatiga;
-- lo subjetivo se rotula como autodeclarado;
-- cada regla futura se apoyará en estas funciones del dominio, no en cálculos nuevos escondidos en la interfaz.
+| Necesidad de la 1C                   | Qué deja el bloque 3                                                                |
+| ------------------------------------ | ----------------------------------------------------------------------------------- |
+| Diferencias repetidas                | Nivel 2 por serie y dimensión, consultable por ejercicio y periodo                  |
+| Tendencias de esfuerzo               | RIR/RPE frente al objetivo por ejercicio, en la misma escala                        |
+| Carga planificada frente a ejecutada | Diferencias en kg y en %                                                            |
+| Evolución del volumen                | Series semanales por magnitud y patrón                                              |
+| Posibles señales de fatiga           | **Nada automático.** Se ven juntos esfuerzo, diferencias y, con B3.3, carga interna |
+| Decisiones                           | Vistas que explican cada cifra con su fórmula                                       |
 
 ## 11. Modelo de datos
 
-### 11.1 B3.1 y B3.2: sin cambios en la base
-
-Todo se calcula **al leer**, en el dominio, a partir de:
-
-- `session` y `session_version` (prescripción);
-- `session_log` y `set_log` efectivos;
-- la biblioteca (patrones).
-
-**Por qué sin tablas de resumen:**
-
-- No se duplican datos que podrían desincronizarse.
-- Las fórmulas pueden cambiar de versión sin migrar resultados.
-- El volumen previsto es pequeño. Un cliente con un año de sesiones tiene unas 200 sesiones y unas 4.000 series, y el cálculo en memoria es inmediato.
-- Si una prueba de rendimiento lo desmintiera, se propondría un índice o una tabla en una migración aparte (P-111).
-
-**Lecturas nuevas** (puertos de solo lectura, sin cambiar el esquema):
-
-- ejecuciones de un cliente en un rango, por fecha prevista **o** por inicio. Se pide un margen de ±1 día en UTC y después se filtra por la fecha local (§4.3);
-- todas las versiones de esas sesiones, para comparar con lo original y lo vigente.
-
-**Excepción (P-91):** si quieres tolerancias configurables por entrenador desde B3.2, haría falta una tabla `trainer_setting` (entrenador, clave, valor JSON validado y fecha de cambio), en una migración `004`.
-
-### 11.2 Dominio y capas
-
-- **`src/domain/analysis/`** (puro, probado):
-  - `reference.ts`: prescripción de referencia (§4.2);
-  - `compliance.ts`: dimensiones y estados (§5);
-  - `volume.ts`: amplía el actual con las magnitudes del §6;
-  - `duration.ts`: duración y representatividad (§4.6);
-  - `timeline.ts`: día, semana y periodo con las reglas de fechas;
-  - `patterns.ts`: recuento por patrón.
-- **`src/contracts/analysis.ts`:** los modelos de vista de A8, A9 y A10.
-- **`src/server/services/trainer-analysis.ts`:** casos de uso con las políticas de `src/domain/access.ts` (`canAccessClient`, `canViewSession` y `canReadExecution`, que ya existen) y pruebas de acceso no autorizado.
-- **`src/app/entrenador/...`:** las pantallas del §9.
-
-### 11.3 B3.3: tabla nueva, solo de añadir (migración `004`, si se aprueba)
-
-| Columna                                     | Para qué                                                                        |
-| ------------------------------------------- | ------------------------------------------------------------------------------- |
-| `id` (PK), `session_log_id`, `client_id`    | Una valoración por ejecución; la corrección es otra fila con `supersedes`       |
-| `rpe` (0–10, entero), `scale`               | `scale` = identificador y versión de la escala: `foster_cr10_modified@1` (P-64) |
-| `recorded_at`, dispositivo, zona, recepción | Reglas T1–T4                                                                    |
-| `minutes_after_finish`                      | Momento de la respuesta (P-48)                                                  |
-| `origin`, `recorded_by`                     | `self_reported`, `client`                                                       |
-| `supersedes`                                | Corrección                                                                      |
-
-**Por qué una tabla aparte y no columnas en `session_log`:** una ejecución terminada no se modifica (disparador), y la valoración llega después del fin.
-
-**`perceived_effort`** sigue en `session_log` como dato de la semilla, sin uso analítico (P-102).
-
-### 11.4 Fuera del bloque 3 (diseño, §13)
-
-`correction_reason` en `set_log` y la tabla `set_annotation`, para las correcciones justificadas y las anotaciones del entrenador.
+- **B3.0, B3.1 y B3.2: sin cambios en el esquema.**
+  - Se añaden lecturas de solo lectura en los puertos: ejecuciones de un cliente por rango de fechas (prevista o de ejecución) y todas las versiones de esas sesiones.
+  - Todo se calcula al leer, sin tablas de resumen (P-111).
+- **B3.3:** la tabla `session_rpe` del §7.3, en una migración `004`, si se autoriza.
+- **Opcionales, que piden decisión aparte:**
+  - hora de cada pausa y reanudación (P-116 c);
+  - marca de valor editado o propuesto (P-119);
+  - marcas de lectura del análisis (P-111 b);
+  - motivo de corrección y anotaciones (P-109, §13).
+- **Ya no hace falta:** `trainer_setting` para tolerancias, porque P-91 fija la tolerancia en cero.
 
 ## 12. Fórmulas que se registrarán
 
-Todas son `operational_definition` (aritmética acordada; sin referencia obligatoria pero con limitaciones), salvo la carga interna.
+Todas son `operational_definition` (definiciones de diseño o aritméticas, con limitaciones escritas), salvo la carga interna.
 
-| Id                                 | Versión | Qué calcula                                                                                          | Unidad             | Limitaciones principales                                                   |
-| ---------------------------------- | ------- | ---------------------------------------------------------------------------------------------------- | ------------------ | -------------------------------------------------------------------------- |
-| `training.completed-sets`          | 1.0.0   | (Existe) series hechas                                                                               | series             | No distingue intensidad                                                    |
-| `training.prescribed-volume`       | 1.0.0   | Series y repeticiones, segundos o metros previstos, por tipo; rangos como [mín., máx.]               | series, rep., s, m | Depende de la prescripción de referencia (§4.2)                            |
-| `training.total-reps`              | 2.0.0   | Σ repeticiones de series hechas prescritas por repeticiones; las «por lado», aparte                  | rep.               | No suma tiempos ni distancias                                              |
-| `training.duration-total`          | 1.0.0   | Σ segundos de las series hechas por tiempo                                                           | s                  | No es tiempo de sesión                                                     |
-| `training.distance-total`          | 1.0.0   | Σ metros de las series hechas por distancia                                                          | m                  | No incluye la carga transportada                                           |
-| `training.volume-load`             | 2.0.0   | Σ rep. × kg externos **totales** (total; por implemento × n; por lado excluido; rep. por lado × 2)   | kg                 | No es trabajo mecánico; excluye peso corporal, lastre, asistencia y bandas |
-| `training.prescribed-volume-load`  | 1.0.0   | Lo mismo con lo previsto (rangos y kg congelados del %1RM como [mín., máx.])                         | kg                 | Ídem                                                                       |
-| `training.added-load-volume`       | 1.0.0   | Σ rep. × kg de lastre                                                                                | kg                 | No se suma al tonelaje                                                     |
-| `training.assistance-summary`      | 1.0.0   | Series y rep. asistidas; asistencia media ponderada por repeticiones                                 | series, rep., kg   | Más asistencia es menos carga                                              |
-| `training.rep-deviation`           | 1.0.0   | Diferencia de repeticiones (0 dentro del rango; si no, respecto al límite más cercano)               | rep.               | Solo en series hechas por repeticiones                                     |
-| `training.load-deviation`          | 1.0.0   | Diferencia de kg y % sobre lo previsto, en la misma modalidad y base; texto en bandas y dispositivos | kg, %              | Sin diferencia en la carga autoseleccionada                                |
-| `training.effort-deviation`        | 1.0.0   | RIR registrado − objetivo (negativo = más exigente); RPE en la misma escala                          | rep. / puntos      | Autodeclarado, con error                                                   |
-| `training.compliance-profile`      | 1.0.0   | Estados por serie y dimensión (§5.2) con tolerancias (§5.3) y sus recuentos                          | series             | Definición de diseño, no validada; sin índice global                       |
-| `training.exercise-status`         | 1.0.0   | Completo, parcial, no realizado o sin registrar                                                      | —                  | Sin motivo                                                                 |
-| `training.session-adherence`       | 1.0.0   | Sesiones prescritas, empezadas, completadas, parciales y sin hacer por fecha prevista                | sesiones           | —                                                                          |
-| `training.schedule-offset`         | 1.0.0   | Días entre la fecha prevista y la de ejecución                                                       | días               | —                                                                          |
-| `training.session-elapsed`         | 1.0.0   | Fin − inicio                                                                                         | min                | Incluye cortes sin pausa                                                   |
-| `training.session-active-duration` | 1.0.0   | Fin − inicio − pausas, con la comprobación de representatividad (G)                                  | min                | G es un parámetro de diseño (P-95)                                         |
-| `training.pattern-set-count`       | 1.0.0   | Series por patrón: solo principal, y principal con secundarios                                       | series             | La clasificación es del catálogo; sin pesos para los secundarios           |
-| `training.session-internal-load`   | 1.0.0   | **`scientific_formula`** · RPE de la sesión × duración activa (B3.3)                                 | UA                 | §7.2. **Solo tras cotejar el original de Foster et al. (2001)** (P-112)    |
+| Id                                     | Versión | Qué calcula                                                                                                                                                                   | Unidad             |
+| -------------------------------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ |
+| `training.completed-sets`              | 1.0.0   | (Existe) series hechas                                                                                                                                                        | series             |
+| `training.prescribed-volume`           | 1.0.0   | Series y rep., s o m prescritos, por tipo; rangos como [mín., máx.], por perspectiva (original o vigente)                                                                     | series, rep., s, m |
+| `training.total-reps`                  | 2.0.0   | Σ rep. de series hechas por repeticiones; las «por lado», aparte                                                                                                              | rep.               |
+| `training.duration-total`              | 1.0.0   | Σ s de series hechas por tiempo                                                                                                                                               | s                  |
+| `training.distance-total`              | 1.0.0   | Σ m de series hechas por distancia                                                                                                                                            | m                  |
+| `training.volume-load`                 | 2.0.0   | Σ rep. × kg externos totales: base total, o por implemento × n. **Sin calcular:** por lado, «por lado» en las rep. (P-96) y autoseleccionada (P-115), cada caso con su motivo | kg (nominal)       |
+| `training.prescribed-volume-load`      | 1.0.0   | Lo mismo sobre lo prescrito (kg congelados del %1RM; rangos como [mín., máx.])                                                                                                | kg                 |
+| `training.added-load-volume`           | 1.0.0   | Σ rep. × kg de lastre                                                                                                                                                         | kg                 |
+| `training.assistance-summary`          | 1.0.0   | Series y rep. asistidas; asistencia media ponderada por rep. (con «sin dato»)                                                                                                 | series, rep., kg   |
+| `training.rep-deviation`               | 1.0.0   | Nivel 1 de rep., s o m (0 dentro del rango; si no, respecto al límite más cercano)                                                                                            | rep., s, m         |
+| `training.load-deviation`              | 1.0.0   | Nivel 1 de carga en la misma modalidad y base (kg y %); descriptor igual o distinto                                                                                           | kg, %              |
+| `training.effort-deviation`            | 1.0.0   | Nivel 1 de RIR o RPE en la misma escala                                                                                                                                       | rep. / puntos      |
+| `training.prescribed-condition`        | 1.0.0   | Nivel 2 por serie y dimensión: coincide, distinto, dentro o fuera del rango, sin dato o no aplica                                                                             | —                  |
+| `training.compliance-profile`          | 1.0.0   | Recuentos por dimensión y estado, con sus denominadores                                                                                                                       | series, ejercicios |
+| `training.exercise-status`             | 1.0.0   | Completo, parcial, no realizado o sin registrar                                                                                                                               | —                  |
+| `training.session-adherence`           | 1.0.0   | Sesiones previstas, empezadas, completadas, parciales y sin hacer (por fecha prevista)                                                                                        | sesiones           |
+| `training.schedule-offset`             | 1.0.0   | Días entre la fecha prevista y la de ejecución                                                                                                                                | días               |
+| `training.session-elapsed`             | 1.0.0   | Fin − inicio                                                                                                                                                                  | min                |
+| `training.session-calculated-duration` | 1.0.0   | Transcurrida − pausas registradas, con las advertencias del §4.5                                                                                                              | min                |
+| `training.pattern-set-count`           | 1.0.0   | Series por patrón: solo principal, y principal con secundarios                                                                                                                | series             |
+| `training.session-internal-load`       | 1.0.0   | **`scientific_formula`**. RPE de la sesión × duración calculada. **Solo tras P-112**                                                                                          | UA                 |
 
-`training.volume-load` 1.0.0 y `training.total-reps` 1.0.0 se conservan en el registro: un resultado antiguo siempre conserva la versión con la que se calculó.
+## 13. Correcciones justificadas y anotaciones del entrenador (diseño, P-109, posponible)
 
-## 13. Correcciones justificadas y anotaciones del entrenador (diseño, P-109)
-
-**Correcciones de la clienta:**
-
-- La fila que corrige añadiría un **motivo opcional**:
+- **Motivo opcional en la fila que corrige:**
   - «me equivoqué al anotar»;
   - «se me olvidó registrarla»;
-  - «otro», con texto de hasta 200 caracteres.
-- Se guardaría en `set_log.correction_reason` de la fila nueva. Las anteriores no cambian.
-- A8 lo muestra en el historial de la serie.
+  - «otro», con texto.
 
-**Anotaciones del entrenador:** tabla nueva `set_annotation`, solo de añadir:
+  Las filas anteriores no cambian.
 
-| Columna                               | Para qué                                                                  |
-| ------------------------------------- | ------------------------------------------------------------------------- |
-| `id`, `set_log_id`, `trainer_id`      | Qué serie (la fila exacta) y quién anota                                  |
-| `kind`                                | `comment` o `exclude_from_analysis`                                       |
-| `text` (obligatorio en una exclusión) | Por qué                                                                   |
-| `created_at`, `supersedes`            | Cuándo; una anotación nueva sustituye a otra, con el historial conservado |
+- **Tabla `set_annotation`**, solo de añadir, con:
+  - qué serie se anota;
+  - quién anota;
+  - el tipo: `comment` o `exclude_from_analysis`;
+  - el texto, obligatorio para una exclusión;
+  - la fecha;
+  - `supersedes`.
 
-- **Lo registrado no se modifica nunca.** Una exclusión del análisis es explícita, reversible y visible («serie excluida por Alex: técnica no válida»), y los totales dicen «1 serie excluida».
-- Si el entrenador registra en nombre de la clienta (por ejemplo, en una sesión presencial), sería otra fila con `recorded_by = trainer` y motivo obligatorio. La procedencia diría si lo observó (`direct`) o se lo contaron (`self_reported`).
+  Una exclusión es explícita, reversible y visible, y los totales la indican.
 
-**Recomendación:** implementarlo **después** del bloque 3. El análisis no lo necesita para empezar, y respetará las exclusiones cuando existan.
+- **Registro por el entrenador en nombre de la clienta:** otra fila con `recorded_by = trainer`, motivo obligatorio y procedencia `direct` (lo observó) o `self_reported` (se lo contaron).
+- **Lo registrado no se modifica nunca.**
 
-## 14. Criterios de aceptación
+## 14. Plan por etapas
 
-Verificables con pruebas. Los números salen de los ejemplos de este documento y de V1_SPEC §10.
+**Ninguna etapa está autorizada.** Cada una necesita tu autorización expresa y termina con `pnpm check`, `pnpm test:e2e`, documentación, commit y un informe para tu revisión.
 
-| Id       | Criterio                                                                                                                                                                                 |
-| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| AC-B3-01 | **E2E-1 completo:** A8 muestra «Completada», «en su día», **30 → 29 repeticiones**, **1.800 → 1.740 kg** y «−1 rep.» en la serie 3                                                       |
-| AC-B3-02 | **Ejemplo del §5.6:** exactamente las fracciones de su tabla, y en ningún sitio un porcentaje global de cumplimiento                                                                     |
-| AC-B3-03 | **E2E-12 (dos sesiones el mismo día):** mañana **15 rep. y 1.200 kg**; tarde **16 rep. y 640 kg**; día **31 rep. y 1.840 kg**                                                            |
-| AC-B3-04 | **Tipos de serie:** una plancha (s), un paseo del granjero (m), dominadas con peso corporal, con lastre y asistidas, y bandas: cada magnitud en su fila, ninguna en el tonelaje          |
-| AC-B3-05 | **Por implemento:** «2 × 20 kg», 3 × 10 → 1.200 kg. **Por lado:** «tonelaje sin calcular: carga por lado»                                                                                |
-| AC-B3-06 | **Cambio de versión a media sesión:** las series v1 se comparan con la v1 y las v2 con la v2; la vista «original» muestra la v1 completa                                                 |
-| AC-B3-07 | **Sesión trasladada:** prevista el lunes 9 de una semana y hecha el lunes 16 de la siguiente: en la semana del 9 aparece «hecha el 16 (otra semana)» y suma en la del 16                 |
-| AC-B3-08 | **Medianoche:** sesión empezada a las 23:50 con series a las 23:58 y 00:03: todo en el día de inicio                                                                                     |
-| AC-B3-09 | **Duración no representativa:** inicio a las 21:00, serie a las 21:10 y fin a las 06:15 sin pausas → aviso y fuera de las medias                                                         |
-| AC-B3-10 | **Sin dato frente a incumplimiento:** con RIR pedido y no registrado, «sin dato» y nunca «más» ni «menos exigente»                                                                       |
-| AC-B3-11 | **Escalas:** RPE en `omni_res` frente a un objetivo en `rir_based` → «no comparable», sin diferencia numérica                                                                            |
-| AC-B3-12 | **Reenvíos y correcciones:** reenviar un comando o corregir una serie no cambia los totales más que en el valor corregido                                                                |
-| AC-B3-13 | **Fórmula visible:** cada cifra calculada tiene la insignia con su id y versión, y la ficha de la fórmula muestra sus limitaciones                                                       |
-| AC-B3-14 | **Permisos:** otro entrenador, la clienta o una petición sin identidad reciben `404` o redirección al pedir A8, A9 o A10 de un cliente ajeno; los datos no aparecen en ninguna respuesta |
-| AC-B3-15 | **Accesibilidad y adaptación:** axe sin infracciones en A8, A9 y A10; nada desborda a 360 px; cada gráfico tiene su tabla                                                                |
-| AC-B3-16 | **Semanas vacías:** visibles con cero, nunca omitidas                                                                                                                                    |
-| AC-B3-17 | **Lo que no hay:** ningún «RPE de sesión» ni «carga interna» sin B3.3; `perceived_effort` de la semilla no aparece en el análisis                                                        |
-| AC-B3-18 | **Rendimiento:** A9 con 52 semanas de datos generados (unas 200 sesiones) responde en el servidor en menos de 300 ms en el entorno de pruebas (objetivo de diseño, a confirmar al medir) |
-| AC-B3-19 | (B3.3) **87 min × RPE 4 = 348 UA** (ejemplo de Haddad et al., 2017); sin RPE, sesión sin terminar o duración no representativa → «sin calcular», con el motivo                           |
+### B3.0 · Preparación
 
-## 15. Plan de pruebas
+| Apartado                    | Contenido                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Objetivos**               | Que ningún error de la base deje al entrenador sin explicación, y tener los datos de prueba que el análisis necesita                                                                                                                                                                                                                                                                                                            |
+| **Alcance**                 | <ul><li>Página de error de la base (A-15) que distinga ocupada, no disponible y dañada o incompatible, con qué hacer.</li><li>Errores tipados en crear sesión, borrar y mover borrador, copia y restablecer (residual de A-11).</li><li>Generadores deterministas de escenarios de prueba: versiones a media sesión, correcciones, pausas, huecos, sesiones trasladadas, medianoche, semana 53 y 52 semanas de datos.</li></ul> |
+| **Fuera de alcance**        | Cualquier pantalla de análisis; cambios del esquema                                                                                                                                                                                                                                                                                                                                                                             |
+| **Dependencias**            | Ninguna                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| **Datos necesarios**        | Los actuales                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| **Cambios de código**       | `error.tsx` en las áreas del entrenador y de la clienta; `safely` en las acciones restantes; generadores en las utilidades de prueba                                                                                                                                                                                                                                                                                            |
+| **Cambios de modelo**       | Ninguno                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| **Criterios de aceptación** | <ul><li>AC-B3.0-1: con la base bloqueada por otro proceso, crear una sesión muestra «base ocupada, inténtalo en unos segundos» y no la página genérica.</li><li>AC-B3.0-2: con la base borrada por fuera, la página dice cómo seguir.</li><li>AC-B3.0-3: con migraciones incompatibles, indica `pnpm db:status` y `pnpm db:restore`.</li><li>AC-B3.0-4: los generadores producen los mismos datos en cada ejecución.</li></ul>  |
+| **Pruebas unitarias**       | Clasificación del error en cada acción; determinismo de los generadores                                                                                                                                                                                                                                                                                                                                                         |
+| **Pruebas de integración**  | Acciones con la base bloqueada (`BEGIN IMMEDIATE` desde otro proceso)                                                                                                                                                                                                                                                                                                                                                           |
+| **Pruebas E2E**             | AC-B3.0-1 a AC-B3.0-3 en escritorio y móvil                                                                                                                                                                                                                                                                                                                                                                                     |
+| **Riesgos**                 | Que la página de error oculte errores de programación: solo trata los de almacenamiento; el resto sigue en la genérica, con registro                                                                                                                                                                                                                                                                                            |
+| **Terminado cuando**        | Criterios en verde tres veces seguidas; batería completa en verde; informe                                                                                                                                                                                                                                                                                                                                                      |
 
-| Tipo                        | Qué                                                                                                                                                                                                                                                                                                                                                             |
-| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Unitarias del dominio**   | Cada fórmula con casos en tabla: rangos, bases de carga, por lado, modalidades, escalas, «sin dato», tolerancias, prescripción de referencia, fechas (zona, medianoche, traslado, semana ISO) y representatividad de la duración                                                                                                                                |
-| **Invariantes**             | <ul><li>La suma de las sesiones de un día es el total del día.</li><li>La suma de los días de una semana, el total de la semana.</li><li>Cambiar el orden de los registros no cambia nada.</li><li>Reenviar no cambia nada.</li><li>Ninguna dimensión se mezcla con otra.</li></ul>Comprobado sobre conjuntos generados de forma determinista, sin dependencias |
-| **Registro de fórmulas**    | `registryIssues` sin incidencias; cada id usado en el código está registrado                                                                                                                                                                                                                                                                                    |
-| **Integración (servicios)** | Con SQLite real: A8, A9 y A10 desde la semilla y desde ejecuciones creadas por comandos; permisos con el intento no autorizado                                                                                                                                                                                                                                  |
-| **E2E**                     | AC-B3-01 a AC-B3-17 en escritorio y Pixel 7, con el reloj del navegador fijado y espacios de datos propios                                                                                                                                                                                                                                                      |
-| **Regresión**               | Toda la batería actual en verde, incluida la equivalencia de compatibilidad. La página «Carga» y el «Progreso» de la clienta mantienen sus cifras con los datos actuales (todos con base «total»)                                                                                                                                                               |
-| **Rendimiento**             | AC-B3-18 con un conjunto generado de 52 semanas                                                                                                                                                                                                                                                                                                                 |
-| **Determinismo**            | Fechas relativas a la semilla (ADR-32) y reloj fijado; cada prueba repetida tres veces antes de cerrar el bloque                                                                                                                                                                                                                                                |
+### B3.1 · Análisis de la sesión
 
-## 16. Decisiones pendientes
+| Apartado                    | Contenido                                                                                                                                                                                                                                                                                                                                                                          |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Objetivos**               | Responder las cinco preguntas del §1 para una sesión y un día                                                                                                                                                                                                                                                                                                                      |
+| **Alcance**                 | <ul><li>Dominio de análisis: referencia original y vigente, condición, perfil, volumen y duración.</li><li>Las fórmulas del §12 salvo patrones y carga interna.</li><li>A8.</li><li>Cabecera de A3 corregida.</li><li>Día en A9 («Día»: totales por fecha de ejecución).</li><li>Panel A1, primera versión.</li><li>Resumen prescrito en el constructor (E2E-1, paso 1).</li></ul> |
+| **Fuera de alcance**        | Semanas y periodos, A10, patrones, corrección de «Carga», «Resultados» y «Progreso», B3.3                                                                                                                                                                                                                                                                                          |
+| **Dependencias**            | B3.0; **P-116 y P-117**                                                                                                                                                                                                                                                                                                                                                            |
+| **Datos necesarios**        | Versiones, ejecuciones y series efectivas (existen)                                                                                                                                                                                                                                                                                                                                |
+| **Cambios de código**       | `src/domain/analysis/*`, `src/contracts/analysis.ts`, `src/server/services/trainer-analysis.ts` (`canAccessClient`, `canViewSession` y `canReadExecution`), lecturas nuevas en los puertos, páginas A8 y «Día», cabecera de A3 y panel                                                                                                                                             |
+| **Cambios de modelo**       | Ninguno                                                                                                                                                                                                                                                                                                                                                                            |
+| **Criterios de aceptación** | AC-B3-01 a AC-B3-13 y AC-B3-15 a AC-B3-17 (§15)                                                                                                                                                                                                                                                                                                                                    |
+| **Pruebas unitarias**       | Cada fórmula con casos en tabla (rangos, bases, modalidades, escalas, sin dato y no aplica, referencia original y vigente, fechas, duración y advertencias); invariantes (sesiones → día; reenviar no cambia nada; ninguna dimensión se mezcla)                                                                                                                                    |
+| **Pruebas de integración**  | Servicios con SQLite real desde la semilla y desde los generadores; permisos con intentos no autorizados                                                                                                                                                                                                                                                                           |
+| **Pruebas E2E**             | A8 (E2E-1, E2E-12, versión a media sesión, trasladada, medianoche, sin dato, duración con advertencia e incoherente), día y panel, en escritorio y Pixel 7, con el reloj fijado; axe a 360 px                                                                                                                                                                                      |
+| **Riesgos**                 | <ul><li>Leer «coincide» como «se midió así» (mitigado: «Qué se puede concluir»).</li><li>Una regla de P-117 mal elegida para lo no registrado.</li><li>Confusión entre fechas (mitigado: cada bloque dice su base).</li></ul>                                                                                                                                                      |
+| **Terminado cuando**        | Criterios en verde tres veces; batería completa; fórmulas en el registro sin incidencias; informe                                                                                                                                                                                                                                                                                  |
 
-| Id    | Cuestión                                | Opciones                                                                                                             | Recomendación                                                                         | Justificación                                                                          | Consecuencias técnicas                                            | Consecuencias funcionales                                              | ¿Cambia el modelo?        | ¿Bloquea B3?              |
-| ----- | --------------------------------------- | -------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- | ----------------------------------------------------------------- | ---------------------------------------------------------------------- | ------------------------- | ------------------------- |
-| P-90  | Definición de cumplimiento              | a) Multidimensional sin índice · b) % de series hechas · c) índice ponderado                                         | **a**                                                                                 | Evita el número engañoso y respeta las unidades                                        | Funciones por dimensión                                           | El entrenador lee varias fracciones, no una nota                       | No                        | **Sí**                    |
-| P-91  | Tolerancias                             | a) 0 con la diferencia visible · b) márgenes por defecto · c) configurables ya en B3.1                               | **a** en B3.1; configurables en B3.2 si las quieres                                   | Cualquier margen por defecto sería inventado                                           | c) necesita `trainer_setting` (migración `004`)                   | Con a), una diferencia de 0,5 kg aparece como «menos»                  | Solo con c)               | **Sí** (el valor inicial) |
-| P-92  | Prescripción de referencia              | a) La versión de cada serie, con vistas «original» y «vigente» · b) solo vigente · c) solo original                  | **a**                                                                                 | Es la regla de A7 y no esconde cambios                                                 | Leer todas las versiones                                          | Comparación justa tras un cambio                                       | No                        | **Sí**                    |
-| P-93  | Fecha para día y semana                 | a) Ejecutado por fecha de ejecución y planificado por prevista · b) todo por prevista · c) todo por ejecución        | **a**                                                                                 | Cada vista responde a su pregunta                                                      | Dos agrupaciones                                                  | Una sesión trasladada aparece en las dos semanas, con su papel         | No                        | **Sí**                    |
-| P-94  | Semana                                  | a) ISO lunes–domingo, zona del inicio · b) configurable por entrenador                                               | **a**                                                                                 | Estándar y ya usada en `weeklyVolume`                                                  | —                                                                 | —                                                                      | No (b: sí)                | **Sí** (por defecto)      |
-| P-95  | Duración y representatividad            | a) Bruta y activa, con aviso si hay huecos de más de G = 30 min · b) solo bruta · c) G configurable                  | **a**                                                                                 | Sin aviso, una noche entera parece entrenamiento                                       | Comprobación por huecos                                           | Algunas sesiones salen «no representativas»                            | No                        | **Sí**                    |
-| P-96  | Repeticiones por lado                   | a) Rep. como registradas con «por lado», tonelaje × 2 · b) duplicar las repeticiones                                 | **a**                                                                                 | Coherente con `EFFORT_AND_LOAD.md` §3; no cambia lo registrado                         | —                                                                 | Hoy sin efecto (el constructor no lo ofrece)                           | No                        | No                        |
-| P-97  | Carga «por lado» en el tonelaje         | a) Excluir y avisar · b) pedir el peso de la barra                                                                   | **a**                                                                                 | Sin el peso del soporte, el total es desconocido                                       | —                                                                 | Algunas series sin tonelaje                                            | No (b: sí)                | No                        |
-| P-98  | Volumen por patrón                      | a) En B3.2, con dos recuentos · b) aplazarlo                                                                         | **a**                                                                                 | Con los datos actuales y sin pesos inventados                                          | Lee la biblioteca                                                 | Equilibrio entre patrones de la semana                                 | No                        | No                        |
-| P-99  | Volumen por cualidad                    | a) Aplazarlo hasta tener la intención en la prescripción (bloque 4) · b) por etiquetas de la variante                | **a**                                                                                 | Las etiquetas no son la intención: b) contaría una serie en varias cualidades          | —                                                                 | No hay vista por cualidad en el bloque 3                               | a) en el bloque 4: sí     | No                        |
-| P-100 | Volumen por grupo muscular              | a) No en el bloque 3 (P-53, E3) · b) por región corporal                                                             | **a**                                                                                 | No hay taxonomía de músculos; la región es demasiado general                           | —                                                                 | —                                                                      | No                        | No                        |
-| P-101 | RPE de la sesión y carga interna (Q2)   | a) B3.3 tras B3.1 y B3.2 · b) aplazarlo a la 1C · c) solo recoger el RPE, sin carga interna                          | **a** si apruebas Q2 y P-112; si no, **c**                                            | Sin datos no habrá tendencias cuando llegue la 1C                                      | Tabla nueva, comando nuevo y pantalla de la clienta               | Una pregunta más al terminar                                           | **Sí** (`004`)            | No (solo B3.3)            |
-| P-102 | `perceived_effort` de la semilla        | a) Rotularlo «dato de demostración sin escala» y excluirlo del análisis · b) quitarlo de la semilla · c) usarlo      | **a**                                                                                 | Inventado y sin escala; usarlo violaría el rigor                                       | —                                                                 | La pestaña «Registro» lo rotula                                        | No (b: cambia la semilla) | No                        |
-| P-103 | Índice global                           | a) No · b) opcional con pesos del entrenador                                                                         | **a**                                                                                 | Cualquier peso sería arbitrario                                                        | —                                                                 | —                                                                      | No (b: sí)                | No                        |
-| P-104 | Incumplimientos repetidos               | a) Listas descriptivas filtrables (N de M sesiones), sin alertas · b) alertas · c) nada                              | **a**                                                                                 | Útil para decidir sin automatizar                                                      | Consultas sobre el perfil                                         | Una sección en A9                                                      | No                        | No                        |
-| P-105 | Descanso real                           | a) Solo el previsto, con «no registrado» · b) mostrar el intervalo entre registros                                   | **a**; registrar el descanso en un bloque posterior si interesa                       | El intervalo entre registros incluye la serie y el tiempo hasta anotar: no es descanso | —                                                                 | —                                                                      | No                        | No                        |
-| P-106 | Página «Carga» de la Fase 1             | a) Rehacerla con las fórmulas nuevas · b) mantenerla                                                                 | **a**                                                                                 | Corrige la fecha, la base y la versión (§2.6)                                          | Reutiliza el dominio nuevo                                        | Cifras coherentes en todas las vistas                                  | No                        | No                        |
-| P-107 | Copias programadas y rotación           | §17.2                                                                                                                | **Copia automática al arrancar si la última tiene más de 24 h** y retención del §17.2 | Protege sin programador ni servicio externo                                            | Código en `store.ts` y limpieza segura                            | Copias diarias si se usa a diario                                      | No                        | No                        |
-| P-108 | Página de error de la base              | a) Antes del bloque 3 (B3.0) · b) después                                                                            | **a**                                                                                 | B3 añade pantallas de lectura; resuelve también el residual de A-11                    | `error.tsx` y errores tipados en las acciones                     | Un mensaje útil en lugar de «Algo no ha ido bien»                      | No                        | No (recomendado antes)    |
-| P-109 | Correcciones justificadas y anotaciones | §13: a) después del bloque 3 · b) dentro del bloque 3                                                                | **a**                                                                                 | El análisis no lo necesita para empezar                                                | Migración y tabla nuevas                                          | Trazabilidad del porqué                                                | **Sí**                    | No                        |
-| P-110 | Plataformas (Windows, Safari, iOS)      | §17.4                                                                                                                | Plan del §17.4                                                                        | Sin infraestructura ni servicios nuevos                                                | WebKit de Playwright: descarga de un navegador (pedir aprobación) | Limitaciones explícitas hasta verificarlas                             | No                        | No                        |
-| P-111 | Rendimiento y «pendientes de revisar»   | a) Cálculo al leer y «terminadas en 7 días» · b) tablas de resumen y marca de lectura                                | **a**; medir antes de cambiar                                                         | Menos estado que mantener                                                              | b) migración                                                      | a) no sabe qué has abierto ya                                          | No (b: sí)                | No                        |
-| P-112 | Verificación de la carga interna        | a) Cotejar el original de Foster et al. (2001) antes de registrarla · b) aceptar la revisión de Haddad et al. (2017) | **a** (regla de `SCIENTIFIC_RIGOR.md`)                                                | Una fuente secundaria no basta para una fórmula científica                             | —                                                                 | B3.3 espera al original                                                | No                        | No (solo B3.3)            |
-| P-113 | Hora imposible del móvil (T1, ADR-28)   | a) Mantener el rechazo (`422`) · b) aceptar con la hora de recepción y el motivo                                     | **a**, con un mensaje que explique que hay que corregir el reloj y volver a registrar | Lo pediste así, y aceptar una hora imposible esconde un reloj roto                     | —                                                                 | Una serie registrada sin conexión con el reloj roto se vuelve a anotar | No                        | No                        |
+### B3.2 · Cliente por periodos
 
-## 17. Revisión de decisiones anteriores y temas transversales
+| Apartado                    | Contenido                                                                                                                                                                                                                                                                     |
+| --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Objetivos**               | Seguir a un cliente por semanas y periodos, y la evolución de cada ejercicio                                                                                                                                                                                                  |
+| **Alcance**                 | <ul><li>A9 (semana, 4 y 12 semanas, rango libre; perspectivas; filtros por patrón y ejercicio; tabla de sesiones; datos ausentes; diferencias repetidas).</li><li>A10.</li><li>Volumen por patrón.</li><li>Corrección de «Carga», «Resultados» y «Progreso» (§9.7).</li></ul> |
+| **Fuera de alcance**        | Cualidad y grupo muscular, carga interna, alertas, comparaciones entre clientes                                                                                                                                                                                               |
+| **Dependencias**            | B3.1; **P-98, P-104, P-106, P-114 y P-118**                                                                                                                                                                                                                                   |
+| **Datos necesarios**        | Los de B3.1 y los patrones de la biblioteca (existen)                                                                                                                                                                                                                         |
+| **Cambios de código**       | Páginas A9 y A10; `patterns.ts`; `timeline.ts` (semanas y periodos); servicios de las vistas corregidas                                                                                                                                                                       |
+| **Cambios de modelo**       | Ninguno                                                                                                                                                                                                                                                                       |
+| **Criterios de aceptación** | AC-B3-14 y AC-B3-18 a AC-B3-23 (§15)                                                                                                                                                                                                                                          |
+| **Pruebas unitarias**       | Semana ISO (incluida la 53 y el cambio de año), agrupación por cada fecha, perspectivas, patrones, diferencias repetidas                                                                                                                                                      |
+| **Pruebas de integración**  | 52 semanas generadas; rendimiento; permisos                                                                                                                                                                                                                                   |
+| **Pruebas E2E**             | A9 y A10 con filtros, trasladadas y semana 53; las vistas corregidas mantienen sus cifras con los datos actuales                                                                                                                                                              |
+| **Riesgos**                 | <ul><li>Una pantalla demasiado densa (mitigado: un gráfico por pregunta y tablas).</li><li>Rendimiento con años de datos (se mide; P-111).</li><li>Cambiar cifras que la clienta ya veía (hoy no cambian).</li></ul>                                                          |
+| **Terminado cuando**        | Igual que B3.1                                                                                                                                                                                                                                                                |
 
-### 17.1 ADR-25 a ADR-32: consecuencias y recomendación
+### B3.3 · RPE global de la sesión y carga interna
 
-| ADR    | Decisión                                                | Ventajas                                                                                                | Limitaciones y consecuencias                                                                                                                                                                                                                                                                                                                                                         | Recomendación                                       |
-| ------ | ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------- |
-| ADR-25 | Bloqueo del sistema operativo y restauración con diario | Exclusividad real; sin bloqueos obsoletos; restauración recuperable, probada con `SIGKILL` en cada fase | No protege en discos de red. En Linux y macOS, borrar `.lock` a mano inutiliza el primer servidor (nunca escriben dos). Windows sin probar                                                                                                                                                                                                                                           | **Mantener**                                        |
-| ADR-26 | Guardado automático a los **2 s** y copia local         | Ventana de pérdida corta; una escritura por pausa; la copia cubre el intervalo                          | Cada guardado sube la revisión del borrador: con dos dispositivos, el segundo ve conflicto antes (es lo deseado). Dos pestañas del mismo navegador comparten la copia local. Con PostgreSQL remoto, 2 s sigue siendo razonable                                                                                                                                                       | **Mantener**                                        |
-| ADR-27 | Identidad en cada comando                               | Ninguna serie de una persona se aplica a otra; probado con el escenario de la auditoría                 | Lo de otra persona espera en ese dispositivo hasta que vuelva                                                                                                                                                                                                                                                                                                                        | **Mantener**                                        |
-| ADR-28 | **Tolerancia de 5 min** y **rango 2020–2100**           | Absorbe la deriva normal de los relojes; detecta relojes perdidos (1970, 2000)                          | <ul><li>Un reloj mal puesto dentro del rango (p. ej. 2025) no se rechaza: lo corrige T3 con la hora de recepción.</li><li>Una serie anotada sin conexión con un reloj fuera del rango queda en error no recuperable: hay que corregir el reloj y volver a registrarla (P-113).</li><li>Los 5 min son una decisión de diseño.</li></ul>                                               | **Mantener**; revisar los 5 min con datos reales    |
-| ADR-29 | **Espera de 1 s** y errores clasificados                | El servidor no se congela más de 1 s; uso normal sin esperas (probado con 8 escritores); nada a medias  | <ul><li>Con una herramienta ajena escribiendo, las escrituras fallan pronto (`503`); el móvil y el constructor reintentan.</li><li>**Las demás acciones del entrenador** acaban en la página de error genérica (§2.6, P-108).</li><li>El punto de control antes de migrar o restablecer puede fallar si una copia larga está leyendo: se detiene con un mensaje, sin daño.</li></ul> | **Mantener**; completar los errores tipados en B3.0 |
-| ADR-30 | `local-demo` solo en loopback, comprobado en el socket  | Imposible exponerlo por error                                                                           | <ul><li>Usa `process._getActiveHandles` (no documentado): si desaparece, no arranca (falla de forma segura; lo detectaría `startup.test.ts`).</li><li>**Impide probar en un móvil real por la red local** (§17.4).</li></ul>                                                                                                                                                         | **Mantener**                                        |
-| ADR-31 | Procedencia guardada                                    | Base para importaciones y cálculos futuros                                                              | Ninguna relevante                                                                                                                                                                                                                                                                                                                                                                    | **Mantener**                                        |
-| ADR-32 | Semilla relativa a su fecha                             | Pruebas iguales cualquier día                                                                           | Una base sembrada con otra versión de la semilla conserva su estructura hasta «Restablecer»                                                                                                                                                                                                                                                                                          | **Mantener**                                        |
+| Apartado                    | Contenido                                                                                                                                                                                                       |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Objetivos**               | Recoger el RPE global de la sesión con un procedimiento verificado y mostrar la carga interna estimada como tendencia individual                                                                                |
+| **Alcance**                 | <ul><li>Pregunta al terminar, con «Responder más tarde» durante 24 h.</li><li>Comando idempotente `rate_session`.</li><li>Tabla `session_rpe`.</li><li>Carga interna por sesión y semana en A8 y A9.</li></ul>  |
+| **Fuera de alcance**        | Cociente agudo:crónico, monotonía, _strain_, alertas, frecuencia cardiaca                                                                                                                                       |
+| **Dependencias**            | B3.1; **Q2, P-48, P-101 y P-112** (original verificado); Q6 (textos de las anclas); P-114                                                                                                                       |
+| **Datos necesarios**        | RPE de la sesión (no existe); duración calculada (existe)                                                                                                                                                       |
+| **Cambios de código**       | Reproductor (resumen), cola local, API de comandos, dominio, A8 y A9                                                                                                                                            |
+| **Cambios de modelo**       | **Sí:** migración `004` con `session_rpe`                                                                                                                                                                       |
+| **Criterios de aceptación** | AC-B3-24 a AC-B3-26 (§15)                                                                                                                                                                                       |
+| **Pruebas unitarias**       | Fórmula con el ejemplo publicado verificado en el original; sin RPE, sin terminar o con advertencia, «sin calcular» con el motivo                                                                               |
+| **Pruebas de integración**  | Migración `004` desde la `003` con datos; idempotencia; identidad; reglas de hora                                                                                                                               |
+| **Pruebas E2E**             | Responder al terminar, más tarde y no responder; sin conexión; móvil compartido                                                                                                                                 |
+| **Riesgos**                 | <ul><li>Presentar una percepción como medición (mitigado: rótulos y procedencia).</li><li>Anclas mal traducidas (Q6).</li><li>Baja tasa de respuesta (se muestra cuántas sesiones tienen valoración).</li></ul> |
+| **Terminado cuando**        | Original verificado y documentado; criterios en verde; informe                                                                                                                                                  |
 
-### 17.2 Copias de seguridad en el modo local (P-107)
+## 15. Criterios de aceptación
 
-| Aspecto          | Hoy                                                       | Propuesta (pendiente de aprobación; no se implementa)                                                                                                                                                                                                                                           |
-| ---------------- | --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Manuales**     | `pnpm db:backup` y «Hacer una copia ahora»                | Sin cambios                                                                                                                                                                                                                                                                                     |
-| **Automáticas**  | Antes de migrar, de restablecer y de restaurar            | Además, **al arrancar el servidor si la última copia automática tiene más de 24 h**. Sin temporizadores en segundo plano: la aplicación local no está siempre encendida, y una copia al arrancar cubre el uso real                                                                              |
-| **Frecuencia**   | —                                                         | Como mucho una diaria automática; las manuales, cuando se quiera                                                                                                                                                                                                                                |
-| **Retención**    | Indefinida (crecen sin límite)                            | <ul><li>Automáticas diarias: las **14** últimas.</li><li>Previas a una operación (migrar, restablecer, restaurar): las **10** últimas de cada tipo.</li><li>**Manuales: nunca se borran solas.**</li></ul>La limpieza solo borra copias verificadas más antiguas, y nunca la única copia válida |
-| **Tamaño**       | Una base sembrada ocupa unos 0,5 MB                       | 14 + 30 copias ≈ 25 MB                                                                                                                                                                                                                                                                          |
-| **Recuperación** | `pnpm db:restore` (segura y recuperable) y `db:recover`   | `db:status` mostraría la última copia automática y avisaría si tiene más de 7 días                                                                                                                                                                                                              |
-| **Ubicación**    | `<carpeta de datos>/backups/`, con permisos `700` y `600` | Igual. **Están en el mismo disco**: no protegen de su avería. Se documentaría cómo copiar a mano la carpeta a un disco externo. Sin nube (no hay servicios externos)                                                                                                                            |
-| **Privacidad**   | Solo datos ficticios                                      | Sin cifrado (necesitaría una dependencia o infraestructura). Por eso siguen sin admitirse datos reales                                                                                                                                                                                          |
+| Id       | Etapa | Criterio                                                                                                                                                            |
+| -------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| AC-B3-01 | B3.1  | E2E-1: A8 muestra «Completada», «en su día», **30 → 29 rep.**, **1.800 → 1.740 kg** y «−1 rep.» en la serie 3                                                       |
+| AC-B3-02 | B3.1  | Ejemplo del §5.2: exactamente sus fracciones; ningún porcentaje global; ninguna palabra fuera del vocabulario del §3.2                                              |
+| AC-B3-03 | B3.1  | E2E-12: mañana **15 rep. y 1.200 kg**; tarde **16 rep. y 640 kg**; día de ejecución **31 rep. y 1.840 kg**                                                          |
+| AC-B3-04 | B3.1  | Los ejemplos de P-91 del §3.2, tal cual en los niveles 1 y 2                                                                                                        |
+| AC-B3-05 | B3.1  | Tipos de serie: plancha (s), paseo del granjero (m), peso corporal, lastre, asistida, bandas y «otra»: cada magnitud en su fila; ninguna en el tonelaje             |
+| AC-B3-06 | B3.1  | Por implemento «2 × 20 kg», 3 × 10 → 1.200 kg; por lado → «sin calcular», con el motivo                                                                             |
+| AC-B3-07 | B3.1  | Versión v2 a media sesión: con «original», cada serie frente a su versión; con «vigente», todas frente a la v2; publicar después una v3 no cambia la vista original |
+| AC-B3-08 | B3.1  | Trasladada: prevista el lunes 9 y hecha el martes 10: A3 dice «hecha el mar 10»; su carga cuenta el martes 10                                                       |
+| AC-B3-09 | B3.1  | Medianoche: inicio a las 23:50 con series a las 23:58 y 00:03: todo en el día de inicio                                                                             |
+| AC-B3-10 | B3.1  | Duración: inicio 21:00, serie 21:10, fin 06:15 sin pausas → transcurrida, pausas 0, calculada y la advertencia, sin descontar nada; registros sin tocar             |
+| AC-B3-11 | B3.1  | Duración incoherente (fin anterior al inicio por horas ajustadas) → «Datos de tiempo incoherentes», sin cifra                                                       |
+| AC-B3-12 | B3.1  | Sin dato frente a diferencia: RIR prescrito y no registrado → «sin dato», fuera del denominador; RPE en otra escala u objetivo de carácter → «no aplica»            |
+| AC-B3-13 | B3.1  | Reenvíos y correcciones: no cambian los totales salvo el valor corregido                                                                                            |
+| AC-B3-14 | B3.2  | Semana 53: una sesión el 1 ene 2027 en Madrid cuenta en 2026-W53, rotulada «28 dic 2026 – 3 ene 2027»                                                               |
+| AC-B3-15 | B3.1  | Fórmulas: cada cifra calculada lleva la insignia con su id y versión, y sus limitaciones                                                                            |
+| AC-B3-16 | B3.1  | Permisos: otro entrenador, la clienta o una petición sin identidad reciben `404` o la redirección en A8, A9 y A10 de un cliente ajeno; sus datos no aparecen        |
+| AC-B3-17 | B3.1  | Accesibilidad: axe sin infracciones; nada desborda a 360 px; cada gráfico con su tabla; «Qué se puede concluir y qué no» presente                                   |
+| AC-B3-18 | B3.2  | Semanas vacías visibles con cero                                                                                                                                    |
+| AC-B3-19 | B3.2  | Planificado frente a ejecutado con una trasladada entre semanas: aparece en las dos con su papel y marcada                                                          |
+| AC-B3-20 | B3.2  | Patrones: los dos recuentos coinciden con la biblioteca en un caso de prueba con principal y secundarios                                                            |
+| AC-B3-21 | B3.2  | «Carga», «Resultados» y «Progreso» usan la fecha de ejecución y mantienen sus cifras con los datos actuales                                                         |
+| AC-B3-22 | B3.2  | Ningún `perceived_effort` de la semilla en el análisis                                                                                                              |
+| AC-B3-23 | B3.2  | Rendimiento: A9 con 52 semanas generadas, menos de 300 ms en el servidor de pruebas (objetivo de diseño, a confirmar al medir)                                      |
+| AC-B3-24 | B3.3  | El ejemplo numérico del original verificado (no el de una revisión) da exactamente su resultado                                                                     |
+| AC-B3-25 | B3.3  | Sin RPE, sin terminar o con duración incoherente → «sin calcular», con el motivo; con advertencia, según P-114                                                      |
+| AC-B3-26 | B3.3  | El RPE de la sesión respeta la identidad, la idempotencia y las reglas de hora del bloque 2                                                                         |
 
-### 17.3 Página de error de la base (A-15, P-108)
+## 16. Decisiones
 
-**Recomendación: antes del bloque 3, como B3.0.**
+### 16.1 Aprobadas
 
-- **Contenido:** un `error.tsx` en las áreas del entrenador y de la clienta que distinga:
-  - **base ocupada:** «Inténtalo en unos segundos»;
-  - **no disponible:** «La carpeta de datos ha cambiado: reinicia el servidor»;
-  - **dañada o con migraciones incompatibles:** «Restaura una copia: `pnpm db:status` y `pnpm db:restore`».
-- **Junto con ella:** los errores tipados en las acciones del entrenador que aún no los tienen (§2.6).
-- **Por qué antes:** el bloque 3 añade pantallas de lectura que hoy caerían en «Algo no ha ido bien», y es poco esfuerzo.
+P-90, P-91, P-92, P-93, P-94 y P-95 (13 nov 2026, PROMPT 16; ADR-33).
 
-### 17.4 Windows, Safari e iOS (P-110)
+### 16.2 Cerradas como consecuencia
 
-| Plataforma              | Plan realista                                                                                                                                                                                                                                                                                                                                         | Mientras tanto se asume                                                                                                                                                                                     |
-| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Windows**             | Lo ejecutas tú en tu equipo:<ul><li>`pnpm verify:env`, `pnpm test` y `pnpm test:e2e`;</li><li>dos servidores a la vez;</li><li>`db:restore` y `db:recover` interrumpidos (lista de comprobación que prepararía).</li></ul>Alternativa: una máquina Windows en CI, que es infraestructura y necesita tu aprobación                                     | Bloqueo con `LockFileEx`, `rename` sobre un archivo existente y sin `fsync` del directorio: **documentado, no probado**                                                                                     |
-| **Safari (escritorio)** | Proyecto WebKit de Playwright en la batería E2E. Requiere descargar ese navegador (`playwright install webkit`), que no es una dependencia npm pero sí una descarga: necesita tu aprobación                                                                                                                                                           | Sin verificar                                                                                                                                                                                               |
-| **iOS**                 | <ul><li>**Simulador de iOS en un Mac** (Xcode): Safari del simulador llega al `127.0.0.1` del Mac, así que funciona con `local-demo`.</li><li>**iPhone real:** necesita salir de loopback, lo que ADR-30 impide a propósito. Llegaría con autenticación real (Fase 2) o con un modo de prueba en red local que habría que diseñar y aprobar</li></ul> | <ul><li>Safari puede borrar IndexedDB y `localStorage` tras días sin uso (lo pendiente y la copia del borrador).</li><li>No hay sincronización en segundo plano.</li><li>Instalar la PWA difiere.</li></ul> |
-| **Android real**        | Igual que el iPhone real: depende de salir de loopback                                                                                                                                                                                                                                                                                                | Probado solo con Chromium en modo Pixel 7                                                                                                                                                                   |
+- **P-103 (índice global):** resuelta por P-90: no hay índice global.
+- **P-91 c) (tolerancias configurables):** descartada por P-91: tolerancia cero.
 
-## 18. Dependencias con bloques posteriores
+### 16.3 Pendientes, por etapa
 
-| Bloque o fase                 | Qué necesita del bloque 3                                                | Qué aporta al bloque 3                                                                                                                                         |
-| ----------------------------- | ------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **4 · Prescripción completa** | Fórmulas por base de carga, modalidad y tipo (§6.1), ya preparadas       | <ul><li>Tabla por serie, lastre, asistida, %1RM y tiempo y distancia en el constructor.</li><li>Intención estructurada (volumen por cualidad, P-99).</li></ul> |
-| **5 · Editar lo publicado**   | La comparación por versión (§4.2) y la vista «original frente a vigente» | Más versiones reales que analizar                                                                                                                              |
-| **6 · Cierre de V1**          | Pantallas A8–A10 accesibles; informe de V1                               | —                                                                                                                                                              |
-| **V3 (evaluaciones)**         | —                                                                        | 1RM y peso corporal en la base: intensidad relativa y carga respecto al peso corporal                                                                          |
-| **V4 (semana, plantillas)**   | Vista semanal                                                            | Entidad «bloque» o plan, que sustituiría al rango de fechas                                                                                                    |
-| **1C (autorregulación)**      | Perfil de cumplimiento, tendencias de esfuerzo y carga interna (§10)     | Reglas supervisadas y registro de decisiones                                                                                                                   |
-| **Fase 2 (PostgreSQL)**       | Funciones del dominio puras y portables                                  | Rendimiento con varios usuarios; tablas de resumen si hiciera falta                                                                                            |
+Ninguna se da por aprobada sin constancia documental. Solo se piden las necesarias para avanzar.
+
+| Id    | Etapa                           | Qué hay que decidir                                                        | Recomendación                                                                                                                                                                                                                                                                                                                                                                          | Justificación                                                                       | Si no se decide                                                                | ¿Bloquea?                             |
+| ----- | ------------------------------- | -------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ | ------------------------------------- |
+| P-108 | **Antes de B3.0**               | Hacer B3.0 (página de error y errores tipados) antes del análisis          | **Sí**, con el alcance del §14                                                                                                                                                                                                                                                                                                                                                         | El análisis añade pantallas que hoy caerían en un error genérico                    | B3.1 sin una página de error útil                                              | **Sí** (es la propia B3.0)            |
+| P-116 | **Antes de B3.1**               | Cómo aplicar la advertencia de P-95 sin la hora de cada pausa              | **a) Dos niveles con los datos actuales:** «advertencia» si el hueco supera en más de 30 min el total de pausas registradas (seguro que hubo más de 30 min sin pausa); «aviso» si el hueco pasa de 30 min pero las pausas registradas podrían explicarlo. b) Una sola advertencia para todo hueco de más de 30 min. c) Guardar la hora de cada pausa (cambio de esquema, más adelante) | a) es fiel a P-95 sin inventar dónde estuvo cada pausa ni dar falsas alarmas obvias | A8 no puede mostrar la duración conforme a P-95                                | **Sí**                                |
+| P-117 | **Antes de B3.1**               | Qué es la «prescripción original» de lo no registrado (P-92)               | **Sesión empezada:** la versión del último registro o, si no hay, la de inicio. **Sesión sin empezar:** la vigente al terminar el día previsto (zona de la aplicación)                                                                                                                                                                                                                 | Es la mejor evidencia guardada de lo que tenía la clienta; no reescribe la historia | Los totales prescritos «originales» de sesiones incompletas quedan indefinidos | **Sí**                                |
+| P-98  | Antes de B3.2                   | Volumen por patrón                                                         | Dos recuentos separados, sin pesos                                                                                                                                                                                                                                                                                                                                                     | Datos existentes; nada inventado                                                    | A9 sin patrones                                                                | Sí, solo esa sección                  |
+| P-104 | Antes de B3.2                   | Lista de diferencias repetidas (N de M sesiones)                           | Lista descriptiva, sin alertas; N = 3 y M = 5 por defecto, ajustables en pantalla sin guardarlos                                                                                                                                                                                                                                                                                       | Ayuda a decidir sin automatizar                                                     | A9 sin esa sección                                                             | Sí, solo esa sección                  |
+| P-106 | Antes de B3.2                   | Corregir «Carga», «Resultados» y «Progreso» según P-93 y el tonelaje 2.0.0 | **Sí**                                                                                                                                                                                                                                                                                                                                                                                 | Hoy hay vistas con fechas distintas (§2.5.2)                                        | Cifras incoherentes entre vistas                                               | Sí, solo esas vistas                  |
+| P-114 | Antes de B3.2                   | Duraciones con advertencia en medias y totales de periodo                  | **Mostrar el total con y sin esas sesiones**, con cuántas son                                                                                                                                                                                                                                                                                                                          | No asume nada (P-95) y no oculta                                                    | Medias de periodo sin regla                                                    | Sí, para las medias de duración       |
+| P-118 | Antes de B3.2                   | Fecha prevista para agrupar cuando una versión cambia la fecha             | Vista original, por la fecha de la versión original (P-117); vista vigente, por la vigente                                                                                                                                                                                                                                                                                             | Coherente con las dos perspectivas de P-92                                          | Agrupación ambigua cuando exista el bloque 5                                   | Sí, para la planificación por semanas |
+| Q2    | Antes de B3.3                   | Recoger el RPE de la sesión (y la valoración previa)                       | Sí, solo recogida y visualización                                                                                                                                                                                                                                                                                                                                                      | Sin datos no habrá tendencias para la 1C                                            | Sin B3.3                                                                       | Sí (B3.3)                             |
+| P-48  | Antes de B3.3                   | Procedimiento: al terminar, 24 h y posibilidad de desactivarlo con motivo  | Como está, tras cotejarlo con el original                                                                                                                                                                                                                                                                                                                                              | `PROGRESSION_AND_AUTOREGULATION.md` §6.2                                            | Sin B3.3                                                                       | Sí (B3.3)                             |
+| P-101 | Antes de B3.3                   | Alcance de B3.3                                                            | Recogida y carga interna, tras P-112                                                                                                                                                                                                                                                                                                                                                   | §7                                                                                  | Sin B3.3                                                                       | Sí (B3.3)                             |
+| P-112 | Antes de B3.3                   | Verificar el original de Foster et al. (2001)                              | Conseguir el texto completo y cotejarlo                                                                                                                                                                                                                                                                                                                                                | Regla de `SCIENTIFIC_RIGOR.md`                                                      | B3.3 sigue bloqueada                                                           | Sí (B3.3)                             |
+| Q6    | Antes de B3.3                   | Textos de las anclas de la escala                                          | Que los revises                                                                                                                                                                                                                                                                                                                                                                        | Traducción propia sin validar                                                       | Anclas provisionales marcadas                                                  | Sí (B3.3)                             |
+| P-96  | Posponible                      | Repeticiones «por lado» en el tonelaje                                     | Rep. como registradas y tonelaje × 2                                                                                                                                                                                                                                                                                                                                                   | `EFFORT_AND_LOAD.md` §3                                                             | Esas series, «sin calcular»                                                    | No (no hay datos)                     |
+| P-97  | Posponible                      | Carga «por lado»                                                           | Excluir del tonelaje                                                                                                                                                                                                                                                                                                                                                                   | Falta el peso de la barra                                                           | «Sin calcular» (por defecto)                                                   | No                                    |
+| P-99  | Posponible                      | Volumen por cualidad                                                       | Esperar a la intención en la prescripción (bloque 4)                                                                                                                                                                                                                                                                                                                                   | Las etiquetas no son la intención                                                   | Sin vista por cualidad                                                         | No                                    |
+| P-100 | Posponible                      | Volumen por grupo muscular                                                 | No en el bloque 3                                                                                                                                                                                                                                                                                                                                                                      | Sin taxonomía de músculos                                                           | —                                                                              | No                                    |
+| P-102 | Posponible                      | Rótulo de `perceived_effort` en «Registro»                                 | «Dato de demostración sin escala»                                                                                                                                                                                                                                                                                                                                                      | Es inventado                                                                        | Se sigue mostrando como hoy (el análisis no lo usa)                            | No                                    |
+| P-105 | Posponible                      | Descanso real                                                              | Registrarlo en un bloque posterior si interesa                                                                                                                                                                                                                                                                                                                                         | El intervalo entre registros no es descanso                                         | Solo el prescrito, con «no registrado»                                         | No                                    |
+| P-107 | Posponible                      | Copias automáticas y rotación                                              | §19.2                                                                                                                                                                                                                                                                                                                                                                                  | —                                                                                   | Copias solo manuales y antes de operaciones                                    | No                                    |
+| P-109 | Posponible                      | Correcciones justificadas y anotaciones                                    | Después del bloque 3 (§13)                                                                                                                                                                                                                                                                                                                                                             | —                                                                                   | Sin motivos ni anotaciones                                                     | No                                    |
+| P-110 | Posponible (antes de cerrar V1) | Windows, Safari e iOS                                                      | §19.4                                                                                                                                                                                                                                                                                                                                                                                  | —                                                                                   | Validación solo en Linux con Chromium                                          | No                                    |
+| P-111 | Posponible                      | Tablas de resumen y marcas de lectura                                      | Calcular al leer; medir primero                                                                                                                                                                                                                                                                                                                                                        | —                                                                                   | Panel con «terminadas en 7 días»                                               | No                                    |
+| P-113 | Posponible                      | Hora imposible (T1)                                                        | Mantener el rechazo con un mensaje mejor                                                                                                                                                                                                                                                                                                                                               | —                                                                                   | Igual que hoy                                                                  | No                                    |
+| P-115 | Posponible                      | kg en la carga autoseleccionada                                            | Excluir del tonelaje hasta que la prescripción tenga base (bloque 4)                                                                                                                                                                                                                                                                                                                   | Sin base, el total es desconocido                                                   | «Sin calcular» (por defecto)                                                   | No (no hay datos)                     |
+| P-119 | Posponible                      | Marcar si un valor se editó o se aceptó el propuesto                       | Valorarlo en los bloques 4 o 5                                                                                                                                                                                                                                                                                                                                                         | Mejoraría la lectura de «coincide» (§5.4)                                           | La limitación se muestra en pantalla                                           | No                                    |
+
+## 17. Revisión científica y metodológica
+
+| Elemento                                                                                | Tipo                                                    | Respaldo y límites                                                                                                                                                                                   |
+| --------------------------------------------------------------------------------------- | ------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Dimensiones de cumplimiento, tres niveles y vocabulario                                 | **Decisión de diseño** (P-90, P-91)                     | Sin respaldo científico: no se le atribuye ninguno                                                                                                                                                   |
+| Tolerancia cero; G = 30 min; semana ISO; fecha de ejecución local; reglas de referencia | **Decisión de diseño** o estándar (ISO 8601)            | La semana ISO es una norma de calendario, no una evidencia                                                                                                                                           |
+| Series, repeticiones, s, m, diferencias, recuentos y fracciones                         | **Fórmulas matemáticas** e **indicadores descriptivos** | Aritmética; describen lo registrado                                                                                                                                                                  |
+| Tonelaje (Σ rep. × kg)                                                                  | **Definición operativa** de uso común                   | No se le atribuye validez como medida de estímulo, fatiga ni adaptación, ni equivale a trabajo mecánico                                                                                              |
+| Escalas RIR y RPE                                                                       | **Métodos con respaldo**                                | Zourdos et al. (2016), Helms et al. (2016), Robertson et al. (2003), Borg (1982), verificados en `EFFORT_AND_LOAD.md`. Se usan para definir las escalas y la cautela, **no** para juzgar diferencias |
+| Error del RIR lejos del fallo                                                           | **Evidencia**                                           | Zourdos et al. (2021). Justifica no emitir juicios automáticos; **no** fija ningún margen                                                                                                            |
+| Método del RPE de la sesión                                                             | **Respaldado; procedimiento pendiente de verificar**    | Validez y fiabilidad en revisiones: 36 estudios (Haddad et al., 2017); en fuerza, CCI 0,88 (Day et al., 2004). **Original (Foster et al., 2001) sin cotejar en texto completo** (P-112)              |
+| RPE de la sesión frente a media de las series                                           | **Evidencia**                                           | Puede subestimarla (Sweet et al., 2004)                                                                                                                                                              |
+| Carga externa frente a interna                                                          | **Marco conceptual**                                    | Constructos distintos (Impellizzeri et al., 2019)                                                                                                                                                    |
+| Cociente agudo:crónico                                                                  | **Descartado**                                          | Impellizzeri et al. (2020)                                                                                                                                                                           |
+| Recuento fraccional por grupo muscular                                                  | **No se usa en el bloque 3**                            | La relación dosis–respuesta descrita es para resultados concretos (p. ej., hipertrofia) y no se generaliza                                                                                           |
+
+**Principio:** el volumen de entrenamiento **no** es un equivalente universal de estímulo, fatiga ni adaptación. TrainPro lo muestra como lo que es: una descripción cuantitativa de lo prescrito y lo hecho.
+
+## 18. Coherencia entre documentos
+
+| Contradicción                                                                                                          | Origen                                    | Resolución                                                                                            |
+| ---------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `EXECUTION.md` §2: fecha de ejecución «en la zona de la aplicación»; el código y `V1_SPEC.md` §5: zona del dispositivo | Error de redacción en el bloque 2         | **Corregido** en `EXECUTION.md`: manda el código, que está probado                                    |
+| Versión 1 de este documento: «original» = primera versión publicada; P-92: «original» = lo que recibió la clienta      | La versión 1 era anterior a tu definición | **Corregido** con tu definición; se retira la tercera vista                                           |
+| Versión 1: estados «más o menos exigente» e «incumplimientos repetidos»; P-91: no juzgar                               | Ídem                                      | **Corregido:** vocabulario del §3.2 y «diferencias repetidas»                                         |
+| Versión 1: la duración con advertencia «no entra en medias»; P-95: no asumir inactividad                               | Regla añadida por mí, no aprobada         | **Retirada;** queda pendiente (P-114)                                                                 |
+| Versión 1 y `DATA_MODEL.md`: «activa» y `trainer_setting` para tolerancias                                             | Anteriores a P-91 y P-95                  | **Corregido:** «duración calculada»; sin tabla de tolerancias                                         |
+| `V1_SPEC.md` §6: duración «con las pausas»; P-95: transcurrida, pausas y calculada                                     | La especificación de V1 era anterior      | **Nota** en `V1_SPEC.md` §6: sustituido por P-95                                                      |
+| `V1_SPEC.md` A3: «el total realizado del día» en una vista agrupada por fecha prevista; P-93                           | Ídem                                      | **Nota** en `V1_SPEC.md`: A3 muestra el estado de lo previsto y lo hecho con su fecha (§9.4)          |
+| Código: «Carga» y «Resultados» por fecha prevista, «Progreso» por fecha de ejecución                                   | Vistas de la Fase 1                       | **Pendiente de B3.2** (P-106)                                                                         |
+| `EFFORT_AND_LOAD.md` §10.1: incluye la carga autoseleccionada con kg en el tonelaje; esta auditoría: no tiene base     | Diseño anterior a la auditoría de bases   | **Nota** en `EFFORT_AND_LOAD.md`; pendiente (P-115)                                                   |
+| `MASTER_SPEC.md` (glosario): «tonelaje = Σ repeticiones × kg de carga externa», sin la base ni el carácter nominal     | Glosario general                          | **Precisado** en el glosario                                                                          |
+| `PROGRESSION_AND_AUTOREGULATION.md` §6.3 y P-49: duración «sin las pausas registradas»                                 | —                                         | **Coherente** con P-95                                                                                |
+| ADR-25 a ADR-32                                                                                                        | —                                         | **Sin contradicción.** ADR-28 (horas ajustadas) obliga a la protección de duración incoherente (§4.5) |
+
+## 19. Temas transversales (de la versión 1, vigentes)
+
+### 19.1 ADR-25 a ADR-32
+
+Recomendación: **mantenerlas todas**. Consecuencias principales:
+
+| ADR    | Decisión                                      | Consecuencias y recomendación                                                                                                                                                                                                                                                                  |
+| ------ | --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ADR-25 | Bloqueo del sistema y restauración con diario | Exclusividad real y restauración recuperable. No protege en discos de red; en Linux y macOS, borrar `.lock` a mano inutiliza el primer servidor (nunca escriben dos). Windows sin probar. **Mantener**                                                                                         |
+| ADR-26 | Guardado automático a los 2 s y copia local   | Ventana de pérdida corta; dos pestañas del mismo navegador comparten la copia. **Mantener**                                                                                                                                                                                                    |
+| ADR-27 | Identidad en cada comando                     | Lo de otra persona espera en el dispositivo hasta que vuelva. **Mantener**                                                                                                                                                                                                                     |
+| ADR-28 | Tolerancia de 5 min y rango 2020–2100         | <ul><li>Un reloj mal puesto dentro del rango lo corrige T3.</li><li>Una serie sin conexión con el reloj fuera del rango hay que volver a registrarla (P-113).</li><li>Las horas ajustadas pueden dar duraciones incoherentes (§4.5).</li></ul>**Mantener**; revisar los 5 min con datos reales |
+| ADR-29 | Espera de 1 s y errores clasificados          | Las demás acciones del entrenador caen en la página genérica: B3.0. **Mantener**                                                                                                                                                                                                               |
+| ADR-30 | `local-demo` solo en loopback                 | API no documentada (falla de forma segura); impide probar en un móvil real por la red local. **Mantener**                                                                                                                                                                                      |
+| ADR-31 | Procedencia guardada                          | **Mantener**                                                                                                                                                                                                                                                                                   |
+| ADR-32 | Semilla relativa                              | **Mantener**                                                                                                                                                                                                                                                                                   |
+
+### 19.2 Copias en el modo local (P-107, sin implementar)
+
+- **Manuales:** como hoy.
+- **Automáticas:** antes de migrar, restablecer y restaurar, como hoy. Además, **al arrancar si la última automática tiene más de 24 h**, sin temporizadores en segundo plano.
+- **Retención:**
+  - las 14 últimas automáticas;
+  - las 10 últimas de cada tipo previo a una operación;
+  - **las manuales nunca se borran solas**;
+  - nunca se borra la única copia válida.
+- **Tamaño:** unos 0,5 MB por copia.
+- **Recuperación:** `db:restore` y `db:recover`. `db:status` avisaría si la última copia tiene más de 7 días.
+- **Ubicación:** la misma carpeta y el mismo disco. **No protegen de una avería del disco**; se documentaría cómo copiarlas a un disco externo. Sin nube y sin cifrado, así que solo valen para datos ficticios.
+
+### 19.3 Página de error de la base (A-15)
+
+Forma parte de B3.0 (§14).
+
+### 19.4 Windows, Safari e iOS (P-110)
+
+| Plataforma        | Plan                                                                                                                                                                                     | Mientras tanto                                                                                        |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| Windows           | Lo ejecutas tú: `pnpm verify:env`, `pnpm test` y `pnpm test:e2e`, más dos servidores y una restauración interrumpida, con una lista de comprobación. CI con Windows, solo si lo apruebas | Bloqueo, `rename` y `fsync`, documentados y sin probar                                                |
+| Safari escritorio | Proyecto WebKit de Playwright. Necesita descargar ese navegador: requiere tu aprobación                                                                                                  | Sin verificar                                                                                         |
+| iOS               | Simulador de iOS en un Mac (Safari llega al `127.0.0.1` del Mac). Un iPhone real necesita salir de loopback, que ADR-30 impide                                                           | Safari puede borrar el almacenamiento local tras días sin uso; no hay sincronización en segundo plano |
+| Android real      | Igual que un iPhone real                                                                                                                                                                 | Solo Chromium en modo Pixel 7                                                                         |
+
+## 20. Dependencias con bloques posteriores
+
+| Bloque o fase             | Qué necesita del bloque 3                                   | Qué aporta al bloque 3                                                                                                         |
+| ------------------------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| 4 · Prescripción completa | Fórmulas por base, modalidad y tipo                         | Por serie, lastre, asistida, %1RM, tiempo y distancia en el constructor; base de la autoseleccionada (P-115); intención (P-99) |
+| 5 · Editar lo publicado   | Perspectivas original y vigente; fechas por versión (P-118) | Versiones reales que analizar                                                                                                  |
+| 6 · Cierre de V1          | A8–A10 accesibles                                           | —                                                                                                                              |
+| V3 (evaluaciones)         | —                                                           | 1RM y peso corporal: intensidad relativa y carga respecto al peso corporal                                                     |
+| V4 (semana y plantillas)  | Vista semanal                                               | Entidad «bloque»                                                                                                               |
+| 1C (autorregulación)      | Nivel 2 por serie, tendencias de esfuerzo y carga interna   | Reglas supervisadas y registro de decisiones                                                                                   |
+| Fase 2 (PostgreSQL)       | Dominio puro y portable                                     | Rendimiento con varios usuarios                                                                                                |

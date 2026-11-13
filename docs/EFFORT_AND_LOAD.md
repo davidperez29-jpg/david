@@ -299,6 +299,8 @@ Limitaciones que se mostrarán junto al resultado:
 
 «Carga relativa» tiene dos significados habituales (respecto al 1RM y respecto al peso corporal). Se muestran como **dos métricas distintas y con su nombre completo**.
 
+> **Nota (13 nov 2026, auditoría del bloque 3):** la fila «Tonelaje ejecutado» incluye la carga autoseleccionada con kg anotados, pero esa prescripción no tiene base (total, por lado o por implemento), así que el total es desconocido. `BLOCK3_SPEC.md` §6.2 propone excluirla hasta que la tenga (P-115, pendiente). Además, el tonelaje es **nominal** (kg declarados): no es la carga desplazada real ni trabajo mecánico.
+
 ### 10.2 Cambios en el tonelaje actual
 
 `training.volume-load` 1.0.0 suma repeticiones × kg. La versión 2.0.0 añadirá la base de la carga (total, por lado, por implemento), las repeticiones por lado y la exclusión de las series de calentamiento. Por las reglas del registro, los resultados antiguos conservan su versión.

@@ -831,6 +831,8 @@ Propuesta: resolverlo con la página de error de la base, antes del bloque 3 (`B
 
 La definición de «cumplimiento» que pedía el §14.6 está ahora propuesta en `BLOCK3_SPEC.md` §5 (P-90).
 
+**Actualización (13 nov 2026, PROMPT 16):** P-90 a P-95 están **aprobadas** (ADR-33). La revisión de coherencia del bloque 3 encontró y corrigió en la documentación que `EXECUTION.md` §2 situaba la fecha de ejecución en la zona de la aplicación, cuando el código usa la del dispositivo (`BLOCK3_SPEC.md` §18). No se ha cambiado código.
+
 ### 15.15 Riesgos que permanecen
 
 1. **Windows sin ejecutar en Windows** (A-23): el bloqueo (`LockFileEx`), `rename` y la ausencia de `fsync` del directorio están documentados, no probados.

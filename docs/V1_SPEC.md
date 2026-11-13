@@ -158,6 +158,7 @@ Sin cambios: búsqueda sin tildes y tarjetas con la próxima sesión. Aparece Lu
   - fecha;
   - «2 sesiones»;
   - el total realizado del día (series, repeticiones y tonelaje por tipo, §6).
+  - _Nota del 13 nov 2026 (P-93, ADR-33):_ A3 agrupa por fecha prevista, así que su cabecera muestra el estado de lo previsto y lo hecho con su fecha real. Los totales ejecutados van por fecha de ejecución (`BLOCK3_SPEC.md` §9.4).
 - **Cada sesión del día**, en su orden:
   - contexto («Mañana»), título y objetivo;
   - insignias: Borrador · Publicada v2 · Cambios sin publicar;
@@ -631,9 +632,9 @@ Se deducen de los registros efectivos y de las marcas de inicio y fin (ADR-16); 
 
 > **Refinado el 13 nov 2026 (PROMPT 15):** `BLOCK3_SPEC.md` desarrolla este apartado y lo amplía, pendiente de aprobación. Cambios principales:
 >
-> - **Cumplimiento** multidimensional, sin índice global (P-90).
-> - **Duración** bruta y activa, con aviso si no es representativa (P-95). Antes, solo «con las pausas».
-> - **Prescripción de referencia** por versión, con las vistas «original» y «vigente» (P-92).
+> - **Cumplimiento** multidimensional, sin índice global (P-90, **aprobada**). Diferencia, condición e interpretación separadas (P-91, **aprobada**).
+> - **Duración** transcurrida, pausas registradas y duración calculada, con advertencias (P-95, **aprobada** el 13 nov 2026 en ADR-33; sustituye a «con las pausas»).
+> - **Prescripción original** (la que recibió la clienta) y **vigente** (P-92, **aprobada**). Fecha prevista para la planificación y fecha de ejecución para la carga ejecutada (P-93, **aprobada**); semana ISO (P-94, **aprobada**).
 > - **Tonelaje** 2.0.0 con la base de la carga.
 > - **Pantallas nuevas:** semana y periodo (A9) y evolución por ejercicio (A10).
 > - **Carga interna:** opcional (B3.3), sujeta a Q2 y a verificar la fuente original (P-112).

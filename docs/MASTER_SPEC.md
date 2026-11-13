@@ -12,6 +12,7 @@ Documento de referencia del producto: qué es TrainPro, qué reglas lo rigen, qu
 | 1.5     | 7 de noviembre de 2026  | Versión 2 de `V1_SPEC.md`: varias sesiones al día, edición de sesiones publicadas con versiones (casos A–D), fechas de ejecución libres, persistencia en SQLite local, series aceptadas después de medianoche, identidad, rol y permisos por etapas, nuevas pruebas y decisiones P-85 a P-89 (pendiente de aprobación)                                                     |
 | 1.6     | 7 de noviembre de 2026  | Versión 2.1 de `V1_SPEC.md`: comparativa del controlador SQLite (recomendado `better-sqlite3`), política de versiones de Node (26 LTS), límites de SQLite por entorno y vía de migración a PostgreSQL, garantías ante fallos de conexión y desglose del bloque 1 con sus pruebas (pendiente de aprobación)                                                                 |
 | 1.7     | 13 de noviembre de 2026 | Bloques 1 y 2 de V1 implementados, auditados (`AUDIT_BLOCK1.md`) y corregidos (ADR-25 a ADR-32). Especificación del bloque 3 de análisis (`BLOCK3_SPEC.md`): cumplimiento multidimensional sin índice global, volumen sin mezclar magnitudes, carga interna opcional y decisiones P-90 a P-113. Avance medido con método explícito (`ROADMAP.md`). Pendiente de aprobación |
+| 1.8     | 13 de noviembre de 2026 | Aprobadas P-90 a P-95 (ADR-33): cumplimiento multidimensional; diferencia, condición e interpretación separadas; prescripción original y vigente; fecha prevista y de ejecución; semana ISO; duración con advertencias. `BLOCK3_SPEC.md` versión 2: plan B3.0–B3.3, auditoría de volumen y del modelo, decisiones por etapa. **Implementación no autorizada**              |
 
 ## 1. Producto
 
@@ -137,15 +138,17 @@ Las fases se agrupan en **etapas estratégicas** (E0 núcleo funcional a E8 esca
 
 ## 7. Glosario
 
-| Término                      | Significado en TrainPro                                                                                                |
-| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| **1RM**                      | Carga máxima con la que se completa una repetición de un ejercicio. **Directo** si se mide; **estimado** si se predice |
-| **%1RM**                     | Porcentaje de un 1RM de referencia, con su fecha y procedencia                                                         |
-| **RIR**                      | Repeticiones en reserva: cuántas repeticiones más se estima que se podrían hacer antes del fallo                       |
-| **RPE**                      | Esfuerzo percibido, siempre con su escala (basada en RIR, OMNI-RES o Borg CR10)                                        |
-| **Carácter del esfuerzo**    | Repeticiones realizadas frente a realizables, por ejemplo `6 (12)`                                                     |
-| **Criterio de finalización** | Condición para terminar una serie: pérdida de velocidad, calidad o técnica, dolor, tope de tiempo o repeticiones       |
-| **Serie efectiva**           | La última versión válida de una serie prescrita; los reenvíos y las correcciones no cuentan dos veces                  |
-| **Tonelaje**                 | Σ repeticiones × kg de carga **externa**. No incluye el peso corporal                                                  |
-| **Variante**                 | Forma concreta y prescribible de un ejercicio principal, con su propia clasificación                                   |
-| **Copia adaptada**           | Variante personalizada creada a partir de otra (normalmente global) sin modificar el original                          |
+| Término                             | Significado en TrainPro                                                                                                                                                               |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **1RM**                             | Carga máxima con la que se completa una repetición de un ejercicio. **Directo** si se mide; **estimado** si se predice                                                                |
+| **%1RM**                            | Porcentaje de un 1RM de referencia, con su fecha y procedencia                                                                                                                        |
+| **RIR**                             | Repeticiones en reserva: cuántas repeticiones más se estima que se podrían hacer antes del fallo                                                                                      |
+| **RPE**                             | Esfuerzo percibido, siempre con su escala (basada en RIR, OMNI-RES o Borg CR10)                                                                                                       |
+| **Carácter del esfuerzo**           | Repeticiones realizadas frente a realizables, por ejemplo `6 (12)`                                                                                                                    |
+| **Criterio de finalización**        | Condición para terminar una serie: pérdida de velocidad, calidad o técnica, dolor, tope de tiempo o repeticiones                                                                      |
+| **Serie efectiva**                  | La última versión válida de una serie prescrita; los reenvíos y las correcciones no cuentan dos veces                                                                                 |
+| **Tonelaje**                        | Σ repeticiones × kg de carga **externa** declarada (nominal), con su base (total o por implemento). No incluye el peso corporal, el lastre ni la asistencia, y no es trabajo mecánico |
+| **Fecha prevista / de ejecución**   | Cuándo estaba programada una sesión, y la fecha local de su inicio en la zona del dispositivo. La planificación usa la primera; la carga ejecutada, la segunda (P-93)                 |
+| **Prescripción original / vigente** | La que recibió la clienta en su momento, y la actual del entrenador (P-92)                                                                                                            |
+| **Variante**                        | Forma concreta y prescribible de un ejercicio principal, con su propia clasificación                                                                                                  |
+| **Copia adaptada**                  | Variante personalizada creada a partir de otra (normalmente global) sin modificar el original                                                                                         |

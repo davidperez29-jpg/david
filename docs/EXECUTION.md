@@ -83,7 +83,8 @@ Probado:
 **Fechas prevista y real, separadas:**
 
 - `session.planned_date` es la fecha prevista.
-- La fecha real es la local del inicio (`started_at` en la zona de la aplicación).
+- La fecha real es la local del inicio (`started_at` en la **zona del dispositivo** al empezar, `start_time_zone`).
+  - _Corrección del 13 nov 2026 (PROMPT 16):_ antes decía «zona de la aplicación». El código (`executionDate`) y `V1_SPEC.md` §5 usan la del dispositivo, y así está probado.
 - `daysFromPlanned` da «(1 día después)» o «(2 días antes)».
 - Se puede empezar cualquier día, varias sesiones el mismo día y sesiones de días anteriores.
 
@@ -343,7 +344,11 @@ Editar una sesión publicada desde la interfaz es el bloque 5: hoy la v2 solo se
 - **No se pide almacenamiento persistente** (`navigator.storage.persist()`). Firefox lo pregunta a la persona, y conviene decidir cuándo pedirlo. Safari puede borrar IndexedDB si la web pasa unos días sin usarse.
 - **Sin IndexedDB** (algunas navegaciones privadas) la cola está en memoria, con aviso permanente: cerrar la página pierde lo no enviado.
 - **Una sola pestaña o dispositivo a la vez.** Dos dispositivos que registran la misma serie se resuelven con `set_already_logged` (gana el primero). No hay mezcla de ediciones.
-- **Para el análisis** (`BLOCK3_SPEC.md` §2), hoy no se registran:
+- **Para el análisis** (`BLOCK3_SPEC.md` §2, versión 2), hay que saber además que:
+  - **No se guarda la hora de cada pausa:** solo el total y la pausa abierta. `client_command` guarda la hora de recepción de cada comando, no la del dispositivo.
+  - **Repeticiones, tiempo, distancia y carga se proponen con lo prescrito** (en los rangos, con el mínimo): una coincidencia puede significar que no se cambió el valor. El RIR y el RPE no se proponen.
+  - **El RIR y el RPE son opcionales** y solo se admiten si se prescribieron.
+- Hoy no se registran:
   - el descanso realmente hecho (el temporizador vive en el móvil);
   - la hora de cada pausa (solo el total);
   - el motivo de una serie no realizada;
