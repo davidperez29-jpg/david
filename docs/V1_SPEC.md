@@ -1183,6 +1183,17 @@ Un ejecutor de Windows en CI necesitaría tu aprobación (P-04).
 
 **Limitaciones conocidas:** `docs/EXECUTION.md` §11.
 
+### 9.4 Auditoría del 13 de noviembre de 2026
+
+`AUDIT_BLOCK1.md` audita el bloque 1 y el código del bloque 2 con pruebas reales. **No hay pérdidas en el uso normal:** cero escrituras confirmadas perdidas tras cortes con `SIGKILL` bajo carga, sin duplicados y sin operaciones a medias. Sí hay problemas de gravedad alta en situaciones plausibles:
+
+- restaurar una copia tras un corte o interrumpir la restauración (A-01, A-02);
+- dos servidores sobre la misma base (A-03, A-04);
+- un error al guardar en el constructor (A-05);
+- la cola local en un navegador compartido (A-08).
+
+Las correcciones propuestas (R1–R13) y las decisiones pendientes están en sus §10 y §14; **ninguna se ha aplicado**. La versión de Node citada como «hoy» en el §0 y el §8.7 (26.13.0) es ahora la 26.13.1 (bloque 2).
+
 ## 10. Pruebas y criterios de aceptación
 
 ### 10.1 Prueba integral (E2E-1)

@@ -4,6 +4,7 @@
 >
 > - **Bloque 1** (base persistente): terminado y aceptado.
 > - **Bloque 2** (ejecutar y registrar): implementado y pendiente de tu revisión (`V1_SPEC.md` §9.3, `EXECUTION.md`). Adelanta de la entrega V2 la cola local en IndexedDB, la cola idempotente, las correcciones, la reanudación y el aviso al salir.
+> - **Auditoría (13 de noviembre):** `AUDIT_BLOCK1.md`, con el estado real verificado, los problemas por gravedad y las correcciones propuestas, pendientes de aprobación.
 > - **Bloque 3 y siguientes:** sin empezar.
 >
 > El texto que sigue es la propuesta original y se conserva como referencia.

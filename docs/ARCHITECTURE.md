@@ -70,7 +70,7 @@ dominio (puro) → casos de uso (políticas) → puertos → adaptador SQLite �
 
 ## Registro sin conexión y envío idempotente (propuesta, ADR-22)
 
-Diseño pendiente de aprobación para el portal del cliente (`TRAINING_EXPERIENCE.md` §4). No añade dependencias: usa APIs del navegador. V1 aplica un subconjunto (`V1_SPEC.md` §5.5): una lista local de pendientes en `localStorage`, con estados y reintentos; IndexedDB y el registro completo sin conexión llegan en V2.
+Diseño pendiente de aprobación para el portal del cliente (`TRAINING_EXPERIENCE.md` §4). No añade dependencias: usa APIs del navegador. V1 aplica un subconjunto (`V1_SPEC.md` §5.5): una lista local de pendientes en `localStorage`, con estados y reintentos; IndexedDB y el registro completo sin conexión llegan en V2. **Nota (13 nov 2026):** el bloque 2 de V1 ya usa IndexedDB (ADR-24, `EXECUTION.md` §6); abrir la app sin conexión sigue en V2. Ver `AUDIT_BLOCK1.md` §5.
 
 1. Al abrir «Hoy» con conexión, el portal guarda en el dispositivo la sesión del día (y la siguiente), con su prescripción, las indicaciones y las siluetas. Los vídeos no se guardan (P-30).
 2. Cada serie registrada se guarda **primero en IndexedDB** con un `clientSetId` (UUID generado en el dispositivo) y pasa a una **cola de envío**.
@@ -237,7 +237,7 @@ src/app/
   cliente/                       Portal del cliente (columna móvil)
     (pestanas)/                  Grupo con navegación inferior: Hoy, Semana, Progreso
     sesion/[sessionId]/          Detalle de la sesión publicada (B2)
-    sesion/[sessionId]/entrenar/ Reproductor de la Fase 1 (aún no guarda)
+    sesion/[sessionId]/entrenar/ Reproductor por pasos del bloque 2 (guarda en el servidor; antes, el de la Fase 1)
 src/proxy.ts                     Protección local: Host permitido o 403
 src/domain/                      access, issues, measurement, formulas, assessment, goals, people, rehab,
                                  time, text, format, library/{taxonomy, exercise, search},

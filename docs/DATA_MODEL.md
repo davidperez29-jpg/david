@@ -237,6 +237,8 @@ Los clientes no navegan por la biblioteca: ven los ejercicios a través de las s
 | `exercise_feedback` | Se conserva solo para el RPE del ejercicio completo (opcional, con su escala) y la observación. **El RIR es siempre por serie** (`set_log`) y no se guarda por ejercicio, para no mezclar magnitudes                                                                                                                                                                      |
 | `exercise_skip`     | session_log_id, session_item_id, reason (`no_equipment`, `discomfort`, `other`), note                                                                                                                                                                                                                                                                                     |
 
+> **Nota (13 nov 2026):** V1 implementa un subconjunto de este diseño (`EXECUTION.md` §2): sin `set_role`, `reps_per_side`, `stop_reason`, `exercise_feedback`, `exercise_skip` ni `set_annotation`, y sin guardar la procedencia en cada registro. Ver `AUDIT_BLOCK1.md` §5 y §11.6.
+
 Reglas: las series efectivas son la última versión válida por (session_log_id, session_item_id, set_number), siguiendo `supersedes`; un `client_set_id` repetido no crea otra fila; el entrenador **no edita** `set_log` (anota con `set_annotation`). Todo lo realizado es `self_reported` salvo lo que mide un instrumento o se importa.
 
 **El estado de la sesión no se guarda: se deduce** (`sessionStatus` en `src/domain/training/session.ts`) de las series efectivas (sin duplicados ni registros ajenos a lo prescrito) y de si la sesión ha terminado:
