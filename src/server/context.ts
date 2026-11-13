@@ -7,6 +7,7 @@ import { type IsoDate, todayInTimeZone } from '@/domain/time';
 import { type BackupInfo } from './db/backup.ts';
 import { isValidSpace } from './db/location.ts';
 import { backupStore, getStore, listStoreBackups, resetStore, type StoreOptions } from './db/store';
+import { asReadFailure, withStorageFailures } from './storage-errors';
 import { readServerEnv, type ServerEnv } from './env';
 import { DEMO_IDENTITIES, type DemoIdentity } from './repositories/demo/dataset';
 import { type Repositories } from './repositories/ports';
@@ -45,7 +46,25 @@ async function requestEnvironment() {
     today,
     timeZone: env.timeZone,
   };
-  return { env, jar, today, storeOptions, repos: getStore(storeOptions).repos };
+  return {
+    env,
+    jar,
+    today,
+    storeOptions,
+    repos: withStorageFailures(openStore(storeOptions).repos),
+  };
+}
+
+/**
+ * La base de la petición. Un fallo al abrirla (otro proceso la usa, se borró, está dañada o no es
+ * compatible) se etiqueta para que la página de error explique qué pasa sin dar detalles internos.
+ */
+function openStore(storeOptions: StoreOptions) {
+  try {
+    return getStore(storeOptions);
+  } catch (error) {
+    throw asReadFailure(error);
+  }
 }
 
 /**
@@ -155,7 +174,7 @@ export async function getDataMaintenance(): Promise<DataMaintenance> {
   const { storeOptions } = await requestEnvironment();
   return {
     describe: () => {
-      const store = getStore(storeOptions);
+      const store = openStore(storeOptions);
       return {
         file: store.path,
         space: store.space,

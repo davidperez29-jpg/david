@@ -13,6 +13,21 @@ type Action = (
 
 const FIELDS = ['plannedDate', 'label', 'title', 'focus', 'estimatedMinutes'] as const;
 
+/**
+ * Si la base falla al crear (B3.0): qué se dice. Volver a enviar es seguro porque el identificador
+ * de la sesión se emitió con el formulario; si llegó a crearse, se abre la misma.
+ */
+const FAILURE_TEXT: Record<string, string> = {
+  storage_busy:
+    'La base de datos está ocupada en este momento y la sesión no se ha creado. Vuelve a pulsar «Crear borrador» en unos segundos.',
+  storage_unavailable:
+    'No se puede acceder a los datos y la sesión no se ha creado. Hace falta reiniciar el servidor de TrainPro.',
+  storage_error:
+    'No se ha podido confirmar si la sesión se ha creado. Vuelve a pulsar «Crear borrador»: si ya existe, se abrirá la misma, sin duplicarla.',
+  server_error:
+    'No se ha podido confirmar si la sesión se ha creado. Vuelve a pulsar «Crear borrador»: si ya existe, se abrirá la misma, sin duplicarla.',
+};
+
 export const fieldClasses = (invalid: boolean) =>
   cn(
     'mt-1 block w-full rounded-2xl border bg-white px-3.5 py-3 text-base text-ink-900 shadow-sm outline-none',
@@ -27,6 +42,9 @@ export function NewSessionForm({ vm, action }: { vm: NewSessionFormVM; action: A
   const formRef = useRef<HTMLFormElement>(null);
   const issues: Issue[] = state && !state.ok && state.reason === 'invalid' ? state.issues : [];
   const issueFor = (field: string) => issues.find((i) => i.path === field)?.message;
+  // Lo escrito vuelve con el resultado: tras un fallo, el formulario no se vacía.
+  const values = state && !state.ok ? state.values : undefined;
+  const failure = state && !state.ok ? FAILURE_TEXT[state.reason] : undefined;
 
   // El foco va al primer campo con error.
   useEffect(() => {
@@ -37,6 +55,7 @@ export function NewSessionForm({ vm, action }: { vm: NewSessionFormVM; action: A
 
   const field = (name: (typeof FIELDS)[number]) => ({
     name,
+    ...(name === 'plannedDate' ? {} : { defaultValue: values?.[name] ?? '' }),
     id: `campo-${name}`,
     'aria-invalid': issueFor(name) ? true : undefined,
     'aria-describedby': issueFor(name) ? `error-${name}` : undefined,
@@ -53,6 +72,14 @@ export function NewSessionForm({ vm, action }: { vm: NewSessionFormVM; action: A
     <form ref={formRef} action={formAction} className="space-y-5" noValidate>
       <input type="hidden" name="sessionId" value={vm.sessionId} />
       <input type="hidden" name="clientId" value={vm.clientId} />
+      {failure ? (
+        <p
+          role="alert"
+          className="rounded-2xl bg-coral-100 p-3 text-sm font-semibold text-coral-700"
+        >
+          {failure}
+        </p>
+      ) : null}
       {state && !state.ok && state.reason === 'not_found' ? (
         <p
           role="alert"

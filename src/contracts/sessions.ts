@@ -105,10 +105,20 @@ export interface NewSessionInput {
   estimatedMinutes: number | null;
 }
 
+/** Lo que se escribió en el formulario, devuelto si no se creó la sesión (para no perderlo). */
+export interface NewSessionValues {
+  plannedDate: string;
+  label: string;
+  title: string;
+  focus: string;
+  estimatedMinutes: string;
+}
+
 export type CreateSessionOutcome =
   | { ok: true; sessionId: string }
-  | { ok: false; reason: 'invalid'; issues: Issue[] }
-  | { ok: false; reason: 'not_found' };
+  | { ok: false; reason: 'invalid'; issues: Issue[]; values?: NewSessionValues }
+  | { ok: false; reason: 'not_found'; values?: NewSessionValues }
+  | { ok: false; reason: SaveFailure; values?: NewSessionValues };
 
 /** A5 · Una variante de la biblioteca que se puede añadir. */
 export interface BuilderVariantVM {

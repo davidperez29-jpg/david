@@ -6,10 +6,9 @@ import {
   type CreateSessionOutcome,
   type PublishOutcome,
   type SaveDraftOutcome,
-  type SaveFailure,
 } from '@/contracts/sessions';
 import { getTrainerContext } from '@/server/context';
-import { classifyStorageError } from '@/server/storage-errors';
+import { runWrite, writeOutcome } from '@/server/write-operations';
 import {
   createSessionDraft,
   deleteSessionDraft,
@@ -31,43 +30,41 @@ const text = (form: FormData, name: string) => {
 
 const sessionsPath = (clientId: string) => `/entrenador/clientes/${clientId}/sesiones`;
 
-/** A4 · Crear el borrador y abrir el constructor. Reenviar el formulario no crea otro. */
+/**
+ * A4 · Crear el borrador y abrir el constructor. Reenviar el formulario no crea otro: el
+ * identificador se emite al mostrarlo. Si la base falla, el resultado se devuelve con lo escrito
+ * (B3.0), para que el formulario lo conserve y se pueda volver a enviar sin duplicar.
+ */
 export async function createSessionAction(
   _previous: CreateSessionOutcome | null,
   form: FormData,
 ): Promise<CreateSessionOutcome> {
-  const ctx = await getTrainerContext();
   const minutes = text(form, 'estimatedMinutes').trim();
-  const outcome = await createSessionDraft(ctx, {
-    sessionId: text(form, 'sessionId'),
-    clientId: text(form, 'clientId'),
+  const values = {
     plannedDate: text(form, 'plannedDate'),
     label: text(form, 'label'),
     title: text(form, 'title'),
     focus: text(form, 'focus'),
-    estimatedMinutes: minutes === '' ? null : Number(minutes),
-  });
-  if (!outcome.ok) return outcome;
+    estimatedMinutes: minutes,
+  };
+  const outcome = await writeOutcome('Crear la sesión', async () =>
+    createSessionDraft(await getTrainerContext(), {
+      sessionId: text(form, 'sessionId'),
+      clientId: text(form, 'clientId'),
+      ...values,
+      estimatedMinutes: minutes === '' ? null : Number(minutes),
+    }),
+  );
+  if (!outcome.ok) return { ...outcome, values };
   redirect(`${sessionsPath(text(form, 'clientId'))}/${outcome.sessionId}/editar`);
 }
 
 /**
  * Un fallo de almacenamiento (o inesperado) al guardar o publicar se DEVUELVE como resultado, no
- * se lanza (A-05): si se lanzara, la página entera pasaría a «Algo no ha ido bien» y se perdería lo
- * que el entrenador tiene en pantalla. La transacción no se aplicó: no hay nada a medias.
+ * se lanza (A-05): si se lanzara, la página entera pasaría a la de error y se perdería lo que el
+ * entrenador tiene en pantalla. Repetir es seguro: guardar y publicar comprueban la revisión.
  */
-async function safely<T>(
-  what: string,
-  run: () => Promise<T>,
-): Promise<T | { ok: false; reason: SaveFailure }> {
-  try {
-    return await run();
-  } catch (error) {
-    const failure = classifyStorageError(error);
-    console.error(`${what}: no se ha podido completar (${failure ?? 'server_error'})`, error);
-    return { ok: false, reason: failure ?? 'server_error' };
-  }
-}
+const safely = writeOutcome;
 
 /** A5 · Guardar el borrador con la revisión esperada. */
 export async function saveDraftAction(input: {
@@ -89,18 +86,23 @@ export async function publishDraftAction(input: {
   return safely('Publicar la sesión', async () => publishSession(await getTrainerContext(), input));
 }
 
-/** A3/A5 · Eliminar un borrador que nunca se ha publicado. */
+/**
+ * A3/A5 · Eliminar un borrador que nunca se ha publicado. Si la base falla, la página de error lo
+ * explica (B3.0). Repetirlo es seguro: un borrador ya borrado no se borra dos veces.
+ */
 export async function deleteDraftAction(form: FormData) {
-  const ctx = await getTrainerContext();
-  const result = await deleteSessionDraft(ctx, text(form, 'sessionId'));
+  const result = await runWrite('Eliminar el borrador', async () =>
+    deleteSessionDraft(await getTrainerContext(), text(form, 'sessionId')),
+  );
   if (result === 'deleted') redirect(sessionsPath(text(form, 'clientId')));
   refresh();
 }
 
 /** A3 · Subir o bajar un borrador dentro de su día. */
 export async function moveDraftAction(form: FormData) {
-  const ctx = await getTrainerContext();
   const direction = text(form, 'direction') === 'up' ? 'up' : 'down';
-  await reorderSessionDraft(ctx, text(form, 'sessionId'), direction);
+  await runWrite('Mover el borrador', async () =>
+    reorderSessionDraft(await getTrainerContext(), text(form, 'sessionId'), direction),
+  );
   refresh();
 }
