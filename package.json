@@ -25,6 +25,7 @@
     "db:status": "node scripts/db.ts status",
     "db:backup": "node scripts/db.ts backup",
     "db:restore": "node scripts/db.ts restore",
+    "db:recover": "node scripts/db.ts recover",
     "verify:env": "node scripts/verify-env.ts"
   },
   "dependencies": {

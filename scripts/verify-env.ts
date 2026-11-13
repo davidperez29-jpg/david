@@ -16,6 +16,7 @@ import { existsSync, readFileSync, rmSync } from 'node:fs';
 import { arch, platform, release } from 'node:os';
 import { join, resolve } from 'node:path';
 import { createBackup, restoreBackup, verifyDatabaseFile } from '../src/server/db/backup.ts';
+import { lockDataLocation } from '../src/server/db/lock.ts';
 import { migrate, MIGRATIONS } from '../src/server/db/migrate.ts';
 import { constraintKind, openSqlite } from '../src/server/db/sqlite.ts';
 
@@ -93,7 +94,12 @@ async function main() {
     const backup = await createBackup(db, { label: 'verificacion' });
     db.exec("INSERT INTO trainer (id, display_name) VALUES ('t-y', 'Después de la copia')");
     db.close();
-    restoreBackup(file, backup.file);
+    const lock = lockDataLocation(file, 'restauracion');
+    try {
+      await restoreBackup(lock, backup.file);
+    } finally {
+      lock.release();
+    }
     verifyDatabaseFile(file);
     const reopened = openSqlite(file);
     const ids = reopened
@@ -102,7 +108,7 @@ async function main() {
       .map((r) => r.id);
     reopened.close();
     if (ids.join(',') !== 't-x') throw new Error(`tras restaurar: ${ids.join(',')}`);
-    return 'la copia es íntegra y la restauración recupera exactamente sus datos';
+    return 'la copia es íntegra y la restauración (segura, con bloqueo exclusivo) recupera exactamente sus datos';
   });
 
   await check('Persistencia al cerrar y volver a abrir', () => {

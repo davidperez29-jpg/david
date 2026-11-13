@@ -3,6 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createBackup, listBackups, restoreBackup, verifyDatabaseFile } from './backup.ts';
+import { lockDataLocation } from './lock.ts';
 import { checksum, migrate, MigrationError, MIGRATIONS } from './migrate.ts';
 import { constraintKind, openSqlite, type SqlDatabase } from './sqlite.ts';
 
@@ -286,7 +287,9 @@ describe('B1-10 · copias de seguridad y restauración', () => {
     db.close();
 
     // …que desaparecen al restaurar, y queda una copia del estado anterior.
-    restoreBackup(join(dir, 'trainpro.sqlite'), backup.file);
+    const lock = lockDataLocation(join(dir, 'trainpro.sqlite'), 'pruebas');
+    await restoreBackup(lock, backup.file);
+    lock.release();
     db = openSqlite(join(dir, 'trainpro.sqlite'));
     expect(db.integrityCheck()).toBe('ok');
     expect(
