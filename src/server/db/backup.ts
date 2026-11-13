@@ -127,7 +127,8 @@ function checkOpenDatabase(db: SqlDatabase, label: string): void {
 export function verifyDatabaseFile(file: string, label = 'La copia'): void {
   if (!existsSync(file)) throw new BackupError(`No existe la copia ${file}.`);
   // Abrir en modo WAL crea archivos auxiliares: se borran después los que no existían antes.
-  const preexisting = AUX.filter((s) => existsSync(`${file}${s}`));
+  // (`turbopackIgnore`: son archivos de datos en tiempo de ejecución, no algo que rastrear al compilar.)
+  const preexisting = AUX.filter((s) => existsSync(/*turbopackIgnore: true*/ `${file}${s}`));
   let db;
   try {
     db = openSqlite(file, { readonly: true });
@@ -317,7 +318,12 @@ function atomicReplace(source: string, target: string): void {
   // Un WAL que quedara junto a la base se aplicaría a la nueva y la dañaría.
   for (const s of AUX) {
     const aux = `${target}${s}`;
-    if (s === '-wal' && existsSync(aux) && statSync(aux).size > 0) {
+    // `turbopackIgnore`: archivos de datos en tiempo de ejecución, no algo que rastrear al compilar.
+    if (
+      s === '-wal' &&
+      existsSync(/*turbopackIgnore: true*/ aux) &&
+      statSync(/*turbopackIgnore: true*/ aux).size > 0
+    ) {
       throw new BackupError(
         'La base tiene cambios en el WAL sin volcar (¿la usa otro proceso?): no se sustituye.',
       );
