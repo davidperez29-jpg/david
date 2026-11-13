@@ -1,15 +1,16 @@
 # Bloque 3 · Análisis del entrenamiento
 
-**Estado:** especificación consolidada, versión 2 (13 de noviembre de 2026, PROMPT 16).
+**Estado:** especificación consolidada, versión 3 (13 de noviembre de 2026, PROMPT 17).
 
-- **Aprobadas:** las decisiones P-90 a P-95 (ADR-33).
-- **No autorizada:** la implementación de cualquier etapa (B3.0 a B3.3).
-- **Sin cambios:** este documento no modifica código, base de datos ni dependencias.
+- **Aprobadas:** P-90 a P-95 (ADR-33); P-108, P-116 y P-117 (ADR-35).
+- **Implementada:** B3.0 (PROMPT 17, ADR-34; §21).
+- **No autorizada:** la implementación de B3.1 a B3.3.
 
 | Versión | Fecha       | Cambios                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | ------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1       | 13 nov 2026 | Propuesta inicial (commit `cd2aa52`, PROMPT 15): inventario de datos, cumplimiento multidimensional, volumen, carga interna, pantallas, decisiones P-90 a P-113                                                                                                                                                                                                                                                                    |
 | 2       | 13 nov 2026 | <ul><li>P-90 a P-95 aprobadas e incorporadas con tus matices: tres niveles (diferencia, condición e interpretación), dos perspectivas de la prescripción, fechas, semana ISO y duración.</li><li>Auditoría de volumen y tonelaje, y del modelo por origen del dato.</li><li>Contradicciones encontradas y su resolución.</li><li>Decisiones clasificadas por etapa.</li><li>Plan B3.0–B3.3.</li><li>Revisión científica.</li></ul> |
+| 3       | 13 nov 2026 | <ul><li>B3.0 implementada (§21).</li><li>Auditorías de los valores precargados y de las versiones históricas.</li><li>Comprobación de P-116.</li><li>Contradicciones de P-117 con el modelo.</li><li>Nuevas pendientes: P-120 a P-122.</li></ul>                                                                                                                                                                                   |
 
 **Relación con otros documentos:**
 
@@ -110,7 +111,7 @@ Consulta de solo lectura sobre una base de las pruebas:
 | A9, A10, patrones y vistas corregidas (B3.2)        | Sí                                 | Patrones desde la biblioteca del código         |
 | «Pendientes de revisar» exacto en el panel          | No: necesita marcas de lectura     | Aproximación sin esquema en B3.1 (P-111)        |
 | Advertencia de huecos exacta                        | No: necesita la hora de cada pausa | P-116 c)                                        |
-| Saber si un valor se editó o se aceptó el propuesto | No                                 | P-119                                           |
+| Saber si un valor se editó o se aceptó el propuesto | No                                 | P-119; en B3.1, P-120                           |
 | RPE de la sesión y carga interna (B3.3)             | No: tabla nueva                    | Q2, P-101, P-112                                |
 | Correcciones justificadas y anotaciones             | No                                 | P-109                                           |
 
@@ -128,7 +129,7 @@ Consulta de solo lectura sobre una base de las pruebas:
 5. **La duración incluye los cortes sin pausa** [I], y con horas ajustadas (ADR-28) puede salir incoherente (fin anterior al inicio en hasta 5 min). Hace falta una protección (§4.5).
 6. **Los valores se proponen con lo prescrito** [I]: una «coincidencia» de repeticiones o carga puede significar que no se cambió el valor. El esfuerzo no tiene este problema porque no se rellena.
 7. **La fecha prevista cambia con las versiones** [I], y `session.planned_date` solo conserva la vigente. La original se reconstruye desde el contenido de las versiones.
-8. **Residual de A-11** [I]: crear sesión, borrar o mover un borrador, copia y restablecer no devuelven el error tipado de base ocupada. Se aborda en B3.0.
+8. **Residual de A-11** [I]: crear sesión, borrar o mover un borrador, copia y restablecer no devuelven el error tipado de base ocupada. **Resuelto en B3.0** [P] (§21.3).
 9. **`EXECUTION.md` §2 decía «zona de la aplicación»** para la fecha de ejecución; el código y `V1_SPEC.md` usan la zona del dispositivo. Corregido en la documentación (§18).
 
 ## 3. Decisiones aprobadas y cómo se aplican
@@ -248,7 +249,7 @@ La vista histórica no cambia aunque el entrenador publique después: la nueva v
 
 **Comprobación D:** sin protecciones habría resultados absurdos. El §4.5 define qué se muestra en cada caso.
 
-**Límite:** el modelo no guarda dónde ocurrió cada pausa, así que no se puede saber con certeza si un hueco tuvo una pausa registrada (P-116).
+**Límite:** el modelo no guarda dónde ocurrió cada pausa, así que no se puede saber con certeza si un hueco tuvo una pausa registrada. P-116 está aprobada con dos niveles; la comprobación de los datos está en el §21.7.
 
 **Cambio respecto a la versión 1:** se deja de llamar «activa» a la duración calculada, porque eso presupone actividad. Que una duración con advertencia entre o no en medias y totales de periodo queda pendiente (P-114).
 
@@ -264,16 +265,18 @@ La vista histórica no cambia aunque el entrenador publique después: la nueva v
 - **Solo lo confirmado por el servidor.**
 - **`perceived_effort` de la semilla no se usa.**
 
-### 4.2 Prescripción de referencia (P-92 aprobada; P-117 pendiente)
+### 4.2 Prescripción de referencia (P-92 y P-117 aprobadas; P-121 pendiente)
 
-| Caso                                            | Original                                                                                                                                        | Vigente           |
-| ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | ----------------- |
-| Serie registrada                                | La versión de su registro (dato)                                                                                                                | `current_version` |
-| Serie sin registrar en una sesión empezada      | **P-117 (propuesta):** la versión del último registro de la sesión o, si no hay, la de inicio                                                   | `current_version` |
-| Sesión sin empezar                              | **P-117 (propuesta):** la versión vigente al terminar el día previsto (23:59:59 en la zona de la aplicación); si se publicó después, la primera | `current_version` |
-| Serie registrada que ya no existe en la vigente | Su versión; se lista como «fuera de la versión vigente»                                                                                         | No existe en ella |
+| Caso                                            | Original                                                                                                                                                                           | Vigente           |
+| ----------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------- |
+| Serie registrada                                | La versión de su registro (dato)                                                                                                                                                   | `current_version` |
+| Serie sin registrar en una sesión empezada      | **P-117 (aprobada; casos en §21.6):** la versión del último registro de la sesión o, si no hay, la de inicio                                                                       | `current_version` |
+| Sesión sin empezar                              | **P-117 (aprobada solo si es inequívoca; P-121, §21.6):** la versión vigente al terminar el día previsto (23:59:59 en la zona de la aplicación); si se publicó después, la primera | `current_version` |
+| Serie registrada que ya no existe en la vigente | Su versión; se lista como «fuera de la versión vigente»                                                                                                                            | No existe en ella |
 
 Los **totales prescritos** de cada perspectiva se calculan serie a serie con su referencia.
+
+**Actualización (PROMPT 17):** P-117 se aplica solo cuando la referencia se puede reconstruir. Si no, se muestra «referencia histórica no determinada». Los casos reconstruibles, ambiguos e imposibles están en el §21.6.
 
 ### 4.3 Fechas
 
@@ -282,7 +285,7 @@ Además de P-93 (§3.4):
 - **Varias sesiones el mismo día:** cada magnitud se suma por separado; nunca se promedian porcentajes.
 - **Semanas con distinto número de sesiones:** totales con el número de sesiones; una media solo con su denominador.
 - **Sesión trasladada:** prevista aquí y hecha el día X (con fecha); su carga ejecutada cuenta el día X.
-- **Fecha prevista que cambia entre versiones:** la planificación original usa la de la versión original y la vigente, la vigente (P-118, antes de B3.2). Hoy no hay ninguna interfaz que cambie la fecha de una sesión publicada (bloque 5).
+- **Fecha prevista que cambia entre versiones:** la planificación original usa la de la versión original y la vigente, la vigente (P-118, antes de B3.2). Hoy no hay ninguna interfaz que cambie una sesión publicada (bloque 5), pero **el servicio de versiones sí acepta otra fecha prevista** en la versión n + 1 [P, §21.6].
 
 ### 4.4 Semana
 
@@ -643,7 +646,7 @@ Todas son `operational_definition` (definiciones de diseño o aritméticas, con 
 
 **Ninguna etapa está autorizada.** Cada una necesita tu autorización expresa y termina con `pnpm check`, `pnpm test:e2e`, documentación, commit y un informe para tu revisión.
 
-### B3.0 · Preparación
+### B3.0 · Preparación · **Implementada (PROMPT 17, §21)**
 
 | Apartado                    | Contenido                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -750,7 +753,10 @@ Todas son `operational_definition` (definiciones de diseño o aritméticas, con 
 
 ### 16.1 Aprobadas
 
-P-90, P-91, P-92, P-93, P-94 y P-95 (13 nov 2026, PROMPT 16; ADR-33).
+- P-90, P-91, P-92, P-93, P-94 y P-95 (13 nov 2026, PROMPT 16; ADR-33).
+- P-108, P-116 y P-117 (13 nov 2026, PROMPT 17; ADR-35), con tus condiciones:
+  - P-116 sin heurística;
+  - P-117 solo cuando la referencia se pueda reconstruir.
 
 ### 16.2 Cerradas como consecuencia
 
@@ -761,34 +767,37 @@ P-90, P-91, P-92, P-93, P-94 y P-95 (13 nov 2026, PROMPT 16; ADR-33).
 
 Ninguna se da por aprobada sin constancia documental. Solo se piden las necesarias para avanzar.
 
-| Id    | Etapa                           | Qué hay que decidir                                                        | Recomendación                                                                                                                                                                                                                                                                                                                                                                          | Justificación                                                                       | Si no se decide                                                                | ¿Bloquea?                             |
-| ----- | ------------------------------- | -------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ | ------------------------------------- |
-| P-108 | **Antes de B3.0**               | Hacer B3.0 (página de error y errores tipados) antes del análisis          | **Sí**, con el alcance del §14                                                                                                                                                                                                                                                                                                                                                         | El análisis añade pantallas que hoy caerían en un error genérico                    | B3.1 sin una página de error útil                                              | **Sí** (es la propia B3.0)            |
-| P-116 | **Antes de B3.1**               | Cómo aplicar la advertencia de P-95 sin la hora de cada pausa              | **a) Dos niveles con los datos actuales:** «advertencia» si el hueco supera en más de 30 min el total de pausas registradas (seguro que hubo más de 30 min sin pausa); «aviso» si el hueco pasa de 30 min pero las pausas registradas podrían explicarlo. b) Una sola advertencia para todo hueco de más de 30 min. c) Guardar la hora de cada pausa (cambio de esquema, más adelante) | a) es fiel a P-95 sin inventar dónde estuvo cada pausa ni dar falsas alarmas obvias | A8 no puede mostrar la duración conforme a P-95                                | **Sí**                                |
-| P-117 | **Antes de B3.1**               | Qué es la «prescripción original» de lo no registrado (P-92)               | **Sesión empezada:** la versión del último registro o, si no hay, la de inicio. **Sesión sin empezar:** la vigente al terminar el día previsto (zona de la aplicación)                                                                                                                                                                                                                 | Es la mejor evidencia guardada de lo que tenía la clienta; no reescribe la historia | Los totales prescritos «originales» de sesiones incompletas quedan indefinidos | **Sí**                                |
-| P-98  | Antes de B3.2                   | Volumen por patrón                                                         | Dos recuentos separados, sin pesos                                                                                                                                                                                                                                                                                                                                                     | Datos existentes; nada inventado                                                    | A9 sin patrones                                                                | Sí, solo esa sección                  |
-| P-104 | Antes de B3.2                   | Lista de diferencias repetidas (N de M sesiones)                           | Lista descriptiva, sin alertas; N = 3 y M = 5 por defecto, ajustables en pantalla sin guardarlos                                                                                                                                                                                                                                                                                       | Ayuda a decidir sin automatizar                                                     | A9 sin esa sección                                                             | Sí, solo esa sección                  |
-| P-106 | Antes de B3.2                   | Corregir «Carga», «Resultados» y «Progreso» según P-93 y el tonelaje 2.0.0 | **Sí**                                                                                                                                                                                                                                                                                                                                                                                 | Hoy hay vistas con fechas distintas (§2.5.2)                                        | Cifras incoherentes entre vistas                                               | Sí, solo esas vistas                  |
-| P-114 | Antes de B3.2                   | Duraciones con advertencia en medias y totales de periodo                  | **Mostrar el total con y sin esas sesiones**, con cuántas son                                                                                                                                                                                                                                                                                                                          | No asume nada (P-95) y no oculta                                                    | Medias de periodo sin regla                                                    | Sí, para las medias de duración       |
-| P-118 | Antes de B3.2                   | Fecha prevista para agrupar cuando una versión cambia la fecha             | Vista original, por la fecha de la versión original (P-117); vista vigente, por la vigente                                                                                                                                                                                                                                                                                             | Coherente con las dos perspectivas de P-92                                          | Agrupación ambigua cuando exista el bloque 5                                   | Sí, para la planificación por semanas |
-| Q2    | Antes de B3.3                   | Recoger el RPE de la sesión (y la valoración previa)                       | Sí, solo recogida y visualización                                                                                                                                                                                                                                                                                                                                                      | Sin datos no habrá tendencias para la 1C                                            | Sin B3.3                                                                       | Sí (B3.3)                             |
-| P-48  | Antes de B3.3                   | Procedimiento: al terminar, 24 h y posibilidad de desactivarlo con motivo  | Como está, tras cotejarlo con el original                                                                                                                                                                                                                                                                                                                                              | `PROGRESSION_AND_AUTOREGULATION.md` §6.2                                            | Sin B3.3                                                                       | Sí (B3.3)                             |
-| P-101 | Antes de B3.3                   | Alcance de B3.3                                                            | Recogida y carga interna, tras P-112                                                                                                                                                                                                                                                                                                                                                   | §7                                                                                  | Sin B3.3                                                                       | Sí (B3.3)                             |
-| P-112 | Antes de B3.3                   | Verificar el original de Foster et al. (2001)                              | Conseguir el texto completo y cotejarlo                                                                                                                                                                                                                                                                                                                                                | Regla de `SCIENTIFIC_RIGOR.md`                                                      | B3.3 sigue bloqueada                                                           | Sí (B3.3)                             |
-| Q6    | Antes de B3.3                   | Textos de las anclas de la escala                                          | Que los revises                                                                                                                                                                                                                                                                                                                                                                        | Traducción propia sin validar                                                       | Anclas provisionales marcadas                                                  | Sí (B3.3)                             |
-| P-96  | Posponible                      | Repeticiones «por lado» en el tonelaje                                     | Rep. como registradas y tonelaje × 2                                                                                                                                                                                                                                                                                                                                                   | `EFFORT_AND_LOAD.md` §3                                                             | Esas series, «sin calcular»                                                    | No (no hay datos)                     |
-| P-97  | Posponible                      | Carga «por lado»                                                           | Excluir del tonelaje                                                                                                                                                                                                                                                                                                                                                                   | Falta el peso de la barra                                                           | «Sin calcular» (por defecto)                                                   | No                                    |
-| P-99  | Posponible                      | Volumen por cualidad                                                       | Esperar a la intención en la prescripción (bloque 4)                                                                                                                                                                                                                                                                                                                                   | Las etiquetas no son la intención                                                   | Sin vista por cualidad                                                         | No                                    |
-| P-100 | Posponible                      | Volumen por grupo muscular                                                 | No en el bloque 3                                                                                                                                                                                                                                                                                                                                                                      | Sin taxonomía de músculos                                                           | —                                                                              | No                                    |
-| P-102 | Posponible                      | Rótulo de `perceived_effort` en «Registro»                                 | «Dato de demostración sin escala»                                                                                                                                                                                                                                                                                                                                                      | Es inventado                                                                        | Se sigue mostrando como hoy (el análisis no lo usa)                            | No                                    |
-| P-105 | Posponible                      | Descanso real                                                              | Registrarlo en un bloque posterior si interesa                                                                                                                                                                                                                                                                                                                                         | El intervalo entre registros no es descanso                                         | Solo el prescrito, con «no registrado»                                         | No                                    |
-| P-107 | Posponible                      | Copias automáticas y rotación                                              | §19.2                                                                                                                                                                                                                                                                                                                                                                                  | —                                                                                   | Copias solo manuales y antes de operaciones                                    | No                                    |
-| P-109 | Posponible                      | Correcciones justificadas y anotaciones                                    | Después del bloque 3 (§13)                                                                                                                                                                                                                                                                                                                                                             | —                                                                                   | Sin motivos ni anotaciones                                                     | No                                    |
-| P-110 | Posponible (antes de cerrar V1) | Windows, Safari e iOS                                                      | §19.4                                                                                                                                                                                                                                                                                                                                                                                  | —                                                                                   | Validación solo en Linux con Chromium                                          | No                                    |
-| P-111 | Posponible                      | Tablas de resumen y marcas de lectura                                      | Calcular al leer; medir primero                                                                                                                                                                                                                                                                                                                                                        | —                                                                                   | Panel con «terminadas en 7 días»                                               | No                                    |
-| P-113 | Posponible                      | Hora imposible (T1)                                                        | Mantener el rechazo con un mensaje mejor                                                                                                                                                                                                                                                                                                                                               | —                                                                                   | Igual que hoy                                                                  | No                                    |
-| P-115 | Posponible                      | kg en la carga autoseleccionada                                            | Excluir del tonelaje hasta que la prescripción tenga base (bloque 4)                                                                                                                                                                                                                                                                                                                   | Sin base, el total es desconocido                                                   | «Sin calcular» (por defecto)                                                   | No (no hay datos)                     |
-| P-119 | Posponible                      | Marcar si un valor se editó o se aceptó el propuesto                       | Valorarlo en los bloques 4 o 5                                                                                                                                                                                                                                                                                                                                                         | Mejoraría la lectura de «coincide» (§5.4)                                           | La limitación se muestra en pantalla                                           | No                                    |
+| Id    | Etapa                           | Qué hay que decidir                                                                                       | Recomendación                                                                                                                                                                                                                                                                                                                                                                          | Justificación                                                                       | Si no se decide                                                                          | ¿Bloquea?                             |
+| ----- | ------------------------------- | --------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- | ------------------------------------- |
+| P-108 | **Aprobada y hecha (ADR-35)**   | Hacer B3.0 (página de error y errores tipados) antes del análisis                                         | **Sí**, con el alcance del §14                                                                                                                                                                                                                                                                                                                                                         | El análisis añade pantallas que hoy caerían en un error genérico                    | B3.1 sin una página de error útil                                                        | **Sí** (es la propia B3.0)            |
+| P-116 | **Aprobada, opción a (ADR-35)** | Cómo aplicar la advertencia de P-95 sin la hora de cada pausa                                             | **a) Dos niveles con los datos actuales:** «advertencia» si el hueco supera en más de 30 min el total de pausas registradas (seguro que hubo más de 30 min sin pausa); «aviso» si el hueco pasa de 30 min pero las pausas registradas podrían explicarlo. b) Una sola advertencia para todo hueco de más de 30 min. c) Guardar la hora de cada pausa (cambio de esquema, más adelante) | a) es fiel a P-95 sin inventar dónde estuvo cada pausa ni dar falsas alarmas obvias | A8 no puede mostrar la duración conforme a P-95                                          | **Sí**                                |
+| P-117 | **Aprobada (ADR-35); P-121**    | Qué es la «prescripción original» de lo no registrado (P-92)                                              | **Sesión empezada:** la versión del último registro o, si no hay, la de inicio. **Sesión sin empezar:** la vigente al terminar el día previsto (zona de la aplicación)                                                                                                                                                                                                                 | Es la mejor evidencia guardada de lo que tenía la clienta; no reescribe la historia | Los totales prescritos «originales» de sesiones incompletas quedan indefinidos           | **Sí**                                |
+| P-120 | **Antes de B3.1**               | Valores iguales a lo propuesto (precargados) en el análisis                                               | **Opción A:** separar «distinto de lo propuesto» (seguro) de «igual a lo propuesto» (aceptado o escrito), con un recuento y una leyenda; sin «confirmado» ni «medido». La opción B (marcar los campos cambiados) cambia el esquema y queda para más adelante                                                                                                                           | El modelo no distingue precargado, confirmado y editado (§21.5)                     | El análisis presentaría como confirmadas mediciones que pueden ser la propuesta aceptada | **Sí**                                |
+| P-121 | **Antes de B3.1**               | P-117 en una sesión sin empezar cuyas versiones cambian la fecha prevista, o sin versión al final del día | «Referencia histórica no determinada» en los dos casos; zona: la de la aplicación, con la limitación en pantalla                                                                                                                                                                                                                                                                       | Contradicción de P-117 con el modelo (§21.6); no inventa versiones                  | No se puede mostrar la perspectiva original de esas sesiones                             | Sí, solo esa perspectiva              |
+| P-122 | **Antes de B3.1**               | P-116 con horas ajustadas y con varios huecos                                                             | «Huecos no evaluables» si alguna hora se ajustó; evaluar hueco a hueco, como se aprobó                                                                                                                                                                                                                                                                                                 | Evita una advertencia que sería efecto del ajuste (§21.7)                           | Advertencias posiblemente falsas                                                         | Sí, solo las advertencias de duración |
+| P-98  | Antes de B3.2                   | Volumen por patrón                                                                                        | Dos recuentos separados, sin pesos                                                                                                                                                                                                                                                                                                                                                     | Datos existentes; nada inventado                                                    | A9 sin patrones                                                                          | Sí, solo esa sección                  |
+| P-104 | Antes de B3.2                   | Lista de diferencias repetidas (N de M sesiones)                                                          | Lista descriptiva, sin alertas; N = 3 y M = 5 por defecto, ajustables en pantalla sin guardarlos                                                                                                                                                                                                                                                                                       | Ayuda a decidir sin automatizar                                                     | A9 sin esa sección                                                                       | Sí, solo esa sección                  |
+| P-106 | Antes de B3.2                   | Corregir «Carga», «Resultados» y «Progreso» según P-93 y el tonelaje 2.0.0                                | **Sí**                                                                                                                                                                                                                                                                                                                                                                                 | Hoy hay vistas con fechas distintas (§2.5.2)                                        | Cifras incoherentes entre vistas                                                         | Sí, solo esas vistas                  |
+| P-114 | Antes de B3.2                   | Duraciones con advertencia en medias y totales de periodo                                                 | **Mostrar el total con y sin esas sesiones**, con cuántas son                                                                                                                                                                                                                                                                                                                          | No asume nada (P-95) y no oculta                                                    | Medias de periodo sin regla                                                              | Sí, para las medias de duración       |
+| P-118 | Antes de B3.2                   | Fecha prevista para agrupar cuando una versión cambia la fecha                                            | Vista original, por la fecha de la versión original (P-117); vista vigente, por la vigente                                                                                                                                                                                                                                                                                             | Coherente con las dos perspectivas de P-92                                          | Agrupación ambigua cuando exista el bloque 5                                             | Sí, para la planificación por semanas |
+| Q2    | Antes de B3.3                   | Recoger el RPE de la sesión (y la valoración previa)                                                      | Sí, solo recogida y visualización                                                                                                                                                                                                                                                                                                                                                      | Sin datos no habrá tendencias para la 1C                                            | Sin B3.3                                                                                 | Sí (B3.3)                             |
+| P-48  | Antes de B3.3                   | Procedimiento: al terminar, 24 h y posibilidad de desactivarlo con motivo                                 | Como está, tras cotejarlo con el original                                                                                                                                                                                                                                                                                                                                              | `PROGRESSION_AND_AUTOREGULATION.md` §6.2                                            | Sin B3.3                                                                                 | Sí (B3.3)                             |
+| P-101 | Antes de B3.3                   | Alcance de B3.3                                                                                           | Recogida y carga interna, tras P-112                                                                                                                                                                                                                                                                                                                                                   | §7                                                                                  | Sin B3.3                                                                                 | Sí (B3.3)                             |
+| P-112 | Antes de B3.3                   | Verificar el original de Foster et al. (2001)                                                             | Conseguir el texto completo y cotejarlo                                                                                                                                                                                                                                                                                                                                                | Regla de `SCIENTIFIC_RIGOR.md`                                                      | B3.3 sigue bloqueada                                                                     | Sí (B3.3)                             |
+| Q6    | Antes de B3.3                   | Textos de las anclas de la escala                                                                         | Que los revises                                                                                                                                                                                                                                                                                                                                                                        | Traducción propia sin validar                                                       | Anclas provisionales marcadas                                                            | Sí (B3.3)                             |
+| P-96  | Posponible                      | Repeticiones «por lado» en el tonelaje                                                                    | Rep. como registradas y tonelaje × 2                                                                                                                                                                                                                                                                                                                                                   | `EFFORT_AND_LOAD.md` §3                                                             | Esas series, «sin calcular»                                                              | No (no hay datos)                     |
+| P-97  | Posponible                      | Carga «por lado»                                                                                          | Excluir del tonelaje                                                                                                                                                                                                                                                                                                                                                                   | Falta el peso de la barra                                                           | «Sin calcular» (por defecto)                                                             | No                                    |
+| P-99  | Posponible                      | Volumen por cualidad                                                                                      | Esperar a la intención en la prescripción (bloque 4)                                                                                                                                                                                                                                                                                                                                   | Las etiquetas no son la intención                                                   | Sin vista por cualidad                                                                   | No                                    |
+| P-100 | Posponible                      | Volumen por grupo muscular                                                                                | No en el bloque 3                                                                                                                                                                                                                                                                                                                                                                      | Sin taxonomía de músculos                                                           | —                                                                                        | No                                    |
+| P-102 | Posponible                      | Rótulo de `perceived_effort` en «Registro»                                                                | «Dato de demostración sin escala»                                                                                                                                                                                                                                                                                                                                                      | Es inventado                                                                        | Se sigue mostrando como hoy (el análisis no lo usa)                                      | No                                    |
+| P-105 | Posponible                      | Descanso real                                                                                             | Registrarlo en un bloque posterior si interesa                                                                                                                                                                                                                                                                                                                                         | El intervalo entre registros no es descanso                                         | Solo el prescrito, con «no registrado»                                                   | No                                    |
+| P-107 | Posponible                      | Copias automáticas y rotación                                                                             | §19.2                                                                                                                                                                                                                                                                                                                                                                                  | —                                                                                   | Copias solo manuales y antes de operaciones                                              | No                                    |
+| P-109 | Posponible                      | Correcciones justificadas y anotaciones                                                                   | Después del bloque 3 (§13)                                                                                                                                                                                                                                                                                                                                                             | —                                                                                   | Sin motivos ni anotaciones                                                               | No                                    |
+| P-110 | Posponible (antes de cerrar V1) | Windows, Safari e iOS                                                                                     | §19.4                                                                                                                                                                                                                                                                                                                                                                                  | —                                                                                   | Validación solo en Linux con Chromium                                                    | No                                    |
+| P-111 | Posponible                      | Tablas de resumen y marcas de lectura                                                                     | Calcular al leer; medir primero                                                                                                                                                                                                                                                                                                                                                        | —                                                                                   | Panel con «terminadas en 7 días»                                                         | No                                    |
+| P-113 | Posponible                      | Hora imposible (T1)                                                                                       | Mantener el rechazo con un mensaje mejor                                                                                                                                                                                                                                                                                                                                               | —                                                                                   | Igual que hoy                                                                            | No                                    |
+| P-115 | Posponible                      | kg en la carga autoseleccionada                                                                           | Excluir del tonelaje hasta que la prescripción tenga base (bloque 4)                                                                                                                                                                                                                                                                                                                   | Sin base, el total es desconocido                                                   | «Sin calcular» (por defecto)                                                             | No (no hay datos)                     |
+| P-119 | Posponible                      | Marcar si un valor se editó o se aceptó el propuesto                                                      | Valorarlo en los bloques 4 o 5                                                                                                                                                                                                                                                                                                                                                         | Mejoraría la lectura de «coincide» (§5.4)                                           | La limitación se muestra en pantalla                                                     | No                                    |
 
 ## 17. Revisión científica y metodológica
 
@@ -857,7 +866,7 @@ Recomendación: **mantenerlas todas**. Consecuencias principales:
 
 ### 19.3 Página de error de la base (A-15)
 
-Forma parte de B3.0 (§14).
+Hecha en B3.0 (§21.2).
 
 ### 19.4 Windows, Safari e iOS (P-110)
 
@@ -879,3 +888,292 @@ Forma parte de B3.0 (§14).
 | V4 (semana y plantillas)  | Vista semanal                                               | Entidad «bloque»                                                                                                               |
 | 1C (autorregulación)      | Nivel 2 por serie, tendencias de esfuerzo y carga interna   | Reglas supervisadas y registro de decisiones                                                                                   |
 | Fase 2 (PostgreSQL)       | Dominio puro y portable                                     | Rendimiento con varios usuarios                                                                                                |
+
+## 21. B3.0 · Implementación y auditorías (PROMPT 17)
+
+**Estado:** B3.0 implementada el 13 de noviembre de 2026 (PROMPT 17, ADR-34). B3.1 a B3.3 **no están autorizadas**. No hay cambios de esquema, migraciones ni dependencias.
+
+**Pruebas:** todo es Linux con Chromium (escritorio y Pixel 7 emulado). **Ni Windows, ni Safari, ni iOS, ni dispositivos reales.**
+
+### 21.1 Modelo de fallos de almacenamiento
+
+Cada fallo de la base se describe con cuatro datos (`src/contracts/storage.ts`):
+
+| Dato          | Valores                                                                                                                                                                                                                                                            | Cómo se obtiene                                                                                                                  |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| **Tipo**      | <ul><li>`busy`: ocupada;</li><li>`unavailable`: inaccesible;</li><li>`full`: disco lleno;</li><li>`readonly`: solo lectura;</li><li>`io`: error de E/S;</li><li>`corrupt`: integridad o migraciones incompatibles;</li><li>`unexpected`: cualquier otro.</li></ul> | El código de SQLite o el error propio de TrainPro (`storage-errors.ts`)                                                          |
+| **Operación** | `read` o `write`                                                                                                                                                                                                                                                   | Lectura: los repositorios de la petición (`withStorageFailures`). Escritura: la acción que escribe (`runWrite` o `writeOutcome`) |
+| **Resultado** | <ul><li>`none`: lectura, no cambió nada;</li><li>`not_applied`: escritura que SQLite rechazó antes de confirmarla (`busy`, `unavailable`, `full`, `readonly`);</li><li>`unknown`: E/S, base dañada o error inesperado al escribir.</li></ul>                       | `storageOutcome`                                                                                                                 |
+| **Categoría** | <ul><li>`recoverable`: ocupada;</li><li>`intervention`: inaccesible, llena, solo lectura o dañada;</li><li>`unknown`: resultado desconocido.</li></ul>                                                                                                             | `storageCategory`                                                                                                                |
+
+**Por qué `unknown` con E/S o base dañada al escribir** [D]: SQLite documenta que, con esos errores, la transacción puede haberse deshecho o no. Un fallo al sincronizar el disco después de escribir el registro de confirmación puede dejarla confirmada. TrainPro no afirma ni lo uno ni lo otro.
+
+**Cómo llega al navegador** [P]:
+
+- El servidor pone `digest = TRAINPRO_STORAGE:<tipo>:<operación>`.
+- Next.js respeta un `digest` ya puesto (`create-error-handler.js`), y la página de error lo lee. Comprobado en la compilación de producción con errores de página, de _layout_ y de acción.
+- El `digest` no contiene rutas, consultas ni datos. Ningún otro dato del error llega al navegador.
+- Un error que no es de almacenamiento llega con el `digest` opaco de Next.js y se ve la página genérica. El detalle queda en el registro del servidor.
+
+### 21.2 Página de error
+
+**Dónde aparece:**
+
+| Origen del error                                                  | Página                                                         |
+| ----------------------------------------------------------------- | -------------------------------------------------------------- |
+| Página o acción del entrenador                                    | `entrenador/error.tsx`, dentro del área: el menú sigue visible |
+| Página o acción de la clienta                                     | `cliente/error.tsx`                                            |
+| _Layout_ de cualquier área (que también lee la base) y la portada | `app/error.tsx`                                                |
+
+Las tres usan el mismo componente (`StorageErrorView`) con los textos de `storage-error-copy.ts`.
+
+**Lo que dice:**
+
+| Tipo          | Título                                                                   | Lectura                                                                                                | Escritura                                                                                                   | Categoría                                         |
+| ------------- | ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
+| `busy`        | «La base de datos está ocupada»                                          | «No se ha modificado nada.»                                                                            | «La operación no se ha realizado: no se ha guardado nada.»                                                  | «Se puede reintentar»                             |
+| `unavailable` | «No se puede acceder a los datos»                                        | Igual                                                                                                  | Igual                                                                                                       | «Necesita intervención»                           |
+| `full`        | «No queda espacio para los datos» / «… para guardar»                     | Igual                                                                                                  | Igual                                                                                                       | «Necesita intervención»                           |
+| `readonly`    | «La base de datos no admite cambios»                                     | Igual                                                                                                  | Igual                                                                                                       | «Necesita intervención»                           |
+| `io`          | «No se han podido leer los datos» / «No se han podido guardar los datos» | Igual                                                                                                  | «No se ha podido confirmar si la operación se completó. Comprueba si el cambio aparece antes de repetirlo.» | «Necesita intervención» / «Resultado desconocido» |
+| `corrupt`     | «La base de datos tiene un problema de integridad»                       | Igual                                                                                                  | Como `io`                                                                                                   | «Necesita intervención» / «Resultado desconocido» |
+| `unexpected`  | «No sabemos si se ha completado» (escritura)                             | —                                                                                                      | Como `io`                                                                                                   | «Resultado desconocido»                           |
+| Sin `digest`  | «Algo no ha ido bien»                                                    | «Ha ocurrido un error inesperado. Si estabas guardando algo, comprueba si aparece antes de repetirlo.» | —                                                                                                           | Ninguna                                           |
+
+**Qué hacer, según quién lo lee:**
+
+- **Entrenador:** la acción concreta, por ejemplo:
+  - ocupada: «otro programa está usando la base…; espera unos segundos»;
+  - inaccesible: «reinicia el servidor de TrainPro; `pnpm db:status` indica qué proceso la usa»;
+  - dañada: «revisa la base con `pnpm db:status` y, si hace falta, restaura una copia con `pnpm db:restore`. TrainPro no restaura nada automáticamente».
+- **Clienta y portada:** sin comandos, rutas ni palabras técnicas. Se le pide que avise a su entrenador (o a «quien administra TrainPro»). Se añade: «Lo que hayas registrado y esté pendiente de envío sigue guardado en este dispositivo».
+
+**Garantías:**
+
+| Garantía                                                                                                                                                                                                                     | Marca                                             |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
+| Ningún texto afirma que algo se guardó (los 14 casos × 3 públicos)                                                                                                                                                           | [P] unitaria                                      |
+| Sin rutas, consultas, trazas, nombre del espacio de datos ni comandos para la clienta                                                                                                                                        | [P] unitaria y E2E                                |
+| El botón solo **vuelve a leer** la página (`retry` de Next.js 16): nunca repite una escritura. Se llama «Volver a intentarlo» (lectura), «Volver a la página» (escritura no realizada) o «Comprobar el estado» (desconocido) | [P] E2E (lectura y escritura) · [I] (desconocido) |
+| Ningún reintento automático de escrituras ni restauración automática                                                                                                                                                         | [I]                                               |
+| Accesible: región con título (`h1`), resultado con `role="alert"`, axe sin problemas graves                                                                                                                                  | [P] E2E escritorio y Pixel 7                      |
+| Cabe en el móvil sin desplazamiento horizontal                                                                                                                                                                               | [P] E2E Pixel 7 (clienta)                         |
+
+### 21.3 Operaciones con SQLite y cómo fallan ahora
+
+| Operación                                             | Antes de B3.0        | Ahora                                                                                                                         | ¿Repetir es seguro?                                                                                                          | Marca                                                                                              |
+| ----------------------------------------------------- | -------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| Leer cualquier página (entrenador, clienta y portada) | Página genérica      | Página tipada de lectura                                                                                                      | Sí: solo lee                                                                                                                 | [P] E2E inaccesible (entrenador y clienta) y unitaria                                              |
+| «Entrar como…»                                        | Página genérica      | Página tipada de lectura                                                                                                      | Sí: solo lee y pone la cookie                                                                                                | [I]                                                                                                |
+| Crear sesión                                          | Página genérica      | Aviso en el formulario, **conservando lo escrito**: ocupada, inaccesible o «no se ha podido confirmar si se ha creado»        | Sí: el formulario lleva el identificador de la sesión. Si ya se creó, abre la misma                                          | [P] E2E (ocupada; una sola sesión) e integración (bloqueo real; dos reintentos, una sesión)        |
+| Guardar y publicar el borrador (constructor)          | Ya tipado (ADR-29)   | Igual. **Corregido:** el `safely` anterior capturaba también la redirección de Next.js                                        | Sí: revisión esperada y publicación idempotente («ya publicada»)                                                             | [P] unitaria (la redirección pasa) y E2E existentes                                                |
+| Eliminar un borrador                                  | Página genérica      | Página tipada de escritura                                                                                                    | Sí: si ya se eliminó, la sesión no existe y no pasa nada                                                                     | [P] E2E (ocupada: nada aplicado, se repite y se elimina una vez)                                   |
+| Mover un borrador                                     | Página genérica      | Página tipada de escritura                                                                                                    | Tras «no realizada», sí. **Tras «desconocido», no a ciegas:** otro movimiento cambiaría el orden. La página pide comprobarlo | [I]                                                                                                |
+| Hacer una copia                                       | Página genérica      | Página tipada de escritura                                                                                                    | Sí: una copia más no cambia los datos                                                                                        | [I]                                                                                                |
+| Restablecer los datos demo                            | Página genérica      | Página tipada de escritura                                                                                                    | Antes guarda una copia. Tras «desconocido», la página pide comprobar                                                         | [I]                                                                                                |
+| Comandos de la clienta (API)                          | Ya tipado (ADR-29)   | Igual                                                                                                                         | Sí: mismo `commandId` → «ya aplicado»                                                                                        | [P] E2E móvil (ocupada: 503, nada aplicado, después una vez y «ya aplicado») y `execution.test.ts` |
+| Estado de la sesión (API)                             | `500` genérico       | `503 storage_busy`/`storage_unavailable` con `Retry-After`, `500 storage_error` o `server_error`. Sin `state`, con `no-store` | Sí: solo lee                                                                                                                 | [P] E2E móvil (inaccesible: 503, `Retry-After: 10`, sin datos)                                     |
+| Constructor: guardado automático y copia local        | Sin cambios (ADR-26) | Sin cambios                                                                                                                   | Sí                                                                                                                           | [P] E2E existentes                                                                                 |
+
+**Lo que no se ha probado de extremo a extremo** [N]:
+
+- disco lleno, solo lectura, E/S y base dañada: solo la clasificación y los textos (unitarias);
+- el resultado desconocido: no hay forma fiable de provocarlo en una prueba sin falsear SQLite.
+
+### 21.4 Generadores de escenarios (solo pruebas)
+
+**Qué son:** `src/server/services/analysis-scenarios.ts`, con `buildAnalysisScenarios({ setClock })`.
+
+- **Por los caminos reales:** crear, publicar, cambiar de versión y los comandos de la clienta. Sin SQL directo, así que cumplen las mismas reglas que los datos de verdad [P].
+- **Deterministas:** identificadores, fechas y horas fijos, y el reloj del servidor controlado por la prueba. Dos construcciones dan los mismos datos [P].
+- **Cada escenario dice qué contiene** (`facts`) y qué criterios cubre (`covers`). Una prueba comprueba que la base coincide [P].
+- **Solo en memoria o en el directorio temporal:** con cualquier otra ruta, se niega [P].
+- **No están en la semilla.** Nunca tocan una base real ni los datos de nadie.
+- **Procedencia:** sus filas dicen `self_reported` porque recorren el camino real del registro. **No son datos observados.** Por eso solo existen en bases de prueba.
+
+**Los 16 casos pedidos:**
+
+| Caso                                        | Escenario                                                                                                                                                                                       |
+| ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Sesión completamente realizada              | `completa`                                                                                                                                                                                      |
+| Sesión parcialmente realizada               | `parcial`: una serie «no realizada», otra sin registrar, cierre anticipado confirmado y comentario                                                                                              |
+| Sesión sin empezar                          | `sin-empezar`                                                                                                                                                                                   |
+| Varias versiones                            | `versiones`: v1 en las series 1 y 2, v2 a media sesión en la 3, y v3 después de terminar, con motivo                                                                                            |
+| Repeticiones distintas de las previstas     | `repeticiones`: 10, 9 y 11 frente a 10                                                                                                                                                          |
+| Dentro y fuera de rangos                    | `rangos`: 9 dentro, 7 y 11 fuera de 8–10, con RIR 1–3                                                                                                                                           |
+| Carga coincidente y distinta                | `cargas`: 40, 37 y 42,5 frente a 40 kg                                                                                                                                                          |
+| RIR y RPE ausentes                          | `esfuerzo-ausente`                                                                                                                                                                              |
+| Dos sesiones el mismo día                   | `repeticiones` y `rangos` (13 nov, mañana y tarde)                                                                                                                                              |
+| Hecha en otra fecha                         | `trasladada`: prevista el 16 y hecha el 17                                                                                                                                                      |
+| A través de la medianoche                   | `medianoche`: 23:50, 23:58 y 00:03 (Madrid)                                                                                                                                                     |
+| Con pausas                                  | `pausas`: 20 min                                                                                                                                                                                |
+| Duración posiblemente poco fiable           | <ul><li>`hueco-advertencia`: 9 h 05 min sin pausas;</li><li>`hueco-aviso`: 45 min con 40 min de pausas.</li></ul>                                                                               |
+| Valores precargados sin confirmar           | `valores-propuestos`: sin tocar, solo con el RIR añadido, y editado                                                                                                                             |
+| Modalidades de carga                        | `modalidades`: peso corporal, lastre, asistida (también sin dato), banda, máquina, «otra», por implemento, por lado, repeticiones por lado, autoseleccionada, rango externo, isométrico y paseo |
+| Entrenador y clienta con permisos distintos | Contextos `trainer`, `otherTrainer`, `lucia` y `marta`. Otro entrenador y otra clienta no ven nada [P]                                                                                          |
+
+Además, `en-curso` (empezada y sin terminar) y `semana-53` (empezada a las 00:10 del 1 de enero de 2027: semana ISO 2026-W53).
+
+### 21.5 Auditoría de los valores precargados
+
+**Cuándo un valor se considera registrado** [I]:
+
+1. El formulario de la serie aparece relleno con `defaultPerformed` de la versión que hay en pantalla:
+
+   | Prescripción            | Valor que aparece                    |
+   | ----------------------- | ------------------------------------ |
+   | Repeticiones fijas      | Las prescritas                       |
+   | Rango                   | **El mínimo**                        |
+   | Segundos o metros       | Los prescritos                       |
+   | Carga externa           | Los kg prescritos (rango: el mínimo) |
+   | Lastre                  | Los kg añadidos                      |
+   | Asistida                | La asistencia (o vacío)              |
+   | Banda, máquina u «otra» | La descripción prescrita             |
+   | Peso corporal           | Nada                                 |
+   | «Hecha»                 | Sí                                   |
+   | **RIR y RPE**           | **Vacíos: nunca se rellenan**        |
+
+2. **El único acto explícito es pulsar «Serie hecha».** Confirma la serie entera tal como está en pantalla. No hay confirmación campo a campo.
+3. El comando se guarda en el móvil y se envía. **Queda registrado cuando el servidor lo confirma** (fila de `set_log`). Hasta entonces es «pendiente de envío».
+4. **Una corrección** se rellena con el registro anterior, no con lo prescrito.
+
+**Qué procedencia se conserva** [P]:
+
+- `origin = self_reported`, `recorded_by = client`;
+- la versión de la serie;
+- la hora del móvil, su zona, la de llegada y el ajuste del reloj (si lo hubo).
+
+**Nada indica qué campos se tocaron.**
+
+**¿Distingue el modelo «precargado», «confirmado» y «editado»?** **No** [P]. Una serie aceptada sin tocar y otra escrita con los mismos valores son idénticas en la base. Solo hay dos señales seguras:
+
+- **RIR o RPE presentes:** los escribió la clienta, porque nunca se rellenan [I].
+- **Un valor distinto de lo propuesto:** lo cambió la clienta. Es seguro porque la propuesta se recalcula con la versión de la serie [I].
+
+**Un valor igual a lo propuesto no se sabe si se aceptó o se escribió.** Esto incluye las series «dentro del rango» con el mínimo.
+
+**Consecuencia para B3.1:** una diferencia 0 o «dentro del rango» **no demuestra** que la clienta revisara ese valor. Sin tratarlo, el análisis mostraría como confirmadas mediciones que podrían ser solo la propuesta aceptada.
+
+**Propuesta (P-120):**
+
+- **Opción A, recomendada para B3.1, sin cambiar el esquema:**
+  1. Cada valor se clasifica como «distinto de lo propuesto» (seguro: lo escribió la clienta) o «igual a lo propuesto» (aceptado o escrito, no se distingue).
+  2. A8 cuenta aparte «N de M series iguales a lo propuesto». Así el entrenador ve cuánta coincidencia puede ser solo la propuesta.
+  3. Leyenda fija: «La app propone lo prescrito y la clienta lo cambia si hace falta. Un valor igual al propuesto puede haberse aceptado sin revisarlo».
+  4. No se usan «confirmado» ni «medido».
+  5. RIR y RPE, «sin registrar» cuando faltan.
+- **Opción B, más adelante; necesita tu aprobación porque cambia el esquema:**
+  1. El móvil envía qué campos se cambiaron respecto a lo propuesto.
+  2. El servidor lo comprueba: un campo «sin cambiar» tiene que ser igual a lo propuesto.
+  3. Se guarda en una columna nueva de `set_log` (migración `004`). Las filas anteriores quedan «sin información».
+
+  Ni siquiera B distingue «aceptado tras mirarlo» de «aceptado sin mirar». Eso solo lo haría una confirmación de cada valor, que añade fricción y no recomiendo.
+
+**Bloqueo:** **B3.1 está bloqueada hasta decidir P-120.**
+
+- Con la opción A, puede empezar.
+- Si exiges distinguir mediciones confirmadas, depende de la opción B, que cambia el esquema.
+
+### 21.6 Auditoría de las versiones históricas
+
+**Cómo se relacionan** [I]:
+
+| Elemento                       | Dónde                                                                               | Qué guarda                                                                                                                                      |
+| ------------------------------ | ----------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| Sesión                         | `session`                                                                           | **Solo los valores vigentes:** `planned_date`, `day_order`, `label`, `current_version`. Cada publicación los sobrescribe                        |
+| Versión                        | `session_version` (no se modifica)                                                  | Número, contenido completo (con **su** fecha prevista), `published_at` (reloj del servidor), autor, motivo y estado de la ejecución al publicar |
+| Fecha prevista de cada versión | `session_version.content.plannedDate`                                               | **Un cambio publicado puede moverla** [P]. Hoy ninguna pantalla lo permite (bloque 5), pero el servicio de versiones sí                         |
+| Inicio de la ejecución         | `session_log.started_version`, `started_at` (móvil), `start_received_at` (servidor) | Desde la migración `002`, la versión que tenía la clienta al empezar, tal como la envía su móvil                                                |
+| Registro de serie              | `set_log.version_number`                                                            | La versión que tenía la clienta al registrar esa serie (desde la `001`)                                                                         |
+| Prescripción vigente           | `current_version`                                                                   | La última publicada                                                                                                                             |
+| Lo que vio la clienta          | —                                                                                   | **No se guarda.** Abrir la versión nueva («Ver la versión nueva») no deja rastro si después no registra nada                                    |
+
+**Hoy, en la aplicación, solo puede haber una versión por sesión:** no hay ninguna pantalla para publicar cambios. Las versiones 2 y siguientes solo las crean las pruebas y los generadores. B3.1 tiene que tratarlas igualmente.
+
+**Casos reconstruibles:**
+
+| Caso                                                   | Referencia «original»                                    | Marca                                     |
+| ------------------------------------------------------ | -------------------------------------------------------- | ----------------------------------------- |
+| Serie registrada                                       | Su `version_number`                                      | [P] (`versiones`: 1, 1, 2)                |
+| Sesión empezada desde la `002`, sin series registradas | `started_version`                                        | [P] (`versiones`) · [I] (viene del móvil) |
+| Serie sin registrar en una sesión con registros        | La versión del último registro (regla aprobada de P-117) | [I]                                       |
+| Fecha prevista de cada versión                         | La de su contenido, nunca la de `session`                | [P]                                       |
+| Orden y momento de las publicaciones                   | `number` y `published_at`                                | [I]                                       |
+| Estado de la ejecución al publicar                     | `execution_state`                                        | [P] (v3 «terminada», con motivo)          |
+| Prescripción vigente                                   | `current_version`                                        | [I]                                       |
+
+**Casos ambiguos:**
+
+1. **Serie sin registrar tras adoptar una versión nueva.** Si la clienta abrió la versión nueva y no registró nada más, la regla da la versión de la última serie, que puede no ser la que vio. La pantalla debe decir de dónde sale: «según la versión de la última serie registrada».
+2. **El «último» registro:** se ordena por la hora del móvil y, si empatan, por la de llegada. Si un cambio de reloj hace que los dos órdenes den versiones distintas, es ambiguo.
+3. **Sesión sin empezar cuyas versiones tienen fechas previstas distintas:** «el final del día previsto» depende de qué versión se mire. **Contradicción con P-117 (P-121).**
+4. **La zona del «final del día»:** `TRAINPRO_TIME_ZONE` es configuración y no se guarda su historia. Si cambiara, una versión publicada cerca de la medianoche podría cambiar de lado.
+
+**Casos imposibles de reconstruir:**
+
+1. **Lo que vio la clienta en lo no registrado:** no se guarda.
+2. **Versión de inicio de las ejecuciones anteriores a la migración `002`:** se rellenó al migrar con una deducción, «la última publicada antes del inicio, o la primera». Compara el reloj del servidor con el del móvil, así que **no es una observación**.
+   - Se pueden reconocer: `start_received_at` es anterior al `applied_at` de la migración 2 en `schema_migrations`. Los dos son del reloj del servidor [I].
+   - Solo existen en bases locales de demostración anteriores al bloque 2.
+3. **Sesión publicada por primera vez después de su día previsto:** al final de ese día no había ninguna versión vigente. La propuesta anterior («la primera») sería una suposición.
+
+**Comportamiento seguro recomendado para B3.1:**
+
+- La perspectiva «original» usa solo los casos reconstruibles. En los demás muestra «**Referencia histórica no determinada**», con el motivo:
+  - no se registró ninguna serie;
+  - la versión de inicio es deducida (anterior al bloque 2);
+  - las versiones tienen fechas distintas;
+  - no había versión el día previsto.
+- **Los totales de la perspectiva original** dicen «X de Y series con referencia determinada». Nunca completan lo que falta.
+- **La perspectiva vigente** siempre está disponible.
+- **Nunca** se usa `session.planned_date` como fecha de una versión anterior.
+- **Nunca** se compara `published_at` (servidor) con horas del móvil para deducir una versión.
+- Cada referencia dice de dónde sale: versión de la serie, de inicio o de la última serie registrada.
+
+**Lo que hay que decidir (P-121):** qué hacer con una sesión sin empezar cuando las versiones cambian la fecha prevista, o cuando no había versión al final del día.
+
+- **Recomendación:** «no determinada» en los dos casos. Es lo que pide tu indicación: no inventar versiones.
+- **Alternativa:** la versión vigente al final de **su propio** día previsto, cuando solo una cumple esa condición.
+- **La zona:** la de la aplicación, con la limitación del punto 4 escrita en pantalla.
+
+### 21.7 P-116: comprobación de los datos
+
+**Los huecos se pueden detectar de forma fiable con lo que se guarda** [P]:
+
+- **Horas de actividad:**
+  - inicio (`started_at`);
+  - cada serie (`performed_at`, también las correcciones, que solo caben antes de terminar);
+  - fin (`finished_at`).
+- **De qué reloj son:** todas del móvil, salvo que se ajustaran (ADR-28). El ajuste se guarda (`clock_adjustment` y los de inicio y fin; las filas anteriores llevan `clock_adjusted = 1`).
+- **Lo que dan los generadores:**
+  - `hueco-advertencia`: el hueco mayor es de 545 min, con 0 min de pausas y sin ajustes;
+  - `hueco-aviso`: 45 min, con 40 min de pausas.
+
+**Lo que no se puede saber: dónde ocurrió cada pausa** [P]:
+
+- `session_log` solo tiene el total (`paused_seconds`) y la pausa abierta (`paused_at`), que se borra al reanudar.
+- Los comandos de pausa guardan el tipo y la **hora de llegada**, no la del móvil. Con la cola sin conexión, esa hora puede llegar mucho después.
+
+**Conclusión:** los dos niveles aprobados se pueden aplicar **sin heurística**, hueco a hueco:
+
+| Nivel           | Condición                                | Qué se puede afirmar                                                                         |
+| --------------- | ---------------------------------------- | -------------------------------------------------------------------------------------------- |
+| **Advertencia** | Hueco − pausas registradas > 30 min      | Hubo más de 30 min sin pausa registrada en ese hueco, estuvieran donde estuvieran las pausas |
+| **Aviso**       | Hueco > 30 min y hueco − pausas ≤ 30 min | Las pausas registradas podrían explicarlo. **No se sabe dónde ocurrieron**                   |
+
+**Dos condiciones que propongo (P-122):**
+
+1. **Con alguna hora ajustada, «huecos no evaluables».** El hueco podría ser un efecto del ajuste.
+2. **Evaluar hueco a hueco, como se aprobó.** Con varios huecos que comparten el mismo total de pausas, a veces se podría afirmar más combinándolos. El aviso no afirma nada de más: es conservador.
+
+**Otra limitación** [I]: la pausa y la reanudación usan las reglas T de la hora, pero su ajuste no se guarda, porque no hay columna. Si el reloj del móvil era imposible durante una pausa, el total podría incluirla ajustada sin rastro. Es raro: el mismo reloj suele ajustar también las series.
+
+**No se ha implementado nada de P-116 ni de P-117** [N]: son reglas de B3.1.
+
+### 21.8 Riesgos pendientes
+
+- **Lo no probado de extremo a extremo:** disco lleno, solo lectura, E/S, base dañada y el resultado desconocido (§21.3).
+- **Plataformas:** solo Linux con Chromium. Windows, Safari, iOS y Android reales siguen sin probar (P-110).
+- **Una pantalla nueva que lea sin pasar por `requestEnvironment`** no quedaría tipada. Hoy todas pasan por ahí [I].
+- **Lo pendiente vive en el navegador** (Q4): la página de error lo dice, pero se pierde si se borran los datos del sitio.
+- **`analysis-scenarios.ts`** está en `src/server/services` (lo exige el uso de los servicios reales) y no lo importa ninguna pantalla [I]. Ninguna regla de capas lo impide.

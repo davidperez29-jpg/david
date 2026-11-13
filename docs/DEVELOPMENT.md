@@ -71,6 +71,14 @@ Se validan al arrancar (`src/server/env.ts`): un valor inválido detiene la apli
 - **Restaurar:** para el servidor y ejecuta `pnpm db:restore <nombre o ruta>`. Se niega si otro proceso tiene la base (y dice cuál). Verifica la copia; guarda el estado actual (también lo del WAL) como `antes-de-restaurar`; construye la base nueva en `trainpro.sqlite.restaurando`, la valida y la sustituye con un `rename` atómico; solo la da por terminada si la verifica. Un diario (`trainpro.sqlite.restauracion.json`) permite terminarla o anularla si se interrumpe.
 - **Restauración interrumpida:** `pnpm db:recover`, o simplemente arrancar el servidor, que lo hace antes de abrir la base. Nunca deja una base a medias: anula, termina o vuelve a la copia previa (`AUDIT_BLOCK1.md` §15.2).
 - **Base ocupada por una herramienta ajena** (por ejemplo, un visor de SQLite con una escritura abierta): el servidor espera como mucho 1 s y responde un error recuperable (`storage_busy`); el móvil y el constructor lo reintentan.
+- **Errores de la base en pantalla** (B3.0, ADR-34): una página dice qué ha pasado, si la operación se hizo, no se hizo o no se sabe, y qué hacer.
+  - Al entrenador le indica `pnpm db:status`, reiniciar o `pnpm db:restore`.
+  - A la clienta le dice que avise a su entrenador.
+  - Su botón solo vuelve a leer la página: nunca repite una escritura ni restaura nada.
+  - Para verla, bloquea la base desde otro programa (`BEGIN IMMEDIATE`) o mueve el archivo con el servidor en marcha. Así lo hacen `e2e/storage-errors.spec.ts` y `e2e/client-storage-errors.spec.ts`.
+- **Escenarios de análisis** (`src/server/services/analysis-scenarios.ts`): solo para pruebas.
+  - Crean en memoria o en el directorio temporal 17 sesiones deterministas por los servicios reales. Con otra ruta, se niegan.
+  - No son datos observados, ni la semilla demo, y nunca se usan en una base real (`BLOCK3_SPEC.md` §21.4).
 - **Estado:** `pnpm db:status` muestra la ubicación, las migraciones, la fecha de la semilla, los recuentos, la integridad, qué proceso usa la base, si hay una restauración interrumpida y las copias.
 - **Empezar de cero:** «Restablecer datos demo» en Configuración: guarda una copia y vuelve a sembrar con la fecha de hoy.
 - **Migraciones:** solo hacia delante. Una nueva va en `src/server/db/migrations/` y se añade a `MIGRATIONS` en `migrate.ts`. Nunca se edita una ya aplicada: el arranque falla si su suma de comprobación cambia.

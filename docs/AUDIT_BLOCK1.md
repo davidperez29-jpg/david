@@ -518,31 +518,31 @@ Lo anterior de este documento (§1–§14) se conserva tal cual, como registro d
 
 ### 15.1 Estado de cada problema
 
-| Id   | Estado                                                                                                       | Evidencia                                  | Commit                       |
-| ---- | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------ | ---------------------------- |
-| A-01 | Corregido                                                                                                    | P                                          | `099f0e7`                    |
-| A-02 | Corregido                                                                                                    | P                                          | `099f0e7`                    |
-| A-03 | Corregido                                                                                                    | P                                          | `8067eff`, pruebas `07dd83a` |
-| A-04 | Corregido                                                                                                    | P                                          | `8067eff`, `099f0e7`         |
-| A-05 | Corregido                                                                                                    | P                                          | `e61be28`                    |
-| A-06 | Corregido para enlaces internos, recargar y cerrar; el botón «atrás» del navegador lo protege la copia local | P (enlaces, recarga, cierre) · I («atrás») | `e61be28`                    |
-| A-07 | Corregido                                                                                                    | P                                          | `e61be28`                    |
-| A-08 | Corregido                                                                                                    | P                                          | `7d9d168`                    |
-| A-09 | Corregido                                                                                                    | P                                          | `7d9d168`                    |
-| A-10 | Corregido (reglas T1–T4)                                                                                     | P                                          | `7d9d168`                    |
-| A-11 | Acotado a 1 s con error controlado; el controlador sigue siendo síncrono                                     | P                                          | `7d9d168`                    |
-| A-12 | Corregido                                                                                                    | P                                          | `8067eff`, pruebas `07dd83a` |
-| A-13 | Corregido                                                                                                    | P                                          | `a990b2b`                    |
-| A-14 | Corregido (migración `003`)                                                                                  | P                                          | `7d9d168`                    |
-| A-15 | Sin cambios (fuera del alcance de este encargo)                                                              | N                                          | —                            |
-| A-16 | Corregido: copias y copia previa con permisos `600`                                                          | P                                          | `099f0e7`                    |
-| A-17 | Corregido: las copias quedan sin `-wal` ni `-shm`                                                            | P                                          | `099f0e7`                    |
-| A-18 | En parte: cada copia se sincroniza a disco; sin copias programadas ni rotación                               | I (`fsync`) · N (resto) · ?                | `099f0e7`                    |
-| A-19 | Aceptado: la aplicación valida la prescripción (probado); la base no                                         | P                                          | —                            |
-| A-20 | Corregido: si la base o su bloqueo se borran por fuera, deja de escribir                                     | P                                          | `8067eff`                    |
-| A-21 | En parte: corregidas las afirmaciones que estas correcciones dejaban obsoletas                               | I                                          | este commit de documentación |
-| A-22 | Sin cambios (no se cambian versiones)                                                                        | P                                          | —                            |
-| A-23 | Pendiente: Windows sigue sin ejecutarse en Windows                                                           | N                                          | —                            |
+| Id   | Estado                                                                                                                                             | Evidencia                                  | Commit                       |
+| ---- | -------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ | ---------------------------- |
+| A-01 | Corregido                                                                                                                                          | P                                          | `099f0e7`                    |
+| A-02 | Corregido                                                                                                                                          | P                                          | `099f0e7`                    |
+| A-03 | Corregido                                                                                                                                          | P                                          | `8067eff`, pruebas `07dd83a` |
+| A-04 | Corregido                                                                                                                                          | P                                          | `8067eff`, `099f0e7`         |
+| A-05 | Corregido                                                                                                                                          | P                                          | `e61be28`                    |
+| A-06 | Corregido para enlaces internos, recargar y cerrar; el botón «atrás» del navegador lo protege la copia local                                       | P (enlaces, recarga, cierre) · I («atrás») | `e61be28`                    |
+| A-07 | Corregido                                                                                                                                          | P                                          | `e61be28`                    |
+| A-08 | Corregido                                                                                                                                          | P                                          | `7d9d168`                    |
+| A-09 | Corregido                                                                                                                                          | P                                          | `7d9d168`                    |
+| A-10 | Corregido (reglas T1–T4)                                                                                                                           | P                                          | `7d9d168`                    |
+| A-11 | Acotado a 1 s con error controlado; el controlador sigue siendo síncrono. Residual (acciones del entrenador y estado de la API): corregido en B3.0 | P                                          | `7d9d168`, B3.0 (PROMPT 17)  |
+| A-12 | Corregido                                                                                                                                          | P                                          | `8067eff`, pruebas `07dd83a` |
+| A-13 | Corregido                                                                                                                                          | P                                          | `a990b2b`                    |
+| A-14 | Corregido (migración `003`)                                                                                                                        | P                                          | `7d9d168`                    |
+| A-15 | Corregido en B3.0: página de error tipada (ADR-34)                                                                                                 | P (ocupada, inaccesible) · I (resto)       | B3.0 (PROMPT 17)             |
+| A-16 | Corregido: copias y copia previa con permisos `600`                                                                                                | P                                          | `099f0e7`                    |
+| A-17 | Corregido: las copias quedan sin `-wal` ni `-shm`                                                                                                  | P                                          | `099f0e7`                    |
+| A-18 | En parte: cada copia se sincroniza a disco; sin copias programadas ni rotación                                                                     | I (`fsync`) · N (resto) · ?                | `099f0e7`                    |
+| A-19 | Aceptado: la aplicación valida la prescripción (probado); la base no                                                                               | P                                          | —                            |
+| A-20 | Corregido: si la base o su bloqueo se borran por fuera, deja de escribir                                                                           | P                                          | `8067eff`                    |
+| A-21 | En parte: corregidas las afirmaciones que estas correcciones dejaban obsoletas                                                                     | I                                          | este commit de documentación |
+| A-22 | Sin cambios (no se cambian versiones)                                                                                                              | P                                          | —                            |
+| A-23 | Pendiente: Windows sigue sin ejecutarse en Windows                                                                                                 | N                                          | —                            |
 
 ### 15.2 Restauración segura y recuperable (A-01, A-02)
 
@@ -833,11 +833,13 @@ La definición de «cumplimiento» que pedía el §14.6 está ahora propuesta en
 
 **Actualización (13 nov 2026, PROMPT 16):** P-90 a P-95 están **aprobadas** (ADR-33). La revisión de coherencia del bloque 3 encontró y corrigió en la documentación que `EXECUTION.md` §2 situaba la fecha de ejecución en la zona de la aplicación, cuando el código usa la del dispositivo (`BLOCK3_SPEC.md` §18). No se ha cambiado código.
 
+**Actualización (13 nov 2026, PROMPT 17):** B3.0 corrige A-15 y el residual de A-11 (ADR-34, `BLOCK3_SPEC.md` §21). La auditoría de B3.0 encontró que el `safely` de las acciones del constructor capturaba también la redirección de Next.js; corregido y probado.
+
 ### 15.15 Riesgos que permanecen
 
 1. **Windows sin ejecutar en Windows** (A-23): el bloqueo (`LockFileEx`), `rename` y la ausencia de `fsync` del directorio están documentados, no probados.
 2. **Controlador síncrono** (A-11): adecuado para una persona en un equipo, no para varios usuarios.
 3. **Lo pendiente vive en el navegador:** se pierde si se borran los datos del sitio antes de enviarlo (Q4, `EXECUTION.md` §11).
 4. **`local-demo` no es autenticación:** solo para datos ficticios.
-5. **Página de error de la base** (A-15) sin hacer.
+5. ~~**Página de error de la base** (A-15) sin hacer.~~ Hecha en B3.0 (ADR-34). Disco lleno, solo lectura, E/S y base dañada solo están probados en la clasificación y los textos.
 6. **Historial de Git:** `8067eff` no compila por sí solo (usa la restauración de `099f0e7`). No se ha reescrito el historial.

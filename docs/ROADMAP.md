@@ -30,15 +30,17 @@ Fases definidas en la especificación maestra (`MASTER_SPEC.md`). Cada fase empi
 >   - `local-demo` solo en esta máquina;
 >   - procedencia guardada;
 >   - pruebas deterministas.
-> - **Bloque 3 (análisis): en diseño, implementación no autorizada.**
->   - Especificación consolidada en `BLOCK3_SPEC.md`, versión 2 (13 nov 2026, PROMPT 16).
->   - P-90 a P-95 **aprobadas** (ADR-33).
->   - Plan en cuatro etapas (B3.0 a B3.3), cada una pendiente de tu autorización.
->   - Para B3.0 y B3.1 faltan P-108, P-116 y P-117.
->   - Los porcentajes de avance de abajo **no cambian**: la documentación terminada no es funcionalidad.
+> - **Bloque 3 (análisis): B3.0 hecha; B3.1 a B3.3 no autorizadas.**
+>   - Especificación consolidada en `BLOCK3_SPEC.md`, versión 3 (13 nov 2026, PROMPT 17).
+>   - **Aprobadas:** P-90 a P-95 (ADR-33); P-108, P-116 y P-117 (ADR-35).
+>   - **B3.0** (PROMPT 17, ADR-34):
+>     - página de error de la base;
+>     - errores tipados en todas las operaciones con la base;
+>     - escenarios de prueba deterministas.
+>   - Antes de B3.1 faltan P-120, P-121 y P-122.
+>   - Los porcentajes de avance de abajo **no cambian**: B3.0 es robustez y preparación, no una funcionalidad de la matriz. Mejora la calidad: A-15 y el residual de A-11 quedan resueltos.
 > - **Pendiente fuera de este bloque:**
 >   - verificación en Windows (A-23);
->   - página de error de la base (A-15);
 >   - copias programadas y rotación (A-18, a decidir).
 
 Algunas pantallas de fases posteriores ya existen como **propuesta visual con datos ficticios**. Su lógica de dominio está probada, pero no tienen persistencia ni edición. `PHASE1_REPORT.md` detalla qué funciona de verdad y qué no.
@@ -147,12 +149,12 @@ El bloque 5 aún no aporta nada visible al entrenador: sin su interfaz, no puede
 
 ### 4. Calidad, validación y despliegue (aparte)
 
-| Dimensión                              | Estado                                                                                                                                                                                                                                                    | Medida                                                   |
-| -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
-| **Calidad técnica** de lo implementado | <ul><li>290 pruebas unitarias y de integración y 135 E2E, repetibles.</li><li>Auditoría con sus defectos altos corregidos y probados.</li><li>Pendientes: A-15, A-18, el residual de A-11 (`BLOCK3_SPEC.md` §2.6) y la verificación en Windows.</li></ul> | Alta para lo que existe [P]; no se expresa en porcentaje |
-| **Validación en plataformas reales**   | <ul><li>Linux con Chromium (escritorio y Pixel 7 emulado) [P].</li><li>Windows, Safari en macOS, iOS y Android reales: sin probar (`BLOCK3_SPEC.md` §17.4).</li></ul>                                                                                     | 1 de 5 plataformas objetivo (**20 %**)                   |
-| **Validación con personas**            | Sin revisiones de uso; revisiones Q5 y textos Q6 pendientes                                                                                                                                                                                               | **0 %**                                                  |
-| **Despliegue**                         | No autorizado (Fase 10)                                                                                                                                                                                                                                   | **0 %**                                                  |
+| Dimensión                              | Estado                                                                                                                                                                                                                                                        | Medida                                                   |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| **Calidad técnica** de lo implementado | <ul><li>330 pruebas unitarias y de integración y 140 E2E, repetibles.</li><li>Auditoría con sus defectos altos corregidos y probados.</li><li>A-15 y el residual de A-11, resueltos en B3.0.</li><li>Pendientes: A-18 y la verificación en Windows.</li></ul> | Alta para lo que existe [P]; no se expresa en porcentaje |
+| **Validación en plataformas reales**   | <ul><li>Linux con Chromium (escritorio y Pixel 7 emulado) [P].</li><li>Windows, Safari en macOS, iOS y Android reales: sin probar (`BLOCK3_SPEC.md` §17.4).</li></ul>                                                                                         | 1 de 5 plataformas objetivo (**20 %**)                   |
+| **Validación con personas**            | Sin revisiones de uso; revisiones Q5 y textos Q6 pendientes                                                                                                                                                                                                   | **0 %**                                                  |
+| **Despliegue**                         | No autorizado (Fase 10)                                                                                                                                                                                                                                       | **0 %**                                                  |
 
 ### 5. Para que no parezca más avanzado de lo que está
 

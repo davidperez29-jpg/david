@@ -182,29 +182,44 @@ Un manejador de rutas con URL estable: las acciones de servidor cambian de ident
 
 **Respuestas:**
 
-| HTTP  | Cuerpo                                           | Cuándo                                                                                                                                     |
-| ----- | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `200` | `{ ok: true, result: 'applied', state }`         | Aplicado ahora                                                                                                                             |
-| `200` | `{ ok: true, result: 'already_applied', state }` | Ese comando ya estaba aplicado (reintento), o «empezar» una sesión ya empezada                                                             |
-| `400` | `bad_request` (+ `issues`)                       | JSON roto o forma inválida (falta el identificador o el reloj, tipo desconocido…)                                                          |
-| `403` | `forbidden_origin`                               | Sin `Origin` o con otro origen. Un `Host` ajeno lo para antes `proxy.ts`                                                                   |
-| `404` | `not_found`                                      | La sesión no existe, no es del cliente o no está publicada (no se distingue)                                                               |
-| `409` | `not_started`                                    | Registrar, pausar o terminar sin haber empezado                                                                                            |
-| `409` | `closed`                                         | La sesión ya está terminada                                                                                                                |
-| `409` | `set_already_logged` (+ `effective`)             | Otro registro original de esa serie (otro identificador sin `supersedes`)                                                                  |
-| `409` | `not_effective` (+ `effective`)                  | Corrección de un registro que ya se había corregido                                                                                        |
-| `409` | `command_id_reused`                              | El mismo identificador con otro contenido                                                                                                  |
-| `409` | `unknown_version`, `unknown_set_in_version`      | La versión no existe, o la serie no existe en esa versión                                                                                  |
-| `409` | `confirmation_required` (+ `pendingSets`)        | Terminar con series sin registrar sin `confirmEndEarly`                                                                                    |
-| `409` | `identity_mismatch`                              | El comando lo creó otra identidad (móvil compartido). No se aplica; el móvil lo guarda para su titular                                     |
-| `413` | `payload_too_large`                              | Más de 16 KB                                                                                                                               |
-| `422` | `invalid` (+ `issues`)                           | Datos fuera de rango o que no corresponden a lo prescrito (kg en peso corporal, RIR no pedido…), o una hora del móvil imposible (T1, §7.1) |
-| `503` | `storage_busy` (`Retry-After: 2`)                | Otra herramienta tiene la escritura de la base más de 1 s. No se aplicó nada; el móvil lo reintenta                                        |
-| `503` | `storage_unavailable` (`Retry-After: 10`)        | La base o su bloqueo se borraron o sustituyeron por fuera. No se aplicó nada                                                               |
-| `500` | `storage_error`                                  | Disco lleno, solo lectura, error de E/S o base dañada. No se aplicó nada                                                                   |
-| `500` | `server_error`                                   | Error inesperado. El móvil lo reintenta                                                                                                    |
+| HTTP  | Cuerpo                                           | Cuándo                                                                                                                                                         |
+| ----- | ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `200` | `{ ok: true, result: 'applied', state }`         | Aplicado ahora                                                                                                                                                 |
+| `200` | `{ ok: true, result: 'already_applied', state }` | Ese comando ya estaba aplicado (reintento), o «empezar» una sesión ya empezada                                                                                 |
+| `400` | `bad_request` (+ `issues`)                       | JSON roto o forma inválida (falta el identificador o el reloj, tipo desconocido…)                                                                              |
+| `403` | `forbidden_origin`                               | Sin `Origin` o con otro origen. Un `Host` ajeno lo para antes `proxy.ts`                                                                                       |
+| `404` | `not_found`                                      | La sesión no existe, no es del cliente o no está publicada (no se distingue)                                                                                   |
+| `409` | `not_started`                                    | Registrar, pausar o terminar sin haber empezado                                                                                                                |
+| `409` | `closed`                                         | La sesión ya está terminada                                                                                                                                    |
+| `409` | `set_already_logged` (+ `effective`)             | Otro registro original de esa serie (otro identificador sin `supersedes`)                                                                                      |
+| `409` | `not_effective` (+ `effective`)                  | Corrección de un registro que ya se había corregido                                                                                                            |
+| `409` | `command_id_reused`                              | El mismo identificador con otro contenido                                                                                                                      |
+| `409` | `unknown_version`, `unknown_set_in_version`      | La versión no existe, o la serie no existe en esa versión                                                                                                      |
+| `409` | `confirmation_required` (+ `pendingSets`)        | Terminar con series sin registrar sin `confirmEndEarly`                                                                                                        |
+| `409` | `identity_mismatch`                              | El comando lo creó otra identidad (móvil compartido). No se aplica; el móvil lo guarda para su titular                                                         |
+| `413` | `payload_too_large`                              | Más de 16 KB                                                                                                                                                   |
+| `422` | `invalid` (+ `issues`)                           | Datos fuera de rango o que no corresponden a lo prescrito (kg en peso corporal, RIR no pedido…), o una hora del móvil imposible (T1, §7.1)                     |
+| `503` | `storage_busy` (`Retry-After: 2`)                | Otra herramienta tiene la escritura de la base más de 1 s. No se aplicó nada; el móvil lo reintenta                                                            |
+| `503` | `storage_unavailable` (`Retry-After: 10`)        | La base o su bloqueo se borraron o sustituyeron por fuera. No se aplicó nada                                                                                   |
+| `500` | `storage_error`                                  | Disco lleno o solo lectura: no se aplicó nada. Error de E/S o base dañada: **resultado desconocido** (ADR-34). Repetirlo con el mismo identificador no duplica |
+| `500` | `server_error`                                   | Error inesperado. El móvil lo reintenta                                                                                                                        |
 
-Las respuestas de error llevan `state` cuando la sesión es del cliente, para reconciliar. Los errores de almacenamiento (ADR-29) significan siempre que la transacción se deshizo entera: nada queda a medias ni se da por guardado.
+Las respuestas de error llevan `state` cuando la sesión es del cliente, para reconciliar.
+
+**Errores de almacenamiento** (ADR-29 y ADR-34):
+
+- Nada queda a medias: la transacción es una sola.
+- Con la base ocupada o inaccesible, la transacción se deshizo entera.
+- Con E/S o base dañada, el resultado puede ser desconocido. El reintento automático con el mismo identificador responde «ya aplicado» si se había aplicado.
+- Ninguno se da por guardado.
+
+**`GET …/estado` con un error de la base** (B3.0): responde lo mismo que los comandos:
+
+- `503 storage_busy` (`Retry-After: 2`);
+- `503 storage_unavailable` (`Retry-After: 10`);
+- `500 storage_error` o `server_error`.
+
+En todos los casos, sin `state` ni otros datos y con `cache-control: no-store` [P]. El móvil conserva lo pendiente.
 
 ### 5.1 Idempotencia
 
