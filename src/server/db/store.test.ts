@@ -1,12 +1,19 @@
-import { existsSync, mkdtempSync, readFileSync, rmSync, statSync } from 'node:fs';
+import { existsSync, mkdtempSync, rmSync, statSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterAll, afterEach, describe, expect, it } from 'vitest';
 import { DEMO_NEW_CLIENT_ID, DEMO_TRAINER_ID } from '../repositories/demo/dataset';
 import { verifyDatabaseFile } from './backup.ts';
 import { databaseFile } from './location.ts';
-import { processUsing } from './lock.ts';
-import { backupStore, closeAllStores, getStore, listStoreBackups, resetStore } from './store';
+import { lockState } from './lock.ts';
+import {
+  backupStore,
+  closeAllStores,
+  getStore,
+  listStoreBackups,
+  resetStore,
+  StorageUnavailableError,
+} from './store';
 
 /** El almacén de la aplicación sobre archivos reales (B1-02, B1-04, B1-10). */
 const root = mkdtempSync(join(tmpdir(), 'trainpro-almacen-'));
@@ -66,13 +73,22 @@ describe('almacén SQLite de la aplicación', () => {
     expect(statSync(store.path).mode & 0o777).toBe(0o600);
   });
 
-  it('marca la base como en uso por este proceso y la libera al cerrar', () => {
+  it('toma la base en exclusiva (bloqueo del sistema) y la libera al cerrar', () => {
     const store = getStore(fresh());
-    expect(readFileSync(`${store.path}.pid`, 'utf8')).toBe(String(process.pid));
-    // `processUsing` ignora el propio proceso: la herramienta de copias corre en otro.
-    expect(processUsing(store.path)).toBeNull();
+    expect(lockState(store.path)).toMatchObject({ held: true, holder: { pid: process.pid } });
     closeAllStores();
-    expect(existsSync(`${store.path}.pid`)).toBe(false);
+    expect(lockState(store.path).held).toBe(false);
+  });
+
+  it('si la base o su bloqueo se borran por fuera, deja de escribir en lugar de perder datos', async () => {
+    const opts = fresh();
+    const store = getStore(opts);
+    rmSync(store.path);
+    expect(() => getStore(opts)).toThrow(StorageUnavailableError);
+    closeAllStores();
+    const again = getStore(opts);
+    rmSync(`${again.path}.lock`);
+    expect(() => getStore(opts)).toThrow(/bloqueo/);
   });
 
   it('al reabrir (reinicio) conserva los datos y la fecha de la semilla, aunque cambie el día', async () => {
