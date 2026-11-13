@@ -100,7 +100,10 @@ test('B2 · detalle de la sesión, inicio del reproductor y comparación del ent
   await page.goto(player!.replace(/\/entrenar$/, ''));
   await fits('el detalle de la sesión (B2)');
   await page.goto(player!);
-  await expect(page.getByRole('button', { name: 'Empezar entrenamiento' })).toBeVisible();
+  // La semilla es igual cualquier día (A-13): Marta tiene una sesión a medias de hace 3 días, así
+  // que el inicio avisa (P-21) y ofrece «Empezar igualmente».
+  await expect(page.getByText(/a medias\. Podrás continuarla después/)).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Empezar igualmente' })).toBeVisible();
   await fits('el inicio del reproductor');
 
   // A7 de una sesión de Marta ya registrada: prescrito frente a realizado.

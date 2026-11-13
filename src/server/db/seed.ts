@@ -7,7 +7,7 @@ import { type DemoDataset } from '../repositories/demo/dataset';
 import { type SqlDatabase } from './sqlite.ts';
 
 /** Versión de la semilla: cambia si cambia lo que se siembra (se guarda en `meta`). */
-export const SEED_VERSION = '2';
+export const SEED_VERSION = '3';
 
 const at = (instant: string, seconds: number) =>
   new Date(Date.parse(instant) + seconds * 1000).toISOString();

@@ -152,16 +152,30 @@ test.describe('app del cliente (móvil)', () => {
       .getByRole('link', { name: 'Ver el detalle de la sesión' })
       .first()
       .getAttribute('href');
-    for (const route of ['/cliente', '/cliente/semana', '/cliente/progreso', detail!]) {
+    for (const [route, openAll] of [
+      ['/cliente', false],
+      ['/cliente', true],
+      ['/cliente/semana', false],
+      ['/cliente/progreso', false],
+      [detail!, false],
+    ] as const) {
       await page.goto(route);
+      // También con los desplegables abiertos («De días anteriores»).
+      if (openAll) {
+        await page.evaluate(() =>
+          document.querySelectorAll('details').forEach((d) => d.setAttribute('open', '')),
+        );
+      }
       await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
       const gap = await page.evaluate(() => {
         const nav = document.querySelector('nav[aria-label="Secciones"]');
         const main = document.querySelector('main');
-        // El último elemento visible del contenido.
+        // El último elemento VISIBLE del contenido (lo de un <details> cerrado no cuenta).
         const items = [...(main?.querySelectorAll('*') ?? [])].filter((el) => {
           const box = el.getBoundingClientRect();
-          return box.height > 0 && box.width > 0;
+          return (
+            box.height > 0 && box.width > 0 && el.checkVisibility({ visibilityProperty: true })
+          );
         });
         const contentBottom = Math.max(...items.map((el) => el.getBoundingClientRect().bottom));
         const navTop = nav ? nav.getBoundingClientRect().top : window.innerHeight;

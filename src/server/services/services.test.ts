@@ -165,7 +165,7 @@ describe('experiencia del entrenador', () => {
     const dashboard = await getTrainerDashboard(trainerCtx());
     expect(dashboard.activeClients).toBe(5);
     expect(dashboard.pausedClients).toBe(1);
-    // Hoy (miércoles) entrenan Marta (días alternos desde hoy) y Diego (lunes, miércoles y viernes).
+    // Hoy entrenan Marta y Diego, sea el día que sea: la semilla se cuenta en días desde hoy (A-13).
     expect(dashboard.todaySessions.map((s) => s.clientName).sort()).toEqual([
       'Diego Alonso',
       'Marta Ríos',

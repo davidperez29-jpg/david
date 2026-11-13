@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { type ClientActor, type TrainerActor } from '@/domain/access';
+import { addDays } from '@/domain/time';
 import {
   normalizeContent,
   type SessionContent,
@@ -274,18 +275,22 @@ describe('sesiones del entrenador (A3–A7)', () => {
 });
 
 describe('B1 · Hoy del cliente', () => {
-  it('una sesión interrumpida otro día no desplaza a la de hoy: va a «De días anteriores»', async () => {
-    // Un lunes, la semilla deja a medias la sesión de Marta del miércoles anterior.
-    const monday = '2026-11-09';
-    const { repos } = seededTestDatabase(monday);
-    const home = await getClientToday({ ...client(repos, DEMO_CLIENT_ID), today: monday });
-    expect(home.hero).toMatchObject({ id: `s-marta-${monday}`, action: 'start' });
-    expect(home.earlier.map((s) => [s.id, s.execution.status])).toEqual([
-      ['s-marta-2026-11-04', 'interrupted'],
-    ]);
-    expect(home.next).toBeNull();
-    expect(home.week.planned).toBeGreaterThan(0);
-  });
+  // A-13: la semilla tiene la misma estructura cualquier día de la semana (se cuenta en días desde
+  // la siembra): se comprueba con días distintos, también en fin de semana.
+  it.each(['2026-11-09', '2026-11-13', '2026-11-14', '2026-11-15'])(
+    'una sesión interrumpida otro día no desplaza a la de hoy: va a «De días anteriores» (siembra %s)',
+    async (today) => {
+      const { repos } = seededTestDatabase(today);
+      const home = await getClientToday({ ...client(repos, DEMO_CLIENT_ID), today });
+      expect(home.hero).toMatchObject({ id: `s-marta-${today}`, action: 'start' });
+      expect(home.earlier.map((s) => [s.id, s.execution.status])).toEqual([
+        [`s-marta-${addDays(today, -3)}`, 'interrupted'],
+        [`s-marta-${addDays(today, -7)}`, 'overdue'],
+      ]);
+      expect(home.next).toBeNull();
+      expect(home.week.planned).toBeGreaterThan(0);
+    },
+  );
 });
 
 describe('B1-04 · clientes y entrenadores independientes', () => {

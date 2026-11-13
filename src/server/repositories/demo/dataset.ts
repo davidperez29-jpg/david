@@ -17,7 +17,7 @@ import { type Tag, type TagCategory } from '@/domain/library/taxonomy';
 import { type Provenance } from '@/domain/measurement';
 import { type Client, type Trainer } from '@/domain/people';
 import { type RehabCase } from '@/domain/rehab';
-import { addDays, daysBetween, type IsoDate, isoWeekday } from '@/domain/time';
+import { addDays, daysBetween, type IsoDate } from '@/domain/time';
 import { type ExercisePrescription } from '@/domain/training/prescription';
 import {
   type ExerciseFeedback,
@@ -555,12 +555,25 @@ function feedbackFor(
  * terminó); terminada antes de tiempo; o completa con una serie reenviada por duplicado (para
  * comprobar que los cálculos no la cuentan dos veces). `null` = no realizada.
  */
-function buildLog(session: PlannedSession): SessionLog | null {
-  const seed = hash(session.id);
+/**
+ * Variante determinista de una sesión sembrada: depende del cliente y de los días que faltan o
+ * han pasado desde la siembra, NO de la fecha absoluta (A-13). Así la demostración y las pruebas
+ * tienen la misma estructura cualquier día de la semana.
+ */
+const seedOf = (session: PlannedSession, today: IsoDate) =>
+  hash(`${session.clientId}:${daysBetween(today, session.date)}`);
+
+function buildLog(session: PlannedSession, today: IsoDate): SessionLog | null {
+  const seed = seedOf(session, today);
   const kind = seed % 8;
-  if (kind === 0) return null;
-  const scenario: LogScenario =
-    kind === 1
+  // Estado fijo para la demostración y las pruebas: la última sesión de Marta (hace 3 días) quedó
+  // a medias. Así siempre hay algo en «De días anteriores · Continuar» y el aviso P-21.
+  const recentInterrupted =
+    session.clientId === DEMO_CLIENT_ID && daysBetween(today, session.date) === -3;
+  if (kind === 0 && !recentInterrupted) return null;
+  const scenario: LogScenario = recentInterrupted
+    ? 'interrupted'
+    : kind === 1
       ? 'interrupted'
       : kind === 2
         ? 'finished_early'
@@ -597,14 +610,14 @@ function buildLog(session: PlannedSession): SessionLog | null {
 }
 
 /** Sesión de hoy empezada y sin terminar (para mostrar el estado «En curso»). */
-function buildInProgressLog(session: PlannedSession): SessionLog {
+function buildInProgressLog(session: PlannedSession, today: IsoDate): SessionLog {
   return {
     id: `l-${session.id}`,
     sessionId: session.id,
     clientId: session.clientId,
     date: session.date,
     startedAt: `${session.date}T08:00:00.000Z`,
-    sets: setRecords(session, hash(session.id), 1),
+    sets: setRecords(session, seedOf(session, today), 1),
   };
 }
 
@@ -712,30 +725,30 @@ export function buildDemoDataset(today: IsoDate): DemoDataset {
     },
   ];
 
-  /** Qué plantilla toca cada día para cada cliente (o ninguna). */
+  /**
+   * Qué plantilla toca cada día para cada cliente (o ninguna). Todo se cuenta en días desde hoy
+   * (la siembra), no por el día de la semana real: la estructura de la demostración es la misma
+   * cualquier día (A-13). `r` es el día dentro de la semana contada desde hoy (0 = hoy).
+   */
+  const r = (date: IsoDate) => ((daysBetween(today, date) % 7) + 7) % 7;
   const schedule: Record<string, (date: IsoDate) => Template | null> = {
     // Marta entrena en días alternos contados desde hoy: siempre tiene sesión hoy.
-    [DEMO_CLIENT_ID]: (date) => {
-      const offset = ((daysBetween(today, date) % 7) + 7) % 7;
-      return offset === 0
+    [DEMO_CLIENT_ID]: (date) =>
+      r(date) === 0
         ? TEMPLATES.martaLower
-        : offset === 2
+        : r(date) === 2
           ? TEMPLATES.martaUpper
-          : offset === 4
+          : r(date) === 4
             ? TEMPLATES.martaPower
-            : null;
-    },
-    'c-diego': (date) => ([1, 3, 5].includes(isoWeekday(date)) ? TEMPLATES.diegoRehab : null),
-    'c-carmen': (date) => ([2, 4].includes(isoWeekday(date)) ? TEMPLATES.carmenStrength : null),
-    'c-nerea': (date) => {
-      const day = isoWeekday(date);
-      return day === 1 ? TEMPLATES.nereaPower : day === 4 ? TEMPLATES.nereaStrength : null;
-    },
+            : null,
+    // Diego también tiene sesión hoy: es la que queda «en curso» en el panel del entrenador.
+    'c-diego': (date) => ([0, 2, 4].includes(r(date)) ? TEMPLATES.diegoRehab : null),
+    'c-carmen': (date) => ([1, 3].includes(r(date)) ? TEMPLATES.carmenStrength : null),
+    'c-nerea': (date) =>
+      r(date) === 1 ? TEMPLATES.nereaPower : r(date) === 4 ? TEMPLATES.nereaStrength : null,
     // Javier está en pausa: solo tiene sesiones antiguas.
     'c-javier': (date) =>
-      date < addDays(today, -14) && [2, 5].includes(isoWeekday(date))
-        ? TEMPLATES.javierGeneral
-        : null,
+      date < addDays(today, -14) && [1, 4].includes(r(date)) ? TEMPLATES.javierGeneral : null,
   };
 
   const sessions: PlannedSession[] = [];
@@ -748,13 +761,13 @@ export function buildDemoDataset(today: IsoDate): DemoDataset {
 
   const logs = sessions
     .filter((session) => session.date < today)
-    .map(buildLog)
+    .map((session) => buildLog(session, today))
     .filter((log): log is SessionLog => log !== null);
   // Una sesión de hoy de otro cliente (no la de Marta) queda «en curso».
   const inProgress = sessions.find(
     (session) => session.date === today && session.clientId !== DEMO_CLIENT_ID,
   );
-  if (inProgress) logs.push(buildInProgressLog(inProgress));
+  if (inProgress) logs.push(buildInProgressLog(inProgress, today));
 
   const single = (
     clientId: string,
