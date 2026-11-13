@@ -335,9 +335,40 @@ Se guardan siempre la hora del dispositivo, su zona, su desfase, la recepción y
 - `local-demo` se niega a arrancar fuera de la propia máquina (§14.5, ADR-30);
 - convertir las pruebas de la auditoría en permanentes (§14.9).
 
+**Bloque 3 (13 nov 2026, PROMPT 15): propuesta, sin implementar.** `BLOCK3_SPEC.md` §16 tiene la tabla completa, con opciones, recomendación, consecuencias, si cambia el modelo y si bloquea el bloque 3.
+
+| Id    | Cuestión                                | Recomendación                                                                                      | ¿Bloquea B3? |
+| ----- | --------------------------------------- | -------------------------------------------------------------------------------------------------- | ------------ |
+| P-90  | Definición de cumplimiento              | Multidimensional (estructural, cuantitativa, intensidad, esfuerzo, cualitativa), sin índice global | Sí           |
+| P-91  | Tolerancias                             | 0 con la diferencia visible; configurables más adelante                                            | Sí           |
+| P-92  | Prescripción de referencia              | La versión de cada serie, con vistas «original» y «vigente»                                        | Sí           |
+| P-93  | Fecha para día y semana                 | Ejecutado por fecha de ejecución y planificado por fecha prevista                                  | Sí           |
+| P-94  | Semana                                  | ISO, de lunes a domingo, en la zona del inicio                                                     | Sí           |
+| P-95  | Duración                                | Bruta y activa, con aviso si hay huecos de más de 30 min sin pausa                                 | Sí           |
+| P-96  | Repeticiones por lado                   | Como registradas, con la marca; tonelaje × 2                                                       | No           |
+| P-97  | Carga por lado en el tonelaje           | Excluir y avisar                                                                                   | No           |
+| P-98  | Volumen por patrón                      | En B3.2, con dos recuentos                                                                         | No           |
+| P-99  | Volumen por cualidad                    | Esperar a la intención en la prescripción (bloque 4)                                               | No           |
+| P-100 | Volumen por grupo muscular              | No en el bloque 3 (P-53)                                                                           | No           |
+| P-101 | RPE de la sesión y carga interna (Q2)   | B3.3 opcional, tras aprobar Q2 y P-112                                                             | No           |
+| P-102 | `perceived_effort` de la semilla        | Rotularlo y excluirlo del análisis                                                                 | No           |
+| P-103 | Índice global                           | No                                                                                                 | No           |
+| P-104 | Incumplimientos repetidos               | Listas descriptivas, sin alertas                                                                   | No           |
+| P-105 | Descanso real                           | Solo el previsto, con «no registrado»                                                              | No           |
+| P-106 | Página «Carga» de la Fase 1             | Rehacerla con las fórmulas nuevas                                                                  | No           |
+| P-107 | Copias programadas y rotación           | Copia al arrancar si la última tiene más de 24 h; 14 automáticas; las manuales nunca se borran     | No           |
+| P-108 | Página de error de la base              | Antes del bloque 3 (B3.0), con los errores tipados que faltan                                      | No           |
+| P-109 | Correcciones justificadas y anotaciones | Después del bloque 3                                                                               | No           |
+| P-110 | Windows, Safari e iOS                   | Plan de `BLOCK3_SPEC.md` §17.4                                                                     | No           |
+| P-111 | Rendimiento y «pendientes de revisar»   | Calcular al leer; medir antes de añadir tablas                                                     | No           |
+| P-112 | Verificar la carga interna              | Cotejar el original de Foster et al. (2001) antes de registrarla                                   | No (B3.3)    |
+| P-113 | Hora imposible del móvil (T1)           | Mantener el rechazo, con un mensaje mejor                                                          | No           |
+
+**Revisión de ADR-25 a ADR-32** (13 nov 2026): consecuencias, ventajas y limitaciones en `BLOCK3_SPEC.md` §17.1. Recomendación: mantenerlas todas. Completar los errores tipados de las demás acciones del entrenador (residual de ADR-29) en B3.0, y revisar los 5 min de ADR-28 con datos reales.
+
 **Siguen pendientes:**
 
-- definición de «cumplimiento» y ajuste del descanso (§14.6);
+- definición de «cumplimiento» (ahora propuesta: P-90) y ajuste del descanso (§14.6);
 - correcciones justificadas (§14.7);
 - verificación en Windows (§14.8);
 - copias programadas y rotación (A-18);

@@ -823,7 +823,15 @@ Hoy todo lo registrado lo autodeclara el cliente (`self_reported`, `client`): lo
 
 `restart.spec.ts` usa puertos fijos: sus repeticiones deben ir en serie (`--workers 1`). En una ejecución normal es el único archivo que los usa.
 
-### 15.14 Riesgos que permanecen
+### 15.14 Residual encontrado después (13 nov 2026, PROMPT 15)
+
+Al diseñar el bloque 3 se ha visto por inspección [I] que **las acciones del entrenador distintas de guardar y publicar** (crear sesión, borrar o mover un borrador, copia, restablecer) no devuelven el error tipado de ADR-29. Ante una base ocupada, acaban en la página de error genérica. No se pierde nada (la transacción se deshace entera), pero el mensaje no ayuda.
+
+Propuesta: resolverlo con la página de error de la base, antes del bloque 3 (`BLOCK3_SPEC.md` P-108). No se ha cambiado código en esta entrega.
+
+La definición de «cumplimiento» que pedía el §14.6 está ahora propuesta en `BLOCK3_SPEC.md` §5 (P-90).
+
+### 15.15 Riesgos que permanecen
 
 1. **Windows sin ejecutar en Windows** (A-23): el bloqueo (`LockFileEx`), `rename` y la ausencia de `fsync` del directorio están documentados, no probados.
 2. **Controlador síncrono** (A-11): adecuado para una persona en un equipo, no para varios usuarios.

@@ -30,13 +30,131 @@ Fases definidas en la especificación maestra (`MASTER_SPEC.md`). Cada fase empi
 >   - `local-demo` solo en esta máquina;
 >   - procedencia guardada;
 >   - pruebas deterministas.
-> - **Bloque 3 (análisis): no autorizado.** Antes necesita la definición de «cumplimiento» (`AUDIT_BLOCK1.md` §14.6).
+> - **Bloque 3 (análisis): en diseño, implementación no autorizada.** Especificación propuesta en `BLOCK3_SPEC.md` (13 nov 2026, PROMPT 15), con la definición de cumplimiento multidimensional (P-90) y las decisiones P-90 a P-113 pendientes de tu aprobación.
 > - **Pendiente fuera de este bloque:**
 >   - verificación en Windows (A-23);
 >   - página de error de la base (A-15);
 >   - copias programadas y rotación (A-18, a decidir).
 
 Algunas pantallas de fases posteriores ya existen como **propuesta visual con datos ficticios**. Su lógica de dominio está probada, pero no tienen persistencia ni edición. `PHASE1_REPORT.md` detalla qué funciona de verdad y qué no.
+
+## Avance medido (13 de noviembre de 2026)
+
+> **Estimación con método explícito, no un dato exacto.** No cambia ninguna fase ni ningún alcance. Cada porcentaje sale de una lista de requisitos ya existente, con pesos y créditos declarados. Así cualquiera puede rehacer la cuenta o discutir un peso concreto.
+
+### Escala de estados y crédito funcional
+
+| Estado                                        | Crédito                                                            | Cuándo                                                                                          |
+| --------------------------------------------- | ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------- |
+| No iniciado                                   | 0                                                                  | Nada en el código                                                                               |
+| En diseño                                     | 0,1                                                                | Diseño escrito, sin código                                                                      |
+| Parcialmente implementado                     | La fracción de sus subelementos hechos                             | Un subelemento que solo existe en el dominio o en lectura con datos de demostración cuenta 0,25 |
+| Implementado                                  | 0,8                                                                | En la aplicación, sin pruebas que lo cubran                                                     |
+| Implementado y probado                        | 1                                                                  | En la aplicación y cubierto por pruebas automáticas                                             |
+| Pendiente de validación en plataformas reales | No resta crédito funcional; se cuenta en la dimensión «Validación» | Probado solo en Linux con Chromium (escritorio y Pixel 7 emulado)                               |
+
+**Funcionalidad, calidad, validación y despliegue se miden por separado** y no se suman entre sí. Los tres ámbitos (MVP, V1 y proyecto completo) son vistas independientes: una funcionalidad compartida cuenta una vez **dentro de cada vista**, y los porcentajes de las vistas no se suman.
+
+### 1. MVP: la primera versión funcional (`IMPLEMENTATION_READINESS.md` §3, clase A)
+
+**Pesos:** la columna «Coste» de `IMPLEMENTATION_READINESS.md` §2.1 (Bajo = 1, Medio = 2, Medio–alto = 2,5, Alto = 3), estimada antes de programar. Así se evita elegir pesos a posteriori.
+
+**Sin doble recuento:**
+
+- F-05 (clase A) está dentro de F-07 y no se cuenta aparte.
+- F-17 (clase D) y F-20 (no es una funcionalidad) quedan fuera.
+- El resumen imprimible del §3.10 no tiene F propia y se añade con peso 1.
+
+| Id    | Alcance de clase A                                                   | Peso | Estado                 | Crédito | Evidencia                                                                                                                                                                                     |
+| ----- | -------------------------------------------------------------------- | ---- | ---------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| F-01  | Datos con escritura                                                  | 2    | Implementado y probado | 1       | SQLite persistente, reinicios, espacios E2E y «Restablecer» [P]                                                                                                                               |
+| F-02  | Identidad demo                                                       | 1    | Implementado y probado | 1       | «Entrar como…» validado en el servidor [P]                                                                                                                                                    |
+| F-03  | Crear cliente                                                        | 1    | No iniciado            | 0       | —                                                                                                                                                                                             |
+| F-04  | Evaluar: resultados, 1RM directo, 1RM estimado a mano, peso corporal | 2    | Parcial                | 0,13    | Resultados y 1RM directo solo en el dominio y en lectura demo (0,25 cada uno); los otros dos, nada                                                                                            |
+| F-06  | Planificar: crear, editar, publicar, semana, duplicar, dos al día    | 2    | Parcial                | 0,71    | Crear, editar el borrador, publicar y dos al día [P]; semana en lectura demo (0,25); duplicar, nada                                                                                           |
+| F-07  | Prescribir (9 subelementos)                                          | 3    | Parcial                | 0,44    | Descanso y observaciones [P]; esfuerzo RIR/RPE (0,6); 3 de 10 modalidades en la interfaz (0,4); por serie, tempo, intención y %1RM solo en el dominio (0,25); criterios de finalización, nada |
+| F-08  | Ficha del ejercicio, silueta y alternativa                           | 2,5  | Parcial                | 0,5     | Ficha [P]; silueta sin la de cada variante (0,5); alternativa, nada                                                                                                                           |
+| F-09  | «Hoy», con dos sesiones                                              | 1    | Implementado y probado | 1       | [P]                                                                                                                                                                                           |
+| F-10  | Reproductor guiado (9 subelementos)                                  | 3    | Parcial                | 0,78    | 7 de 9 [P]; faltan calentamiento y saltar un ejercicio con motivo                                                                                                                             |
+| F-11  | Sin conexión y reanudación                                           | 3    | Implementado y probado | 1       | Bloque 2 y correcciones del PROMPT 14 [P]                                                                                                                                                     |
+| F-12  | Textos claros                                                        | 1    | Parcial                | 0,5     | Borradores sin aprobar (Q6)                                                                                                                                                                   |
+| F-13  | Analizar: serie a serie, volumen y tonelaje por tipo, evolución      | 2    | Parcial                | 0,42    | Serie a serie en A7 [P]; tonelaje 1.0.0 solo con kg externos (0,25); evolución, nada. El bloque 3 está en diseño                                                                              |
+| F-14  | Progreso de la clienta (mínimo)                                      | 1    | Parcial                | 0,5     | Existe, sin las métricas nuevas                                                                                                                                                               |
+| F-15  | Permisos con pruebas de acceso no autorizado                         | 2    | Implementado y probado | 1       | Para todo lo implementado [P]                                                                                                                                                                 |
+| F-16  | Valoración previa (si se aprueba Q2)                                 | 1    | En diseño              | 0,1     | `PROGRESSION_AND_AUTOREGULATION.md` §4                                                                                                                                                        |
+| F-18  | RPE de la sesión (si se aprueba Q2)                                  | 1    | En diseño              | 0,1     | `BLOCK3_SPEC.md` §7; la columna de la base solo la rellena la semilla                                                                                                                         |
+| F-19  | Historial: versiones con autor y fecha, lista de versiones           | 1    | Parcial                | 0,5     | Versiones inmutables [P]; sin lista en la interfaz                                                                                                                                            |
+| §3.10 | Resumen imprimible del periodo                                       | 1    | No iniciado            | 0       | —                                                                                                                                                                                             |
+
+**Resultado:** Σ peso × crédito = 18,1 de 30,5 → **59 %** de la funcionalidad del MVP. Sin F-16 ni F-18 (si Q2 no se aprueba): 17,9 de 28,5 → **63 %**.
+
+**Comprobación cruzada** con la definición de terminado (`IMPLEMENTATION_READINESS.md` §9.1): de los 12 pasos del recorrido de referencia, hoy se completan **5**:
+
+- se pueden completar: 3 (planificar dos fechas), 5, 6, 8 y 10;
+- en parte: 7 y 9, que piden la valoración previa y el RPE de la sesión;
+- no se pueden completar: 1, 2, 4, 11 y 12, que piden crear el cliente, evaluar, %1RM y lastre en el constructor, el análisis y duplicar.
+
+Es coherente con un MVP algo por encima de la mitad.
+
+### 2. V1 (`V1_SPEC.md` §9)
+
+**Pesos:** las subtareas de cada bloque en V1_SPEC §9 (20 en total). Como comprobación, también con pesos por esfuerzo estimado (25, 30, 15, 12, 10 y 8).
+
+| Bloque                    | Subtareas | Peso | Estado                     | Crédito | Evidencia                                                                                                                                            |
+| ------------------------- | --------- | ---- | -------------------------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1 · Base persistente      | 5         | 25 % | Implementado y probado     | 1       | B1-01 a B1-12 y correcciones del PROMPT 14 [P]                                                                                                       |
+| 2 · Ejecutar y registrar  | 5         | 25 % | Implementado y probado     | 1       | E2E del bloque 2 y del PROMPT 14 [P]                                                                                                                 |
+| 3 · Analizar              | 2         | 10 % | En diseño (base existente) | 0,29    | 3.1: serie a serie en A7 y tonelaje 1.0.0 (0,25). 3.2: A3 agrupada por días sin totales (0,5), A8 sin hacer (0) y panel parcial (0,5)                |
+| 4 · Prescripción completa | 3         | 15 % | Parcial                    | 0,42    | Por serie y lastre, asistida y %1RM: el dominio y el registro en el reproductor sí, el constructor no (0,5 cada una). Tempo y ayudas: dominio (0,25) |
+| 5 · Editar lo publicado   | 3         | 15 % | Parcial                    | 0,5     | Publicar n + 1 y bloqueos: servicio y dominio sin interfaz (0,25). Historial (0,25). Aviso y adopción en el reproductor [P] (1)                      |
+| 6 · Cierre y revisión     | 2         | 10 % | No iniciado                | 0       | —                                                                                                                                                    |
+
+**Resultado:** **67 %** de la funcionalidad de V1 (69 % con los pesos por esfuerzo).
+
+El bloque 5 aún no aporta nada visible al entrenador: sin su interfaz, no puede editar una sesión publicada.
+
+### 3. Proyecto completo (`MASTER_SPEC.md` §3, fases 1 a 10)
+
+**Alcance:** los 15 módulos de MASTER_SPEC más la persistencia de producción. Quedan **fuera** las etapas E6 a E8 (IA, centros y equipos, escala comercial), que son visión y no alcance aprobado. Con ellas, el porcentaje sería menor.
+
+**Pesos:** por tamaño relativo estimado (S = 1, M = 2, L = 3, XL = 5). Son juicios: se pueden discutir uno a uno.
+
+| Módulo                              | Tamaño | Estado                        | Crédito | Evidencia                                                                                                      |
+| ----------------------------------- | ------ | ----------------------------- | ------- | -------------------------------------------------------------------------------------------------------------- |
+| Identidad y permisos                | L (3)  | Parcial                       | 0,33    | Políticas y pruebas [P]; sin autenticación real, sin rol de administración y sin RLS                           |
+| Clientes                            | M (2)  | Parcial                       | 0,35    | Ficha navegable; sesiones y registro persistentes; sin crear ni editar clientes                                |
+| Biblioteca                          | L (3)  | Parcial                       | 0,5     | Búsqueda Y/O, niveles y taxonomía con datos demo en el código; sin administración del catálogo ni persistencia |
+| Ficha del ejercicio                 | M (2)  | Parcial                       | 0,3     | Ficha básica; sin vídeos ni silueta de cada variante                                                           |
+| Prescripción                        | L (3)  | Parcial                       | 0,45    | Dominio v2 completo; interfaz básica (3 modalidades, prescripción común)                                       |
+| Planificación                       | L (3)  | Parcial                       | 0,3     | Sesiones con versiones [P]; sin planes, semanas, plantillas ni duplicados                                      |
+| Portal del cliente                  | L (3)  | Parcial                       | 0,65    | Hoy, reproductor y registro sin conexión [P]; sin abrir sin conexión desde cero; semana y progreso con la demo |
+| Registro de la ejecución            | M (2)  | Implementado y probado (casi) | 0,85    | Bloque 2 [P]; faltan calentamiento, motivos y correcciones justificadas                                        |
+| Carga y volumen                     | M (2)  | Parcial (bloque 3 en diseño)  | 0,25    | Tonelaje 1.0.0 y serie a serie                                                                                 |
+| Evaluaciones                        | L (3)  | Parcial                       | 0,2     | Dominio y lectura demo; sin registro ni protocolos                                                             |
+| Readaptación                        | M (2)  | Parcial                       | 0,2     | Dominio y lectura demo                                                                                         |
+| Informes                            | M (2)  | No iniciado                   | 0       | —                                                                                                              |
+| Motor de adaptación                 | XL (5) | En diseño                     | 0,1     | `PROGRESSION_AND_AUTOREGULATION.md`                                                                            |
+| Valoración previa y carga interna   | S (1)  | En diseño                     | 0,1     | `BLOCK3_SPEC.md` §7                                                                                            |
+| Integraciones                       | L (3)  | En diseño (conceptual)        | 0,1     | `INTEGRATIONS.md`                                                                                              |
+| Persistencia de producción (Fase 2) | L (3)  | Parcial                       | 0,4     | SQLite local auditado [P]; sin PostgreSQL, varios usuarios ni RLS                                              |
+
+**Resultado:** 13,3 de 42 → **32 %** de la funcionalidad del proyecto, con una incertidumbre razonable de ±5 puntos por los pesos.
+
+### 4. Calidad, validación y despliegue (aparte)
+
+| Dimensión                              | Estado                                                                                                                                                                                                                                                    | Medida                                                   |
+| -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| **Calidad técnica** de lo implementado | <ul><li>290 pruebas unitarias y de integración y 135 E2E, repetibles.</li><li>Auditoría con sus defectos altos corregidos y probados.</li><li>Pendientes: A-15, A-18, el residual de A-11 (`BLOCK3_SPEC.md` §2.6) y la verificación en Windows.</li></ul> | Alta para lo que existe [P]; no se expresa en porcentaje |
+| **Validación en plataformas reales**   | <ul><li>Linux con Chromium (escritorio y Pixel 7 emulado) [P].</li><li>Windows, Safari en macOS, iOS y Android reales: sin probar (`BLOCK3_SPEC.md` §17.4).</li></ul>                                                                                     | 1 de 5 plataformas objetivo (**20 %**)                   |
+| **Validación con personas**            | Sin revisiones de uso; revisiones Q5 y textos Q6 pendientes                                                                                                                                                                                               | **0 %**                                                  |
+| **Despliegue**                         | No autorizado (Fase 10)                                                                                                                                                                                                                                   | **0 %**                                                  |
+
+### 5. Para que no parezca más avanzado de lo que está
+
+- No se ha cambiado ninguna fase ni alcance.
+- El diseño cuenta solo 0,1, y lo que solo existe en el dominio, 0,25.
+- Las pantallas con datos de demostración de la Fase 1 cuentan como lectura, no como funcionalidad completa.
+- La validación y el despliegue no se mezclan con la funcionalidad.
 
 ## Hoja de ruta estratégica (propuesta, 6 de noviembre de 2026)
 

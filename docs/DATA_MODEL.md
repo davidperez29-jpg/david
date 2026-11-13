@@ -251,6 +251,16 @@ Los clientes no navegan por la biblioteca: ven los ejercicios a través de las s
 > - Las demás procedencias existen en el modelo para cuando haya instrumentos, importaciones o fórmulas, pero no se usan ni se inventan.
 > - **Migración:** solo añade columnas (los registros existentes quedan como lo que eran: autodeclarados) y un disparador que impide cambiar la procedencia de una ejecución. Antes de migrar se hace la copia automática `antes-de-migrar`.
 
+> **Análisis (bloque 3, propuesta del 13 nov 2026, `BLOCK3_SPEC.md` §11):**
+>
+> - **B3.1 y B3.2 no cambian el esquema:** todo se calcula al leer a partir de `session_version`, `session_log`, `set_log` efectivos y la biblioteca.
+> - **Cambios solo si se aprueban:**
+>   - `trainer_setting`, para tolerancias configurables (P-91);
+>   - `session_rpe`, solo de añadir, para el RPE de la sesión (B3.3, P-101). No va en `session_log` porque una ejecución terminada no se modifica;
+>   - `set_log.correction_reason` y `set_annotation`, para las correcciones justificadas y las anotaciones del entrenador (P-109, después del bloque 3).
+> - **`session_log.perceived_effort`** solo lo rellena la semilla, sin escala, y no se usará en el análisis (P-102).
+> - **`load_kg`** se interpreta siempre con `load_kind`, y la base de la carga sale de la prescripción de la versión.
+
 Reglas: las series efectivas son la última versión válida por (session_log_id, session_item_id, set_number), siguiendo `supersedes`; un `client_set_id` repetido no crea otra fila; el entrenador **no edita** `set_log` (anota con `set_annotation`). Todo lo realizado es `self_reported` salvo lo que mide un instrumento o se importa.
 
 **El estado de la sesión no se guarda: se deduce** (`sessionStatus` en `src/domain/training/session.ts`) de las series efectivas (sin duplicados ni registros ajenos a lo prescrito) y de si la sesión ha terminado:

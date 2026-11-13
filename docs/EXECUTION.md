@@ -343,6 +343,11 @@ Editar una sesión publicada desde la interfaz es el bloque 5: hoy la v2 solo se
 - **No se pide almacenamiento persistente** (`navigator.storage.persist()`). Firefox lo pregunta a la persona, y conviene decidir cuándo pedirlo. Safari puede borrar IndexedDB si la web pasa unos días sin usarse.
 - **Sin IndexedDB** (algunas navegaciones privadas) la cola está en memoria, con aviso permanente: cerrar la página pierde lo no enviado.
 - **Una sola pestaña o dispositivo a la vez.** Dos dispositivos que registran la misma serie se resuelven con `set_already_logged` (gana el primero). No hay mezcla de ediciones.
+- **Para el análisis** (`BLOCK3_SPEC.md` §2), hoy no se registran:
+  - el descanso realmente hecho (el temporizador vive en el móvil);
+  - la hora de cada pausa (solo el total);
+  - el motivo de una serie no realizada;
+  - el RPE de la sesión. `perceived_effort` solo lo rellena la semilla.
 - **Lo pendiente de otra persona** en un móvil compartido solo se envía cuando esa persona vuelve a entrar en ese móvil. Mientras, sigue guardado y se ve el aviso.
 - **No funciona sin conexión desde cero.** El service worker no guarda las páginas para abrirlas sin red: sin conexión muestra la página «Sin conexión». Si la página ya está abierta, se puede empezar, registrar, pausar y terminar sin conexión, y todo se envía al volver.
 - **Windows no se ha probado en Windows.** Ver `V1_SPEC.md` §9.3: `pnpm verify:env` está listo para ejecutarlo allí.
