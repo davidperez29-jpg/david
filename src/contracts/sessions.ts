@@ -122,6 +122,8 @@ export interface BuilderVariantVM {
 /** A5 · Constructor de un borrador que nunca se ha publicado. */
 export interface SessionBuilderVM {
   sessionId: string;
+  /** Quién edita: separa la copia local del borrador por identidad (A-07). */
+  trainerId: string;
   clientId: string;
   clientFirstName: string;
   today: IsoDate;
@@ -131,17 +133,26 @@ export interface SessionBuilderVM {
   variants: BuilderVariantVM[];
 }
 
+/**
+ * Fallo al guardar que no depende del contenido (A-05): la base está ocupada o no disponible, un
+ * error de almacenamiento, o un error inesperado del servidor. Las acciones lo DEVUELVEN, nunca lo
+ * lanzan: así la pantalla conserva el trabajo y puede reintentar.
+ */
+export type SaveFailure = 'storage_busy' | 'storage_unavailable' | 'storage_error' | 'server_error';
+
 export type SaveDraftOutcome =
   | { ok: true; revision: number; updatedAt: IsoDateTime; unchanged: boolean }
   | { ok: false; reason: 'conflict'; revision: number }
   | { ok: false; reason: 'invalid'; issues: Issue[] }
-  | { ok: false; reason: 'not_found' | 'not_editable' };
+  | { ok: false; reason: 'not_found' | 'not_editable' }
+  | { ok: false; reason: SaveFailure };
 
 export type PublishOutcome =
   | { ok: true; version: number; alreadyPublished: boolean }
   | { ok: false; reason: 'conflict'; revision: number }
   | { ok: false; reason: 'invalid'; issues: Issue[] }
-  | { ok: false; reason: 'not_found' | 'not_editable' };
+  | { ok: false; reason: 'not_found' | 'not_editable' }
+  | { ok: false; reason: SaveFailure };
 
 /** A7 · Sesión publicada (pestaña Prescripción, de solo lectura). */
 export interface PublishedSessionVM {

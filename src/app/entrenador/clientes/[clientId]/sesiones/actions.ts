@@ -6,8 +6,10 @@ import {
   type CreateSessionOutcome,
   type PublishOutcome,
   type SaveDraftOutcome,
+  type SaveFailure,
 } from '@/contracts/sessions';
 import { getTrainerContext } from '@/server/context';
+import { classifyStorageError } from '@/server/storage-errors';
 import {
   createSessionDraft,
   deleteSessionDraft,
@@ -49,13 +51,33 @@ export async function createSessionAction(
   redirect(`${sessionsPath(text(form, 'clientId'))}/${outcome.sessionId}/editar`);
 }
 
+/**
+ * Un fallo de almacenamiento (o inesperado) al guardar o publicar se DEVUELVE como resultado, no
+ * se lanza (A-05): si se lanzara, la página entera pasaría a «Algo no ha ido bien» y se perdería lo
+ * que el entrenador tiene en pantalla. La transacción no se aplicó: no hay nada a medias.
+ */
+async function safely<T>(
+  what: string,
+  run: () => Promise<T>,
+): Promise<T | { ok: false; reason: SaveFailure }> {
+  try {
+    return await run();
+  } catch (error) {
+    const failure = classifyStorageError(error);
+    console.error(`${what}: no se ha podido completar (${failure ?? 'server_error'})`, error);
+    return { ok: false, reason: failure ?? 'server_error' };
+  }
+}
+
 /** A5 · Guardar el borrador con la revisión esperada. */
 export async function saveDraftAction(input: {
   sessionId: string;
   expectedRevision: number;
   content: unknown;
 }): Promise<SaveDraftOutcome> {
-  return saveSessionDraft(await getTrainerContext(), input);
+  return safely('Guardar el borrador', async () =>
+    saveSessionDraft(await getTrainerContext(), input),
+  );
 }
 
 /** A5 · Publicar la versión 1 (guarda antes lo pendiente). */
@@ -64,7 +86,7 @@ export async function publishDraftAction(input: {
   expectedRevision: number;
   content: unknown;
 }): Promise<PublishOutcome> {
-  return publishSession(await getTrainerContext(), input);
+  return safely('Publicar la sesión', async () => publishSession(await getTrainerContext(), input));
 }
 
 /** A3/A5 · Eliminar un borrador que nunca se ha publicado. */

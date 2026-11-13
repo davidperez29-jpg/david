@@ -275,6 +275,7 @@ export async function getSessionBuilder(
   if (!own || own.session.status !== 'draft' || !own.session.draft) return null;
   const { variants } = await validationContext(ctx);
   return {
+    trainerId: ctx.actor.trainerId,
     sessionId: own.session.id,
     clientId: own.client.id,
     clientFirstName: firstName(own.client.displayName),

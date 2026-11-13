@@ -15,7 +15,7 @@ import {
   X,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import {
   type BuilderVariantVM,
   type PublishOutcome,
@@ -33,7 +33,6 @@ import {
   normalizeContent,
   publishIssues,
   publishWarnings,
-  sameContent,
   type SessionContent,
   type SessionItem,
 } from '@/domain/training/session-v2';
@@ -42,9 +41,27 @@ import { ConfirmSubmit } from '@/features/shared/confirm-submit';
 import { Button } from '@/ui/button';
 import { cn } from '@/ui/cn';
 import { Notice } from '@/ui/notice';
+import { LeaveGuard } from './leave-guard';
 import { fieldClasses } from './new-session-form';
+import { type DraftStatus, useDraftAutosave } from './use-draft-autosave';
 
 type DraftInput = { sessionId: string; expectedRevision: number; content: unknown };
+
+/** Texto del estado del guardado (solo «guardado» cuando el servidor lo ha confirmado). */
+const STATUS_TEXT: Record<DraftStatus, (savedLabel: string) => string> = {
+  saved: (at) => `Borrador guardado · ${at}`,
+  pending: () => 'Cambios pendientes de guardar…',
+  saving: () => 'Guardando…',
+  error: () => 'No se ha podido guardar · tus cambios siguen aquí',
+  conflict: () => 'Sin guardar: hay una versión más reciente',
+  invalid: () => 'Sin guardar: revisa los datos señalados',
+  blocked: () => 'Este borrador ya no se puede guardar',
+};
+
+const clock = (instant: string) =>
+  new Intl.DateTimeFormat('es-ES', { hour: '2-digit', minute: '2-digit' }).format(
+    new Date(instant),
+  );
 
 const parseNumber = (value: string) => {
   const n = Number(value.replace(',', '.'));
@@ -96,30 +113,18 @@ export function SessionBuilder({
 }) {
   const router = useRouter();
   const [content, setContent] = useState<SessionContent>(vm.content);
-  const [saved, setSaved] = useState<SessionContent>(vm.content);
-  const [revision, setRevision] = useState(vm.revision);
-  const [savedAt, setSavedAt] = useState(vm.updatedAt);
-  const [issues, setIssues] = useState<Issue[]>([]);
-  const [problem, setProblem] = useState<'conflict' | 'error' | null>(null);
-  const [pending, startTransition] = useTransition();
+  // Guardado automático, copia local y errores sin pérdidas (A-05, A-06, A-07).
+  const draft = useDraftAutosave({ vm, content, setContent, saveAction, publishAction });
+  const { issues, status } = draft;
+  const pending = status === 'saving';
   const [picking, setPicking] = useState(vm.content.items.length === 0);
   const dialog = useRef<HTMLDialogElement>(null);
-
-  const dirty = !sameContent(normalizeContent(content), normalizeContent(saved));
   const known = useMemo(() => new Set(vm.variants.map((v) => v.id)), [vm.variants]);
   const checklist = publishIssues(normalizeContent(content), {
     isUsableVariant: (id) => known.has(id),
   });
   const warnings = publishWarnings(normalizeContent(content), vm.today);
   const totalSets = content.items.reduce((sum, item) => sum + item.sets, 0);
-
-  // Aviso al salir con cambios sin guardar.
-  useEffect(() => {
-    if (!dirty) return;
-    const warn = (event: BeforeUnloadEvent) => event.preventDefault();
-    window.addEventListener('beforeunload', warn);
-    return () => window.removeEventListener('beforeunload', warn);
-  }, [dirty]);
 
   const update = (patch: Partial<SessionContent>) => setContent((c) => ({ ...c, ...patch }));
   const updateItem = (id: string, patch: (item: SessionItem) => SessionItem) =>
@@ -144,53 +149,50 @@ export function SessionBuilder({
     update({ items: [...ordered, newItem(variant, ordered.length + 1, blockLetter(n))] });
   };
 
-  const handleOutcome = (outcome: SaveDraftOutcome | PublishOutcome) => {
-    if (outcome.ok) return true;
-    if (outcome.reason === 'invalid') setIssues(outcome.issues);
-    else setProblem(outcome.reason === 'conflict' ? 'conflict' : 'error');
-    return false;
+  const save = () => void draft.saveNow();
+  const publish = async () => {
+    const outcome = await draft.publish();
+    dialog.current?.close();
+    if (outcome) router.push(publishedHref);
   };
-
-  const save = () =>
-    startTransition(async () => {
-      setIssues([]);
-      setProblem(null);
-      const outcome = await saveAction({
-        sessionId: vm.sessionId,
-        expectedRevision: revision,
-        content,
-      });
-      if (outcome.ok) {
-        setRevision(outcome.revision);
-        setSavedAt(outcome.updatedAt);
-        setSaved(content);
-      } else handleOutcome(outcome);
-    });
-
-  const publish = () =>
-    startTransition(async () => {
-      setIssues([]);
-      setProblem(null);
-      const outcome = await publishAction({
-        sessionId: vm.sessionId,
-        expectedRevision: revision,
-        content,
-      });
-      dialog.current?.close();
-      if (handleOutcome(outcome)) {
-        setSaved(content); // ya no hay nada sin guardar: no avisar al salir
-        router.push(publishedHref);
-      }
-    });
 
   const savedLabel = new Intl.DateTimeFormat('es-ES', {
     hour: '2-digit',
     minute: '2-digit',
-  }).format(new Date(savedAt));
+  }).format(new Date(draft.savedAt));
 
   return (
     <div className="pb-[calc(8rem+env(safe-area-inset-bottom))] lg:pb-0">
-      {problem === 'conflict' ? (
+      <LeaveGuard
+        unsafe={draft.unsafe}
+        saveNow={draft.saveNow}
+        localCopyKept={draft.localCopy === 'kept'}
+      />
+      {draft.recovery ? (
+        <Notice
+          tone="sun"
+          icon={<TriangleAlert />}
+          title="Tienes cambios sin guardar de una visita anterior"
+          className="mb-4"
+        >
+          <span id="decidir-copia" className="sr-only">
+            Elige qué hacer con estos cambios antes de seguir editando.
+          </span>
+          {draft.recovery.newerOnServer
+            ? `Este navegador conserva cambios tuyos de las ${clock(draft.recovery.savedAt)} que no llegaron al servidor, pero el borrador se ha guardado después en otro sitio. Elige cuál conservar: si recuperas tu copia, sustituirá a la versión guardada.`
+            : `Este navegador conserva cambios tuyos de las ${clock(draft.recovery.savedAt)} que no llegaron al servidor.`}{' '}
+          Elige qué hacer con ellos antes de seguir editando.
+          <span className="mt-2 flex flex-wrap gap-2">
+            <Button variant="secondary" onClick={draft.recover}>
+              {draft.recovery.newerOnServer ? 'Usar mi copia' : 'Recuperar mis cambios'}
+            </Button>
+            <Button variant="ghost" onClick={draft.discardRecovery}>
+              {draft.recovery.newerOnServer ? 'Quedarme con la versión guardada' : 'Descartarlos'}
+            </Button>
+          </span>
+        </Notice>
+      ) : null}
+      {status === 'conflict' ? (
         <Notice
           tone="sun"
           icon={<TriangleAlert />}
@@ -198,7 +200,7 @@ export function SessionBuilder({
           className="mb-4"
         >
           Se ha guardado desde otra pestaña o en otro momento. Para no pisarla, no se ha guardado lo
-          tuyo.{' '}
+          tuyo, que se conserva en este navegador.{' '}
           <button
             type="button"
             className="font-bold underline"
@@ -206,10 +208,27 @@ export function SessionBuilder({
           >
             Recargar el borrador
           </button>{' '}
-          (perderás los cambios de esta pantalla que no estén guardados).
+          y elegir qué versión conservar.
         </Notice>
       ) : null}
-      {problem === 'error' ? (
+      {status === 'error' ? (
+        <Notice
+          tone="sun"
+          icon={<TriangleAlert />}
+          title="No se ha podido guardar"
+          className="mb-4"
+        >
+          {draft.failureText ? `Motivo: ${draft.failureText}. ` : ''}
+          Tus cambios siguen aquí
+          {draft.localCopy === 'kept' ? ' y en una copia en este navegador' : ''}. Se reintentará
+          solo; también puedes{' '}
+          <button type="button" className="font-bold underline" onClick={save}>
+            reintentar ahora
+          </button>
+          .
+        </Notice>
+      ) : null}
+      {status === 'blocked' ? (
         <Notice
           tone="sun"
           icon={<TriangleAlert />}
@@ -231,168 +250,181 @@ export function SessionBuilder({
         </div>
       ) : null}
 
-      <div className="grid grid-cols-[minmax(0,1fr)] items-start gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
-        <div className="space-y-5">
-          <section aria-labelledby="datos-sesion" className="rounded-3xl bg-white p-5 shadow-soft">
-            <h2 id="datos-sesion" className="text-lg font-bold text-ink-900">
-              Datos de la sesión
-            </h2>
-            <div className="mt-3 grid gap-4 sm:grid-cols-2">
-              <TextField
-                label="Fecha prevista"
-                type="date"
-                value={content.plannedDate}
-                onChange={(v) => update({ plannedDate: v })}
-              />
-              <TextField
-                label="Contexto (opcional)"
-                value={content.label ?? ''}
-                maxLength={40}
-                onChange={(v) => update({ label: v })}
-              />
-              <TextField
-                label="Título"
-                value={content.title}
-                maxLength={80}
-                onChange={(v) => update({ title: v })}
-              />
-              <TextField
-                label="Duración (min)"
-                type="number"
-                value={
-                  content.estimatedMinutes === undefined ? '' : String(content.estimatedMinutes)
-                }
-                onChange={(v) =>
-                  update({ estimatedMinutes: v.trim() === '' ? undefined : parseNumber(v) })
-                }
-              />
-              <div className="sm:col-span-2">
-                <TextField
-                  label="Objetivo"
-                  value={content.focus}
-                  maxLength={120}
-                  onChange={(v) => update({ focus: v })}
-                />
-              </div>
-              <div className="sm:col-span-2">
-                <TextField
-                  label={`Nota para ${vm.clientFirstName} (opcional)`}
-                  value={content.coachNote ?? ''}
-                  maxLength={500}
-                  multiline
-                  onChange={(v) => update({ coachNote: v })}
-                />
-              </div>
-            </div>
-          </section>
-
-          <section aria-labelledby="ejercicios" className="space-y-4">
-            <h2 id="ejercicios" className="text-lg font-bold text-ink-900">
-              Ejercicios
-            </h2>
-            {ordered.length === 0 ? (
-              <p className="text-sm text-ink-500">Todavía no hay ejercicios.</p>
-            ) : null}
-            <ol className="space-y-4">
-              {ordered.map((item, index) => (
-                <ItemEditor
-                  key={item.id}
-                  item={item}
-                  slot={`${item.block}${ordered.filter((o) => o.block === item.block && o.order <= item.order).length}`}
-                  silhouette={
-                    vm.variants.find((v) => v.id === item.variantId)?.silhouette ?? 'squat'
-                  }
-                  first={index === 0}
-                  last={index === ordered.length - 1}
-                  onChange={(patch) => updateItem(item.id, patch)}
-                  onMove={(delta) => move(item.id, delta)}
-                  onRemove={() => remove(item.id)}
-                />
-              ))}
-            </ol>
-            {picking ? (
-              <VariantPicker variants={vm.variants} onAdd={add} onClose={() => setPicking(false)} />
-            ) : (
-              <Button variant="secondary" onClick={() => setPicking(true)}>
-                <Plus aria-hidden className="size-4" /> Añadir ejercicio
-              </Button>
-            )}
-          </section>
-
-          <form action={deleteAction} className="pt-2">
-            <input type="hidden" name="sessionId" value={vm.sessionId} />
-            <input type="hidden" name="clientId" value={vm.clientId} />
-            <ConfirmSubmit
-              variant="ghost"
-              size="sm"
-              message={`¿Eliminar este borrador? ${vm.clientFirstName} nunca lo ha visto. No se puede deshacer.`}
+      {/*
+        Mientras hay que decidir qué hacer con una copia local anterior, no se edita: así no se
+        pisa esa copia ni se guarda nada encima sin que la persona lo haya elegido (A-07).
+      */}
+      <fieldset
+        disabled={Boolean(draft.recovery)}
+        aria-describedby={draft.recovery ? 'decidir-copia' : undefined}
+        className="m-0 min-w-0 border-0 p-0 disabled:opacity-60"
+      >
+        <div className="grid grid-cols-[minmax(0,1fr)] items-start gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
+          <div className="space-y-5">
+            <section
+              aria-labelledby="datos-sesion"
+              className="rounded-3xl bg-white p-5 shadow-soft"
             >
-              <Trash2 aria-hidden className="size-4" /> Eliminar borrador
-            </ConfirmSubmit>
-          </form>
+              <h2 id="datos-sesion" className="text-lg font-bold text-ink-900">
+                Datos de la sesión
+              </h2>
+              <div className="mt-3 grid gap-4 sm:grid-cols-2">
+                <TextField
+                  label="Fecha prevista"
+                  type="date"
+                  value={content.plannedDate}
+                  onChange={(v) => update({ plannedDate: v })}
+                />
+                <TextField
+                  label="Contexto (opcional)"
+                  value={content.label ?? ''}
+                  maxLength={40}
+                  onChange={(v) => update({ label: v })}
+                />
+                <TextField
+                  label="Título"
+                  value={content.title}
+                  maxLength={80}
+                  onChange={(v) => update({ title: v })}
+                />
+                <TextField
+                  label="Duración (min)"
+                  type="number"
+                  value={
+                    content.estimatedMinutes === undefined ? '' : String(content.estimatedMinutes)
+                  }
+                  onChange={(v) =>
+                    update({ estimatedMinutes: v.trim() === '' ? undefined : parseNumber(v) })
+                  }
+                />
+                <div className="sm:col-span-2">
+                  <TextField
+                    label="Objetivo"
+                    value={content.focus}
+                    maxLength={120}
+                    onChange={(v) => update({ focus: v })}
+                  />
+                </div>
+                <div className="sm:col-span-2">
+                  <TextField
+                    label={`Nota para ${vm.clientFirstName} (opcional)`}
+                    value={content.coachNote ?? ''}
+                    maxLength={500}
+                    multiline
+                    onChange={(v) => update({ coachNote: v })}
+                  />
+                </div>
+              </div>
+            </section>
+
+            <section aria-labelledby="ejercicios" className="space-y-4">
+              <h2 id="ejercicios" className="text-lg font-bold text-ink-900">
+                Ejercicios
+              </h2>
+              {ordered.length === 0 ? (
+                <p className="text-sm text-ink-500">Todavía no hay ejercicios.</p>
+              ) : null}
+              <ol className="space-y-4">
+                {ordered.map((item, index) => (
+                  <ItemEditor
+                    key={item.id}
+                    item={item}
+                    slot={`${item.block}${ordered.filter((o) => o.block === item.block && o.order <= item.order).length}`}
+                    silhouette={
+                      vm.variants.find((v) => v.id === item.variantId)?.silhouette ?? 'squat'
+                    }
+                    first={index === 0}
+                    last={index === ordered.length - 1}
+                    onChange={(patch) => updateItem(item.id, patch)}
+                    onMove={(delta) => move(item.id, delta)}
+                    onRemove={() => remove(item.id)}
+                  />
+                ))}
+              </ol>
+              {picking ? (
+                <VariantPicker
+                  variants={vm.variants}
+                  onAdd={add}
+                  onClose={() => setPicking(false)}
+                />
+              ) : (
+                <Button variant="secondary" onClick={() => setPicking(true)}>
+                  <Plus aria-hidden className="size-4" /> Añadir ejercicio
+                </Button>
+              )}
+            </section>
+
+            <form action={deleteAction} className="pt-2">
+              <input type="hidden" name="sessionId" value={vm.sessionId} />
+              <input type="hidden" name="clientId" value={vm.clientId} />
+              <ConfirmSubmit
+                variant="ghost"
+                size="sm"
+                message={`¿Eliminar este borrador? ${vm.clientFirstName} nunca lo ha visto. No se puede deshacer.`}
+              >
+                <Trash2 aria-hidden className="size-4" /> Eliminar borrador
+              </ConfirmSubmit>
+            </form>
+          </div>
+
+          <aside aria-labelledby="resumen" className="space-y-4 lg:sticky lg:top-6">
+            <section className="rounded-3xl bg-white p-5 shadow-soft">
+              <h2 id="resumen" className="text-sm font-bold tracking-wide text-ink-500 uppercase">
+                Resumen
+              </h2>
+              <p className="mt-1 text-lg font-bold text-ink-900">
+                {ordered.length} {ordered.length === 1 ? 'ejercicio' : 'ejercicios'} · {totalSets}{' '}
+                {totalSets === 1 ? 'serie' : 'series'}
+              </p>
+              <h3 className="mt-4 text-sm font-bold text-ink-900">Para publicar</h3>
+              {checklist.length === 0 ? (
+                <p className="mt-1 flex items-center gap-1.5 text-sm font-semibold text-leaf-700">
+                  <CircleCheck aria-hidden className="size-4" /> Lista para publicar
+                </p>
+              ) : (
+                <ul className="mt-1 space-y-1 text-sm text-ink-700">
+                  {checklist.map((issue, index) => (
+                    <li key={`${issue.path}-${index}`} className="flex gap-1.5">
+                      <CircleAlert aria-hidden className="mt-0.5 size-4 shrink-0 text-coral-700" />
+                      {describeIssue(issue, content)}
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {warnings.length > 0 ? (
+                <ul className="mt-3 space-y-1 text-sm text-sun-800">
+                  {warnings.map((warning, index) => (
+                    <li key={`${warning.path}-${index}`} className="flex gap-1.5">
+                      <TriangleAlert aria-hidden className="mt-0.5 size-4 shrink-0" />
+                      {describeIssue(warning, content)}
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+            </section>
+          </aside>
         </div>
 
-        <aside aria-labelledby="resumen" className="space-y-4 lg:sticky lg:top-6">
-          <section className="rounded-3xl bg-white p-5 shadow-soft">
-            <h2 id="resumen" className="text-sm font-bold tracking-wide text-ink-500 uppercase">
-              Resumen
-            </h2>
-            <p className="mt-1 text-lg font-bold text-ink-900">
-              {ordered.length} {ordered.length === 1 ? 'ejercicio' : 'ejercicios'} · {totalSets}{' '}
-              {totalSets === 1 ? 'serie' : 'series'}
+        {/* Barra de acciones: fija abajo en el móvil, al pie en el escritorio. */}
+        <div className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-cream-50/95 px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur lg:static lg:mt-6 lg:rounded-3xl lg:border lg:bg-white lg:pb-3">
+          <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3">
+            <p role="status" className="text-sm font-semibold text-ink-500">
+              {STATUS_TEXT[status](savedLabel)}
             </p>
-            <h3 className="mt-4 text-sm font-bold text-ink-900">Para publicar</h3>
-            {checklist.length === 0 ? (
-              <p className="mt-1 flex items-center gap-1.5 text-sm font-semibold text-leaf-700">
-                <CircleCheck aria-hidden className="size-4" /> Lista para publicar
-              </p>
-            ) : (
-              <ul className="mt-1 space-y-1 text-sm text-ink-700">
-                {checklist.map((issue, index) => (
-                  <li key={`${issue.path}-${index}`} className="flex gap-1.5">
-                    <CircleAlert aria-hidden className="mt-0.5 size-4 shrink-0 text-coral-700" />
-                    {describeIssue(issue, content)}
-                  </li>
-                ))}
-              </ul>
-            )}
-            {warnings.length > 0 ? (
-              <ul className="mt-3 space-y-1 text-sm text-sun-800">
-                {warnings.map((warning, index) => (
-                  <li key={`${warning.path}-${index}`} className="flex gap-1.5">
-                    <TriangleAlert aria-hidden className="mt-0.5 size-4 shrink-0" />
-                    {describeIssue(warning, content)}
-                  </li>
-                ))}
-              </ul>
-            ) : null}
-          </section>
-        </aside>
-      </div>
-
-      {/* Barra de acciones: fija abajo en el móvil, al pie en el escritorio. */}
-      <div className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-cream-50/95 px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur lg:static lg:mt-6 lg:rounded-3xl lg:border lg:bg-white lg:pb-3">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3">
-          <p role="status" className="text-sm font-semibold text-ink-500">
-            {pending
-              ? 'Guardando…'
-              : dirty
-                ? 'Cambios sin guardar'
-                : `Borrador guardado · ${savedLabel}`}
-          </p>
-          <div className="flex gap-2">
-            <Button variant="secondary" onClick={save} disabled={pending || !dirty}>
-              <Save aria-hidden className="size-4" /> Guardar
-            </Button>
-            <Button
-              onClick={() => dialog.current?.showModal()}
-              disabled={pending || checklist.length > 0}
-            >
-              <Send aria-hidden className="size-4" /> Publicar versión 1
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="secondary" onClick={save}>
+                <Save aria-hidden className="size-4" /> Guardar
+              </Button>
+              <Button
+                onClick={() => dialog.current?.showModal()}
+                disabled={pending || checklist.length > 0}
+              >
+                <Send aria-hidden className="size-4" /> Publicar versión 1
+              </Button>
+            </div>
           </div>
         </div>
-      </div>
+      </fieldset>
 
       <dialog
         ref={dialog}
@@ -412,7 +444,7 @@ export function SessionBuilder({
           <Button variant="secondary" onClick={() => dialog.current?.close()}>
             Cancelar
           </Button>
-          <Button onClick={publish} disabled={pending}>
+          <Button onClick={() => void publish()} disabled={pending}>
             Publicar
           </Button>
         </div>
