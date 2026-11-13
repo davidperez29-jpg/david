@@ -1,7 +1,7 @@
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterAll, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { type ClientCommand } from '@/contracts/execution';
 import { type ClientActor, type TrainerActor } from '@/domain/access';
 import {
@@ -22,6 +22,7 @@ import {
   reviewSessionExecution,
 } from './client-execution';
 import { parseClientCommand } from './command-parser';
+import { classifyStorageError } from '../storage-errors';
 import {
   createSessionDraft,
   getNewSessionForm,
@@ -36,6 +37,18 @@ import {
  * estados, versiones, permisos, transacciones y persistencia.
  */
 const TODAY = '2026-11-12';
+/**
+ * Reloj controlado (A-10): la sesión se publica a las 16:00, los comandos se registran en el
+ * móvil entre las 17:00 y las 20:00 y llegan al servidor a las 23:59. Así las reglas de la hora
+ * (límite inferior: la publicación; superior: la recepción) se comprueban igual cualquier día.
+ */
+const PUBLISHED_AT = '2026-11-12T16:00:00.000Z';
+const RECEIVED_AT = '2026-11-12T23:59:00.000Z';
+beforeEach(() => {
+  vi.useFakeTimers({ toFake: ['Date'] });
+  vi.setSystemTime(new Date(RECEIVED_AT));
+});
+afterEach(() => vi.useRealTimers());
 const TZ = 'Europe/Madrid';
 let n = 0;
 const id = (prefix = 'cmd') => `${prefix}-${(n += 1).toString().padStart(6, '0')}-xyz`;
@@ -77,6 +90,15 @@ const item = (id: string, order: number, patch: Partial<SessionItem> = {}): Sess
 
 /** Alex publica para Lucía: sentadilla goblet 3 × 10 · 16 kg · RIR 2 y plancha 2 × 30 s. */
 async function published(repos: Repositories, items?: SessionItem[]) {
+  vi.setSystemTime(new Date(PUBLISHED_AT));
+  try {
+    return await publishedAtClock(repos, items);
+  } finally {
+    vi.setSystemTime(new Date(RECEIVED_AT));
+  }
+}
+
+async function publishedAtClock(repos: Repositories, items?: SessionItem[]) {
   const ctx = trainer(repos);
   const form = (await getNewSessionForm(ctx, DEMO_NEW_CLIENT_ID))!;
   await createSessionDraft(ctx, {
@@ -119,6 +141,7 @@ async function published(repos: Repositories, items?: SessionItem[]) {
 
 const start = (versionNumber = 1, commandId = id('start')): ClientCommand => ({
   commandId,
+  clientId: DEMO_NEW_CLIENT_ID,
   type: 'start',
   versionNumber,
   device: device(),
@@ -128,6 +151,7 @@ const set = (
   patch: Partial<Extract<ClientCommand, { type: 'log_set' }>> = {},
 ): Extract<ClientCommand, { type: 'log_set' }> => ({
   commandId: id('set'),
+  clientId: DEMO_NEW_CLIENT_ID,
   type: 'log_set',
   versionNumber: 1,
   prescriptionId: 'itm-goblet',
@@ -319,6 +343,7 @@ describe('comandos de la ejecución', () => {
     await executeClientCommand(client(repos), sessionId, start());
     const pause = {
       commandId: id('pause'),
+      clientId: DEMO_NEW_CLIENT_ID,
       type: 'pause' as const,
       device: device('2026-11-12T17:05:00.000Z'),
     };
@@ -334,6 +359,7 @@ describe('comandos de la ejecución', () => {
     });
     const resume = {
       commandId: id('resume'),
+      clientId: DEMO_NEW_CLIENT_ID,
       type: 'resume' as const,
       device: device('2026-11-12T17:15:00.000Z'),
     };
@@ -371,6 +397,7 @@ describe('comandos de la ejecución', () => {
     await executeClientCommand(client(repos), sessionId, first);
     const finish = (confirmEndEarly: boolean): ClientCommand => ({
       commandId: id('finish'),
+      clientId: DEMO_NEW_CLIENT_ID,
       type: 'finish',
       confirmEndEarly,
       comment: 'Buena sesión',
@@ -413,6 +440,7 @@ describe('comandos de la ejecución', () => {
     await executeClientCommand(client(repos), sessionId, plank(2));
     const done = await executeClientCommand(client(repos), sessionId, {
       commandId: id('finish'),
+      clientId: DEMO_NEW_CLIENT_ID,
       type: 'finish',
       confirmEndEarly: false,
       comment: null,
@@ -502,14 +530,15 @@ describe('permisos y datos entre clientes', () => {
     const { repos } = seededTestDatabase(TODAY);
     const { sessionId } = await published(repos);
     const marta = client(repos, DEMO_CLIENT_ID);
-    expect(await executeClientCommand(marta, sessionId, start())).toMatchObject({
-      status: 404,
-      body: { error: 'not_found' },
-    });
+    // Marta, con su propia identidad, sobre la sesión de Lucía: no existe para ella.
+    expect(
+      await executeClientCommand(marta, sessionId, { ...start(), clientId: DEMO_CLIENT_ID }),
+    ).toMatchObject({ status: 404, body: { error: 'not_found' } });
     expect(await getClientExecutionState(marta, sessionId)).toBeNull();
     expect(await getPlayer(marta, sessionId)).toBeNull();
     // Y Lucía no toca las de Marta.
     const martaSession = (await repos.training.listSessions(DEMO_CLIENT_ID))[0]!;
+    expect(martaSession).toBeDefined();
     expect((await executeClientCommand(client(repos), martaSession.id, start())).status).toBe(404);
     // Un borrador.
     const ctx = trainer(repos);
@@ -524,6 +553,47 @@ describe('permisos y datos entre clientes', () => {
       estimatedMinutes: null,
     });
     expect((await executeClientCommand(client(repos), form.sessionId, start())).status).toBe(404);
+  });
+
+  it('A-08 · un comando creado por otra identidad nunca se aplica con la de la petición', async () => {
+    const { repos, db } = seededTestDatabase(TODAY);
+    const { sessionId } = await published(repos);
+    const lucia = client(repos);
+    await executeClientCommand(lucia, sessionId, start());
+    // Una serie que Lucía dejó pendiente en un móvil compartido; ahora la cookie es de Marta.
+    const pendingFromLucia = set(1);
+    const marta = client(repos, DEMO_CLIENT_ID);
+    expect(await executeClientCommand(marta, sessionId, pendingFromLucia)).toEqual({
+      status: 409,
+      body: expect.objectContaining({ ok: false, error: 'identity_mismatch' }),
+    });
+    // Tampoco sobre una sesión de Marta (no se aplica a nadie ni se revela nada).
+    const martaSession = (await repos.training.listSessions(DEMO_CLIENT_ID))[0]!;
+    expect(
+      (
+        await executeClientCommand(marta, martaSession.id, {
+          ...pendingFromLucia,
+          commandId: id('x'),
+        })
+      ).body,
+    ).toMatchObject({ error: 'identity_mismatch' });
+    expect(
+      db.prepare('SELECT COUNT(*) AS n FROM set_log WHERE client_set_id = @id').get<{ n: number }>({
+        id: pendingFromLucia.commandId,
+      })!.n,
+    ).toBe(0);
+    // Cuando vuelve Lucía, el mismo comando (mismo identificador) se aplica una vez, como suyo.
+    expect((await executeClientCommand(lucia, sessionId, pendingFromLucia)).body).toMatchObject({
+      result: 'applied',
+    });
+    expect((await executeClientCommand(lucia, sessionId, pendingFromLucia)).body).toMatchObject({
+      result: 'already_applied',
+    });
+    expect(
+      db.prepare('SELECT client_id FROM set_log WHERE client_set_id = @id').get({
+        id: pendingFromLucia.commandId,
+      }),
+    ).toEqual({ client_id: DEMO_NEW_CLIENT_ID });
   });
 
   it('la vista del reproductor no lleva la nota privada del entrenador', async () => {
@@ -623,11 +693,30 @@ describe('transacciones, persistencia y migración', () => {
       INSERT INTO client_command VALUES ('serie-0001', 's', 'c', 'log_set', '${'b'.repeat(64)}', '2026-11-10T18:05:00.000Z');
     `),
     );
-    expect(migrate(old).applied).toEqual([2]);
+    expect(migrate(old).applied).toEqual([2, 3]);
     expect(old.prepare('SELECT started_version, paused_seconds FROM session_log').get()).toEqual({
       started_version: 1,
       paused_seconds: 0,
     });
+    // 003: lo ya registrado queda como autodeclarado por el cliente, sin motivo de ajuste.
+    expect(
+      old.prepare('SELECT origin, recorded_by, origin_method, clock_adjustment FROM set_log').get(),
+    ).toEqual({
+      origin: 'self_reported',
+      recorded_by: 'client',
+      origin_method: null,
+      clock_adjustment: null,
+    });
+    expect(old.prepare('SELECT origin, recorded_by FROM session_log').get()).toEqual({
+      origin: 'self_reported',
+      recorded_by: 'client',
+    });
+    // La procedencia no se puede cambiar después, ni declarar un dato importado sin su fuente.
+    expect(() => old.exec("UPDATE session_log SET origin = 'imported'")).toThrow(/procedencia/);
+    expect(() =>
+      old.exec(`INSERT INTO set_log (client_set_id, session_log_id, session_id, client_id, version_number, prescription_id, variant_id, set_number, completed, performed_at, device_recorded_at, device_time_zone, device_utc_offset_min, received_at, origin)
+        VALUES ('serie-0002', 'l', 's', 'c', 1, 'p', 'v', 2, 0, '2026-11-10T18:06:00.000Z', '2026-11-10T18:06:00.000Z', 'UTC', 0, '2026-11-10T18:06:00.000Z', 'imported')`),
+    ).toThrow(/CHECK/);
     expect(old.prepare('SELECT COUNT(*) AS n FROM set_log').get()).toEqual({ n: 1 });
     expect(old.prepare('SELECT COUNT(*) AS n FROM client_command').get()).toEqual({ n: 1 });
     expect(old.prepare('PRAGMA foreign_key_check').all()).toEqual([]);
@@ -672,6 +761,7 @@ describe('forma de los comandos (400)', () => {
     expect(
       parseClientCommand({
         commandId: 'abcdefgh-1',
+        clientId: 'c-lucia',
         type: 'finish',
         confirmEndEarly: false,
         comment: '  ',
@@ -681,11 +771,151 @@ describe('forma de los comandos (400)', () => {
       ok: true,
       command: {
         commandId: 'abcdefgh-1',
+        clientId: 'c-lucia',
         type: 'finish',
         confirmEndEarly: false,
         comment: null,
         device: device(),
       },
     });
+  });
+});
+
+describe('A-10 · reglas de la hora de ejecución', () => {
+  it('T1 · una fecha imposible del móvil se rechaza sin aplicar nada', async () => {
+    const { repos } = seededTestDatabase(TODAY);
+    const { sessionId } = await published(repos);
+    const outcome = await executeClientCommand(client(repos), sessionId, {
+      ...start(),
+      device: device('2019-06-01T10:00:00.000Z'),
+    });
+    expect(outcome).toMatchObject({
+      status: 422,
+      body: { error: 'invalid', issues: [expect.objectContaining({ path: 'device.recordedAt' })] },
+    });
+    expect((await getClientExecutionState(client(repos), sessionId))!.status).toBe('planned');
+  });
+
+  it('T3 · antes de la publicación (inicio) o del inicio (series): se usa la recepción y se anota el motivo', async () => {
+    const { repos, db } = seededTestDatabase(TODAY);
+    const { sessionId } = await published(repos);
+    // El reloj del móvil iba cinco días atrás.
+    await executeClientCommand(client(repos), sessionId, {
+      ...start(),
+      device: device('2026-11-07T17:00:00.000Z'),
+    });
+    expect(
+      db
+        .prepare(
+          'SELECT started_at, start_device_at, start_received_at, start_clock_adjustment FROM session_log WHERE session_id = @sessionId',
+        )
+        .get({ sessionId }),
+    ).toEqual({
+      started_at: RECEIVED_AT,
+      start_device_at: '2026-11-07T17:00:00.000Z',
+      start_received_at: RECEIVED_AT,
+      start_clock_adjustment: 'before_lower_bound',
+    });
+    const early = set(1, { device: device('2026-11-07T17:05:00.000Z') });
+    await executeClientCommand(client(repos), sessionId, early);
+    const state = (await getClientExecutionState(client(repos), sessionId))!;
+    expect(state.sets[0]).toMatchObject({
+      performedAt: RECEIVED_AT,
+      clockAdjusted: true,
+      clockAdjustment: 'before_lower_bound',
+    });
+  });
+
+  it('T2 y T4 · adelantado → recepción; registrado sin conexión o reanudado al día siguiente → su hora', async () => {
+    const { repos } = seededTestDatabase(TODAY);
+    const { sessionId } = await published(repos);
+    await executeClientCommand(client(repos), sessionId, start());
+    // Registrada sin conexión a las 17:01 y recibida a las 23:59: conserva su hora.
+    await executeClientCommand(client(repos), sessionId, set(1));
+    // Reanudada al día siguiente (llega al día siguiente): su hora, sin ajustes.
+    vi.setSystemTime(new Date('2026-11-13T09:31:00.000Z'));
+    await executeClientCommand(
+      client(repos),
+      sessionId,
+      set(2, { device: device('2026-11-13T09:30:00.000Z') }),
+    );
+    // Un móvil adelantado una hora: se usa la recepción.
+    await executeClientCommand(
+      client(repos),
+      sessionId,
+      set(3, { device: device('2026-11-13T10:31:00.000Z') }),
+    );
+    const sets = (await getClientExecutionState(client(repos), sessionId))!.sets;
+    expect(sets.map((s) => [s.setNumber, s.performedAt, s.clockAdjustment])).toEqual([
+      [1, '2026-11-12T17:01:00.000Z', null],
+      [2, '2026-11-13T09:30:00.000Z', null],
+      [3, '2026-11-13T09:31:00.000Z', 'ahead_of_server'],
+    ]);
+  });
+});
+
+describe('A-14 · procedencia guardada con cada registro', () => {
+  it('lo que registra el cliente queda como autodeclarado por el cliente, en la base y en la vista', async () => {
+    const { repos, db } = seededTestDatabase(TODAY);
+    const { sessionId } = await published(repos);
+    await executeClientCommand(client(repos), sessionId, start());
+    await executeClientCommand(client(repos), sessionId, set(1));
+    expect(
+      db
+        .prepare(
+          'SELECT origin, recorded_by, origin_method FROM set_log WHERE session_id = @sessionId',
+        )
+        .get({ sessionId }),
+    ).toEqual({ origin: 'self_reported', recorded_by: 'client', origin_method: null });
+    expect(
+      db.prepare('SELECT origin, recorded_by FROM session_log WHERE session_id = @sessionId').get({
+        sessionId,
+      }),
+    ).toEqual({ origin: 'self_reported', recorded_by: 'client' });
+    const [logged] = (await getClientExecutionState(client(repos), sessionId))!.sets;
+    expect(logged).toMatchObject({ origin: 'self_reported', recordedBy: 'client' });
+  });
+});
+
+describe('A-11 · base ocupada por otro proceso', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'trainpro-ocupada-'));
+  afterAll(() => rmSync(dir, { recursive: true, force: true }));
+
+  it('el comando falla pronto con un error recuperable, sin aplicar nada, y el reintento entra una vez', async () => {
+    vi.useRealTimers();
+    const path = join(dir, 'ocupada.sqlite');
+    const { repos, db } = seededTestDatabase(TODAY, { path });
+    const { sessionId } = await published(repos);
+    await executeClientCommand(client(repos), sessionId, start());
+    const blocker = openSqlite(path);
+    blocker.exec('BEGIN IMMEDIATE');
+    const command = set(1);
+    const t0 = Date.now();
+    let failure: unknown = null;
+    try {
+      await executeClientCommand(client(repos), sessionId, command);
+    } catch (error) {
+      failure = error;
+    }
+    const waited = Date.now() - t0;
+    blocker.exec('ROLLBACK');
+    blocker.close();
+    expect(classifyStorageError(failure)).toBe('storage_busy');
+    // Espera acotada (BUSY_TIMEOUT_MS = 1 s): el servidor no se queda detenido 5 s.
+    expect(waited).toBeLessThan(2500);
+    expect(
+      db
+        .prepare('SELECT COUNT(*) AS n FROM client_command WHERE command_id = @id')
+        .get<{ n: number }>({
+          id: command.commandId,
+        })!.n,
+    ).toBe(0);
+    expect((await executeClientCommand(client(repos), sessionId, command)).body).toMatchObject({
+      result: 'applied',
+    });
+    expect((await executeClientCommand(client(repos), sessionId, command)).body).toMatchObject({
+      result: 'already_applied',
+    });
+    db.close();
   });
 });

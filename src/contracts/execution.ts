@@ -5,7 +5,8 @@
 import { type Issue } from '@/domain/issues';
 import { type Silhouette } from '@/domain/library/exercise';
 import { type IsoDate, type IsoDateTime } from '@/domain/time';
-import { type ExecutionStatusV2 } from '@/domain/training/execution';
+import { type DataOrigin, type RecordedBy } from '@/domain/measurement';
+import { type ClockAdjustment, type ExecutionStatusV2 } from '@/domain/training/execution';
 import { type PerformedLoad } from '@/domain/training/load';
 import { type PerformedSetInput } from '@/domain/training/performance';
 import { type SessionContent, type SetTarget } from '@/domain/training/session-v2';
@@ -20,6 +21,11 @@ export interface DeviceClock {
 interface CommandBase {
   /** Identificador estable generado en el dispositivo: el mismo en todos los reintentos. */
   commandId: string;
+  /**
+   * Identidad que creó el comando en el dispositivo (A-08). El servidor lo rechaza si no es la de
+   * la petición: un registro de una persona nunca se aplica como de otra.
+   */
+  clientId: string;
   device: DeviceClock;
 }
 
@@ -56,6 +62,11 @@ export interface PerformedSetVM {
   note?: string;
   performedAt: IsoDateTime;
   clockAdjusted: boolean;
+  /** Por qué se usó la hora de recepción en lugar de la del móvil (null si no se ajustó). */
+  clockAdjustment: ClockAdjustment | null;
+  /** Procedencia guardada con el registro (hoy, siempre autodeclarado por el cliente). */
+  origin: DataOrigin;
+  recordedBy: RecordedBy;
   /** `client_set_id` al que corrige, si es una corrección. */
   supersedes?: string;
 }
@@ -91,7 +102,15 @@ export type CommandErrorCode =
   | 'unknown_version'
   | 'unknown_set_in_version'
   | 'confirmation_required'
-  | 'invalid';
+  | 'invalid'
+  /** El comando lo creó otra identidad: no se aplica ni se revela nada (A-08). */
+  | 'identity_mismatch'
+  /** Otro proceso tiene la escritura de la base: recuperable, se reintenta (A-11). */
+  | 'storage_busy'
+  /** La base no está disponible (borrada, sustituida o en uso por otro proceso): recuperable. */
+  | 'storage_unavailable'
+  /** Error de almacenamiento no recuperable con un reintento inmediato (disco lleno, base dañada). */
+  | 'storage_error';
 
 /** Respuesta de `POST /api/cliente/sesiones/<id>/comandos` (V1_SPEC §8.4). */
 export type CommandResponse =
@@ -122,6 +141,10 @@ export const COMMAND_HTTP_STATUS: Record<CommandErrorCode, number> = {
   unknown_set_in_version: 409,
   confirmation_required: 409,
   invalid: 422,
+  identity_mismatch: 409,
+  storage_busy: 503,
+  storage_unavailable: 503,
+  storage_error: 500,
 };
 
 // ── Reproductor (B3–B6) ──────────────────────────────────────────────────────
@@ -156,6 +179,8 @@ export interface PlayerItemVM {
 /** Lo que necesita el reproductor: la versión vigente (sin nota privada) y el estado. */
 export interface PlayerVM {
   sessionId: string;
+  /** Identidad de quien entrena: va en cada comando y separa la cola local por persona. */
+  clientId: string;
   clientFirstName: string;
   trainerFirstName: string;
   today: IsoDate;

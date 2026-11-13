@@ -1,7 +1,8 @@
 import { type NextRequest } from 'next/server';
 import { COMMAND_HTTP_STATUS, type CommandResponse } from '@/contracts/execution';
 import { getClientApiContext } from '@/server/context';
-import { executeClientCommand } from '@/server/services/client-execution';
+import { commandErrorMessage, executeClientCommand } from '@/server/services/client-execution';
+import { classifyStorageError, RETRY_AFTER_SECONDS } from '@/server/storage-errors';
 import { parseClientCommand } from '@/server/services/command-parser';
 
 /**
@@ -56,14 +57,30 @@ export async function POST(
     );
   }
 
-  const ctx = await getClientApiContext();
-  if (!ctx)
-    return error(COMMAND_HTTP_STATUS.not_found, 'not_found', 'La sesión no existe o no es tuya.');
-  const { sessionId } = await context.params;
   try {
+    const ctx = await getClientApiContext();
+    if (!ctx)
+      return error(COMMAND_HTTP_STATUS.not_found, 'not_found', 'La sesión no existe o no es tuya.');
+    const { sessionId } = await context.params;
     const outcome = await executeClientCommand(ctx, sessionId, parsed.command);
     return reply(outcome.status, outcome.body);
   } catch (cause) {
+    // A-11: los errores de almacenamiento son controlados y la transacción no se aplicó.
+    const failure = classifyStorageError(cause);
+    if (failure) {
+      console.error(`Comando de ejecución no aplicado (${failure}):`, (cause as Error).message);
+      const retryAfter = RETRY_AFTER_SECONDS[failure];
+      return Response.json(
+        { ok: false, error: failure, message: commandErrorMessage(failure) },
+        {
+          status: COMMAND_HTTP_STATUS[failure],
+          headers: {
+            'cache-control': 'no-store',
+            ...(retryAfter ? { 'retry-after': String(retryAfter) } : {}),
+          },
+        },
+      );
+    }
     console.error('Error inesperado al aplicar un comando de ejecución', (cause as Error).message);
     return error(500, 'server_error', 'No se ha podido guardar. Se reintentará.');
   }

@@ -9,7 +9,21 @@ import {
 import { type ExecutionReviewSetVM, type ExecutionReviewVM } from '@/contracts/execution';
 import { formatSeconds } from '@/domain/format';
 import { ExercisePictogram } from '@/features/brand/pictogram';
+import { OriginBadge } from '@/features/shared/provenance';
 import { cn } from '@/ui/cn';
+
+/** Por qué se usó la hora de recepción (docs/EXECUTION.md §7.1). */
+const ADJUSTMENT_TEXT = {
+  ahead_of_server: 'hora de llegada (el reloj del móvil iba adelantado)',
+  before_lower_bound: 'hora de llegada (el reloj del móvil marcaba una hora imposible, anterior)',
+} as const;
+
+const RECORDED_BY_TEXT = {
+  client: 'el cliente',
+  trainer: 'el entrenador',
+  device: 'un dispositivo',
+  system: 'TrainPro',
+} as const;
 
 const STATUS = {
   done: { icon: CircleCheck, label: 'Hecha', tone: 'text-leaf-700' },
@@ -81,9 +95,22 @@ function SetRow({
         ) : null}
         {set.note ? <p className="mt-1 text-xs text-ink-700">«{set.note}»</p> : null}
         {audience === 'trainer' && set.performedAt ? (
-          <p className="mt-1 inline-flex items-center gap-1 text-xs text-ink-500">
-            <Clock aria-hidden className="size-3.5" /> {time(set.performedAt, timeZone)}
-            {set.clockAdjusted ? ' · hora ajustada (el reloj del móvil iba adelantado)' : ''}
+          <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-ink-500">
+            <span className="inline-flex items-center gap-1">
+              <Clock aria-hidden className="size-3.5" /> {time(set.performedAt, timeZone)}
+              {set.clockAdjustment ? ` · ${ADJUSTMENT_TEXT[set.clockAdjustment]}` : ''}
+            </span>
+            {set.origin ? (
+              <span className="inline-flex items-center gap-1">
+                <OriginBadge origin={set.origin} />
+                {set.recordedBy ? (
+                  <span className="sr-only">
+                    {' '}
+                    registrado por {RECORDED_BY_TEXT[set.recordedBy]}
+                  </span>
+                ) : null}
+              </span>
+            ) : null}
           </p>
         ) : null}
       </div>

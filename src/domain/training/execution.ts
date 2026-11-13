@@ -1,4 +1,5 @@
 import { daysBetween, localDateOf, type IsoDate, type IsoDateTime } from '../time';
+import { type DataOrigin, type RecordedBy } from '../measurement';
 import { type RpeScale } from './effort';
 import { type PerformedLoad } from './load';
 import { type SessionContent } from './session-v2';
@@ -32,6 +33,10 @@ export interface SessionLogV2 {
   /** Esfuerzo percibido de la sesión (modelo de la Fase 1; formalización pendiente de Q2). */
   perceivedEffort?: number;
   comment?: string;
+  startClockAdjustment?: ClockAdjustment | null;
+  finishClockAdjustment?: ClockAdjustment | null;
+  origin?: DataOrigin;
+  recordedBy?: RecordedBy;
 }
 
 export interface SetLogV2 {
@@ -60,6 +65,12 @@ export interface SetLogV2 {
   deviceUtcOffsetMin: number;
   receivedAt: IsoDateTime;
   clockAdjusted: boolean;
+  /** Por qué se usó la hora de recepción (null si se usó la del dispositivo). */
+  clockAdjustment?: ClockAdjustment | null;
+  /** Procedencia guardada con el registro (migración 003). */
+  origin: DataOrigin;
+  recordedBy: RecordedBy;
+  originMethod?: string;
 }
 
 /**
@@ -79,9 +90,50 @@ export function executionInstant(
   deviceRecordedAt: IsoDateTime,
   receivedAt: IsoDateTime,
 ): { performedAt: IsoDateTime; clockAdjusted: boolean } {
-  return Date.parse(deviceRecordedAt) > Date.parse(receivedAt)
-    ? { performedAt: receivedAt, clockAdjusted: true }
-    : { performedAt: deviceRecordedAt, clockAdjusted: false };
+  const r = resolveExecutionInstant(deviceRecordedAt, receivedAt, null);
+  return { performedAt: r.performedAt, clockAdjusted: r.adjustment !== null };
+}
+
+/**
+ * Reglas de la hora de ejecución (docs/EXECUTION.md §7.1; A-10). No se confía ciegamente en el
+ * reloj del móvil, pero tampoco se impone la hora del servidor a lo que se registró sin conexión:
+ *
+ * - T1 · Imposible: anterior a 2020-01-01 o posterior a 2100: el reloj del dispositivo está mal
+ *   (típico tras perder la batería). Se rechaza con un mensaje para que se corrija.
+ * - T2 · Por delante del servidor: se usa la hora de recepción (P-86): `ahead_of_server`.
+ * - T3 · Anterior a lo posible (más de 5 min antes del límite inferior: la publicación de la
+ *   versión para el inicio; el inicio de la ejecución para todo lo demás): se usa la hora de
+ *   recepción: `before_lower_bound`.
+ * - T4 · En otro caso, la del dispositivo: también lo registrado sin conexión horas antes, lo que
+ *   pasa de la medianoche y una sesión reanudada al día siguiente.
+ *
+ * La hora del dispositivo, su zona y su desfase se guardan siempre, junto con la recepción y el
+ * motivo del ajuste, para poder auditar las discrepancias. Los instantes son UTC: un cambio de
+ * zona horaria no altera el orden; la fecha local se calcula con la zona de cada registro.
+ */
+export const EARLIEST_DEVICE_INSTANT = '2020-01-01T00:00:00.000Z';
+export const LATEST_DEVICE_INSTANT = '2100-01-01T00:00:00.000Z';
+export const CLOCK_TOLERANCE_MS = 5 * 60_000;
+export type ClockAdjustment = 'ahead_of_server' | 'before_lower_bound';
+
+export const isPossibleDeviceInstant = (deviceRecordedAt: IsoDateTime): boolean => {
+  const t = Date.parse(deviceRecordedAt);
+  return t >= Date.parse(EARLIEST_DEVICE_INSTANT) && t < Date.parse(LATEST_DEVICE_INSTANT);
+};
+
+export function resolveExecutionInstant(
+  deviceRecordedAt: IsoDateTime,
+  receivedAt: IsoDateTime,
+  lowerBound: IsoDateTime | null,
+): { performedAt: IsoDateTime; adjustment: ClockAdjustment | null } {
+  const device = Date.parse(deviceRecordedAt);
+  if (device > Date.parse(receivedAt)) {
+    return { performedAt: receivedAt, adjustment: 'ahead_of_server' };
+  }
+  if (lowerBound !== null && device < Date.parse(lowerBound) - CLOCK_TOLERANCE_MS) {
+    return { performedAt: receivedAt, adjustment: 'before_lower_bound' };
+  }
+  return { performedAt: deviceRecordedAt, adjustment: null };
 }
 
 /** Fecha de ejecución de una sesión: la fecha local de su inicio, en la zona del dispositivo. */

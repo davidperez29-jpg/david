@@ -14,6 +14,8 @@ import {
   effectiveSetLogs,
   executionDate,
   executionInstant,
+  isPossibleDeviceInstant,
+  resolveExecutionInstant,
   executionStatus,
   type SessionLogV2,
   type SetLogV2,
@@ -407,6 +409,8 @@ describe('compatibilidad con el modelo de la Fase 1', () => {
       deviceUtcOffsetMin: 60,
       receivedAt: '2026-11-09T22:58:01.000Z',
       clockAdjusted: false,
+      origin: 'self_reported' as const,
+      recordedBy: 'client' as const,
       ...extra,
     });
     const legacyLog = toLegacyLog(planned, log, [
@@ -440,6 +444,8 @@ describe('ejecución: correcciones, horas y estados', () => {
     deviceUtcOffsetMin: 60,
     receivedAt: '2026-11-09T10:00:00.000Z',
     clockAdjusted: false,
+    origin: 'self_reported' as const,
+    recordedBy: 'client' as const,
   };
 
   it('el registro efectivo es el último de la cadena de correcciones', () => {
@@ -461,6 +467,39 @@ describe('ejecución: correcciones, horas y estados', () => {
       performedAt: '2026-11-10T08:00:00.000Z',
       clockAdjusted: true,
     });
+  });
+
+  it('A-10 · reglas T1–T4 de la hora de ejecución', () => {
+    const received = '2026-11-12T20:00:00.000Z';
+    const published = '2026-11-12T16:00:00.000Z';
+    // T1: fechas imposibles (reloj reiniciado o absurdo).
+    expect(isPossibleDeviceInstant('1970-01-01T00:00:00.000Z')).toBe(false);
+    expect(isPossibleDeviceInstant('2019-12-31T23:59:59.000Z')).toBe(false);
+    expect(isPossibleDeviceInstant('2100-01-01T00:00:00.000Z')).toBe(false);
+    expect(isPossibleDeviceInstant('2026-11-12T17:00:00.000Z')).toBe(true);
+    // T2: por delante de la recepción.
+    expect(resolveExecutionInstant('2026-11-12T20:00:01.000Z', received, published)).toEqual({
+      performedAt: received,
+      adjustment: 'ahead_of_server',
+    });
+    // T3: más de 5 min antes del límite inferior.
+    expect(resolveExecutionInstant('2026-11-12T15:54:59.000Z', received, published)).toEqual({
+      performedAt: received,
+      adjustment: 'before_lower_bound',
+    });
+    // Dentro de la tolerancia de 5 min (relojes algo desfasados): la del dispositivo.
+    expect(resolveExecutionInstant('2026-11-12T15:56:00.000Z', received, published)).toEqual({
+      performedAt: '2026-11-12T15:56:00.000Z',
+      adjustment: null,
+    });
+    // T4: registrado sin conexión horas antes de llegar, o al día siguiente del inicio.
+    expect(
+      resolveExecutionInstant('2026-11-12T17:00:00.000Z', received, published).adjustment,
+    ).toBeNull();
+    expect(
+      resolveExecutionInstant('2026-11-13T09:00:00.000Z', '2026-11-13T09:00:05.000Z', published)
+        .adjustment,
+    ).toBeNull();
   });
 
   it('la fecha de ejecución es la local del inicio, también con el cambio de hora', () => {

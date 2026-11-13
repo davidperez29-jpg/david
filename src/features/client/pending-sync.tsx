@@ -13,14 +13,19 @@ import { flushSession, resetBackoff } from './player/sync-engine';
  * «Reintentar», sin esperar; tras un fallo, con la misma espera creciente que el reproductor) y,
  * cuando el servidor lo confirma, actualiza la pantalla. Si no hay nada
  * pendiente, no muestra nada.
+ *
+ * Solo envía y muestra lo de `clientId`, la persona que tiene abierta la app (A-08). Si en este
+ * dispositivo hay registros pendientes de otra persona, solo dice que existen (sin contenido) y
+ * que se enviarán cuando esa persona vuelva a entrar: nunca se envían con otra identidad.
  */
-export function PendingSync() {
+export function PendingSync({ clientId }: { clientId: string }) {
   const router = useRouter();
   const [pending, setPending] = useState<{
     total: number;
     errors: number;
     sessionId: string;
   } | null>(null);
+  const [foreign, setForeign] = useState(0);
 
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   /** El último `run`, para reprogramarlo desde un temporizador sin referenciarse a sí mismo. */
@@ -31,16 +36,19 @@ export function PendingSync() {
     async (wake = false) => {
       if (timer.current) clearTimeout(timer.current);
       const store = await openLocalStore();
-      const all = await store.listAll();
+      const all = await store.listAll(clientId);
       let confirmed = false;
       let waitMs: number | null = null;
       for (const sessionId of [...new Set(all.map((e) => e.sessionId))]) {
-        if (wake) await resetBackoff(store, sessionId);
-        const result = await flushSession(store, sessionId, { onState: () => (confirmed = true) });
+        if (wake) await resetBackoff(store, clientId, sessionId);
+        const result = await flushSession(store, clientId, sessionId, {
+          onState: () => (confirmed = true),
+        });
         if (result.waitMs !== null) waitMs = Math.min(waitMs ?? result.waitMs, result.waitMs);
       }
       if (waitMs !== null) timer.current = setTimeout(() => void runRef.current(), waitMs);
-      const after = await store.listAll();
+      const after = await store.listAll(clientId);
+      setForeign(await store.countForeign(clientId));
       setPending(
         after.length > 0
           ? {
@@ -52,7 +60,7 @@ export function PendingSync() {
       );
       if (confirmed) router.refresh();
     },
-    [router],
+    [clientId, router],
   );
   useEffect(() => {
     runRef.current = run;
@@ -75,36 +83,54 @@ export function PendingSync() {
     };
   }, [run]);
 
-  if (!pending) return null;
-  return (
-    <p
-      role="status"
-      className={
-        pending.errors > 0
-          ? 'mt-3 flex flex-wrap items-center gap-2 rounded-2xl bg-coral-100 p-3 text-sm font-semibold text-coral-700'
-          : 'mt-3 flex flex-wrap items-center gap-2 rounded-2xl bg-sky-100/70 p-3 text-sm font-semibold text-sky-700'
-      }
-    >
-      {pending.errors > 0 ? (
-        <TriangleAlert aria-hidden className="size-4" />
-      ) : (
+  const foreignNotice =
+    foreign > 0 ? (
+      <p
+        role="note"
+        className="mt-3 flex flex-wrap items-center gap-2 rounded-2xl bg-cream-200 p-3 text-sm text-ink-700"
+      >
         <CloudUpload aria-hidden className="size-4" />
-      )}
-      {pending.total} {pending.total === 1 ? 'registro pendiente' : 'registros pendientes'} de envío
-      en este móvil
-      {pending.errors > 0 ? (
-        <Link href={`/cliente/sesion/${pending.sessionId}/entrenar`} className="underline">
-          Revisar
-        </Link>
-      ) : (
-        <button
-          type="button"
-          onClick={() => void run(true)}
-          className="inline-flex items-center gap-1 underline"
-        >
-          <RefreshCw aria-hidden className="size-3.5" /> Reintentar
-        </button>
-      )}
-    </p>
+        Hay {foreign === 1 ? 'un registro pendiente' : `${foreign} registros pendientes`} de otra
+        persona en este dispositivo. Se enviarán cuando esa persona vuelva a entrar.
+      </p>
+    ) : null;
+
+  if (!pending) return foreignNotice;
+  return (
+    <>
+      <p
+        role="status"
+        className={
+          pending.errors > 0
+            ? 'mt-3 flex flex-wrap items-center gap-2 rounded-2xl bg-coral-100 p-3 text-sm font-semibold text-coral-700'
+            : 'mt-3 flex flex-wrap items-center gap-2 rounded-2xl bg-sky-100/70 p-3 text-sm font-semibold text-sky-700'
+        }
+      >
+        {pending.errors > 0 ? (
+          <TriangleAlert aria-hidden className="size-4" />
+        ) : (
+          <CloudUpload aria-hidden className="size-4" />
+        )}
+        {pending.total} {pending.total === 1 ? 'registro pendiente' : 'registros pendientes'} de
+        envío en este móvil
+        {pending.errors > 0 ? (
+          <Link
+            href={`/cliente/sesion/${pending.sessionId}/entrenar`}
+            className="inline-flex min-h-11 items-center underline"
+          >
+            Revisar
+          </Link>
+        ) : (
+          <button
+            type="button"
+            onClick={() => void run(true)}
+            className="inline-flex min-h-11 items-center gap-1 underline"
+          >
+            <RefreshCw aria-hidden className="size-3.5" /> Reintentar
+          </button>
+        )}
+      </p>
+      {foreignNotice}
+    </>
   );
 }

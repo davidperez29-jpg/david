@@ -232,7 +232,7 @@ describe('B1-10 · migraciones', () => {
   it('una base vacía aplica todas las migraciones en orden y no las vuelve a aplicar', () => {
     const file = join(dir, 'nueva.sqlite');
     const fresh = openSqlite(file);
-    expect(migrate(fresh).applied).toEqual([1, 2]);
+    expect(migrate(fresh).applied).toEqual([1, 2, 3]);
     expect(migrate(fresh).applied).toEqual([]);
     const rows = fresh
       .prepare('SELECT version, checksum FROM schema_migrations ORDER BY version')

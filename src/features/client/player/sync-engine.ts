@@ -31,8 +31,12 @@ export const stateUrl = (sessionId: string) =>
  * pestaña o «Reintentar») anula la espera entre reintentos: lo pendiente se intenta ya. La espera
  * creciente solo separa los fallos seguidos mientras nada cambia.
  */
-export async function resetBackoff(store: LocalStore, sessionId: string): Promise<void> {
-  for (const entry of await store.list(sessionId)) {
+export async function resetBackoff(
+  store: LocalStore,
+  owner: string,
+  sessionId: string,
+): Promise<void> {
+  for (const entry of await store.list(owner, sessionId)) {
     if (entry.status === 'queued' && entry.nextAttemptAt > 0) {
       await store.put({ ...entry, nextAttemptAt: 0 });
     }
@@ -40,20 +44,62 @@ export async function resetBackoff(store: LocalStore, sessionId: string): Promis
 }
 
 /**
- * Envía en orden los comandos pendientes de una sesión. Devuelve cuánto esperar antes del
- * siguiente intento (si un fallo de red obliga a esperar), o `null` si no queda nada que enviar
- * ahora (o si otra parte de la app ya está enviando esa cola).
+ * Errores que pueden resolverse reintentando el MISMO comando (mismo identificador: si ya se
+ * hubiera aplicado, el servidor responde «ya aplicado»). Los demás (datos no válidos, sesión
+ * cerrada, serie inexistente…) necesitan que la persona decida: descartar y volver a registrar.
+ */
+const RECOVERABLE_ERRORS = new Set([
+  'not_found',
+  'not_started',
+  'server_error',
+  'storage_busy',
+  'storage_unavailable',
+  'http_404',
+  'http_408',
+  'http_429',
+]);
+export const isRecoverableError = (code: string | undefined) =>
+  code !== undefined && RECOVERABLE_ERRORS.has(code);
+
+/**
+ * «Reintentar» (A-09): los comandos con un error recuperable vuelven a la cola, con su
+ * identificador original. Los no recuperables se quedan como están (nunca se borran sin que la
+ * persona lo decida). Devuelve cuántos se han vuelto a poner en cola.
+ */
+export async function retryRecoverable(
+  store: LocalStore,
+  owner: string,
+  sessionId: string,
+): Promise<number> {
+  let n = 0;
+  for (const entry of await store.list(owner, sessionId)) {
+    if (entry.status === 'error' && isRecoverableError(entry.error?.code)) {
+      const { error: _previous, ...rest } = entry;
+      await store.put({ ...rest, status: 'queued', attempts: 0, nextAttemptAt: 0 });
+      n += 1;
+    }
+  }
+  return n;
+}
+
+/**
+ * Envía en orden los comandos pendientes de `owner` en una sesión (nunca los de otra persona: la
+ * consulta del almacén ya los excluye, y el servidor rechaza un comando de otra identidad).
+ * Devuelve cuánto esperar antes del siguiente intento (si un fallo de red obliga a esperar), o
+ * `null` si no queda nada que enviar ahora (o si otra parte de la app ya está enviando esa cola).
  */
 export async function flushSession(
   store: LocalStore,
+  owner: string,
   sessionId: string,
   handlers: FlushHandlers = {},
 ): Promise<{ waitMs: number | null }> {
-  if (busy.has(sessionId)) return { waitMs: null };
-  busy.add(sessionId);
+  const key = `${owner}:${sessionId}`;
+  if (busy.has(key)) return { waitMs: null };
+  busy.add(key);
   try {
     for (;;) {
-      const next = (await store.list(sessionId)).find((e) => e.status !== 'error');
+      const next = (await store.list(owner, sessionId)).find((e) => e.status !== 'error');
       if (!next) return { waitMs: null };
       const wait = next.nextAttemptAt - Date.now();
       if (wait > 0) return { waitMs: wait };
@@ -90,6 +136,15 @@ export async function flushSession(
       if (body?.ok) {
         await store.remove(next.commandId);
         handlers.onState?.(body.state);
+      } else if (body && !body.ok && body.error === 'identity_mismatch') {
+        // La identidad del navegador ya no es la que creó el comando (se cambió en otra pestaña):
+        // no se aplica a nadie y sigue guardado, a la espera de su titular.
+        await store.put({ ...next, status: 'queued', nextAttemptAt: Date.now() + 30_000 });
+        handlers.onChange?.();
+        handlers.onNotice?.(
+          'Hay registros de otra persona en este dispositivo: se enviarán cuando vuelva a entrar.',
+        );
+        return { waitMs: 30_000 };
       } else if (body && !body.ok && body.error === 'set_already_logged') {
         // Otro envío (u otro dispositivo) ya registró esa serie: manda lo del servidor.
         await store.remove(next.commandId);
@@ -113,6 +168,6 @@ export async function flushSession(
       handlers.onChange?.();
     }
   } finally {
-    busy.delete(sessionId);
+    busy.delete(key);
   }
 }

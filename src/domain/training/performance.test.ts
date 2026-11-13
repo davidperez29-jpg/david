@@ -236,6 +236,8 @@ describe('revisión de una ejecución', () => {
     deviceUtcOffsetMin: 60,
     receivedAt: `2026-11-12T10:0${setNumber}:00.000Z`,
     clockAdjusted: false,
+    origin: 'self_reported' as const,
+    recordedBy: 'client' as const,
     ...patch,
   });
 

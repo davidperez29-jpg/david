@@ -1,7 +1,13 @@
 import { type Silhouette } from '../library/exercise';
+import { type DataOrigin, type RecordedBy } from '../measurement';
 import { type IsoDateTime } from '../time';
 import { describeEffort } from './effort';
-import { effectiveSetLogs, type ExecutionStatusV2, type SetLogV2 } from './execution';
+import {
+  type ClockAdjustment,
+  effectiveSetLogs,
+  type ExecutionStatusV2,
+  type SetLogV2,
+} from './execution';
 import { describeLoad } from './load';
 import { describePerformed, type PerformedSet, setDifferences } from './performance';
 import { formatRepTarget, formatSetsAndReps } from './prescription';
@@ -25,6 +31,11 @@ export interface ExecutionReviewSet {
   previous: string[];
   performedAt: IsoDateTime | null;
   clockAdjusted: boolean;
+  /** Por qué se usó la hora de recepción (null si se usó la del móvil o no hay registro). */
+  clockAdjustment: ClockAdjustment | null;
+  /** Procedencia guardada con el registro (null si no hay registro). */
+  origin: DataOrigin | null;
+  recordedBy: RecordedBy | null;
   note: string | null;
 }
 
@@ -152,6 +163,9 @@ export function reviewExecution(input: ReviewInput): ExecutionReview {
         previous: log ? previousOf(log) : [],
         performedAt: log?.performedAt ?? null,
         clockAdjusted: log?.clockAdjusted ?? false,
+        clockAdjustment: log?.clockAdjustment ?? null,
+        origin: log?.origin ?? null,
+        recordedBy: log?.recordedBy ?? null,
         note: log?.note ?? null,
       };
     });

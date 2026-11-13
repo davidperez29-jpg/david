@@ -1,5 +1,10 @@
 import 'server-only';
-import { type SessionLogV2, type SetLogV2 } from '@/domain/training/execution';
+import { type DataOrigin, type RecordedBy } from '@/domain/measurement';
+import {
+  type ClockAdjustment,
+  type SessionLogV2,
+  type SetLogV2,
+} from '@/domain/training/execution';
 import { type PerformedLoad } from '@/domain/training/load';
 import {
   type SessionContent,
@@ -57,6 +62,11 @@ export interface SessionLogRow {
   pending_sets_confirmed: number | null;
   perceived_effort: number | null;
   comment: string | null;
+  origin: DataOrigin;
+  recorded_by: RecordedBy;
+  origin_method: string | null;
+  start_clock_adjustment: ClockAdjustment | null;
+  finish_clock_adjustment: ClockAdjustment | null;
 }
 
 export interface SetLogRow {
@@ -87,6 +97,10 @@ export interface SetLogRow {
   device_utc_offset_min: number;
   received_at: string;
   clock_adjusted: number;
+  clock_adjustment: ClockAdjustment | null;
+  origin: DataOrigin;
+  recorded_by: RecordedBy;
+  origin_method: string | null;
 }
 
 /** Lee un documento JSON guardado y comprueba que es un contenido de sesión reconocible. */
@@ -153,6 +167,10 @@ export function toSessionLog(row: SessionLogRow): SessionLogV2 {
       : {}),
     ...(row.perceived_effort !== null ? { perceivedEffort: row.perceived_effort } : {}),
     ...(row.comment ? { comment: row.comment } : {}),
+    startClockAdjustment: row.start_clock_adjustment ?? null,
+    finishClockAdjustment: row.finish_clock_adjustment ?? null,
+    origin: row.origin,
+    recordedBy: row.recorded_by,
   };
 }
 
@@ -206,6 +224,11 @@ export function toSetLog(row: SetLogRow): SetLogV2 {
     deviceUtcOffsetMin: row.device_utc_offset_min,
     receivedAt: row.received_at,
     clockAdjusted: row.clock_adjusted === 1,
+    // Antes de la migración 003, el único ajuste posible era «iba adelantado».
+    clockAdjustment: row.clock_adjustment ?? (row.clock_adjusted === 1 ? 'ahead_of_server' : null),
+    origin: row.origin,
+    recordedBy: row.recorded_by,
+    ...(row.origin_method ? { originMethod: row.origin_method } : {}),
   };
 }
 

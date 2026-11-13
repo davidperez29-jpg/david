@@ -71,6 +71,9 @@ export function parseClientCommand(
   if (typeof body.commandId !== 'string' || !COMMAND_ID.test(body.commandId)) {
     issues.push(issue('commandId', 'Identificador de comando no válido.'));
   }
+  if (typeof body.clientId !== 'string' || !ID.test(body.clientId)) {
+    issues.push(issue('clientId', 'Falta la identidad que creó el comando.'));
+  }
   const device = body.device;
   if (
     !isObj(device) ||
@@ -88,6 +91,7 @@ export function parseClientCommand(
   if (issues.length > 0) return { ok: false, issues };
   const base = {
     commandId: body.commandId as string,
+    clientId: body.clientId as string,
     device: {
       recordedAt: new Date(Date.parse((device as Obj).recordedAt as string)).toISOString(),
       timeZone: (device as Obj).timeZone as string,

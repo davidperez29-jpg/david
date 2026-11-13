@@ -3,7 +3,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { type ClientCommand, type ExecutionStateVM } from '@/contracts/execution';
 import { type LocalStore, openLocalStore, type QueuedCommand } from './local-store';
-import { flushSession, resetBackoff, stateUrl } from './sync-engine';
+import {
+  flushSession,
+  isRecoverableError,
+  resetBackoff,
+  retryRecoverable,
+  stateUrl,
+} from './sync-engine';
 
 /**
  * Sincronización de la ejecución en el reproductor (V1_SPEC §5.7, docs/EXECUTION.md):
@@ -16,6 +22,7 @@ import { flushSession, resetBackoff, stateUrl } from './sync-engine';
  * 5. Un rechazo (4xx) no se descarta en silencio: queda visible con su motivo.
  */
 export type SyncSummary = 'idle' | 'pending' | 'sending' | 'error';
+// Cola de UNA persona (`owner`): lo de otras identidades en el mismo dispositivo ni se ve ni se envía.
 
 export interface ExecutionSync {
   ready: boolean;
@@ -24,6 +31,8 @@ export interface ExecutionSync {
   serverState: ExecutionStateVM;
   queue: QueuedCommand[];
   summary: SyncSummary;
+  /** Hay algo que «Reintentar» puede enviar (pendientes o errores recuperables). */
+  canRetry: boolean;
   /** Aviso breve de una reconciliación («Esa serie ya estaba registrada…»). */
   notice: string | null;
   enqueue: (command: ClientCommand) => Promise<void>;
@@ -34,7 +43,11 @@ export interface ExecutionSync {
   dismissNotice: () => void;
 }
 
-export function useExecutionSync(sessionId: string, initial: ExecutionStateVM): ExecutionSync {
+export function useExecutionSync(
+  owner: string,
+  sessionId: string,
+  initial: ExecutionStateVM,
+): ExecutionSync {
   const [store, setStore] = useState<LocalStore | null>(null);
   const [queue, setQueue] = useState<QueuedCommand[]>([]);
   const [serverState, setServerState] = useState(initial);
@@ -46,8 +59,8 @@ export function useExecutionSync(sessionId: string, initial: ExecutionStateVM): 
   const order = useRef(0);
 
   const reload = useCallback(
-    async (s: LocalStore) => setQueue(await s.list(sessionId)),
-    [sessionId],
+    async (s: LocalStore) => setQueue(await s.list(owner, sessionId)),
+    [owner, sessionId],
   );
 
   /** Pide al servidor el estado confirmado (al volver a la pestaña o recuperar la conexión). */
@@ -66,7 +79,7 @@ export function useExecutionSync(sessionId: string, initial: ExecutionStateVM): 
   const flush = useCallback(async () => {
     if (!store) return;
     if (timer.current) clearTimeout(timer.current);
-    const { waitMs } = await flushSession(store, sessionId, {
+    const { waitMs } = await flushSession(store, owner, sessionId, {
       onState: setServerState,
       onNotice: setNotice,
       onChange: () => void reload(store),
@@ -74,7 +87,7 @@ export function useExecutionSync(sessionId: string, initial: ExecutionStateVM): 
     });
     await reload(store);
     if (waitMs !== null) timer.current = setTimeout(() => void flushRef.current(), waitMs);
-  }, [reload, sessionId, store]);
+  }, [owner, reload, sessionId, store]);
   useEffect(() => {
     flushRef.current = flush;
   }, [flush]);
@@ -84,7 +97,10 @@ export function useExecutionSync(sessionId: string, initial: ExecutionStateVM): 
     let cancelled = false;
     void (async () => {
       const s = await openLocalStore();
-      for (const entry of await s.list(sessionId)) {
+      // Comandos guardados antes del aislamiento por persona: este reproductor solo lo puede abrir
+      // el titular de la sesión, así que son suyos.
+      await s.adoptUnowned(owner, sessionId);
+      for (const entry of await s.list(owner, sessionId)) {
         if (entry.status === 'sending') {
           await s.put({ ...entry, status: 'queued', nextAttemptAt: 0 });
         }
@@ -97,16 +113,16 @@ export function useExecutionSync(sessionId: string, initial: ExecutionStateVM): 
     return () => {
       cancelled = true;
     };
-  }, [reload, sessionId]);
+  }, [owner, reload, sessionId]);
 
   /** Puede haber conexión: se intenta ya lo pendiente (sin esperar) y se pide el estado. */
   const wake = useCallback(async () => {
     if (!store) return;
-    await resetBackoff(store, sessionId);
+    await resetBackoff(store, owner, sessionId);
     await reload(store);
     await refresh();
     await flush();
-  }, [flush, refresh, reload, sessionId, store]);
+  }, [flush, owner, refresh, reload, sessionId, store]);
 
   // En cuanto hay almacén: enviar lo pendiente y pedir el estado confirmado.
   useEffect(() => {
@@ -150,6 +166,7 @@ export function useExecutionSync(sessionId: string, initial: ExecutionStateVM): 
       order.current += 1;
       await store.put({
         commandId: command.commandId,
+        clientId: owner,
         sessionId,
         command,
         createdAt: Date.now() * 1000 + (order.current % 1000),
@@ -160,7 +177,7 @@ export function useExecutionSync(sessionId: string, initial: ExecutionStateVM): 
       await reload(store);
       void flush();
     },
-    [flush, reload, sessionId, store],
+    [flush, owner, reload, sessionId, store],
   );
 
   const sendNow = useCallback(
@@ -170,15 +187,21 @@ export function useExecutionSync(sessionId: string, initial: ExecutionStateVM): 
       // Si otra parte de la app estaba enviando esta cola, la recogerá: se espera (como mucho
       // 4 s) a que el servidor la confirme, la rechace o haya que esperar por la red.
       for (let waited = 0; store && waited < 4_000; waited += 100) {
-        const entry = (await store.list(sessionId)).find((e) => e.commandId === command.commandId);
+        const entry = (await store.list(owner, sessionId)).find(
+          (e) => e.commandId === command.commandId,
+        );
         if (!entry || entry.status === 'error' || entry.attempts > 0) break;
         await new Promise((resolve) => setTimeout(resolve, 100));
       }
     },
-    [enqueue, flush, sessionId, store],
+    [enqueue, flush, owner, sessionId, store],
   );
 
-  const retryNow = useCallback(() => void wake(), [wake]);
+  /** «Reintentar» (A-09): lo pendiente y, con su identificador original, los errores recuperables. */
+  const retryNow = useCallback(() => {
+    if (!store) return;
+    void retryRecoverable(store, owner, sessionId).then(() => wake());
+  }, [owner, sessionId, store, wake]);
 
   const discard = useCallback(
     async (commandId: string) => {
@@ -197,7 +220,12 @@ export function useExecutionSync(sessionId: string, initial: ExecutionStateVM): 
         ? 'pending'
         : 'idle';
 
+  const canRetry = queue.some(
+    (e) => e.status === 'queued' || (e.status === 'error' && isRecoverableError(e.error?.code)),
+  );
+
   return {
+    canRetry,
     ready: store !== null,
     storage: store?.kind ?? null,
     online,

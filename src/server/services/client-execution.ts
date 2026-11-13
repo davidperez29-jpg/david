@@ -18,6 +18,7 @@ import { describeEffort } from '@/domain/training/effort';
 import {
   currentSetRefs,
   effectiveSetLogs,
+  isPossibleDeviceInstant,
   type SetLogV2,
   summarizeExecutionV2,
 } from '@/domain/training/execution';
@@ -62,7 +63,15 @@ const MESSAGES: Record<CommandErrorCode, string> = {
   unknown_set_in_version: 'Esa serie no existe en la versión indicada.',
   confirmation_required: 'Quedan series sin registrar: confirma que terminas igualmente.',
   invalid: 'Hay datos fuera de rango o que no corresponden a lo prescrito.',
+  identity_mismatch:
+    'Este registro lo creó otra persona en este dispositivo: no se puede guardar con tu cuenta.',
+  storage_busy: 'La base de datos está ocupada en este momento. Se reintentará.',
+  storage_unavailable: 'La base de datos no está disponible ahora mismo. Se reintentará.',
+  storage_error: 'No se ha podido guardar por un error de almacenamiento.',
 };
+
+/** Mensaje de cada error (también para los de almacenamiento de la API). */
+export const commandErrorMessage = (code: CommandErrorCode) => MESSAGES[code];
 
 export interface CommandOutcome {
   status: number;
@@ -100,6 +109,9 @@ export const toPerformedSetVM = (log: SetLogV2): PerformedSetVM => ({
   ...(log.note ? { note: log.note } : {}),
   performedAt: log.performedAt,
   clockAdjusted: log.clockAdjusted,
+  clockAdjustment: log.clockAdjustment ?? null,
+  origin: log.origin,
+  recordedBy: log.recordedBy,
   ...(log.supersedes ? { supersedes: log.supersedes } : {}),
 });
 
@@ -148,8 +160,17 @@ async function ownPublished(ctx: ClientContext, sessionId: string) {
   return canLogExecution(ctx.actor, session, client) ? session : null;
 }
 
-const payloadHash = (sessionId: string, command: ClientCommand) =>
-  createHash('sha256').update(canonicalJson({ sessionId, command }), 'utf8').digest('hex');
+/**
+ * Resumen del contenido del comando, para la idempotencia. No incluye `clientId`: la identidad se
+ * comprueba aparte (y `client_command.client_id` la guarda), y así un comando creado antes de
+ * llevarla sigue reconociéndose como el mismo al reenviarse.
+ */
+const payloadHash = (sessionId: string, command: ClientCommand) => {
+  const { clientId: _identity, ...content } = command;
+  return createHash('sha256')
+    .update(canonicalJson({ sessionId, command: content }), 'utf8')
+    .digest('hex');
+};
 
 /** Aplica un comando del cliente. Devuelve el código HTTP y la respuesta tipada. */
 export async function executeClientCommand(
@@ -158,6 +179,19 @@ export async function executeClientCommand(
   command: ClientCommand,
   receivedAt: string = new Date().toISOString(),
 ): Promise<CommandOutcome> {
+  // A-08: un comando creado por otra identidad no se aplica (ni se dice si la sesión existe).
+  if (command.clientId !== ctx.actor.clientId) return fail('identity_mismatch');
+  // A-10 · T1: una hora del dispositivo imposible no se acepta (el reloj del móvil está mal).
+  if (!isPossibleDeviceInstant(command.device.recordedAt)) {
+    return fail('invalid', {
+      issues: [
+        issue(
+          'device.recordedAt',
+          `La fecha y la hora del móvil (${command.device.recordedAt.slice(0, 10)}) no son válidas: corrígelas en el dispositivo y vuelve a registrarlo.`,
+        ),
+      ],
+    });
+  }
   const session = await ownPublished(ctx, sessionId);
   if (!session || session.currentVersion === null) return fail('not_found');
   const repos = ctx.repos;
@@ -178,6 +212,7 @@ export async function executeClientCommand(
       const version = await repos.training.getVersion(sessionId, command.versionNumber);
       if (!version) return fail('unknown_version');
       result = await repos.execution.start(meta, {
+        versionPublishedAt: version.publishedAt,
         logId: randomUUID(),
         startedVersion: version.number,
       });
@@ -299,6 +334,7 @@ export async function getPlayer(ctx: ClientContext, sessionId: string): Promise<
   );
   const ordered = [...content.items].sort((a, b) => a.order - b.order);
   return {
+    clientId: ctx.actor.clientId,
     sessionId,
     clientFirstName: firstName(client.displayName),
     trainerFirstName: firstName(trainer?.displayName ?? 'tu entrenador'),

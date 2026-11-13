@@ -114,6 +114,9 @@ export function asSetLogs(
     deviceTimeZone: 'UTC',
     deviceUtcOffsetMin: 0,
     clockAdjusted: false,
+    // Lo que registra la clienta en su móvil es autodeclarado.
+    origin: 'self_reported' as const,
+    recordedBy: 'client' as const,
   };
   const confirmed = state.sets.map((s): SetLogV2 => ({
     ...base,

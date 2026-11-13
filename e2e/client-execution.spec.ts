@@ -259,6 +259,7 @@ test.describe('ejecución del entrenamiento (bloque 2)', () => {
       const command = (commandId: string, setNumber: number) =>
         JSON.stringify({
           commandId,
+          clientId: 'c-lucia',
           type: 'log_set',
           versionNumber: 1,
           prescriptionId: done.prescriptionId,
@@ -565,24 +566,52 @@ test.describe('ejecución del entrenamiento (bloque 2)', () => {
     space,
     baseURL,
   }) => {
-    // Dos días atrás para que todas las horas del dispositivo queden en el pasado.
-    const day = addDays(todayInMadrid(), -2);
-    const next = addDays(day, 1);
-    const { url } = await publishForLucia(browser, space, baseURL!, {
-      date: day,
-      title: 'Hasta medianoche',
-    });
-    const sessionId = url.split('/').at(-1)!;
+    expect(space).toBeTruthy();
+    // Sesión de Marta sembrada para pasado mañana: publicada (ficticiamente) hace dos días, así que
+    // ayer a las 23:50 ya existía (A-10: nada se ejecuta antes de publicarse).
+    const today = todayInMadrid();
+    const yesterday = addDays(today, -1);
+    const sessionId = `s-marta-${addDays(today, 2)}`;
     // Madrid en noviembre: UTC+1. Solo se fija la hora del navegador; los temporizadores siguen.
-    await page.clock.setFixedTime(new Date(`${day}T23:50:00+01:00`));
+    await page.clock.setFixedTime(new Date(`${yesterday}T23:50:00+01:00`));
+    await enterAs(page, 'Marta, clienta');
+    await page.goto(`/cliente/sesion/${sessionId}/entrenar`);
+    await startTraining(page);
+    await page.clock.setFixedTime(new Date(`${yesterday}T23:58:00+01:00`));
+    await logVisibleSet(page);
+    await page.clock.setFixedTime(new Date(`${today}T00:03:00+01:00`));
+    await logVisibleSet(page);
+    await expect(page.getByText('Confirmada')).toHaveCount(2);
+
+    const trainer = await browser.newContext({ baseURL, timezoneId: 'Europe/Madrid' });
+    await joinSpace(trainer, space, baseURL!);
+    const alex = await trainer.newPage();
+    await enterAs(alex, 'Alex, entrenador');
+    await alex.goto(`/entrenador/clientes/c-marta/sesiones/${sessionId}`);
+    const first = alex.getByRole('region').filter({ hasText: 'Previsto' }).first();
+    await expect(first.getByRole('listitem').nth(0)).toContainText('23:58');
+    await expect(first.getByRole('listitem').nth(1)).toContainText('00:03');
+    await expect(first).not.toContainText('hora de llegada');
+    // La sesión es del día en que se empezó (ayer), aunque una serie sea de hoy.
+    await expect(alex.getByText(/\(3 días antes\)/)).toBeVisible();
+    await trainer.close();
+  });
+
+  test('A-10 · el reloj del móvil marca una hora anterior a la publicación: se guarda la de llegada y el entrenador lo ve', async ({
+    page,
+    browser,
+    space,
+    baseURL,
+  }) => {
+    const { url } = await publishForLucia(browser, space, baseURL!, { date: todayInMadrid() });
+    const sessionId = url.split('/').at(-1)!;
+    // La sesión se acaba de publicar, pero el móvil cree que es hace dos días.
+    await page.clock.setFixedTime(new Date(`${addDays(todayInMadrid(), -2)}T10:00:00+01:00`));
     await enterAs(page, 'Lucía, clienta');
     await page.goto(`/cliente/sesion/${sessionId}/entrenar`);
     await startTraining(page);
-    await page.clock.setFixedTime(new Date(`${day}T23:58:00+01:00`));
     await logVisibleSet(page);
-    await page.clock.setFixedTime(new Date(`${next}T00:03:00+01:00`));
-    await logVisibleSet(page);
-    await expect(page.getByText('Confirmada')).toHaveCount(2);
+    await expect(page.getByText('Confirmada')).toHaveCount(1);
 
     const trainer = await browser.newContext({ baseURL, timezoneId: 'Europe/Madrid' });
     await joinSpace(trainer, space, baseURL!);
@@ -592,16 +621,105 @@ test.describe('ejecución del entrenamiento (bloque 2)', () => {
     const goblet = alex
       .getByRole('region', { name: 'Sentadilla goblet' })
       .filter({ hasText: 'Previsto' });
-    await expect(goblet.getByRole('listitem').nth(0)).toContainText('23:58');
-    await expect(goblet.getByRole('listitem').nth(1)).toContainText('00:03');
-    await expect(goblet).not.toContainText('hora ajustada');
-    // Se empezó el día previsto: A3 no la marca como hecha otro día.
-    await alex.goto('/entrenador/clientes/c-lucia/sesiones');
-    const row = alex.locator('li', { hasText: 'Hasta medianoche' }).first();
-    // Sin actividad hoy: «Interrumpida» (se puede continuar); empezada el día previsto.
-    await expect(row).toContainText('Interrumpida');
-    await expect(row).not.toContainText(/días? (después|antes)/);
+    await expect(goblet.getByRole('listitem').nth(0)).toContainText(
+      'hora de llegada (el reloj del móvil marcaba una hora imposible, anterior)',
+    );
+    await expect(goblet.getByRole('listitem').nth(0)).toContainText('Autodeclarado');
     await trainer.close();
+  });
+
+  test('A-08 · móvil compartido: lo pendiente de Marta nunca se envía como de Lucía y se envía al volver Marta', async ({
+    page,
+    space,
+    baseURL,
+  }) => {
+    expect(space).toBeTruthy();
+    // Registro de todas las peticiones de comandos, con la identidad de la cookie y del comando.
+    const sent: { cookieClient: string; commandClient: string }[] = [];
+    page.on('request', (r) => {
+      if (!r.url().includes('/comandos') || r.method() !== 'POST') return;
+      const cookie = /trainpro-cliente=([^;]+)/.exec(r.headers()['cookie'] ?? '')?.[1] ?? 'c-marta';
+      sent.push({
+        cookieClient: cookie,
+        commandClient: (r.postDataJSON() as { clientId: string }).clientId,
+      });
+    });
+    await enterAs(page, 'Marta, clienta');
+    await page.getByRole('link', { name: /Empezar entrenamiento/ }).click();
+    await startTraining(page);
+    const sessionId = new URL(page.url()).pathname.split('/')[3]!;
+    // Sin conexión con el servidor: la serie de Marta queda pendiente en el móvil.
+    await page.route('**/api/cliente/sesiones/*/comandos', (r) => r.abort('failed'));
+    await logVisibleSet(page, { waitForServer: false });
+    await expect(page.getByText('Pendiente de envío').first()).toBeVisible();
+
+    // Se cambia a Lucía y vuelve la conexión: la cola se procesa.
+    await page.goto('/');
+    await page.getByRole('button', { name: 'Entrar como Lucía, clienta' }).click();
+    await page.waitForURL(/\/cliente$/);
+    await page.unroute('**/api/cliente/sesiones/*/comandos');
+    await page.reload();
+    await expect(
+      page.getByRole('note').filter({ hasText: 'de otra persona en este dispositivo' }),
+    ).toBeVisible();
+    await expect(page.getByText(/pendientes? de envío en este móvil/)).toHaveCount(0);
+    await page.waitForTimeout(1500);
+    // Ningún comando de Marta ha salido con la identidad de Lucía.
+    expect(
+      sent.filter((s) => s.cookieClient === 'c-lucia' && s.commandClient === 'c-marta'),
+    ).toEqual([]);
+    const state = async () =>
+      (await (
+        await page.request.get(`${baseURL}/api/cliente/sesiones/${sessionId}/estado`, {
+          headers: { cookie: `trainpro-cliente=c-marta; trainpro-espacio=${space}` },
+        })
+      ).json()) as { state: { sets: unknown[] } };
+    expect((await state()).state.sets).toHaveLength(0);
+
+    // Marta vuelve: su serie se envía sola, una vez, como suya.
+    await enterAs(page, 'Marta, clienta');
+    await expect.poll(async () => (await state()).state.sets.length, { timeout: 15_000 }).toBe(1);
+    await expect(page.getByRole('note').filter({ hasText: 'de otra persona' })).toHaveCount(0);
+  });
+
+  test('A-09 · un error recuperable se reintenta con «Reintentar»: una sola serie, confirmada', async ({
+    page,
+    browser,
+    space,
+    baseURL,
+  }) => {
+    await publishForLucia(browser, space, baseURL!, { date: todayInMadrid() });
+    await enterAs(page, 'Lucía, clienta');
+    await page.getByRole('link', { name: /Empezar entrenamiento/ }).click();
+    await startTraining(page);
+    // El servidor responde un error recuperable (la sesión no está disponible un momento).
+    await page.route('**/api/cliente/sesiones/*/comandos', async (route) => {
+      if (route.request().postDataJSON()?.type !== 'log_set') return route.continue();
+      return route.fulfill({
+        status: 404,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          ok: false,
+          error: 'not_found',
+          message: 'La sesión no existe o no es tuya.',
+        }),
+      });
+    });
+    await logVisibleSet(page, { waitForServer: false });
+    await expect(page.getByText('Error de envío').first()).toBeVisible();
+    await expect(page.getByText(/1 registro con error de envío/)).toBeVisible();
+    // Se recupera el servicio y se pulsa «Reintentar»: mismo identificador, una sola vez.
+    await page.unroute('**/api/cliente/sesiones/*/comandos');
+    await page.getByRole('button', { name: 'Reintentar' }).click();
+    await expect(page.getByText('Confirmada')).toHaveCount(1, { timeout: 15_000 });
+    await expect(
+      page.getByRole('status').filter({ hasText: 'Todo guardado en el servidor' }),
+    ).toBeVisible();
+    const sessionId = new URL(page.url()).pathname.split('/')[3]!;
+    const state = (await (
+      await page.request.get(`${baseURL}/api/cliente/sesiones/${sessionId}/estado`)
+    ).json()) as { state: { sets: unknown[] } };
+    expect(state.state.sets).toHaveLength(1);
   });
 
   test('E2E-21 · sin conexión, registrar, cerrar la página y abrir otra: lo pendiente se envía solo', async ({

@@ -94,12 +94,12 @@ const nextLabel = (item: PlayerItemVM, set: PlayerSetVM, sameExercise: boolean) 
  */
 export function TrainingPlayer({ vm }: { vm: PlayerVM }) {
   const router = useRouter();
-  const sync = useExecutionSync(vm.sessionId, vm.state);
+  const sync = useExecutionSync(vm.clientId, vm.sessionId, vm.state);
   const [store, setStore] = useState<LocalStore | null>(null);
   useEffect(() => {
     void openLocalStore().then(setStore);
   }, []);
-  const timer = useRestTimer(store, `descanso:${vm.sessionId}`);
+  const timer = useRestTimer(store, `descanso:${vm.clientId}:${vm.sessionId}`);
 
   const entries = useMemo(
     () => mergeSets(sync.serverState, sync.queue),
@@ -116,7 +116,7 @@ export function TrainingPlayer({ vm }: { vm: PlayerVM }) {
   const pendingCount = allSets.length - registered.length;
 
   // Ejercicio visible: el guardado (se recupera al volver) o el primero con series pendientes.
-  const positionKey = `posicion:${vm.sessionId}`;
+  const positionKey = `posicion:${vm.clientId}:${vm.sessionId}`;
   const [itemIndex, setItemIndex] = useState<number | null>(null);
   const [focus, setFocus] = useState<number | null>(null);
   const [correcting, setCorrecting] = useState<LocalRecord | null>(null);
@@ -149,10 +149,12 @@ export function TrainingPlayer({ vm }: { vm: PlayerVM }) {
   const [comment, setComment] = useState('');
 
   const send = (command: Parameters<typeof sync.enqueue>[0]) => void sync.enqueue(command);
+  /** Cada comando lleva su identificador y la identidad que lo crea (A-08). */
+  const identity = () => ({ commandId: newCommandId(), clientId: vm.clientId });
 
   const start = () =>
     send({
-      commandId: newCommandId(),
+      ...identity(),
       type: 'start',
       versionNumber: vm.version,
       device: deviceNow(),
@@ -164,7 +166,7 @@ export function TrainingPlayer({ vm }: { vm: PlayerVM }) {
     timer.skip();
     if (flags.started && !flags.finished && !flags.paused) {
       // Se intenta enviar antes de salir; si no hay conexión, queda en el móvil.
-      await sync.sendNow({ commandId: newCommandId(), type: 'pause', device: deviceNow() });
+      await sync.sendNow({ ...identity(), type: 'pause', device: deviceNow() });
     }
     router.push('/cliente');
   };
@@ -173,7 +175,7 @@ export function TrainingPlayer({ vm }: { vm: PlayerVM }) {
     finishDialog.current?.close();
     timer.skip();
     send({
-      commandId: newCommandId(),
+      ...identity(),
       type: 'finish',
       confirmEndEarly,
       comment: comment.trim() === '' ? null : comment.trim(),
@@ -336,7 +338,7 @@ export function TrainingPlayer({ vm }: { vm: PlayerVM }) {
   const logSet = (set: PlayerSetVM, input: PerformedSetInput) => {
     const supersedes = correcting?.clientSetId ?? null;
     send({
-      commandId: newCommandId(),
+      ...identity(),
       type: 'log_set',
       versionNumber: vm.version,
       prescriptionId: item.id,
@@ -442,7 +444,7 @@ export function TrainingPlayer({ vm }: { vm: PlayerVM }) {
           <p className="text-sm font-semibold text-ink-900">Sesión en pausa</p>
           <button
             type="button"
-            onClick={() => send({ commandId: newCommandId(), type: 'resume', device: deviceNow() })}
+            onClick={() => send({ ...identity(), type: 'resume', device: deviceNow() })}
             className="inline-flex min-h-12 items-center gap-1.5 rounded-2xl bg-sun-400 px-4 font-bold text-ink-900"
           >
             <Play aria-hidden className="size-4" /> Reanudar

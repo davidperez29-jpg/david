@@ -7,6 +7,7 @@
 import { createHash } from 'node:crypto';
 import { MIGRATION_001 } from './migrations/001-v1.ts';
 import { MIGRATION_002 } from './migrations/002-ejecucion.ts';
+import { MIGRATION_003 } from './migrations/003-procedencia.ts';
 import { type SqlDatabase } from './sqlite.ts';
 
 export interface Migration {
@@ -24,6 +25,7 @@ export interface Migration {
 export const MIGRATIONS: readonly Migration[] = [
   { version: 1, name: 'v1', sql: MIGRATION_001 },
   { version: 2, name: 'ejecucion', sql: MIGRATION_002, rebuildsTables: true },
+  { version: 3, name: 'procedencia', sql: MIGRATION_003 },
 ];
 
 export class MigrationError extends Error {}

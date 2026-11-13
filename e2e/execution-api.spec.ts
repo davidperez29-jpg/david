@@ -23,7 +23,13 @@ test('B2-API · origen, tamaño, forma, idempotencia y sesión ajena', async ({
     timeZone: 'Europe/Madrid',
     utcOffsetMinutes: 60,
   };
-  const start = { commandId: `e2e-api-${Date.now()}`, type: 'start', versionNumber: 1, device };
+  const start = {
+    commandId: `e2e-api-${Date.now()}`,
+    clientId: 'c-marta',
+    type: 'start',
+    versionNumber: 1,
+    device,
+  };
 
   // Sin cabecera Origin o con un origen ajeno: 403, y no se aplica nada.
   let response = await page.request.post(url, { data: start });
@@ -49,6 +55,11 @@ test('B2-API · origen, tamaño, forma, idempotencia y sesión ajena', async ({
   expect(response.status()).toBe(400);
   response = await page.request.post(url, {
     data: { ...start, commandId: undefined },
+    headers: origin,
+  });
+  expect(response.status()).toBe(400);
+  response = await page.request.post(url, {
+    data: { ...start, clientId: undefined },
     headers: origin,
   });
   expect(response.status()).toBe(400);
@@ -80,10 +91,19 @@ test('B2-API · origen, tamaño, forma, idempotencia y sesión ajena', async ({
   state = await (await page.request.get(`/api/cliente/sesiones/${sessionId}/estado`)).json();
   expect(state.state.status).toBe('in_progress');
 
-  // Lucía no puede ni leer ni escribir la sesión de Marta: 404, como si no existiera.
+  // A-08: un comando creado por Marta (pendiente en un móvil compartido) nunca se aplica con la
+  // identidad de Lucía: 409 identity_mismatch, sin efectos.
   await enterAs(page, 'Lucía, clienta');
   response = await page.request.post(url, {
-    data: { ...start, commandId: `e2e-api-lucia-${Date.now()}` },
+    data: { ...start, commandId: `e2e-api-ajeno-${Date.now()}` },
+    headers: origin,
+  });
+  expect(response.status()).toBe(409);
+  expect(await response.json()).toMatchObject({ ok: false, error: 'identity_mismatch' });
+
+  // Lucía no puede ni leer ni escribir la sesión de Marta: 404, como si no existiera.
+  response = await page.request.post(url, {
+    data: { ...start, clientId: 'c-lucia', commandId: `e2e-api-lucia-${Date.now()}` },
     headers: origin,
   });
   expect(response.status()).toBe(404);

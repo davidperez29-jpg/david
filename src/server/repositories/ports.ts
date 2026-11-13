@@ -202,7 +202,12 @@ export type ExecutionWriteResult =
 export interface ExecutionRepository {
   start(
     meta: CommandMeta,
-    input: { logId: string; startedVersion: number },
+    input: {
+      logId: string;
+      startedVersion: number;
+      /** Publicación de esa versión: nada se pudo empezar antes (límite inferior de la hora). */
+      versionPublishedAt: string;
+    },
   ): Promise<ExecutionWriteResult>;
   logSet(meta: CommandMeta, input: SetLogInsert): Promise<ExecutionWriteResult>;
   pause(meta: CommandMeta): Promise<ExecutionWriteResult>;

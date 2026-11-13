@@ -20,7 +20,8 @@ const FINISHED = new Set(['completed', 'partial']);
 export default async function ClientSessionPage(props: PageProps<'/cliente/sesion/[sessionId]'>) {
   const { sessionId } = await props.params;
   // `null` tanto si no existe como si es de otra persona o no está publicada: no se revela.
-  const session = await getClientSessionDetail(await getClientContext(), sessionId);
+  const ctx = await getClientContext();
+  const session = await getClientSessionDetail(ctx, sessionId);
   if (!session) notFound();
   const { execution } = session;
   const finished = FINISHED.has(execution.status);
@@ -40,7 +41,7 @@ export default async function ClientSessionPage(props: PageProps<'/cliente/sesio
       >
         <ArrowLeft aria-hidden className="size-4" /> Hoy
       </Link>
-      <PendingSync />
+      <PendingSync clientId={ctx.actor.clientId} />
       <header className="mt-2">
         <p className="text-sm font-semibold text-sun-700 first-letter:uppercase">
           {formatRelativeDay(session.plannedDate, session.today)}
