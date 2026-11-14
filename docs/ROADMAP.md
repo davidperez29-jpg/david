@@ -37,7 +37,7 @@ Fases definidas en la especificación maestra (`MASTER_SPEC.md`). Cada fase empi
 >     - página de error de la base;
 >     - errores tipados en todas las operaciones con la base;
 >     - escenarios de prueba deterministas.
->   - Antes de B3.1 faltan P-120, P-121 y P-122.
+>   - P-120, P-121 y P-122 aprobadas (ADR-36, 14 nov 2026): no queda ninguna decisión pendiente para B3.1, que solo espera tu autorización expresa.
 >   - Los porcentajes de avance de abajo **no cambian**: B3.0 es robustez y preparación, no una funcionalidad de la matriz. Mejora la calidad: A-15 y el residual de A-11 quedan resueltos.
 > - **Pendiente fuera de este bloque:**
 >   - verificación en Windows (A-23);
