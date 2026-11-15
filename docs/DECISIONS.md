@@ -412,6 +412,31 @@ Se guardan siempre la hora del dispositivo, su zona, su desfase, la recepción y
 - Los criterios AC-B3-27 a AC-B3-29 se añaden a B3.1 (`BLOCK3_SPEC.md` §15).
 - No se ha implementado nada: son reglas de B3.1.
 
+## ADR-37 · B3.1: análisis de la sesión, totales del día y panel · Adoptada (14 nov 2026, PROMPT 18)
+
+**Autorización:** tu PROMPT 18 autoriza **solo B3.1**. Aplica P-90 a P-95, P-116, P-117 y P-120 a P-122, todas aprobadas (ADR-33, ADR-35 y ADR-36).
+
+**Decisión:**
+
+- **Dominio puro** (`src/domain/analysis/`): referencia histórica, comparación por dimensión, perfil por dimensiones, volumen magnitud a magnitud, duración y huecos. Todo se calcula al leer; no se guarda nada.
+- **19 fórmulas registradas,** todas definiciones de diseño con limitaciones; ninguna se presenta como científica.
+- **Solo el entrenador del cliente analiza,** y solo sesiones publicadas (`canAnalyzeSession`, `canAnalyzeClient`).
+- **Pantallas:** A8 (`…/analisis`, con la perspectiva original por defecto y `?referencia=vigente`), los totales del día (`…/dia/[fecha]`) y el panel con las sesiones de los últimos 7 días.
+- **Sin cambios de esquema.** Dos lecturas nuevas en el puerto, solo de lectura.
+
+**Precisiones aplicadas según el texto del PROMPT 18** (dime si alguna no es tu intención):
+
+| Sobre                     | Precisión                                                                                                                                                                      |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| P-91 (vocabulario)        | Se añaden «no comparable» (otra magnitud, modalidad o escala) y «no evaluable» (carácter, calidad o %1RM sin resolver). Antes, el carácter y la calidad eran «no aplica»       |
+| P-120                     | Las cinco categorías del PROMPT 18: igual al propuesto, distinto, no registrado, dato ausente y no comparable                                                                  |
+| P-122 (ADR-36)            | Hueco a hueco: «no evaluable» si alguna de **sus** dos horas se ajustó, no si se ajustó cualquier hora de la sesión. La duración no se calcula si se ajustó el inicio o el fin |
+| P-117 (versión de inicio) | Es observada si la base se sembró con la `002` aplicada o si el inicio llegó después de aplicarla; si no, deducida y no se usa                                                 |
+
+**Excluido hasta tener una definición aprobada:** el volumen de lastre y el resumen de la asistencia (P-123, nueva). Se ven serie a serie.
+
+**Detalle:** `BLOCK3_SPEC.md` §22.
+
 ## Decisiones pendientes
 
 **Auditoría del 13 de noviembre de 2026:** las decisiones que plantea están en `AUDIT_BLOCK1.md` §14.
@@ -442,43 +467,46 @@ Se guardan siempre la hora del dispositivo, su zona, su desfase, la recepción y
 >
 > **Actualización (14 nov 2026):** P-120, P-121 y P-122 **aprobadas** (ADR-36). No queda ninguna pendiente para B3.1.
 >
+> **Actualización (14 nov 2026, PROMPT 18):** B3.1 hecha (ADR-37). Nueva pendiente: P-123 (lastre y asistencia).
+>
 > La tabla siguiente se conserva como registro de la propuesta del PROMPT 15, con el estado añadido.
 
-| Id    | Cuestión                                                                                                | Recomendación                                                                                                                 | ¿Bloquea B3?  |
-| ----- | ------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ------------- |
-| P-90  | Definición de cumplimiento · **Aprobada (ADR-33)**                                                      | Multidimensional (estructural, cuantitativa, intensidad, esfuerzo, cualitativa), sin índice global                            | Sí            |
-| P-91  | Tolerancias · **Aprobada (ADR-33)**                                                                     | 0 con la diferencia visible; configurables más adelante                                                                       | Sí            |
-| P-92  | Prescripción de referencia · **Aprobada (ADR-33)**                                                      | La versión de cada serie, con vistas «original» y «vigente»                                                                   | Sí            |
-| P-93  | Fecha para día y semana · **Aprobada (ADR-33)**                                                         | Ejecutado por fecha de ejecución y planificado por fecha prevista                                                             | Sí            |
-| P-94  | Semana · **Aprobada (ADR-33)**                                                                          | ISO, de lunes a domingo, en la zona del inicio                                                                                | Sí            |
-| P-95  | Duración · **Aprobada (ADR-33)**                                                                        | Bruta y activa, con aviso si hay huecos de más de 30 min sin pausa                                                            | Sí            |
-| P-96  | Repeticiones por lado                                                                                   | Como registradas, con la marca; tonelaje × 2                                                                                  | No            |
-| P-97  | Carga por lado en el tonelaje                                                                           | Excluir y avisar                                                                                                              | No            |
-| P-98  | Volumen por patrón                                                                                      | En B3.2, con dos recuentos                                                                                                    | No            |
-| P-99  | Volumen por cualidad                                                                                    | Esperar a la intención en la prescripción (bloque 4)                                                                          | No            |
-| P-100 | Volumen por grupo muscular                                                                              | No en el bloque 3 (P-53)                                                                                                      | No            |
-| P-101 | RPE de la sesión y carga interna (Q2)                                                                   | B3.3 opcional, tras aprobar Q2 y P-112                                                                                        | No            |
-| P-102 | `perceived_effort` de la semilla                                                                        | Rotularlo y excluirlo del análisis                                                                                            | No            |
-| P-103 | Índice global · **Resuelta por P-90**                                                                   | No                                                                                                                            | No            |
-| P-104 | Incumplimientos repetidos (ahora «diferencias repetidas», P-91)                                         | Listas descriptivas, sin alertas                                                                                              | No            |
-| P-105 | Descanso real                                                                                           | Solo el previsto, con «no registrado»                                                                                         | No            |
-| P-106 | Página «Carga» de la Fase 1                                                                             | Rehacerla con las fórmulas nuevas                                                                                             | No            |
-| P-107 | Copias programadas y rotación                                                                           | Copia al arrancar si la última tiene más de 24 h; 14 automáticas; las manuales nunca se borran                                | No            |
-| P-108 | Página de error de la base · **Aprobada y hecha (ADR-34, ADR-35)**                                      | Antes del bloque 3 (B3.0), con los errores tipados que faltan                                                                 | No            |
-| P-109 | Correcciones justificadas y anotaciones                                                                 | Después del bloque 3                                                                                                          | No            |
-| P-110 | Windows, Safari e iOS                                                                                   | Plan de `BLOCK3_SPEC.md` §19.4 (antes, §17.4)                                                                                 | No            |
-| P-111 | Rendimiento y «pendientes de revisar»                                                                   | Calcular al leer; medir antes de añadir tablas                                                                                | No            |
-| P-112 | Verificar la carga interna                                                                              | Cotejar el original de Foster et al. (2001) antes de registrarla                                                              | No (B3.3)     |
-| P-113 | Hora imposible del móvil (T1)                                                                           | Mantener el rechazo, con un mensaje mejor                                                                                     | No            |
-| P-114 | Duraciones con advertencia en medias de periodo (PROMPT 16)                                             | Mostrar el total con y sin esas sesiones                                                                                      | Antes de B3.2 |
-| P-115 | kg en la carga autoseleccionada (PROMPT 16)                                                             | Excluir del tonelaje hasta que la prescripción tenga base                                                                     | No            |
-| P-116 | Advertencia de P-95 sin la hora de cada pausa · **Aprobada (ADR-35)**                                   | Dos niveles con los datos actuales: advertencia segura y aviso posible                                                        | Sí (resuelta) |
-| P-117 | Prescripción «original» de lo no registrado · **Aprobada (ADR-35)**                                     | Sesión empezada: versión del último registro o de inicio; sin empezar: la vigente al terminar el día previsto                 | Sí (resuelta) |
-| P-118 | Fecha prevista al agrupar cuando una versión la cambia (PROMPT 16)                                      | Original por la fecha original; vigente por la vigente                                                                        | Antes de B3.2 |
-| P-119 | Marcar si un valor se editó o se aceptó el propuesto (PROMPT 16)                                        | Valorarlo en los bloques 4 o 5                                                                                                | No            |
-| P-120 | Valores iguales a lo propuesto en el análisis (PROMPT 17) · **Aprobada (ADR-36)**                       | Opción A: separar «distinto de lo propuesto» de «igual a lo propuesto», con recuento y leyenda; la opción B cambia el esquema | Sí (resuelta) |
-| P-121 | P-117 con fechas previstas cambiadas o sin versión al final del día (PROMPT 17) · **Aprobada (ADR-36)** | «Referencia histórica no determinada»                                                                                         | Sí (resuelta) |
-| P-122 | P-116 con horas ajustadas y con varios huecos (PROMPT 17) · **Aprobada (ADR-36)**                       | «Huecos no evaluables» si alguna hora se ajustó; hueco a hueco                                                                | Sí (resuelta) |
+| Id    | Cuestión                                                                                                | Recomendación                                                                                                                 | ¿Bloquea B3?                         |
+| ----- | ------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
+| P-90  | Definición de cumplimiento · **Aprobada (ADR-33)**                                                      | Multidimensional (estructural, cuantitativa, intensidad, esfuerzo, cualitativa), sin índice global                            | Sí                                   |
+| P-91  | Tolerancias · **Aprobada (ADR-33)**                                                                     | 0 con la diferencia visible; configurables más adelante                                                                       | Sí                                   |
+| P-92  | Prescripción de referencia · **Aprobada (ADR-33)**                                                      | La versión de cada serie, con vistas «original» y «vigente»                                                                   | Sí                                   |
+| P-93  | Fecha para día y semana · **Aprobada (ADR-33)**                                                         | Ejecutado por fecha de ejecución y planificado por fecha prevista                                                             | Sí                                   |
+| P-94  | Semana · **Aprobada (ADR-33)**                                                                          | ISO, de lunes a domingo, en la zona del inicio                                                                                | Sí                                   |
+| P-95  | Duración · **Aprobada (ADR-33)**                                                                        | Bruta y activa, con aviso si hay huecos de más de 30 min sin pausa                                                            | Sí                                   |
+| P-96  | Repeticiones por lado                                                                                   | Como registradas, con la marca; tonelaje × 2                                                                                  | No                                   |
+| P-97  | Carga por lado en el tonelaje                                                                           | Excluir y avisar                                                                                                              | No                                   |
+| P-98  | Volumen por patrón                                                                                      | En B3.2, con dos recuentos                                                                                                    | No                                   |
+| P-99  | Volumen por cualidad                                                                                    | Esperar a la intención en la prescripción (bloque 4)                                                                          | No                                   |
+| P-100 | Volumen por grupo muscular                                                                              | No en el bloque 3 (P-53)                                                                                                      | No                                   |
+| P-101 | RPE de la sesión y carga interna (Q2)                                                                   | B3.3 opcional, tras aprobar Q2 y P-112                                                                                        | No                                   |
+| P-102 | `perceived_effort` de la semilla                                                                        | Rotularlo y excluirlo del análisis                                                                                            | No                                   |
+| P-103 | Índice global · **Resuelta por P-90**                                                                   | No                                                                                                                            | No                                   |
+| P-104 | Incumplimientos repetidos (ahora «diferencias repetidas», P-91)                                         | Listas descriptivas, sin alertas                                                                                              | No                                   |
+| P-105 | Descanso real                                                                                           | Solo el previsto, con «no registrado»                                                                                         | No                                   |
+| P-106 | Página «Carga» de la Fase 1                                                                             | Rehacerla con las fórmulas nuevas                                                                                             | No                                   |
+| P-107 | Copias programadas y rotación                                                                           | Copia al arrancar si la última tiene más de 24 h; 14 automáticas; las manuales nunca se borran                                | No                                   |
+| P-108 | Página de error de la base · **Aprobada y hecha (ADR-34, ADR-35)**                                      | Antes del bloque 3 (B3.0), con los errores tipados que faltan                                                                 | No                                   |
+| P-109 | Correcciones justificadas y anotaciones                                                                 | Después del bloque 3                                                                                                          | No                                   |
+| P-110 | Windows, Safari e iOS                                                                                   | Plan de `BLOCK3_SPEC.md` §19.4 (antes, §17.4)                                                                                 | No                                   |
+| P-111 | Rendimiento y «pendientes de revisar»                                                                   | Calcular al leer; medir antes de añadir tablas                                                                                | No                                   |
+| P-112 | Verificar la carga interna                                                                              | Cotejar el original de Foster et al. (2001) antes de registrarla                                                              | No (B3.3)                            |
+| P-113 | Hora imposible del móvil (T1)                                                                           | Mantener el rechazo, con un mensaje mejor                                                                                     | No                                   |
+| P-114 | Duraciones con advertencia en medias de periodo (PROMPT 16)                                             | Mostrar el total con y sin esas sesiones                                                                                      | Antes de B3.2                        |
+| P-115 | kg en la carga autoseleccionada (PROMPT 16)                                                             | Excluir del tonelaje hasta que la prescripción tenga base                                                                     | No                                   |
+| P-116 | Advertencia de P-95 sin la hora de cada pausa · **Aprobada (ADR-35)**                                   | Dos niveles con los datos actuales: advertencia segura y aviso posible                                                        | Sí (resuelta)                        |
+| P-117 | Prescripción «original» de lo no registrado · **Aprobada (ADR-35)**                                     | Sesión empezada: versión del último registro o de inicio; sin empezar: la vigente al terminar el día previsto                 | Sí (resuelta)                        |
+| P-118 | Fecha prevista al agrupar cuando una versión la cambia (PROMPT 16)                                      | Original por la fecha original; vigente por la vigente                                                                        | Antes de B3.2                        |
+| P-119 | Marcar si un valor se editó o se aceptó el propuesto (PROMPT 16)                                        | Valorarlo en los bloques 4 o 5                                                                                                | No                                   |
+| P-120 | Valores iguales a lo propuesto en el análisis (PROMPT 17) · **Aprobada (ADR-36)**                       | Opción A: separar «distinto de lo propuesto» de «igual a lo propuesto», con recuento y leyenda; la opción B cambia el esquema | Sí (resuelta)                        |
+| P-121 | P-117 con fechas previstas cambiadas o sin versión al final del día (PROMPT 17) · **Aprobada (ADR-36)** | «Referencia histórica no determinada»                                                                                         | Sí (resuelta)                        |
+| P-122 | P-116 con horas ajustadas y con varios huecos (PROMPT 17) · **Aprobada (ADR-36)**                       | «Huecos no evaluables» si alguna hora se ajustó; hueco a hueco                                                                | Sí (resuelta)                        |
+| P-123 | Volumen de lastre y resumen de la asistencia (PROMPT 18)                                                | Mostrarlos aparte del tonelaje, cada uno en su magnitud y con su fórmula                                                      | Antes de B3.2, si se quieren mostrar |
 
 **Revisión de ADR-25 a ADR-32** (13 nov 2026): consecuencias, ventajas y limitaciones en `BLOCK3_SPEC.md` §19.1 (versión 2; antes, §17.1). Recomendación: mantenerlas todas. Completar los errores tipados de las demás acciones del entrenador (residual de ADR-29) en B3.0, y revisar los 5 min de ADR-28 con datos reales.
 
@@ -490,7 +518,7 @@ Se guardan siempre la hora del dispositivo, su zona, su desfase, la recepción y
 - copias programadas y rotación (A-18);
 - página de error de la base (A-15): **hecha** (ADR-34).
 
-**El bloque 3:** B3.0 hecha (PROMPT 17). P-120 a P-122 aprobadas (ADR-36). **B3.1 a B3.3 no están autorizadas:** B3.1 solo espera tu autorización expresa.
+**El bloque 3:** B3.0 (PROMPT 17) y B3.1 (PROMPT 18) hechas. **B3.2 y B3.3 no están autorizadas.** Antes de B3.2: P-98, P-104, P-106, P-114 y P-118, y P-123 si se quieren el lastre y la asistencia.
 
 **Revisión del 6 de noviembre de 2026 (segunda).** **No he marcado ninguna decisión como aprobada.** Cuando indico «tu indicación», se trata de algo que has escrito expresamente en tus mensajes.
 
@@ -668,5 +696,6 @@ Sustituye a la lista anterior, que pedía aprobar toda la clase A.
 4. **Opcional:** permitir los dominios oficiales en la red de la sesión (P-74).
 5. **Para V1, además** (`V1_SPEC.md` §11, revisado el 7 de noviembre): P-76 y P-85, junto con Q1 y Q4, **aprobadas el 9 de noviembre** (ADR-23). P-77, P-78, P-83 y P-17 están resueltas por tus indicaciones. P-18, P-79 a P-82, P-84 y P-86 a P-89 son técnicas y se aplicarán salvo que te opongas.
 6. **Antes de B3.1** (PROMPT 17): P-120, P-121 y P-122, **aprobadas el 14 nov 2026** (ADR-36).
+7. **Antes de B3.2:** P-98, P-104, P-106, P-114 y P-118; P-123 si se quieren mostrar el lastre y la asistencia (`BLOCK3_SPEC.md` §16.3 y §22).
 
 Cuando apruebes estas decisiones, se actualizarán con ellas `EFFORT_AND_LOAD.md`, `TRAINING_EXPERIENCE.md`, `MEDIA.md` y `DATA_MODEL.md`. Cada decisión nueva debe responder a las ocho preguntas del criterio de decisión (`PRODUCT_STRATEGY.md` §2).

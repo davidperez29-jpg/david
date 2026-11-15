@@ -305,6 +305,8 @@ Limitaciones que se mostrarán junto al resultado:
 
 `training.volume-load` 1.0.0 suma repeticiones × kg. La versión 2.0.0 añadirá la base de la carga (total, por lado, por implemento), las repeticiones por lado y la exclusión de las series de calentamiento. Por las reglas del registro, los resultados antiguos conservan su versión.
 
+**Actualización (14 nov 2026, B3.1):** la 2.0.0 ya está registrada y la usa A8. Base «total» tal cual y «por implemento» × n. Sin calcular, con su motivo: «por lado» (P-97), repeticiones «por lado» (P-96), autoseleccionada (P-115), %1RM sin resolver y series por tiempo o distancia. Las vistas de la Fase 1 («Carga», «Resultados» y «Progreso») siguen con la 1.0.0 hasta B3.2 (`BLOCK3_SPEC.md` §22).
+
 ### 10.3 Peso corporal × repeticiones
 
 **No se calcula como tonelaje.** La parte del peso corporal que se mueve depende del ejercicio y de la postura: en las flexiones, el porcentaje de la masa corporal que soportan los brazos cambia entre la posición alta y la baja, y entre la flexión clásica y la de rodillas (Suprak et al., 2011). Multiplicar el peso corporal por las repeticiones mezclaría magnitudes distintas.

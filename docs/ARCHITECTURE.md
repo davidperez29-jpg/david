@@ -237,7 +237,9 @@ src/app/
     clientes/[clientId]/         Ficha con pestañas horizontales (layout + una ruta por pestaña):
       page.tsx                   Información
       objetivos/ evaluaciones/ resultados/ planificacion/
-      sesiones/                  A3 por días · nueva/ (A4) · [sessionId]/ (A7) · [sessionId]/editar/ (A5) · actions.ts
+      sesiones/                  A3 por días · nueva/ (A4) · [sessionId]/ (A7) · [sessionId]/editar/ (A5) ·
+                                 [sessionId]/analisis/ (A8, B3.1) · actions.ts
+      dia/[fecha]/               Totales del día de ejecución (B3.1)
       registro/ informes/ salud/ compartido/
     evaluaciones/, analisis/     Catálogo y últimos resultados · evolución y comparaciones
     planificacion/, carga/, readaptacion/, informes/
@@ -251,13 +253,14 @@ src/proxy.ts                     Protección local: Host permitido o 403
 src/domain/                      access, issues, measurement, formulas, assessment, goals, people, rehab,
                                  time, text, format, library/{taxonomy, exercise, search},
                                  training/{prescription, session, volume, load, effort, session-v2,
-                                 execution, compat}
+                                 execution, compat}, analysis/{reference, compare, duration, session} (B3.1)
 src/server/                      env, context, host-guard,
                                  db/{sqlite, migrate, migrations/001-v1, seed, store, backup, location, lock},
                                  repositories/{ports, sqlite/{index, training, rows}, demo/{dataset, library, index}},
                                  services/{trainer, trainer-access, trainer-sessions, client-file, client,
-                                 client-sessions, session-views, demo-data, library, mappers}
-src/contracts/                   shared, trainer, client, sessions
+                                 client-sessions, session-views, demo-data, library, mappers,
+                                 trainer-analysis (B3.1), analysis-scenarios (solo pruebas)}
+src/contracts/                   shared, trainer, client, sessions, execution, storage, analysis
 src/features/                    brand/, shared/, trainer/, client/
 src/ui/                          button, card, badge, avatar, stat, meter, notice, page-header, empty-state, cn
 ```
