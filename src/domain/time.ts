@@ -99,6 +99,20 @@ export function utcOffsetMinutes(instant: IsoDateTime, timeZone: string): number
   return Math.round((asUtc - Math.floor(date.getTime() / 1000) * 1000) / 60_000);
 }
 
+/**
+ * Instante en que empieza un día de calendario en una zona horaria IANA (las 00:00 locales).
+ * Sirve para saber qué estaba vigente «al terminar el día» (el día siguiente a las 00:00).
+ */
+export function startOfLocalDay(date: IsoDate, timeZone: string): IsoDateTime {
+  const midnightUtc = toUtc(date).getTime();
+  let guess = midnightUtc;
+  // Dos pasadas: el desfase puede cambiar entre la medianoche UTC y la local (cambio de hora).
+  for (let i = 0; i < 2; i += 1) {
+    guess = midnightUtc - utcOffsetMinutes(new Date(guess).toISOString(), timeZone) * 60_000;
+  }
+  return new Date(guess).toISOString();
+}
+
 export function isValidTimeZone(timeZone: string): boolean {
   try {
     new Intl.DateTimeFormat('en-CA', { timeZone });

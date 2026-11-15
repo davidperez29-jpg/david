@@ -1,6 +1,16 @@
-/** Formato numérico en español (coma decimal, punto de millares). */
+const NUMBER_FORMATS = new Map<number, Intl.NumberFormat>();
+
+/**
+ * Formato numérico en español (coma decimal, punto de millares). Los formateadores se reutilizan:
+ * crear un `Intl.NumberFormat` en cada llamada era lo más caro del análisis de una sesión.
+ */
 export function formatNumber(value: number, maximumFractionDigits = 1): string {
-  return new Intl.NumberFormat('es-ES', { maximumFractionDigits }).format(value);
+  let format = NUMBER_FORMATS.get(maximumFractionDigits);
+  if (!format) {
+    format = new Intl.NumberFormat('es-ES', { maximumFractionDigits });
+    NUMBER_FORMATS.set(maximumFractionDigits, format);
+  }
+  return format.format(value);
 }
 
 /** Duración en segundos como texto breve: «45 s», «2 min», «1 min 30 s». */

@@ -7,6 +7,7 @@ import {
   isoWeekday,
   startOfIsoWeek,
   todayInTimeZone,
+  startOfLocalDay,
 } from './time';
 
 describe('fechas de calendario', () => {
@@ -61,5 +62,21 @@ describe('formato de fechas en español', async () => {
     expect(formatSeconds(150)).toBe('2 min 30 s');
     expect(formatSeconds(45)).toBe('45 s');
     expect(formatClock(89.2)).toBe('1:30');
+  });
+});
+
+describe('inicio del día local (P-121, fin del día previsto)', () => {
+  it('Madrid en invierno, en verano y en los dos cambios de hora', () => {
+    expect(startOfLocalDay('2026-11-10', 'Europe/Madrid')).toBe('2026-11-09T23:00:00.000Z');
+    expect(startOfLocalDay('2026-07-01', 'Europe/Madrid')).toBe('2026-06-30T22:00:00.000Z');
+    // 29 mar 2026: el día empieza en invierno (UTC+1) y termina en verano (UTC+2).
+    expect(startOfLocalDay('2026-03-29', 'Europe/Madrid')).toBe('2026-03-28T23:00:00.000Z');
+    expect(startOfLocalDay('2026-03-30', 'Europe/Madrid')).toBe('2026-03-29T22:00:00.000Z');
+    expect(startOfLocalDay('2026-10-26', 'Europe/Madrid')).toBe('2026-10-25T23:00:00.000Z');
+  });
+  it('otras zonas: UTC, Nueva York y Kiritimati (UTC+14)', () => {
+    expect(startOfLocalDay('2027-01-01', 'UTC')).toBe('2027-01-01T00:00:00.000Z');
+    expect(startOfLocalDay('2027-01-01', 'America/New_York')).toBe('2027-01-01T05:00:00.000Z');
+    expect(startOfLocalDay('2027-01-01', 'Pacific/Kiritimati')).toBe('2026-12-31T10:00:00.000Z');
   });
 });

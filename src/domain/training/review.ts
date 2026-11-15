@@ -84,7 +84,7 @@ export function describeTarget(target: SetTarget): string {
     .join(' · ');
 }
 
-const asPerformed = (log: SetLogV2): PerformedSet => ({
+export const asPerformed = (log: SetLogV2): PerformedSet => ({
   completed: log.completed,
   ...(log.reps !== undefined ? { reps: log.reps } : {}),
   ...(log.durationS !== undefined ? { durationS: log.durationS } : {}),

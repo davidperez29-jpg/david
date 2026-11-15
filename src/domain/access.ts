@@ -193,3 +193,23 @@ export function canLogExecution(actor: Actor, session: SessionRef, client: Clien
 export function canReadExecution(actor: Actor, session: SessionRef, client: ClientRef): boolean {
   return canViewSession(actor, session, client);
 }
+
+// ── Análisis (bloque 3) ──────────────────────────────────────────────────────
+
+/**
+ * Analizar una sesión (A8 y totales del día, B3.1): solo el entrenador del cliente, y solo una
+ * sesión publicada. El bloque 3 no añade análisis para la clienta (BLOCK3_SPEC §1): ella ve su
+ * resumen, no este análisis. Otro entrenador, la clienta y la administración no acceden.
+ */
+export function canAnalyzeSession(actor: Actor, session: SessionRef, client: ClientRef): boolean {
+  return (
+    actor.role === 'trainer' &&
+    session.status === 'published' &&
+    canReadExecution(actor, session, client)
+  );
+}
+
+/** Totales del día de un cliente: los mismos que pueden analizar sus sesiones. */
+export function canAnalyzeClient(actor: Actor, client: ClientRef): boolean {
+  return actor.role === 'trainer' && canAccessClient(actor, client);
+}

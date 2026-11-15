@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   canAccessClient,
+  canAnalyzeClient,
+  canAnalyzeSession,
   canEditSession,
   canManageDemoData,
   canPlanForClient,
@@ -105,6 +107,36 @@ describe('sesiones de entrenamiento (V1)', () => {
     expect(canViewSession(trainer, draftOfMarta, marta)).toBe(true);
     expect(canViewSession(otherTrainer, publishedOfMarta, marta)).toBe(false);
     expect(canViewSession(admin, publishedOfMarta, marta)).toBe(false);
+  });
+});
+
+describe('análisis de la sesión (B3.1)', () => {
+  const publishedOfMarta = {
+    clientId: 'c-marta',
+    trainerId: 't-alex',
+    status: 'published' as const,
+  };
+  const draftOfMarta = { ...publishedOfMarta, status: 'draft' as const };
+  const admin: Actor = { role: 'admin', adminId: 'adm-1' };
+
+  it('solo el entrenador del cliente analiza sus sesiones publicadas', () => {
+    expect(canAnalyzeSession(trainer, publishedOfMarta, marta)).toBe(true);
+    expect(canAnalyzeClient(trainer, marta)).toBe(true);
+    // Un borrador no tiene ejecución que analizar.
+    expect(canAnalyzeSession(trainer, draftOfMarta, marta)).toBe(false);
+  });
+
+  it('intentos no autorizados: otro entrenador, la propia clienta, otra clienta y la administración', () => {
+    const otherClientActor: Actor = { role: 'client', clientId: 'c-otro', trainerId: 't-alex' };
+    for (const actor of [otherTrainer, martaActor, otherClientActor, admin]) {
+      expect(canAnalyzeSession(actor, publishedOfMarta, marta)).toBe(false);
+      expect(canAnalyzeClient(actor, marta)).toBe(false);
+    }
+    // Una sesión que no es de ese cliente.
+    expect(canAnalyzeSession(trainer, { ...publishedOfMarta, clientId: 'c-otro' }, marta)).toBe(
+      false,
+    );
+    expect(canAnalyzeClient(trainer, foreignClient)).toBe(false);
   });
 });
 
