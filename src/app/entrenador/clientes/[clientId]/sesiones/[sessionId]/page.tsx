@@ -1,4 +1,4 @@
-import { ArrowLeft, Clock, MessageCircle } from 'lucide-react';
+import { ArrowLeft, ChartColumn, Clock, MessageCircle } from 'lucide-react';
 import { type Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -89,9 +89,17 @@ export default async function PublishedSessionPage(
 
       {vm.review ? (
         <section aria-labelledby="ejecucion" className="mt-6">
-          <h2 id="ejecucion" className="text-lg font-bold text-ink-900">
-            Ejecución: prescrito frente a realizado
-          </h2>
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h2 id="ejecucion" className="text-lg font-bold text-ink-900">
+              Ejecución: prescrito frente a realizado
+            </h2>
+            <Link
+              href={`/entrenador/clientes/${vm.clientId}/sesiones/${vm.id}/analisis`}
+              className="inline-flex min-h-10 items-center gap-1.5 text-sm font-semibold text-sun-800 hover:text-ink-900"
+            >
+              <ChartColumn aria-hidden className="size-4" /> Análisis de la sesión
+            </Link>
+          </div>
           <dl className="mt-2 grid gap-x-6 gap-y-1 text-sm sm:grid-cols-2">
             <div className="flex gap-2">
               <dt className="text-ink-500">Series</dt>
@@ -159,16 +167,16 @@ export default async function PublishedSessionPage(
 
       <div className="mt-6">
         <PendingFeature
-          title="Editar la sesión publicada, versiones y análisis"
-          phase="V1 · bloques 3 y 5"
+          title="Editar la sesión publicada y su historial de versiones"
+          phase="V1 · bloque 5"
           items={[
             'Editar: borrador de cambios con lo registrado bloqueado y publicar la versión 2',
             'Historial de versiones con el resumen de cambios',
-            'Análisis de la sesión: totales por tipo (series, repeticiones y tonelaje) con sus fórmulas',
           ]}
         >
           El modelo ya guarda cada versión publicada sin modificarla y cada serie registrada con su
-          versión; la interfaz para editarlas y el análisis llegan en los bloques siguientes.
+          versión; la interfaz para editarlas llega en el bloque 5. El análisis de la sesión ya está
+          disponible (bloque 3, B3.1).
         </PendingFeature>
       </div>
     </>

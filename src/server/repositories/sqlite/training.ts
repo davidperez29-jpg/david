@@ -251,5 +251,33 @@ export function createSqliteTraining(db: SqlDatabase): TrainingRepository {
         .all<SetLogRow>({ id: log.id });
       return { log: toSessionLog(log), setLogs: sets.map(toSetLog) };
     },
+
+    listExecutionsStartedBetween: async (clientId, from, to) =>
+      db
+        .prepare(
+          `SELECT session_id, started_at, start_time_zone FROM session_log
+           WHERE client_id = @clientId AND started_at >= @from AND started_at < @to
+           ORDER BY started_at, session_id`,
+        )
+        .all<{ session_id: string; started_at: string; start_time_zone: string }>({
+          clientId,
+          from,
+          to,
+        })
+        .map((r) => ({
+          sessionId: r.session_id,
+          startedAt: r.started_at,
+          startTimeZone: r.start_time_zone,
+        })),
+
+    startVersionFacts: async () => ({
+      migration002AppliedAt:
+        db
+          .prepare('SELECT applied_at FROM schema_migrations WHERE version = 2')
+          .get<{ applied_at: string }>()?.applied_at ?? null,
+      seededAt:
+        db.prepare("SELECT value FROM meta WHERE key = 'seeded_at'").get<{ value: string }>()
+          ?.value ?? null,
+    }),
   };
 }

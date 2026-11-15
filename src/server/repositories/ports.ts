@@ -153,6 +153,20 @@ export interface TrainingRepository {
   getVersion(sessionId: string, number: number): Promise<SessionVersion | null>;
   listVersions(sessionId: string): Promise<SessionVersion[]>;
   getExecution(sessionId: string): Promise<{ log: SessionLogV2; setLogs: SetLogV2[] } | null>;
+  /**
+   * Análisis (B3.1), solo lectura: ejecuciones de un cliente cuyo inicio cae en `[from, to)`
+   * (instantes UTC). La fecha de ejecución (local, en la zona del móvil) la decide el dominio.
+   */
+  listExecutionsStartedBetween(
+    clientId: string,
+    from: string,
+    to: string,
+  ): Promise<{ sessionId: string; startedAt: string; startTimeZone: string }[]>;
+  /**
+   * Análisis (B3.1, P-117), solo lectura: cuándo se aplicó la migración `002` (desde la que se
+   * guarda la versión de inicio que envía el móvil) y cuándo se sembró la base.
+   */
+  startVersionFacts(): Promise<{ migration002AppliedAt: string | null; seededAt: string | null }>;
 }
 
 /**

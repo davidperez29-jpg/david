@@ -33,6 +33,8 @@ const noTraining: TrainingRepository = {
   getVersion: readOnly,
   listVersions: readOnly,
   getExecution: readOnly,
+  listExecutionsStartedBetween: readOnly,
+  startVersionFacts: readOnly,
 };
 
 /** Sin escritura de la ejecución: la aplicación usa SQLite. */

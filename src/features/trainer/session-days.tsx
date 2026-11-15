@@ -1,4 +1,12 @@
-import { ArrowDown, ArrowUp, CalendarPlus, Eye, PencilLine, Trash2 } from 'lucide-react';
+import {
+  ArrowDown,
+  ArrowUp,
+  CalendarPlus,
+  ChartColumn,
+  Eye,
+  PencilLine,
+  Trash2,
+} from 'lucide-react';
 import Link from 'next/link';
 import {
   type SessionDayVM,
@@ -53,13 +61,22 @@ export function SessionDays({
                 {day.sessions.length} {day.sessions.length === 1 ? 'sesión' : 'sesiones'}
               </span>
             </h3>
-            <Link
-              href={`${base}/nueva?fecha=${day.date}`}
-              className="inline-flex min-h-9 items-center gap-1.5 text-sm font-semibold text-sun-800 hover:text-ink-900"
-            >
-              <CalendarPlus aria-hidden className="size-4" /> Añadir sesión a este día
-              <span className="sr-only"> ({formatDate(day.date, 'long')})</span>
-            </Link>
+            <span className="flex flex-wrap gap-x-4">
+              <Link
+                href={`/entrenador/clientes/${clientId}/dia/${day.date}`}
+                className="inline-flex min-h-9 items-center gap-1.5 text-sm font-semibold text-sun-800 hover:text-ink-900"
+              >
+                <ChartColumn aria-hidden className="size-4" /> Totales del día
+                <span className="sr-only"> ({formatDate(day.date, 'long')})</span>
+              </Link>
+              <Link
+                href={`${base}/nueva?fecha=${day.date}`}
+                className="inline-flex min-h-9 items-center gap-1.5 text-sm font-semibold text-sun-800 hover:text-ink-900"
+              >
+                <CalendarPlus aria-hidden className="size-4" /> Añadir sesión a este día
+                <span className="sr-only"> ({formatDate(day.date, 'long')})</span>
+              </Link>
+            </span>
           </div>
           <ul className="divide-y divide-line">
             {day.sessions.map((session) => (
@@ -168,6 +185,15 @@ function SessionRow({
             <Eye aria-hidden className="size-4" /> Ver
           </Link>
         )}
+        {session.publication === 'published' ? (
+          <Link
+            href={`${base}/${session.id}/analisis`}
+            className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-line bg-white px-3.5 text-sm font-semibold text-ink-900 hover:border-ink-300"
+            aria-label={`Análisis de «${name}»`}
+          >
+            <ChartColumn aria-hidden className="size-4" /> Análisis
+          </Link>
+        ) : null}
         {session.canDelete ? (
           <form action={deleteAction}>
             <input type="hidden" name="sessionId" value={session.id} />

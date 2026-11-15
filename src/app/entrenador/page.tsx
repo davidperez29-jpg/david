@@ -4,6 +4,7 @@ import { formatDate } from '@/domain/format';
 import { firstName } from '@/domain/text';
 import { OriginBadge } from '@/features/shared/provenance';
 import { SessionStatusBadge } from '@/features/shared/status-badge';
+import { RecentExecutions } from '@/features/trainer/analysis/execution-day';
 import { Avatar } from '@/ui/avatar';
 import { Card, CardHeader } from '@/ui/card';
 import { Meter } from '@/ui/meter';
@@ -11,9 +12,14 @@ import { PageHeader } from '@/ui/page-header';
 import { Stat } from '@/ui/stat';
 import { getTrainerContext } from '@/server/context';
 import { getTrainerDashboard } from '@/server/services/trainer';
+import { listRecentExecutions } from '@/server/services/trainer-analysis';
 
 export default async function TrainerDashboardPage() {
-  const dashboard = await getTrainerDashboard(await getTrainerContext());
+  const ctx = await getTrainerContext();
+  const [dashboard, recent] = await Promise.all([
+    getTrainerDashboard(ctx),
+    listRecentExecutions(ctx),
+  ]);
   const { week } = dashboard;
 
   return (
@@ -109,7 +115,15 @@ export default async function TrainerDashboardPage() {
           )}
         </Card>
 
-        <div className="space-y-6">
+        <Card className="xl:col-start-1">
+          <CardHeader
+            title="Sesiones de los últimos 7 días"
+            description="Por fecha de ejecución, con acceso a su análisis: prescrito frente a registrado."
+          />
+          <RecentExecutions items={recent} timeZone={ctx.timeZone} />
+        </Card>
+
+        <div className="space-y-6 xl:col-start-2 xl:row-span-2 xl:row-start-1">
           <Card>
             <CardHeader
               title="Requiere atención"
