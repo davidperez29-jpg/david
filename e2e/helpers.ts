@@ -31,6 +31,9 @@ export function collectErrors(page: Page): string[] {
 
 /** Análisis automático de accesibilidad (WCAG 2.x A y AA): sin incidencias graves ni críticas. */
 export async function expectNoSeriousA11yIssues(page: Page) {
+  // Next.js transmite los metadatos de las páginas dinámicas después del HTML inicial: se espera
+  // al <title> (lo que verá la persona) antes de analizar, para no medir una página a medias.
+  await expect(page).toHaveTitle(/\S/);
   const results = await new AxeBuilder({ page })
     .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
     .analyze();

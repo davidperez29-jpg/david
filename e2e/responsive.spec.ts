@@ -112,7 +112,10 @@ test('B2 · detalle de la sesión, inicio del reproductor y comparación del ent
     .locator('a[href^="/entrenador/clientes/c-marta/sesiones/"]')
     .evaluateAll((links) => links.map((a) => a.getAttribute('href')!));
   let reviewed = false;
-  for (const href of hrefs.filter((h) => !h.endsWith('/nueva')).slice(0, 12)) {
+  // Solo las A7 (no «nueva» ni los enlaces al análisis, A8).
+  for (const href of hrefs
+    .filter((h) => !h.endsWith('/nueva') && !h.endsWith('/analisis'))
+    .slice(0, 12)) {
     await page.goto(href);
     if (await page.getByRole('heading', { name: /prescrito frente a realizado/ }).count()) {
       reviewed = true;
@@ -121,5 +124,46 @@ test('B2 · detalle de la sesión, inicio del reproductor y comparación del ent
   }
   expect(reviewed, 'una sesión sembrada con ejecución').toBe(true);
   await fits('la comparación del entrenador (A7)');
+  expect(errors).toEqual([]);
+});
+
+test('B3.1 · el análisis de la sesión (A8), los totales del día y el panel caben a 360 px y son accesibles', async ({
+  page,
+}, testInfo) => {
+  const errors = collectErrors(page);
+  if (testInfo.project.name === 'movil') await page.setViewportSize({ width: 360, height: 780 });
+  const fits = async (label: string) => {
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - window.innerWidth,
+    );
+    expect(overflow, `desplazamiento horizontal en ${label}`).toBeLessThanOrEqual(1);
+    await expectNoSeriousA11yIssues(page);
+  };
+  // Una sesión sembrada de Marta ya registrada.
+  await page.goto('/entrenador/clientes/c-marta/sesiones');
+  const hrefs = await page
+    .locator('a[href$="/analisis"]')
+    .evaluateAll((links) => links.map((a) => a.getAttribute('href')!));
+  let analysed = false;
+  for (const href of hrefs.slice(0, 12)) {
+    await page.goto(href);
+    if (await page.getByRole('link', { name: /Totales del .* \(día de ejecución\)/ }).count()) {
+      analysed = true;
+      break;
+    }
+  }
+  expect(analysed, 'una sesión sembrada con ejecución').toBe(true);
+  await fits('A8');
+  if (testInfo.project.name === 'movil') {
+    // En el móvil, las series son tarjetas (la tabla está oculta).
+    await expect(page.getByRole('list', { name: /^Series de / }).first()).toBeVisible();
+  } else {
+    await expect(page.getByRole('table', { name: /^Series de / }).first()).toBeVisible();
+  }
+  await page.getByRole('link', { name: /Totales del .* \(día de ejecución\)/ }).click();
+  await fits('los totales del día');
+  await page.goto('/entrenador');
+  await fits('el panel');
   expect(errors).toEqual([]);
 });
