@@ -404,7 +404,7 @@ Se guardan siempre la hora del dispositivo, su zona, su desfase, la recepción y
 | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | P-120 | **Valores precargados, opción A, sin cambiar el esquema:**<ul><li>cada valor se muestra como «distinto de lo propuesto» (lo escribió la clienta) o «igual a lo propuesto» (aceptado o escrito: no se distingue);</li><li>A8 cuenta aparte «N de M series iguales a lo propuesto», con una leyenda fija;</li><li>nunca «confirmado» ni «medido»;</li><li>RIR y RPE ausentes, «sin registrar».</li></ul>La opción B (marcar qué campos se cambiaron) **no** se aprueba: cambiaría el esquema (P-119) |
 | P-121 | **P-117 en una sesión sin empezar:** «referencia histórica no determinada» si las versiones tienen fechas previstas distintas o si no había ninguna versión al final del día previsto. Zona: la de la aplicación, avisando en pantalla de que es la configuración actual y no se guarda su historia                                                                                                                                                                                                |
-| P-122 | **P-116:** «huecos no evaluables» si alguna hora de la sesión se ajustó (ADR-28); evaluación hueco a hueco, como se aprobó                                                                                                                                                                                                                                                                                                                                                                         |
+| P-122 | **P-116:** «huecos no evaluables» si alguna hora de la sesión se ajustó (ADR-28); evaluación hueco a hueco, como se aprobó. **Precisada en ADR-37 (confirmada el 18 nov 2026):** solo es no evaluable el hueco con una de sus dos horas ajustada                                                                                                                                                                                                                                                   |
 
 **Consecuencias:**
 
@@ -412,7 +412,7 @@ Se guardan siempre la hora del dispositivo, su zona, su desfase, la recepción y
 - Los criterios AC-B3-27 a AC-B3-29 se añaden a B3.1 (`BLOCK3_SPEC.md` §15).
 - No se ha implementado nada: son reglas de B3.1.
 
-## ADR-37 · B3.1: análisis de la sesión, totales del día y panel · Adoptada (14 nov 2026, PROMPT 18)
+## ADR-37 · B3.1: análisis de la sesión, totales del día y panel · Adoptada (14 nov 2026, PROMPT 18); precisiones confirmadas (18 nov 2026)
 
 **Autorización:** tu PROMPT 18 autoriza **solo B3.1**. Aplica P-90 a P-95, P-116, P-117 y P-120 a P-122, todas aprobadas (ADR-33, ADR-35 y ADR-36).
 
@@ -424,14 +424,14 @@ Se guardan siempre la hora del dispositivo, su zona, su desfase, la recepción y
 - **Pantallas:** A8 (`…/analisis`, con la perspectiva original por defecto y `?referencia=vigente`), los totales del día (`…/dia/[fecha]`) y el panel con las sesiones de los últimos 7 días.
 - **Sin cambios de esquema.** Dos lecturas nuevas en el puerto, solo de lectura.
 
-**Precisiones aplicadas según el texto del PROMPT 18** (dime si alguna no es tu intención):
+**Precisiones aplicadas según el texto del PROMPT 18.** Las de P-91, P-122 y P-117 las **confirmaste el 18 de noviembre de 2026**. La de P-120 es literalmente el texto del PROMPT 18:
 
-| Sobre                     | Precisión                                                                                                                                                                      |
-| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| P-91 (vocabulario)        | Se añaden «no comparable» (otra magnitud, modalidad o escala) y «no evaluable» (carácter, calidad o %1RM sin resolver). Antes, el carácter y la calidad eran «no aplica»       |
-| P-120                     | Las cinco categorías del PROMPT 18: igual al propuesto, distinto, no registrado, dato ausente y no comparable                                                                  |
-| P-122 (ADR-36)            | Hueco a hueco: «no evaluable» si alguna de **sus** dos horas se ajustó, no si se ajustó cualquier hora de la sesión. La duración no se calcula si se ajustó el inicio o el fin |
-| P-117 (versión de inicio) | Es observada si la base se sembró con la `002` aplicada o si el inicio llegó después de aplicarla; si no, deducida y no se usa                                                 |
+| Sobre                     | Precisión                                                                                                                                                                                                                          |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| P-91 (vocabulario)        | **Confirmada.** Se añaden «no comparable» (otra magnitud, modalidad o escala) y «no evaluable» (carácter, calidad o %1RM sin resolver). Antes, el carácter y la calidad eran «no aplica»                                           |
+| P-120                     | Las cinco categorías del PROMPT 18: igual al propuesto, distinto, no registrado, dato ausente y no comparable                                                                                                                      |
+| P-122 (ADR-36)            | **Confirmada.** Hueco a hueco: «no evaluable» si alguna de **sus** dos horas se ajustó, no si se ajustó cualquier hora de la sesión. La duración no se calcula si se ajustó el inicio o el fin. Sustituye a la redacción de ADR-36 |
+| P-117 (versión de inicio) | **Confirmada.** Es observada si la base se sembró con la `002` aplicada o si el inicio llegó después de aplicarla; si no, deducida y no se usa. Sustituye a la regla del §21.6 de `BLOCK3_SPEC.md`                                 |
 
 **Excluido hasta tener una definición aprobada:** el volumen de lastre y el resumen de la asistencia (P-123, nueva). Se ven serie a serie.
 
