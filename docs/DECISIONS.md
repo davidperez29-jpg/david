@@ -461,6 +461,33 @@ Se guardan siempre la hora del dispositivo, su zona, su desfase, la recepción y
 
 **Siguen abiertas, sin bloquear B3.2:** P-96 (repeticiones «por lado»), P-97 (carga «por lado») y P-115 (carga autoseleccionada). Mientras tanto, «sin calcular» con su motivo.
 
+## ADR-39 · B3.2: análisis del cliente por periodos y evolución de un ejercicio · Adoptada (25 nov 2026)
+
+**Autorización:** tu mensaje del 25 de noviembre de 2026 («Autorizo B3.2») autoriza **solo B3.2**. Aplica P-98, P-104, P-106, P-114, P-118 y P-123 tal como quedaron en ADR-38, sin decidir nada nuevo.
+
+**Decisión:**
+
+- **Dominio puro** (`src/domain/analysis/period.ts` y `exercise.ts`): periodos y semanas ISO, planificado por fecha de planificación y ejecutado por fecha de ejecución, adherencia por recuentos, duración del periodo, patrones, diferencias repetidas y evolución de una variante. Todo se calcula al leer.
+- **9 fórmulas nuevas,** todas definiciones de diseño con limitaciones, entre ellas las dos de P-123.
+- **Una sola lectura del análisis** (`analysis-data.ts`) para A8, A9, A10, el día y las vistas corregidas. No decide permisos: lo hace cada caso de uso con `canAnalyzeClient` y `canAnalyzeSession`.
+- **Pantallas:** A9 como pestaña «Análisis» de la ficha y A10 desde ella, con todo el estado en la URL. Dos gráficos con su tabla equivalente.
+- **P-106:** «Carga», «Resultados» y «Progreso» usan esa misma lectura. Con los datos actuales, sus cifras no cambian (AC-B3-21, probado).
+- **Sin cambios de esquema, migraciones ni dependencias.**
+
+**Cómo se ha resuelto lo que el texto aprobado no fijaba** (dímelo si no es tu intención):
+
+| Sobre                          | Resolución                                                                                                                                                                                         |
+| ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Prescrito sin referencia       | En la perspectiva original, una semana con sesiones cuyo día aún no ha terminado dice «no determinado» o «incompleto», remite a la vigente y no dibuja esa marca. Nunca un cero                    |
+| Filtros y sesiones             | Un filtro por ejercicio o patrón quita las series de los demás ejercicios, pero no las sesiones, que siguen contadas como previstas o hechas                                                       |
+| P-104                          | Cuentan las series «distinto de lo prescrito» o «fuera del rango» en cantidad, carga o esfuerzo; las últimas M son las del periodo con series hechas de esa variante                               |
+| P-98                           | Con los patrones de la biblioteca de hoy, no los de la fecha de la sesión                                                                                                                          |
+| Periodos                       | Semana, 4 y 12 semanas (la última, la de la fecha elegida) y un rango libre de hasta 53 semanas; un periodo no válido muestra 4 semanas y lo avisa                                                 |
+| URL                            | Los parámetros en español, como `referencia=vigente` de A8                                                                                                                                         |
+| Prueba de equivalencia (B1-09) | Las tres vistas corregidas ya no pueden salir del almacén en memoria. Para ellas se compara el cálculo de la Fase 1 con el nuevo (AC-B3-21); el resto de cada vista se sigue comparando como antes |
+
+**Detalle:** `BLOCK3_SPEC.md` §23.
+
 ## Decisiones pendientes
 
 **Auditoría del 13 de noviembre de 2026:** las decisiones que plantea están en `AUDIT_BLOCK1.md` §14.
@@ -494,6 +521,8 @@ Se guardan siempre la hora del dispositivo, su zona, su desfase, la recepción y
 > **Actualización (14 nov 2026, PROMPT 18):** B3.1 hecha (ADR-37). Nueva pendiente: P-123 (lastre y asistencia).
 >
 > **Actualización (25 nov 2026):** P-98, P-104, P-106, P-114, P-118 y P-123 **aprobadas** (ADR-38). No queda ninguna pendiente para B3.2, que sigue sin autorizar.
+>
+> **Actualización (25 nov 2026, más tarde):** B3.2 **autorizada e implementada** (ADR-39). B3.3 sigue sin autorizar y depende de Q2 y P-112.
 >
 > La tabla siguiente se conserva como registro de la propuesta del PROMPT 15, con el estado añadido.
 

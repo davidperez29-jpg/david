@@ -307,6 +307,11 @@ Limitaciones que se mostrarán junto al resultado:
 
 **Actualización (14 nov 2026, B3.1):** la 2.0.0 ya está registrada y la usa A8. Base «total» tal cual y «por implemento» × n. Sin calcular, con su motivo: «por lado» (P-97), repeticiones «por lado» (P-96), autoseleccionada (P-115), %1RM sin resolver y series por tiempo o distancia. Las vistas de la Fase 1 («Carga», «Resultados» y «Progreso») siguen con la 1.0.0 hasta B3.2 (`BLOCK3_SPEC.md` §22).
 
+**Actualización (25 nov 2026, B3.2):**
+
+- **P-106:** «Carga», «Resultados» y «Progreso» ya usan la 2.0.0, la fecha de ejecución y la versión de cada serie. Con los datos actuales sus cifras no cambian; lo comprueba una prueba que compara el cálculo anterior con el nuevo (`BLOCK3_SPEC.md` §23).
+- **P-123:** `training.added-load-volume` 1.0.0 (Σ rep. × kg de lastre) y `training.assistance-summary` 1.0.0 (series, repeticiones y media ponderada por repeticiones, que se agrega sumando productos y repeticiones, nunca promediando medias) están registradas y se muestran en A8, en los totales del día y en A9, siempre aparte del tonelaje y entre sí. Las series sin los kg de asistencia anotados son «sin dato».
+
 ### 10.3 Peso corporal × repeticiones
 
 **No se calcula como tonelaje.** La parte del peso corporal que se mueve depende del ejercicio y de la postura: en las flexiones, el porcentaje de la masa corporal que soportan los brazos cambia entre la posición alta y la baja, y entre la flexión clásica y la de rodillas (Suprak et al., 2011). Multiplicar el peso corporal por las repeticiones mezclaría magnitudes distintas.

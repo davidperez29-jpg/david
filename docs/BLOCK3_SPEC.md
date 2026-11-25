@@ -1,10 +1,10 @@
 # Bloque 3 · Análisis del entrenamiento
 
-**Estado:** especificación consolidada, versión 7 (25 de noviembre de 2026).
+**Estado:** especificación consolidada, versión 8 (25 de noviembre de 2026).
 
 - **Aprobadas:** P-90 a P-95 (ADR-33); P-108, P-116 y P-117 (ADR-35); P-120, P-121 y P-122 (ADR-36); P-98, P-104, P-106, P-114, P-118 y P-123 (ADR-38).
-- **Implementadas:** B3.0 (PROMPT 17, ADR-34; §21) y B3.1 (PROMPT 18, ADR-37; §22).
-- **No autorizada:** la implementación de B3.2 y B3.3.
+- **Implementadas:** B3.0 (PROMPT 17, ADR-34; §21), B3.1 (PROMPT 18, ADR-37; §22) y B3.2 (ADR-39; §23).
+- **No autorizada:** la implementación de B3.3.
 
 | Versión | Fecha       | Cambios                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | ------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -15,6 +15,7 @@
 | 5       | 14 nov 2026 | B3.1 implementada (§22): A8, totales del día y panel. Precisiones: «no comparable» y «no evaluable», versión de inicio observada, huecos hueco a hueco. Nueva pendiente P-123                                                                                                                                                                                                                                                      |
 | 6       | 18 nov 2026 | Confirmadas las tres precisiones de ADR-37: «no evaluable» para el carácter y la calidad, huecos evaluados uno a uno y la regla de la versión de inicio observada                                                                                                                                                                                                                                                                  |
 | 7       | 25 nov 2026 | P-98, P-104, P-106, P-114, P-118 y P-123 aprobadas (ADR-38): no queda ninguna decisión pendiente para B3.2                                                                                                                                                                                                                                                                                                                         |
+| 8       | 25 nov 2026 | B3.2 implementada (§23): A9, A10, volumen por patrón, lastre y asistencia, y «Carga», «Resultados» y «Progreso» corregidas con las mismas cifras (AC-B3-21)                                                                                                                                                                                                                                                                        |
 
 **Relación con otros documentos:**
 
@@ -1336,4 +1337,122 @@ Son objetivos de diseño con datos de prueba, no garantías con años de datos (
 - **Las versiones 2 y siguientes solo existen en pruebas.** La interfaz para publicarlas llega en el bloque 5. La perspectiva original se ha probado con el servicio, no desde la interfaz.
 - **La consulta del panel** recorre los clientes uno a uno: adecuada para la demostración, por medir con muchos clientes.
 - **Las horas se muestran en la zona del móvil al empezar**, y la pantalla lo dice cuando es distinta de la de la aplicación.
+- **Plataformas:** ni Windows, ni Safari, ni iOS, ni dispositivos reales.
+
+## 23. B3.2 · Implementación (autorizada el 25 nov 2026)
+
+**Estado:** B3.2 implementada el 25 de noviembre de 2026 (ADR-39). **B3.3 no está autorizada.** Sin cambios de esquema, migraciones ni dependencias. Probado solo en Linux con Chromium (escritorio y Pixel 7 emulado).
+
+### 23.1 Qué hay
+
+| Pieza                       | Dónde                                                                | Qué hace                                                                                                                                                                                                                                           |
+| --------------------------- | -------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Dominio por periodos        | `src/domain/analysis/period.ts`                                      | Periodos (semana, 4 y 12 semanas, rango libre de hasta 53 semanas), semanas ISO, fecha de planificación (P-118), planificado y ejecutado por semana, adherencia, duración (P-114), patrones (P-98), diferencias repetidas (P-104) y datos ausentes |
+| Dominio de A10              | `src/domain/analysis/exercise.ts`                                    | Evolución de una variante por sesión, en tramos de una misma modalidad                                                                                                                                                                             |
+| Lastre y asistencia (P-123) | `src/domain/analysis/session.ts`                                     | Dos magnitudes nuevas de lo ejecutado y el lastre prescrito, aparte del tonelaje y entre sí                                                                                                                                                        |
+| Fórmulas                    | `src/domain/formulas.ts`                                             | 9 definiciones de diseño nuevas (28 del análisis en total); ninguna científica                                                                                                                                                                     |
+| Lectura común               | `src/server/services/analysis-data.ts`                               | Carga y analiza lo guardado de una sesión. Sin permisos: los aplica cada caso de uso antes. La usan A8, A9, A10, el día y las vistas corregidas, así que todas dan las mismas cifras                                                               |
+| Casos de uso                | `getClientAnalysis` y `getExerciseEvolution` (`trainer-analysis.ts`) | `canAnalyzeClient` y, por sesión, `canAnalyzeSession`. Sin acceso, `null` (404) sin revelar si existe                                                                                                                                              |
+| A9                          | Pestaña «Análisis» de la ficha (`…/clientes/[clientId]/analisis`)    | Todo el estado en la URL (periodo, perspectiva, filtros, N y M, orden y magnitud): se puede enlazar y recargar. Formulario GET                                                                                                                     |
+| A10                         | `…/analisis/ejercicios/[variantId]` (12 semanas por defecto)         | Desde «Ejercicios» de A9                                                                                                                                                                                                                           |
+| Vistas corregidas (P-106)   | «Carga», pestaña «Resultados» y «Progreso» de la clienta             | Fecha de ejecución, tonelaje 2.0.0 y la versión de cada serie, con la misma forma de antes                                                                                                                                                         |
+| Lastre y asistencia         | A8 (tabla de volumen) y totales del día                              | Filas «Lastre (aparte del tonelaje)» y «Asistencia (aparte)», con su fórmula                                                                                                                                                                       |
+| Generador de 52 semanas     | `buildTrainingYear` (`analysis-scenarios.ts`, solo pruebas)          | 156 sesiones de Lucía por los servicios reales: 144 empezadas, 12 sin empezar y 9 hechas al día siguiente                                                                                                                                          |
+
+**URL de A9** (en español, como el resto): `periodo` (`semana`, `4-semanas`, `12-semanas`, `rango`), `fecha`, `desde` y `hasta`, `referencia=vigente`, `ejercicio`, `patron`, `patrones=todos`, `n` y `m`, `orden=asc` y `magnitud` (`series`, `repeticiones`, `tonelaje`, `tiempo`, `distancia`, `lastre`). Lo que no es válido vuelve al valor por defecto; un periodo no válido se avisa [P].
+
+**Gráficos** (dos, cada uno con su tabla equivalente debajo):
+
+| Pregunta                                                               | Gráfico                                                                                                                            | Tabla equivalente                    |
+| ---------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
+| ¿Cómo evoluciona lo registrado frente a lo prescrito, semana a semana? | Columnas de lo registrado (por fecha de ejecución) y una marca de lo prescrito (por fecha prevista; un rango, como trazo vertical) | «Semana a semana», con los traslados |
+| ¿Cómo se reparte por patrones?                                         | Barras horizontales del recuento elegido, con su valor                                                                             | Los dos recuentos (P-98)             |
+| ¿Cómo evolucionan los kg de este ejercicio? (A10)                      | Puntos con los kg de cada serie hecha, por sesión                                                                                  | Sesión a sesión, serie a serie       |
+
+- **Colores:** ámbar `#b38600` (lo registrado) y azul `#24548f` (lo prescrito), comprobados con el validador de paletas sobre el blanco: pasan las seis comprobaciones, también el contraste 3:1 [P]. TrainPro no tiene modo oscuro.
+- **Marcas:** columnas de 24 px como mucho, con el extremo redondeado y la base recta; trazos de 2 px; retícula de un trazo; leyenda para las dos series; el texto, siempre en los colores de texto.
+- **Interacción:** cada columna y cada punto se enfocan con el teclado y muestran su detalle al pasar o al enfocar, con una zona de interacción mayor que la marca [P].
+- **Móvil:** un gráfico por bloque, con su tabla debajo. Los filtros van en una hoja inferior que se abre con un botón, se cierra con Escape y devuelve el foco [P]. Las tablas anchas se desplazan dentro de una región con nombre que se puede enfocar [P].
+
+### 23.2 Indicadores nuevos
+
+| Indicador                        | Fórmula                                 | Notas                                                                                                                                  |
+| -------------------------------- | --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| Volumen de lastre (P-123)        | `training.added-load-volume` 1.0.0      | Σ rep. × kg de lastre de las series por repeticiones. Las de tiempo o distancia con lastre, contadas aparte                            |
+| Resumen de la asistencia (P-123) | `training.assistance-summary` 1.0.0     | Series y repeticiones asistidas; media ponderada por repeticiones con las sumas, nunca promediando medias; «sin dato» si faltan los kg |
+| Volumen ejecutado por semana     | `training.weekly-executed-volume` 1.0.0 | Por semana ISO de la fecha de ejecución. Las semanas vacías, con cero                                                                  |
+| Volumen planificado por semana   | `training.weekly-planned-volume` 1.0.0  | Por semana ISO de la fecha de planificación (P-118). Si alguna sesión no tiene referencia determinada, «incompleto», y no se dibuja    |
+| Sesiones previstas y su estado   | `training.session-adherence` 1.0.0      | Recuentos con su denominador («Completada: 5 de 12»); sin porcentaje                                                                   |
+| Duración del periodo (P-114)     | `training.period-duration-totals` 1.0.0 | Total y media con y sin las sesiones con advertencia, diciendo cuántas; las que no tienen duración, aparte                             |
+| Series por patrón (P-98)         | `training.pattern-set-count` 1.0.0      | «Solo principal» y «principal y secundarios», sin pesos; con la biblioteca de hoy                                                      |
+| Diferencias repetidas (P-104)    | `training.repeated-differences` 1.0.0   | N de las últimas M sesiones con series hechas del periodo; «sin dato», «no aplica», «no comparable» y «no evaluable» no cuentan        |
+| Evolución de un ejercicio (A10)  | `training.exercise-evolution` 1.0.0     | Por sesión; cortada cuando cambia la modalidad. Sin 1RM estimado, tendencias ni predicciones                                           |
+
+Cada cifra lleva su insignia con el id, la versión, la definición y las limitaciones, como «definición de diseño (no es una fórmula científica)» [P].
+
+**Fuera, como estaba previsto** [N]: cualidad y grupo muscular (P-99, P-100), carga interna y RPE de la sesión (B3.3, aviso visible en A9), alertas y comparaciones entre clientes.
+
+### 23.3 Reglas aplicadas
+
+**P-118 con P-121 (fecha de planificación).**
+
+- **Vigente:** la fecha prevista vigente.
+- **Original:** si todas las versiones tienen la misma fecha, esa. Si no, la de la versión de referencia determinada. Si no hay referencia, «Fecha prevista original no determinada»: la sesión se lista aparte y no cuenta como prevista en ninguna semana. Nunca se usa la vigente en su lugar [P].
+
+**Planificado frente a ejecutado (P-93).** Lo planificado va por fecha de planificación y lo ejecutado por fecha de ejecución. En cada semana son dos columnas que no se suman ni se restan. Una sesión hecha en otra semana aparece en las dos, cada una con su papel: «prevista aquí, hecha el…» y «hecha aquí, prevista el…» [P].
+
+**Lo prescrito sin referencia.** En la perspectiva original, una sesión cuyo día previsto aún no ha terminado no tiene referencia (B3.1), así que su prescrito no se conoce. La semana dice «no determinado» (si no hay nada más) o «incompleto: N sesiones con series sin referencia determinada (con la prescripción vigente se ven)», y el gráfico no dibuja esa marca [P]. **Cambio respecto a la primera prueba visual,** que mostraba «0 series»: un cero inventado.
+
+**P-114.** «Con advertencia» es tener un hueco de nivel «advertencia» o «no evaluable». Las cifras se comprueban contra la suma de las de A8, sesión a sesión [P].
+
+**P-98.** Los patrones de cada variante son los de la biblioteca hoy, no los de la fecha de la sesión. El filtro por patrón usa el mismo conmutador: solo principal, o principal y secundarios [P].
+
+**P-104.** Por variante, sus últimas M sesiones del periodo con series hechas; cuenta las que tienen alguna serie «distinto de lo prescrito» o «fuera del rango» en cantidad, carga o esfuerzo. Lista por orden alfabético, sin colores ni alertas. N y M van en la URL y no se guardan [P].
+
+**Filtros.** Un filtro deja fuera las series de los demás ejercicios, pero no las sesiones: siguen contadas como previstas o hechas. Las series filtradas no reaparecen como «fuera de la versión vigente» [P].
+
+**AC-B3-22.** El análisis no lee `perceived_effort`. Una prueba cambia ese valor en todas las ejecuciones sembradas (en una base de prueba en memoria, quitando el disparador que protege las ejecuciones terminadas) y comprueba que A9 da exactamente lo mismo [P].
+
+### 23.4 P-106: las vistas corregidas
+
+| Vista                    | Antes                              | Ahora                                                     |
+| ------------------------ | ---------------------------------- | --------------------------------------------------------- |
+| «Carga»                  | Fecha prevista; tonelaje 1.0.0     | Fecha de ejecución; tonelaje 2.0.0; versión de cada serie |
+| Pestaña «Resultados»     | Fecha prevista; tonelaje 1.0.0     | Igual que «Carga»                                         |
+| «Progreso» de la clienta | Fecha del registro; tonelaje 1.0.0 | El mismo dominio y las mismas fórmulas que el entrenador  |
+
+- **AC-B3-21 [P]:** con los datos actuales, sus cifras **no cambian**. La prueba de equivalencia (`compat.equivalence.test.ts`) calcula el volumen semanal con el algoritmo de la Fase 1 sobre el almacén en memoria y lo compara con las vistas nuevas sobre SQLite, para cada cliente y en tres fechas (miércoles, lunes y domingo). El resto de cada modelo de vista se sigue comparando con el almacén en memoria.
+- **Lo que sí cambia, a propósito:** la etiqueta de la fórmula («training.volume-load v2.0.0»), la lista de definiciones de «Carga» y una sesión hecha otro día, que ahora cuenta en la semana en que se hizo. Lo prueba una E2E: una sesión de la semana pasada hecha hoy suma en la semana en curso de «Carga» y no en la anterior [P].
+- **Una E2E existente** esperaba «training.volume-load v1.0.0»; se ha cambiado a la 2.0.0.
+
+### 23.5 Criterios de aceptación
+
+| Id       | Estado | Cómo                                                                                                                                                                                             |
+| -------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| AC-B3-14 | [P]    | Dominio, integración (la sesión del 1 de enero de 2027 cuenta en 2026-W53), vista y E2E: «Semana 53 de 2026 (ISO): 28 dic 2026 – 3 ene 2027»                                                     |
+| AC-B3-18 | [P]    | Integración (12 semanas), vista (la fila de una semana vacía dice «0 · 0 series · 0 · 0 series») y dominio                                                                                       |
+| AC-B3-19 | [P]    | Integración (prevista en la W46, hecha en la W47) y E2E (prevista la semana pasada, hecha hoy, con «Carga» incluida); la trasladada dentro de la misma semana no aparece como traslado de semana |
+| AC-B3-20 | [P]    | Integración: los dos recuentos coinciden con los de la biblioteca recalculados a partir de las series hechas de A8                                                                               |
+| AC-B3-21 | [P]    | Integración sobre la semilla en tres fechas (§23.4) y E2E de «Carga»                                                                                                                             |
+| AC-B3-22 | [P]    | Integración (§23.3)                                                                                                                                                                              |
+| AC-B3-23 | [P]    | Integración: A9 con 52 semanas generadas (156 sesiones), mediana de 5 de **91 a 101 ms** en tres ejecuciones; límite, 300 ms                                                                     |
+| AC-B3-16 | [P]    | Ampliado a A9 y A10: otro entrenador, la clienta, un cliente inexistente y un ejercicio con caracteres no válidos dan `null` (404); E2E con el 404                                               |
+| AC-B3-17 | [P]    | axe en escritorio y Pixel 7; A9 y A10 a 360 px sin desplazamiento horizontal; la hoja de filtros abierta, también analizada                                                                      |
+
+### 23.6 Rendimiento
+
+| Medida (base en memoria, este equipo)                           | Mediana medida            | Límite de la prueba [P] |
+| --------------------------------------------------------------- | ------------------------- | ----------------------- |
+| A9 con 52 semanas generadas (156 sesiones, rango de 52 semanas) | 91–101 ms (3 ejecuciones) | < 300 ms (mediana de 5) |
+| Construir el año de prueba por los servicios reales             | unos 1,5 s                | —                       |
+
+Son objetivos de diseño con datos de prueba, no garantías con años de datos de varios clientes (P-111). A9 analiza todas las sesiones publicadas del cliente y después filtra por el periodo; con muchos años, convendría leer solo las del periodo.
+
+### 23.7 Riesgos y límites
+
+- **Los patrones son los de la biblioteca hoy.** Si se cambia la asignación de una variante, cambian los recuentos de periodos pasados. Se dice en la definición de la fórmula.
+- **La perspectiva original no tiene prescrito para el futuro.** Es la regla de B3.1 (el día previsto no ha terminado). A9 lo dice y remite a la vigente.
+- **«Programada» y «Sin hacer» dependen de `today`, y la referencia, del reloj.** En el servidor coinciden; en las pruebas se fijan por separado.
+- **El gráfico es una ayuda:** la tabla es la fuente. Sin él (por ejemplo, sin JavaScript en el móvil) toda la información sigue en las tablas.
+- **Los filtros en el móvil necesitan JavaScript** para abrir la hoja. En el escritorio, el formulario funciona sin él.
 - **Plataformas:** ni Windows, ni Safari, ni iOS, ni dispositivos reales.
