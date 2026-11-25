@@ -32,7 +32,8 @@ Fases definidas en la especificación maestra (`MASTER_SPEC.md`). Cada fase empi
 >   - pruebas deterministas.
 > - **Bloque 3 (análisis): B3.0 y B3.1 hechas; B3.2 y B3.3 no autorizadas.**
 >   - Especificación consolidada en `BLOCK3_SPEC.md`, versión 5 (14 nov 2026, PROMPT 18).
->   - **B3.1** (PROMPT 18, ADR-37): análisis de la sesión (A8), totales del día y panel con las sesiones de los últimos 7 días. Antes de B3.2 faltan P-98, P-104, P-106, P-114 y P-118 (y P-123 si se quieren el lastre y la asistencia).
+>   - **B3.1** (PROMPT 18, ADR-37): análisis de la sesión (A8), totales del día y panel con las sesiones de los últimos 7 días.
+>   - P-98, P-104, P-106, P-114, P-118 y P-123 aprobadas (ADR-38, 25 nov 2026): no queda ninguna decisión pendiente para B3.2, que solo espera tu autorización expresa.
 >   - **Aprobadas:** P-90 a P-95 (ADR-33); P-108, P-116 y P-117 (ADR-35).
 >   - **B3.0** (PROMPT 17, ADR-34):
 >     - página de error de la base;
