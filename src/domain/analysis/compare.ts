@@ -325,3 +325,52 @@ export function checkProposal(ownTarget: SetTarget, set: PerformedSet): Proposal
     overall: amount === 'different' || load === 'different' ? 'different' : 'equal',
   };
 }
+
+// ── Modalidad (A10): la evolución de un ejercicio solo se compara dentro de la misma ──────
+
+/**
+ * Clave y texto de la modalidad de una serie prescrita: tipo de serie (repeticiones, «por lado»,
+ * segundos o metros) y modalidad de carga con su base. Si cambia, la evolución se corta (A10).
+ */
+export function modalityOf(target: SetTarget): { key: string; text: string } {
+  const reps = target.reps;
+  const kind =
+    reps.kind === 'seconds'
+      ? ['s', 'por tiempo']
+      : reps.kind === 'meters'
+        ? ['m', 'por distancia']
+        : reps.perSide
+          ? ['rep-lado', 'repeticiones por lado']
+          : ['rep', 'repeticiones'];
+  const load = target.load;
+  const [loadKey, loadText] = ((): [string, string] => {
+    switch (load.kind) {
+      case 'external':
+      case 'external_range':
+        return load.basis === 'per_implement'
+          ? [`kg-impl-${load.implements ?? 2}`, `kg por implemento (× ${load.implements ?? 2})`]
+          : load.basis === 'per_side'
+            ? ['kg-lado', 'kg por lado']
+            : ['kg', 'kg externos'];
+      case 'percent_1rm':
+        return ['kg', 'kg externos'];
+      case 'bodyweight':
+        return ['pc', 'peso corporal'];
+      case 'bodyweight_plus':
+        return ['lastre', 'peso corporal con lastre'];
+      case 'assisted':
+        return ['asistida', 'asistida'];
+      case 'elastic':
+        return ['banda', 'banda elástica'];
+      case 'device':
+        return ['maquina', 'ajuste de máquina'];
+      case 'self_selected':
+        return ['elegida', 'carga a elegir'];
+      case 'none':
+        return ['sin-carga', 'sin carga'];
+      case 'other':
+        return ['otra', 'otra carga'];
+    }
+  })();
+  return { key: `${kind[0]}|${loadKey}`, text: `${kind[1]} · ${loadText}` };
+}

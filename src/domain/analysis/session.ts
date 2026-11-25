@@ -33,6 +33,7 @@ import {
   compareLoad,
   compareQuantity,
   type Comparison,
+  modalityOf,
   type Condition,
   type ProposalCheck,
 } from './compare';
@@ -74,6 +75,8 @@ export const ANALYSIS_FORMULAS = {
   calculatedDuration: { id: 'training.session-calculated-duration', version: '1.0.0' },
   gapWarning: { id: 'training.session-gap-warning', version: '1.0.0' },
   dayTotals: { id: 'training.executed-day-totals', version: '1.0.0' },
+  addedLoadVolume: { id: 'training.added-load-volume', version: '1.0.0' },
+  assistanceSummary: { id: 'training.assistance-summary', version: '1.0.0' },
 } as const;
 
 export type SetStatus = 'done' | 'not_done' | 'unregistered';
@@ -82,6 +85,8 @@ export type ExerciseStatus = 'complete' | 'partial' | 'not_done' | 'unregistered
 export interface AnalyzedSet {
   prescriptionId: string;
   setNumber: number;
+  /** Variante: la del registro si lo hay; si no, la de la referencia. */
+  variantId: string;
   status: SetStatus;
   /** Versión con la que se compara; `null` si la referencia no está determinada o no existe. */
   referenceVersion: number | null;
@@ -106,10 +111,27 @@ export interface AnalyzedSet {
   clockAdjusted: boolean;
   /** Vigente: serie registrada que ya no está en la versión vigente (no se compara). */
   outsideReference: boolean;
+  /** Lo registrado, en números (para A10); `null` sin registro. */
+  recorded: RecordedValues | null;
+  /** Modalidad de la referencia (tipo de serie y carga con su base); `null` sin referencia. */
+  modality: { key: string; text: string } | null;
+}
+
+export interface RecordedValues {
+  reps: number | null;
+  durationS: number | null;
+  distanceM: number | null;
+  /** kg externos tal como se registran (por implemento si la base es «por implemento»). */
+  kg: number | null;
+  addedKg: number | null;
+  assistanceKg: number | null;
+  rir: number | null;
+  rpe: number | null;
 }
 
 export interface AnalyzedExercise {
   prescriptionId: string;
+  variantId: string;
   slot: string;
   name: string;
   /** Prescripción común del ejercicio en la referencia (o en la versión de sus registros). */
@@ -154,6 +176,22 @@ export interface ExecutedVolume {
   tonnageSets: number;
   /** Series hechas con kg que no entran, por motivo. */
   tonnageExcluded: Partial<Record<TonnageExclusion, number>>;
+  /**
+   * Lastre (P-123, training.added-load-volume 1.0.0): Σ rep. × kg de lastre de las series hechas
+   * por repeticiones, aparte del tonelaje. `kg` es `null` si no hay lastre en la sesión.
+   */
+  addedLoad: { kg: number | null; sets: number; reps: number; notByReps: number };
+  /**
+   * Asistencia (P-123, training.assistance-summary 1.0.0): series y repeticiones asistidas; las
+   * sumas permiten la media ponderada por repeticiones sin promediar medias (`assistanceMeanKg`).
+   */
+  assistance: {
+    sets: number;
+    reps: number;
+    withKgReps: number;
+    kgTimesReps: number;
+    noData: number;
+  };
 }
 
 export interface PrescribedVolume {
@@ -165,9 +203,15 @@ export interface PrescribedVolume {
   tonnageKg: Interval | null;
   tonnageSets: number;
   tonnageExcluded: Partial<Record<TonnageExclusion, number>>;
+  /** Lastre prescrito: Σ rep. × kg de lastre (intervalo si hay rangos). */
+  addedLoadKg: Interval | null;
   /** Las series sin registrar no se pueden enumerar: la referencia no está determinada. */
   unregisteredUnknown: boolean;
 }
+
+/** Asistencia media ponderada por repeticiones, o `null` si ninguna serie tiene los kg anotados. */
+export const assistanceMeanKg = (a: ExecutedVolume['assistance']): number | null =>
+  a.withKgReps > 0 ? Math.round((a.kgTimesReps / a.withKgReps) * 100) / 100 : null;
 
 export interface VersionInfo {
   number: number;
@@ -220,6 +264,8 @@ export interface SessionAnalysisInput {
   timeZone: string;
   now: IsoDateTime;
   exerciseName: (variantId: string, fallback?: string) => string;
+  /** Filtro por ejercicio o patrón (A9): solo los ejercicios cuya variante lo cumple. */
+  includeVariant?: (variantId: string) => boolean;
 }
 
 const CONDITIONS: readonly Condition[] = [
@@ -325,11 +371,18 @@ function prescribedVolume(
     tonnageKg: null,
     tonnageSets: 0,
     tonnageExcluded: {},
+    addedLoadKg: null,
     unregisteredUnknown,
   };
   for (const target of targets) {
     const reps = repsInterval(target);
     const kg = prescribedKg(target.load);
+    if (reps && target.load.kind === 'bodyweight_plus') {
+      out.addedLoadKg = addInterval(out.addedLoadKg, {
+        min: round(reps.min * target.load.addedKg),
+        max: round(reps.max * target.load.addedKg),
+      });
+    }
     if (reps) {
       out.sets.reps += 1;
       if (target.reps.perSide) out.repsPerSide = addInterval(out.repsPerSide, reps);
@@ -367,6 +420,7 @@ export function executedVolume(
     seconds: boolean;
     meters: boolean;
     tonnage: boolean;
+    addedLoad: boolean;
   },
 ): ExecutedVolume {
   const out: ExecutedVolume = {
@@ -378,9 +432,30 @@ export function executedVolume(
     tonnageKg: kindsPresent.tonnage ? 0 : null,
     tonnageSets: 0,
     tonnageExcluded: {},
+    addedLoad: { kg: kindsPresent.addedLoad ? 0 : null, sets: 0, reps: 0, notByReps: 0 },
+    assistance: { sets: 0, reps: 0, withKgReps: 0, kgTimesReps: 0, noData: 0 },
   };
   for (const { log, ownTarget } of done) {
     if (!log.completed) continue;
+    if (log.load?.kind === 'bodyweight_plus') {
+      if (log.reps === undefined) out.addedLoad.notByReps += 1;
+      else {
+        out.addedLoad.sets += 1;
+        out.addedLoad.reps += log.reps;
+        out.addedLoad.kg = round((out.addedLoad.kg ?? 0) + log.reps * log.load.addedKg);
+      }
+    }
+    if (log.load?.kind === 'assisted' && log.reps !== undefined) {
+      out.assistance.sets += 1;
+      out.assistance.reps += log.reps;
+      if (log.load.assistanceKg === null) out.assistance.noData += 1;
+      else {
+        out.assistance.withKgReps += log.reps;
+        out.assistance.kgTimesReps = round(
+          out.assistance.kgTimesReps + log.reps * log.load.assistanceKg,
+        );
+      }
+    }
     const perSide = Boolean(ownTarget?.reps.perSide);
     if (log.reps !== undefined) {
       out.sets.reps += 1;
@@ -447,6 +522,19 @@ export function addExecutedVolumes(volumes: readonly ExecutedVolume[]): Executed
         tonnageKg: plus(acc.tonnageKg, v.tonnageKg),
         tonnageSets: acc.tonnageSets + v.tonnageSets,
         tonnageExcluded: excluded,
+        addedLoad: {
+          kg: plus(acc.addedLoad.kg, v.addedLoad.kg),
+          sets: acc.addedLoad.sets + v.addedLoad.sets,
+          reps: acc.addedLoad.reps + v.addedLoad.reps,
+          notByReps: acc.addedLoad.notByReps + v.addedLoad.notByReps,
+        },
+        assistance: {
+          sets: acc.assistance.sets + v.assistance.sets,
+          reps: acc.assistance.reps + v.assistance.reps,
+          withKgReps: acc.assistance.withKgReps + v.assistance.withKgReps,
+          kgTimesReps: round(acc.assistance.kgTimesReps + v.assistance.kgTimesReps),
+          noData: acc.assistance.noData + v.assistance.noData,
+        },
       };
     },
     {
@@ -458,8 +546,29 @@ export function addExecutedVolumes(volumes: readonly ExecutedVolume[]): Executed
       tonnageKg: null,
       tonnageSets: 0,
       tonnageExcluded: {},
+      addedLoad: { kg: null, sets: 0, reps: 0, notByReps: 0 },
+      assistance: { sets: 0, reps: 0, withKgReps: 0, kgTimesReps: 0, noData: 0 },
     },
   );
+}
+
+function recordedOf(l: SetLogV2): RecordedValues {
+  const load = l.load;
+  return {
+    reps: l.reps ?? null,
+    durationS: l.durationS ?? null,
+    distanceM: l.distanceM ?? null,
+    kg:
+      load?.kind === 'external'
+        ? load.kg
+        : load?.kind === 'self_selected' && load.kg !== undefined
+          ? load.kg
+          : null,
+    addedKg: load?.kind === 'bodyweight_plus' ? load.addedKg : null,
+    assistanceKg: load?.kind === 'assisted' ? load.assistanceKg : null,
+    rir: l.rir ?? null,
+    rpe: l.rpe ?? null,
+  };
 }
 
 function exerciseStatus(sets: readonly AnalyzedSet[]): ExerciseStatus | null {
@@ -510,6 +619,7 @@ export function analyzeSession(input: SessionAnalysisInput): SessionAnalysis {
     prescriptionId: string,
     setNumber: number,
     unregisteredTarget: SetTarget | undefined,
+    itemVariantId: string,
   ): AnalyzedSet => {
     const l = effectiveByKey.get(key(prescriptionId, setNumber));
     const ownTarget = l ? targetOf(ownContent(l), prescriptionId, setNumber) : undefined;
@@ -538,6 +648,7 @@ export function analyzeSession(input: SessionAnalysisInput): SessionAnalysis {
     return {
       prescriptionId,
       setNumber,
+      variantId: l?.variantId ?? itemVariantId,
       status: !l ? 'unregistered' : l.completed ? 'done' : 'not_done',
       referenceVersion,
       referenceBasis,
@@ -555,6 +666,8 @@ export function analyzeSession(input: SessionAnalysisInput): SessionAnalysis {
       performedAt: l?.performedAt ?? null,
       clockAdjusted: l ? (l.clockAdjustment ?? null) !== null || l.clockAdjusted : false,
       outsideReference: Boolean(l) && input.perspective === 'current' && !target,
+      recorded: l ? recordedOf(l) : null,
+      modality: target ? modalityOf(target) : null,
     };
   };
 
@@ -563,14 +676,16 @@ export function analyzeSession(input: SessionAnalysisInput): SessionAnalysis {
   const exercises: AnalyzedExercise[] = [];
   const listed = new Set<string>();
   const baseContent = input.perspective === 'current' ? current.content : referenceContent;
+  const included = (variantId: string) => input.includeVariant?.(variantId) ?? true;
   if (baseContent) {
     for (const item of [...baseContent.items].sort((a, b) => a.order - b.order)) {
-      const sets = resolveSets(item).map((t) => {
-        listed.add(key(item.id, t.setNumber));
-        return analyzeSet(item.id, t.setNumber, t);
-      });
+      const targets = resolveSets(item);
+      for (const t of targets) listed.add(key(item.id, t.setNumber));
+      if (!included(item.variantId)) continue;
+      const sets = targets.map((t) => analyzeSet(item.id, t.setNumber, t, item.variantId));
       exercises.push({
         prescriptionId: item.id,
+        variantId: item.variantId,
         slot: slotIn(item, baseContent),
         name: input.exerciseName(item.variantId, item.variantName),
         prescribed: itemText(item),
@@ -580,7 +695,7 @@ export function analyzeSession(input: SessionAnalysisInput): SessionAnalysis {
     }
   }
   const extra = effective
-    .filter((l) => !listed.has(key(l.prescriptionId, l.setNumber)))
+    .filter((l) => !listed.has(key(l.prescriptionId, l.setNumber)) && included(l.variantId))
     .sort((a, b) => {
       const ia = ownContent(a)?.items.find((i) => i.id === a.prescriptionId);
       const ib = ownContent(b)?.items.find((i) => i.id === b.prescriptionId);
@@ -597,6 +712,7 @@ export function analyzeSession(input: SessionAnalysisInput): SessionAnalysis {
       const item = content?.items.find((i) => i.id === l.prescriptionId);
       exercise = {
         prescriptionId: l.prescriptionId,
+        variantId: l.variantId,
         slot: item && content ? slotIn(item, content) : '—',
         name: input.exerciseName(l.variantId, item?.variantName),
         prescribed: item ? itemText(item) : '',
@@ -605,7 +721,7 @@ export function analyzeSession(input: SessionAnalysisInput): SessionAnalysis {
       };
       exercises.push(exercise);
     }
-    exercise.sets.push(analyzeSet(l.prescriptionId, l.setNumber, undefined));
+    exercise.sets.push(analyzeSet(l.prescriptionId, l.setNumber, undefined, l.variantId));
     exercise.sets.sort((a, b) => a.setNumber - b.setNumber);
   }
   for (const exercise of exercises) exercise.status = exerciseStatus(exercise.sets);
@@ -658,8 +774,10 @@ export function analyzeSession(input: SessionAnalysisInput): SessionAnalysis {
   );
   const unregisteredUnknown = input.perspective === 'original' && reference.kind === 'undetermined';
   const prescribed = prescribedVolume(referenceTargets, unregisteredUnknown);
+  // Lo ejecutado: las series hechas de los ejercicios listados (con el filtro, solo esos).
+  const shown = new Set(sets.map((s) => key(s.prescriptionId, s.setNumber)));
   const doneSets = effective
-    .filter((l) => l.completed)
+    .filter((l) => l.completed && shown.has(key(l.prescriptionId, l.setNumber)))
     .map((l) => ({ log: l, ownTarget: targetOf(ownContent(l), l.prescriptionId, l.setNumber) }));
   const executed = executedVolume(doneSets, {
     reps:
@@ -673,6 +791,9 @@ export function analyzeSession(input: SessionAnalysisInput): SessionAnalysis {
       doneSets.some((d) => d.log.durationS !== undefined && d.log.distanceM === undefined),
     meters: prescribed.sets.meters > 0 || doneSets.some((d) => d.log.distanceM !== undefined),
     tonnage: prescribed.tonnageSets > 0,
+    addedLoad:
+      prescribed.addedLoadKg !== null ||
+      doneSets.some((d) => d.log.load?.kind === 'bodyweight_plus'),
   });
 
   // Estado, fechas y versiones.

@@ -317,6 +317,139 @@ export const FORMULA_REGISTRY: readonly FormulaDefinition[] = [
     ],
     references: [],
   },
+  // ── Cliente por periodos y evolución (bloque 3, B3.2; docs/BLOCK3_SPEC.md §12 y §23) ────
+  {
+    id: 'training.added-load-volume',
+    version: '1.0.0',
+    kind: 'operational_definition',
+    name: 'Volumen de lastre',
+    expression:
+      'Suma de (repeticiones × kg de lastre) de las series hechas por repeticiones con peso corporal más lastre (P-123).',
+    output: { name: 'Volumen de lastre', unit: 'kg' },
+    limitations: [
+      'Va aparte del tonelaje externo: no se suman nunca.',
+      'No incluye el peso corporal, que no se mide: no es la carga total desplazada.',
+      'Las series por tiempo o distancia con lastre se cuentan aparte, sin multiplicar.',
+    ],
+    references: [],
+  },
+  {
+    id: 'training.assistance-summary',
+    version: '1.0.0',
+    kind: 'operational_definition',
+    name: 'Resumen de la asistencia',
+    expression:
+      'Series y repeticiones asistidas hechas; asistencia media ponderada por repeticiones = Σ (rep. × kg de asistencia) ÷ Σ rep. de las series con los kg anotados (P-123).',
+    output: { name: 'Asistencia', unit: 'kg' },
+    limitations: [
+      'Más asistencia significa menos carga para la persona: no se suma al tonelaje ni al lastre.',
+      'Las series sin los kg anotados quedan como «sin dato» y no entran en la media.',
+      'Al agregar se suman los productos y las repeticiones; nunca se promedian medias.',
+    ],
+    references: [],
+  },
+  {
+    id: 'training.weekly-executed-volume',
+    version: '1.0.0',
+    kind: 'operational_definition',
+    name: 'Volumen ejecutado por semana',
+    expression:
+      'Por semana ISO de la fecha de ejecución (la del inicio de cada sesión, en la zona del móvil): suma, magnitud a magnitud, de lo registrado, con las mismas fórmulas que la sesión.',
+    output: { name: 'Volumen semanal', unit: null },
+    limitations: [
+      'Las semanas sin sesiones se muestran con cero.',
+      'Una sesión trasladada cuenta en la semana en que se hizo.',
+    ],
+    references: [],
+  },
+  {
+    id: 'training.weekly-planned-volume',
+    version: '1.0.0',
+    kind: 'operational_definition',
+    name: 'Volumen planificado por semana',
+    expression:
+      'Por semana ISO de la fecha prevista (la de la versión original o la vigente, según la perspectiva; P-118): suma de lo prescrito, magnitud a magnitud; los rangos, como intervalo.',
+    output: { name: 'Volumen planificado', unit: null },
+    limitations: [
+      'Va por fecha prevista: no se suma con lo ejecutado, que va por fecha de ejecución.',
+      'Las sesiones sin fecha prevista original determinada (P-121) no se agrupan: se listan aparte.',
+      'Si alguna serie no tiene referencia determinada, lo prescrito de esa semana está incompleto y se dice.',
+    ],
+    references: [],
+  },
+  {
+    id: 'training.session-adherence',
+    version: '1.0.0',
+    kind: 'operational_definition',
+    name: 'Sesiones previstas y su estado',
+    expression:
+      'De las sesiones con fecha prevista en el periodo: cuántas hay en cada estado (programada, sin hacer, en curso, en pausa, interrumpida, completada o parcial) y cuántas se hicieron otro día.',
+    output: { name: 'Sesiones', unit: null },
+    limitations: [
+      'Es un recuento, no un porcentaje de cumplimiento ni una valoración.',
+      '«Completada» se calcula frente a la versión vigente.',
+    ],
+    references: [],
+  },
+  {
+    id: 'training.period-duration-totals',
+    version: '1.0.0',
+    kind: 'operational_definition',
+    name: 'Duración del periodo',
+    expression:
+      'Total y media por sesión de la duración calculada de las sesiones ejecutadas en el periodo, con y sin las que tienen un hueco de nivel «advertencia» o «no evaluable» (P-114), diciendo cuántas son.',
+    output: { name: 'Duración del periodo', unit: 's' },
+    limitations: [
+      'Las sesiones sin duración calculada (sin terminar, incoherentes o con el inicio o el fin ajustados) no entran y se cuentan aparte.',
+      'La duración calculada no es tiempo activo ni fisiológico.',
+    ],
+    references: [],
+  },
+  {
+    id: 'training.pattern-set-count',
+    version: '1.0.0',
+    kind: 'operational_definition',
+    name: 'Series por patrón de movimiento',
+    expression:
+      'Series hechas por patrón según la biblioteca, con dos recuentos separados y sin pesos (P-98): «solo principal» (cada serie, una vez) y «principal y secundarios» (cada serie, en cada uno de sus patrones).',
+    output: { name: 'Series', unit: null },
+    limitations: [
+      'En «principal y secundarios» una serie cuenta en varios patrones: la suma supera el total de series.',
+      'Los patrones son los de la biblioteca hoy, no los de la fecha de la sesión.',
+      'No es volumen por grupo muscular ni por cualidad (P-99, P-100).',
+    ],
+    references: [],
+  },
+  {
+    id: 'training.repeated-differences',
+    version: '1.0.0',
+    kind: 'operational_definition',
+    name: 'Diferencias repetidas',
+    expression:
+      'Ejercicios con alguna serie fuera de la condición prescrita (distinto, por debajo o por encima del rango) en al menos N de sus últimas M sesiones del periodo (P-104; N = 3 y M = 5 por defecto).',
+    output: { name: 'Sesiones', unit: null },
+    limitations: [
+      'Lista descriptiva, sin alertas ni juicios: la interpretación es del entrenador.',
+      'N y M se eligen en pantalla y no se guardan.',
+      '«Sin dato», «no aplica», «no comparable» y «no evaluable» no cuentan como diferencia.',
+    ],
+    references: [],
+  },
+  {
+    id: 'training.exercise-evolution',
+    version: '1.0.0',
+    kind: 'operational_definition',
+    name: 'Evolución de un ejercicio',
+    expression:
+      'Sesión a sesión, en orden de ejecución, las series de una variante con lo prescrito, lo registrado y su condición, en tramos de una misma modalidad (tipo de serie y carga con su base).',
+    output: { name: 'Evolución', unit: null },
+    limitations: [
+      'Si cambia la modalidad, la evolución se corta y no se compara a través del corte.',
+      'Sin estimación del 1RM, tendencias ni predicciones.',
+      'Los valores se proponen con lo prescrito (P-120).',
+    ],
+    references: [],
+  },
   {
     id: 'assessment.best-attempt',
     version: '1.0.0',
