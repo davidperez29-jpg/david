@@ -143,7 +143,7 @@ test('B3.1 · el análisis de la sesión (A8), los totales del día y el panel c
   // Una sesión sembrada de Marta ya registrada.
   await page.goto('/entrenador/clientes/c-marta/sesiones');
   const hrefs = await page
-    .locator('a[href$="/analisis"]')
+    .locator('a[href*="/sesiones/"][href$="/analisis"]')
     .evaluateAll((links) => links.map((a) => a.getAttribute('href')!));
   let analysed = false;
   for (const href of hrefs.slice(0, 12)) {
@@ -165,5 +165,52 @@ test('B3.1 · el análisis de la sesión (A8), los totales del día y el panel c
   await fits('los totales del día');
   await page.goto('/entrenador');
   await fits('el panel');
+  expect(errors).toEqual([]);
+});
+
+test('B3.2 · el análisis por periodos (A9) y la evolución de un ejercicio (A10) caben a 360 px y son accesibles', async ({
+  page,
+}, testInfo) => {
+  const errors = collectErrors(page);
+  const mobile = testInfo.project.name === 'movil';
+  if (mobile) await page.setViewportSize({ width: 360, height: 780 });
+  const fits = async (label: string) => {
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - window.innerWidth,
+    );
+    expect(overflow, `desplazamiento horizontal en ${label}`).toBeLessThanOrEqual(1);
+    await expectNoSeriousA11yIssues(page);
+  };
+  await page.goto('/entrenador/clientes/c-marta/analisis');
+  await expect(page.getByRole('heading', { level: 2, name: /^4 semanas:/ })).toBeVisible();
+  await fits('A9');
+  const filtersButton = page.getByRole('button', { name: /Periodo y filtros/ });
+  if (mobile) {
+    // En el móvil, los filtros van en una hoja inferior que se abre y se cierra.
+    await expect(page.getByLabel('Periodo', { exact: true })).toBeHidden();
+    await filtersButton.click();
+    const sheet = page.getByRole('dialog', { name: 'Periodo y filtros' });
+    await expect(sheet).toBeVisible();
+    await sheet.getByLabel('Periodo', { exact: true }).selectOption({ label: '12 semanas' });
+    await expectNoSeriousA11yIssues(page);
+    await page.keyboard.press('Escape');
+    await expect(sheet).toBeHidden();
+    await expect(filtersButton).toBeFocused();
+  } else {
+    await expect(filtersButton).toBeHidden();
+    await expect(page.getByLabel('Periodo', { exact: true })).toBeVisible();
+  }
+  await page.goto('/entrenador/clientes/c-marta/analisis?periodo=12-semanas&magnitud=tonelaje');
+  await expect(page.getByText('Tonelaje (nominal) por semana (kg)')).toBeVisible();
+  await fits('A9 con 12 semanas');
+  await page
+    .getByRole('region', { name: 'Ejercicios' })
+    .getByRole('link', { name: 'Sentadilla trasera con barra' })
+    .click();
+  await expect(
+    page.getByRole('heading', { level: 2, name: 'Sentadilla trasera con barra' }),
+  ).toBeVisible();
+  await fits('A10');
   expect(errors).toEqual([]);
 });

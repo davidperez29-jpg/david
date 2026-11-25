@@ -192,7 +192,7 @@ test.describe('área del entrenador', () => {
   test('el selector de métrica cambia todos los gráficos de carga', async ({ page }) => {
     await page.goto('/entrenador/carga');
     await page.getByText('Tonelaje', { exact: true }).first().click();
-    await expect(page.getByText('Cálculo · training.volume-load v1.0.0')).toBeVisible();
+    await expect(page.getByText('Cálculo · training.volume-load v2.0.0')).toBeVisible();
   });
 
   test('un cliente o un ejercicio inexistente devuelven 404', async ({ page }) => {
