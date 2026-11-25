@@ -7,10 +7,14 @@ import { cn } from '@/ui/cn';
 
 export type VolumeMetric = 'volumeLoadKg' | 'completedSets' | 'totalReps';
 
+/**
+ * Desde B3.2 (P-106), estas cifras salen del mismo dominio que el análisis: por fecha de
+ * ejecución, con `training.total-reps` 2.0.0 y `training.volume-load` 2.0.0.
+ */
 export const METRICS: Record<VolumeMetric, { label: string; unit: string; formula: string }> = {
   completedSets: { label: 'Series', unit: 'series', formula: 'training.completed-sets v1.0.0' },
-  totalReps: { label: 'Repeticiones', unit: 'rep.', formula: 'training.total-reps v1.0.0' },
-  volumeLoadKg: { label: 'Tonelaje', unit: 'kg', formula: 'training.volume-load v1.0.0' },
+  totalReps: { label: 'Repeticiones', unit: 'rep.', formula: 'training.total-reps v2.0.0' },
+  volumeLoadKg: { label: 'Tonelaje', unit: 'kg', formula: 'training.volume-load v2.0.0' },
 };
 
 /** Redondea hacia arriba a un número «limpio» (1, 2, 2,5, 5 × 10ⁿ) para el eje. */
@@ -220,7 +224,7 @@ export function VolumeTable({
                   {formatNumber(week.volumeLoadKg, 0)} kg
                   {week.setsWithoutExternalLoad > 0 ? (
                     <span className="block text-[11px] text-ink-500">
-                      + {week.setsWithoutExternalLoad} series sin carga externa
+                      + {week.setsWithoutExternalLoad} series fuera del tonelaje
                     </span>
                   ) : null}
                 </td>

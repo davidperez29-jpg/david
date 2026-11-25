@@ -5,6 +5,7 @@ import { type SessionAnalysisVM } from '@/contracts/analysis';
 import { type Comparison } from '@/domain/analysis/compare';
 import {
   ANALYSIS_FORMULAS,
+  assistanceMeanKg,
   type AnalyzedExercise,
   type AnalyzedSet,
   type ConditionCounts,
@@ -31,6 +32,7 @@ import {
   SET_STATUS_LABEL,
   timeText,
   TONNAGE_EXCLUSION_TEXT,
+  weekText,
 } from './analysis-copy';
 import { FormulaBadge } from './formula-badge';
 
@@ -101,20 +103,6 @@ function Row({
 }
 
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
-
-function weekText(week: NonNullable<SessionAnalysis['executedWeek']>): string {
-  const [year, n] = week.key.split('-W') as [string, string];
-  const date = (d: string) =>
-    new Intl.DateTimeFormat('es-ES', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-      timeZone: 'UTC',
-    })
-      .format(new Date(`${d}T00:00:00Z`))
-      .replace('.', '');
-  return `Semana ${Number(n)} de ${year} (ISO): ${date(week.start)} – ${date(week.end)}`;
-}
 
 function Aside({ items }: { items: string[] }) {
   if (items.length === 0) return null;
@@ -342,6 +330,30 @@ function VolumeTable({ a }: { a: SessionAnalysis }) {
       formula: ANALYSIS_FORMULAS.volumeLoad,
     });
   }
+  // P-123: lastre y asistencia, cada uno en su magnitud y aparte del tonelaje.
+  if (p.addedLoadKg !== null || e.addedLoad.kg !== null) {
+    rows.push({
+      name: 'Lastre (aparte del tonelaje)',
+      prescribed: intervalText(p.addedLoadKg, 'kg', 1),
+      executed: e.addedLoad.kg === null ? null : `${formatNumber(e.addedLoad.kg, 1)} kg`,
+      formula: ANALYSIS_FORMULAS.addedLoadVolume,
+      note: `en ${plural(e.addedLoad.sets, 'serie', 'series')}`,
+    });
+  }
+  if (e.assistance.sets > 0) {
+    const mean = assistanceMeanKg(e.assistance);
+    rows.push({
+      name: 'Asistencia (aparte)',
+      prescribed: null,
+      executed: `${plural(e.assistance.sets, 'serie asistida', 'series asistidas')} · ${e.assistance.reps} rep.`,
+      formula: ANALYSIS_FORMULAS.assistanceSummary,
+      note:
+        (mean === null
+          ? '· asistencia sin dato'
+          : `· asistencia media ${formatNumber(mean, 2)} kg`) +
+        (e.assistance.noData > 0 ? ` (${e.assistance.noData} sin dato)` : ''),
+    });
+  }
   const excluded = Object.entries(e.tonnageExcluded) as [
     keyof typeof TONNAGE_EXCLUSION_TEXT,
     number,
@@ -405,7 +417,8 @@ function VolumeTable({ a }: { a: SessionAnalysis }) {
         ))}
         <li>
           El tonelaje suma kg declarados: no es la carga realmente desplazada ni el trabajo
-          mecánico. No incluye peso corporal, lastre ni asistencia.
+          mecánico. No incluye peso corporal, lastre ni asistencia, que van aparte y nunca se suman
+          entre sí.
         </li>
       </ul>
     </Section>
@@ -532,7 +545,7 @@ function MissingAndWarnings({ vm, timeZone }: { vm: SessionAnalysisVM; timeZone:
   );
 }
 
-function conditionsOf(s: AnalyzedSet): string {
+export function conditionsOf(s: AnalyzedSet): string {
   const all = [s.quantity, s.load, ...s.effort].filter((c): c is Comparison => c !== null);
   return all.length === 0
     ? '—'
@@ -544,14 +557,14 @@ function conditionsOf(s: AnalyzedSet): string {
         .join(' · ');
 }
 
-function differencesOf(s: AnalyzedSet): string {
+export function differencesOf(s: AnalyzedSet): string {
   const all = [s.quantity, s.load, ...s.effort]
     .map((c) => (c ? differenceText(c) : null))
     .filter(Boolean);
   return all.length === 0 ? '—' : all.join(' · ');
 }
 
-function setVersion(s: AnalyzedSet): string {
+export function setVersion(s: AnalyzedSet): string {
   if (s.outsideReference) return `v${s.loggedVersion} · fuera de la vigente`;
   if (s.referenceVersion === null) return 'No determinada';
   return s.loggedVersion !== null && s.loggedVersion !== s.referenceVersion
@@ -559,7 +572,7 @@ function setVersion(s: AnalyzedSet): string {
     : `v${s.referenceVersion}`;
 }
 
-function SetExtras({ s, timeZone }: { s: AnalyzedSet; timeZone: string }) {
+export function SetExtras({ s, timeZone }: { s: AnalyzedSet; timeZone: string }) {
   const extras: string[] = [];
   if (s.performedAt)
     extras.push(

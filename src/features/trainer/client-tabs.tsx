@@ -12,6 +12,7 @@ const TABS = [
   ['/resultados', 'Resultados'],
   ['/planificacion', 'Planificación'],
   ['/sesiones', 'Sesiones'],
+  ['/analisis', 'Análisis'],
   ['/registro', 'Registro'],
   ['/informes', 'Informes'],
   ['/salud', 'Salud'],

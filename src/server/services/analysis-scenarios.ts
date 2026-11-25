@@ -1006,3 +1006,161 @@ export async function buildAnalysisScenarios(options: {
     },
   };
 }
+
+// ── B3.2 · Un año de entrenamiento (rendimiento de A9, AC-B3-23) ─────────────────────────
+
+export interface TrainingYearWorld {
+  db: SqlDatabase;
+  repos: Repositories;
+  /** Alex, el día después de la última sesión. */
+  trainer: TrainerContext;
+  clientId: string;
+  from: IsoDate;
+  to: IsoDate;
+  /** Sesiones publicadas, empezadas y sin empezar. */
+  counts: { published: number; started: number; notStarted: number; moved: number };
+}
+
+/**
+ * SOLO PARA PRUEBAS: `weeks` semanas (52 por defecto) de tres sesiones (lunes, miércoles y
+ * viernes) para Lucía, creadas por los servicios reales y deterministas:
+ * - sentadilla goblet 3 × 10 · 16 kg · RIR 2 (la tercera serie, a veces 9), press con mancuernas
+ *   3 × 10 · 2 × 10 kg y plancha lateral 2 × 30 s;
+ * - una de cada trece sin empezar; cada cinco semanas, la del miércoles se hace el jueves.
+ * Solo en memoria o en el directorio temporal.
+ */
+export async function buildTrainingYear(options: {
+  setClock: (at: IsoDateTime) => void;
+  weeks?: number;
+  path?: string;
+}): Promise<TrainingYearWorld> {
+  const path = options.path ?? ':memory:';
+  assertTestPath(path);
+  const weeks = options.weeks ?? 52;
+  options.setClock(`${SEED_DAY}T07:00:00.000Z`);
+  const { db, repos } = seededTestDatabase(SEED_DAY, { path, timeZone: TZ });
+  const trainerAt = (today: IsoDate): TrainerContext => ({
+    actor: { role: 'trainer', trainerId: DEMO_TRAINER_ID } satisfies TrainerActor,
+    today,
+    timeZone: TZ,
+    repos,
+  });
+  const clientAt = (today: IsoDate): ClientContext => ({
+    actor: {
+      role: 'client',
+      clientId: DEMO_NEW_CLIENT_ID,
+      trainerId: DEMO_TRAINER_ID,
+    } satisfies ClientActor,
+    today,
+    timeZone: TZ,
+    repos,
+  });
+  const items: SessionItem[] = [
+    item('itm-goblet', 1),
+    item('itm-press', 2, {
+      variantId: 'ex-db-press',
+      defaults: defaults({
+        reps: { kind: 'fixed', reps: 10 },
+        load: { kind: 'external', kg: 10, basis: 'per_implement', implements: 2 },
+        effort: { kind: 'rir', rir: 2 },
+      }),
+    }),
+    item('itm-plank', 3, {
+      variantId: 'ex-side-plank',
+      sets: 2,
+      defaults: defaults({ reps: { kind: 'seconds', seconds: 30 }, load: { kind: 'bodyweight' } }),
+    }),
+  ];
+  const start: IsoDate = '2026-11-09'; // lunes
+  const counts = { published: 0, started: 0, notStarted: 0, moved: 0 };
+  let index = 0;
+  for (let w = 0; w < weeks; w += 1) {
+    for (const offset of [0, 2, 4]) {
+      index += 1;
+      const plannedDate = addDaysIso(start, 7 * w + offset);
+      const publishedAt = `${addDaysIso(plannedDate, -1)}T18:00:00.000Z`;
+      options.setClock(publishedAt);
+      const ctx = trainerAt(publishedAt.slice(0, 10));
+      const sessionId = `s-anio-${plannedDate}`;
+      const created = await createSessionDraft(ctx, {
+        sessionId,
+        clientId: DEMO_NEW_CLIENT_ID,
+        plannedDate,
+        label: offset === 0 ? 'Lunes' : offset === 2 ? 'Miércoles' : 'Viernes',
+        title: 'Fuerza general',
+        focus: 'Escenario de un año',
+        estimatedMinutes: 40,
+      });
+      if (!created.ok) throw new Error(`${sessionId}: no se creó`);
+      const builder = (await getSessionBuilder(ctx, sessionId))!;
+      const published = await publishSession(ctx, {
+        sessionId,
+        expectedRevision: builder.revision,
+        content: { ...builder.content, items },
+      });
+      if (!published.ok)
+        throw new Error(`${sessionId}: no se publicó (${JSON.stringify(published)})`);
+      counts.published += 1;
+      if (index % 13 === 0) {
+        counts.notStarted += 1;
+        continue;
+      }
+      const moved = offset === 2 && w % 5 === 4;
+      if (moved) counts.moved += 1;
+      const day = moved ? addDaysIso(plannedDate, 1) : plannedDate;
+      const content = (await repos.training.getVersion(sessionId, 1))!.content;
+      let n = 0;
+      let minute = 0;
+      const send = async (command: Record<string, unknown>) => {
+        n += 1;
+        minute += 2;
+        const at = `${day}T08:${String(minute).padStart(2, '0')}:00.000Z`;
+        options.setClock(plusSeconds(at, 30));
+        const outcome = await executeClientCommand(clientAt(day), sessionId, {
+          commandId: `cmd-anio-${plannedDate}-${String(n).padStart(2, '0')}`,
+          clientId: DEMO_NEW_CLIENT_ID,
+          device: { recordedAt: at, timeZone: TZ, utcOffsetMinutes: 60 },
+          ...command,
+        } as ClientCommand);
+        if (outcome.status !== 200)
+          throw new Error(`${sessionId}: ${JSON.stringify(outcome.body)}`);
+      };
+      await send({ type: 'start', versionNumber: 1 });
+      counts.started += 1;
+      for (const it of content.items) {
+        for (const target of resolveSets(it)) {
+          const proposed = defaultPerformed(target);
+          const tired = it.id === 'itm-goblet' && target.setNumber === 3 && (w + offset) % 3 === 0;
+          await send({
+            type: 'log_set',
+            versionNumber: 1,
+            prescriptionId: it.id,
+            setNumber: target.setNumber,
+            supersedes: null,
+            ...proposed,
+            ...(tired ? { reps: 9 } : {}),
+            ...(it.id !== 'itm-plank' ? { rir: tired ? 1 : 2 } : {}),
+          });
+        }
+      }
+      await send({ type: 'finish', confirmEndEarly: false, comment: null });
+    }
+  }
+  const to = addDaysIso(start, 7 * weeks - 1);
+  options.setClock(`${addDaysIso(to, 1)}T12:00:00.000Z`);
+  return {
+    db,
+    repos,
+    trainer: trainerAt(addDaysIso(to, 1)),
+    clientId: DEMO_NEW_CLIENT_ID,
+    from: start,
+    to,
+    counts,
+  };
+}
+
+function addDaysIso(date: IsoDate, days: number): IsoDate {
+  const d = new Date(`${date}T00:00:00.000Z`);
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10);
+}

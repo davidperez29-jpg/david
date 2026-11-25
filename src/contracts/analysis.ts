@@ -1,3 +1,5 @@
+import { type ExerciseEvolution } from '@/domain/analysis/exercise';
+import { type Period, type PeriodAnalysis, type PeriodKind } from '@/domain/analysis/period';
 import { type Perspective } from '@/domain/analysis/reference';
 import { type ExecutedVolume, type SessionAnalysis } from '@/domain/analysis/session';
 import { type IsoDate, type IsoDateTime } from '@/domain/time';
@@ -68,4 +70,77 @@ export interface RecentExecutionVM {
   executedOn: IsoDate;
   startedAt: IsoDateTime;
   status: ExecutionStatusV2;
+}
+
+/** Magnitud del gráfico semanal de A9 (cada una en su unidad; nunca se mezclan). */
+export type WeeklyMagnitude = 'sets' | 'reps' | 'tonnage' | 'seconds' | 'meters' | 'addedLoad';
+
+/**
+ * Valores de la URL de A9 y A10 (en español, como el resto de parámetros) y su equivalente
+ * interno. Los comparten el servicio, que los interpreta, y la pantalla, que construye enlaces.
+ */
+export const PERIOD_PARAM = {
+  semana: 'week',
+  '4-semanas': 'weeks4',
+  '12-semanas': 'weeks12',
+  rango: 'range',
+} as const satisfies Record<string, PeriodKind>;
+
+export const MAGNITUDE_PARAM = {
+  series: 'sets',
+  repeticiones: 'reps',
+  tonelaje: 'tonnage',
+  tiempo: 'seconds',
+  distancia: 'meters',
+  lastre: 'addedLoad',
+} as const satisfies Record<string, WeeklyMagnitude>;
+
+const reverse = <T extends Record<string, string>>(map: T) =>
+  Object.fromEntries(Object.entries(map).map(([k, v]) => [v, k])) as { [K in keyof T as T[K]]: K };
+
+export const PERIOD_PARAM_OF = reverse(PERIOD_PARAM);
+export const MAGNITUDE_PARAM_OF = reverse(MAGNITUDE_PARAM);
+
+export interface AnalysisFilters {
+  /** Patrón de la biblioteca (P-98) o `null`. */
+  pattern: string | null;
+  /** «Solo principal» o «principal y secundarios»: para el filtro y para el recuento que se muestra. */
+  patternMode: 'primary' | 'all';
+  variantId: string | null;
+  /** P-104: N de las últimas M sesiones (ajustables, no se guardan). */
+  repeat: { n: number; m: number };
+  sort: 'asc' | 'desc';
+  magnitude: WeeklyMagnitude;
+}
+
+/** A9 · Análisis del cliente por periodos (B3.2). */
+export interface ClientAnalysisVM {
+  clientId: string;
+  clientFirstName: string;
+  today: IsoDate;
+  appTimeZone: string;
+  perspective: Perspective;
+  /** El periodo pedido no era válido: se muestra el de por defecto y se avisa. */
+  invalidPeriod: boolean;
+  filters: AnalysisFilters;
+  options: {
+    patterns: { id: string; name: string }[];
+    exercises: { variantId: string; name: string }[];
+  };
+  names: { variants: Record<string, string>; patterns: Record<string, string> };
+  analysis: PeriodAnalysis;
+}
+
+/** A10 · Evolución de un ejercicio (B3.2). */
+export interface ExerciseEvolutionVM {
+  clientId: string;
+  clientFirstName: string;
+  variantId: string;
+  name: string;
+  today: IsoDate;
+  appTimeZone: string;
+  perspective: Perspective;
+  period: Period;
+  invalidPeriod: boolean;
+  evolution: ExerciseEvolution;
 }

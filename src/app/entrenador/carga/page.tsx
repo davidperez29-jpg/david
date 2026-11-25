@@ -18,7 +18,7 @@ export default async function LoadPage() {
     <>
       <PageHeader
         title="Carga y volumen"
-        description="Volumen semanal de las últimas cuatro semanas, calculado con las series que registra cada cliente."
+        description="Volumen semanal de las últimas cuatro semanas, por fecha de ejecución, calculado con las series que registra cada cliente."
       />
 
       <VolumeBoard clients={load.clients} currentWeek={isoWeekKey(ctx.today)} />
@@ -59,8 +59,8 @@ export default async function LoadPage() {
           phase="fase de seguimiento de carga"
           items={[
             'Esfuerzo percibido de la sesión y carga interna',
-            'Comparación entre semanas y entre bloques',
-            'Volumen por patrón de movimiento y grupo muscular',
+            'Comparación entre bloques de entrenamiento (la semana a semana y por patrón ya está en la pestaña «Análisis» de cada cliente)',
+            'Volumen por grupo muscular',
             'Datos importados de dispositivos, con su procedencia',
           ]}
         >

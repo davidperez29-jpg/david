@@ -14,7 +14,7 @@ import { GOAL_AREA_LABELS, GOAL_STATUS_LABELS } from '@/domain/goals';
 import { addDays, startOfIsoWeek } from '@/domain/time';
 import { formatLoad, formatSetsAndReps } from '@/domain/training/prescription';
 import { sessionStatus } from '@/domain/training/session';
-import { weeklyVolume } from '@/domain/training/volume';
+import { executedWeeklyVolume } from '@/domain/analysis/period';
 import { type TrainerContext } from '../context';
 import { loadSessionVariants } from './library';
 import {
@@ -25,6 +25,7 @@ import {
   toSessionCard,
   toSessionDetail,
 } from './mappers';
+import { executedEntries } from './analysis-data';
 import { ownClient, sessionsAndLogs, summarize } from './trainer-access';
 
 /**
@@ -192,16 +193,14 @@ export async function getClientResults(
   const client = await ownClient(ctx, clientId);
   if (!client) return null;
   const range = { from: startOfIsoWeek(addDays(ctx.today, -21)), to: ctx.today };
-  const [{ sessions, logs }, results] = await Promise.all([
-    sessionsAndLogs(ctx, client.id, range),
+  const [entries, results] = await Promise.all([
+    // P-106: por fecha de ejecución, con el tonelaje 2.0.0 y cada serie frente a su versión.
+    executedEntries(ctx.repos, client.id, range, { today: ctx.today, timeZone: ctx.timeZone }),
     ctx.repos.assessments.listByClient(client.id),
   ]);
   return {
-    weeklyVolume: weeklyVolume(
-      sessions.flatMap((s) => {
-        const log = logs.get(s.id);
-        return log ? [{ date: s.date, sets: loggedSets(s, log) }] : [];
-      }),
+    weeklyVolume: executedWeeklyVolume(
+      entries.map((e) => ({ executedOn: e.executedOn, executed: e.analysis.executed })),
       range,
     ),
     assessments: toAssessmentSeries(results),

@@ -18,10 +18,11 @@ import { UNIT_SYMBOLS } from '@/domain/measurement';
 import { initials } from '@/domain/text';
 import { addDays, startOfIsoWeek } from '@/domain/time';
 import { sessionStatus } from '@/domain/training/session';
-import { VOLUME_FORMULAS, weeklyVolume } from '@/domain/training/volume';
+import { executedWeeklyVolume, PHASE1_VOLUME_FORMULAS } from '@/domain/analysis/period';
 import { type TrainerContext } from '../context';
 import { loadSessionVariants } from './library';
-import { loggedSets, toAssessmentSeries, toPreview, toRehabCaseVM, toSessionCard } from './mappers';
+import { toAssessmentSeries, toPreview, toRehabCaseVM, toSessionCard } from './mappers';
+import { executedEntries } from './analysis-data';
 import { ownClients, sessionsAndLogs, summarize } from './trainer-access';
 
 export async function listTrainerClients(ctx: TrainerContext): Promise<ClientSummaryVM[]> {
@@ -149,21 +150,30 @@ export async function getLoadOverview(ctx: TrainerContext): Promise<LoadOverview
   const clients = (await ownClients(ctx)).filter((client) => client.status === 'active');
   const rows = await Promise.all(
     clients.map(async (client) => {
-      const { sessions, logs } = await sessionsAndLogs(ctx, client.id, range);
-      const entries = sessions.flatMap((s) => {
-        const log = logs.get(s.id);
-        return log ? [{ date: s.date, sets: loggedSets(s, log) }] : [];
+      // P-106: por fecha de ejecución, con el tonelaje 2.0.0 y cada serie frente a su versión.
+      const entries = await executedEntries(ctx.repos, client.id, range, {
+        today: ctx.today,
+        timeZone: ctx.timeZone,
       });
       return {
         id: client.id,
         name: client.displayName,
         initials: initials(client.displayName),
-        weeks: weeklyVolume(entries, range),
+        weeks: executedWeeklyVolume(
+          entries.map((e) => ({ executedOn: e.executedOn, executed: e.analysis.executed })),
+          range,
+        ),
       };
     }),
   );
-  const ids = new Set<string>(Object.values(VOLUME_FORMULAS).map((ref) => ref.id));
-  return { range, clients: rows, formulas: FORMULA_REGISTRY.filter((f) => ids.has(f.id)) };
+  const refs = Object.values(PHASE1_VOLUME_FORMULAS);
+  return {
+    range,
+    clients: rows,
+    formulas: FORMULA_REGISTRY.filter((f) =>
+      refs.some((r) => r.id === f.id && r.version === f.version),
+    ),
+  };
 }
 
 export async function getAssessmentsOverview(ctx: TrainerContext): Promise<AssessmentsOverviewVM> {

@@ -216,6 +216,34 @@ export function offsetText(days: number | null): string | null {
   return `${n} ${n === 1 ? 'día' : 'días'} ${days > 0 ? 'después' : 'antes'}`;
 }
 
+/** «28 dic 2026» (fecha civil, sin zona). */
+export function shortDateText(date: string): string {
+  return new Intl.DateTimeFormat('es-ES', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    timeZone: 'UTC',
+  })
+    .format(new Date(`${date}T00:00:00Z`))
+    .replace('.', '');
+}
+
+/** «28 dic 2026 – 3 ene 2027» (AC-B3-14). */
+export const weekRangeText = (week: { start: string; end: string }) =>
+  `${shortDateText(week.start)} – ${shortDateText(week.end)}`;
+
+/** Número y año ISO de una clave «2026-W53». */
+export function weekParts(key: string): { year: number; week: number } {
+  const [year, n] = key.split('-W') as [string, string];
+  return { year: Number(year), week: Number(n) };
+}
+
+/** «Semana 53 de 2026 (ISO): 28 dic 2026 – 3 ene 2027». */
+export function weekText(week: { key: string; start: string; end: string }): string {
+  const { year, week: n } = weekParts(week.key);
+  return `Semana ${n} de ${year} (ISO): ${weekRangeText(week)}`;
+}
+
 /** Palabras que el análisis no usa (P-91, P-120). Lo comprueban las pruebas. */
 export const FORBIDDEN_WORDS = [
   /incumpl/i,

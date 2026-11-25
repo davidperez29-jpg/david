@@ -1,9 +1,19 @@
 import Link from 'next/link';
 import { type ExecutionDayVM, type RecentExecutionVM } from '@/contracts/analysis';
-import { ANALYSIS_FORMULAS, type ExecutedVolume } from '@/domain/analysis/session';
+import {
+  ANALYSIS_FORMULAS,
+  assistanceMeanKg,
+  type ExecutedVolume,
+} from '@/domain/analysis/session';
 import { formatDate, formatNumber } from '@/domain/format';
 import { ExecutionStatusBadge } from '@/features/shared/status-badge';
-import { dateTimeText, offsetText, timeText, TONNAGE_EXCLUSION_TEXT } from './analysis-copy';
+import {
+  dateTimeText,
+  offsetText,
+  timeText,
+  TONNAGE_EXCLUSION_TEXT,
+  weekText,
+} from './analysis-copy';
 import { FormulaBadge } from './formula-badge';
 
 /**
@@ -34,20 +44,6 @@ function VolumeCells({ v }: { v: ExecutedVolume }) {
   );
 }
 
-function weekLabel(week: ExecutionDayVM['week']) {
-  const [year, n] = week.key.split('-W') as [string, string];
-  const date = (d: string) =>
-    new Intl.DateTimeFormat('es-ES', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-      timeZone: 'UTC',
-    })
-      .format(new Date(`${d}T00:00:00Z`))
-      .replace('.', '');
-  return `Semana ${Number(n)} de ${year} (ISO): ${date(week.start)} – ${date(week.end)}`;
-}
-
 export function ExecutionDayView({
   vm,
   sessionHref,
@@ -68,7 +64,7 @@ export function ExecutionDayView({
         <h2 className="mt-1 text-2xl font-extrabold text-ink-900 first-letter:uppercase">
           {formatDate(vm.date, 'long')}
         </h2>
-        <p className="mt-1 text-sm text-ink-700">{weekLabel(vm.week)}</p>
+        <p className="mt-1 text-sm text-ink-700">{weekText(vm.week)}</p>
         <nav aria-label="Otros días" className="mt-3 flex flex-wrap gap-3 text-sm font-semibold">
           <Link
             href={dayHref(prev(vm.date))}
@@ -165,6 +161,24 @@ export function ExecutionDayView({
           <FormulaBadge formula={ANALYSIS_FORMULAS.volumeLoad} />
         </div>
         <ul className="mt-2 space-y-1 text-sm text-ink-500">
+          {vm.totals.addedLoad.kg !== null ? (
+            <li>
+              Lastre (aparte del tonelaje): {formatNumber(vm.totals.addedLoad.kg, 1)} kg en{' '}
+              {vm.totals.addedLoad.sets} {vm.totals.addedLoad.sets === 1 ? 'serie' : 'series'}{' '}
+              (training.added-load-volume 1.0.0).
+            </li>
+          ) : null}
+          {vm.totals.assistance.sets > 0 ? (
+            <li>
+              Asistencia (aparte): {vm.totals.assistance.sets}{' '}
+              {vm.totals.assistance.sets === 1 ? 'serie asistida' : 'series asistidas'}
+              {assistanceMeanKg(vm.totals.assistance) !== null
+                ? `, media ponderada ${formatNumber(assistanceMeanKg(vm.totals.assistance)!, 2)} kg`
+                : ', sin los kg anotados'}
+              {vm.totals.assistance.noData > 0 ? ` (${vm.totals.assistance.noData} sin dato)` : ''}{' '}
+              (training.assistance-summary 1.0.0).
+            </li>
+          ) : null}
           <li>
             Cada magnitud se suma por separado; nunca se promedian porcentajes ni se mezclan
             repeticiones, segundos y metros.

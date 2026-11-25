@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { type Perspective } from '@/domain/analysis/reference';
+import { assistanceMeanKg } from '@/domain/analysis/session';
 import { type TrainerContext } from '../context';
 import { buildAnalysisScenarios, type ScenarioWorld } from './analysis-scenarios';
 import { executeClientCommand } from './client-execution';
@@ -222,7 +223,12 @@ describe('A8 sobre los escenarios', () => {
       tonnageKg: 1760,
       tonnageSets: 5,
       tonnageExcluded: { per_side_basis: 2, reps_per_side: 2, self_selected: 2, not_by_reps: 2 },
+      // B3.2 (P-123): lastre y asistencia, aparte del tonelaje.
+      addedLoad: { kg: 50, sets: 2, reps: 10, notByReps: 0 },
+      assistance: { sets: 2, reps: 12, withKgReps: 6, kgTimesReps: 120, noData: 1 },
     });
+    expect(assistanceMeanKg(x.executed.assistance)).toBe(20);
+    expect(x.prescribed.addedLoadKg).toEqual({ min: 50, max: 50 });
     expect(x.prescribed.tonnageKg).toEqual({ min: 1680, max: 1760 });
     const assisted = x.exercises.find((e) => e.prescriptionId === 'itm-pullup-assisted')!;
     expect(assisted.sets.map((s) => s.load?.condition)).toEqual(['matches', 'no_data']);

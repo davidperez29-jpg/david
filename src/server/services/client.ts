@@ -3,9 +3,10 @@ import { type ClientProgressVM, type ClientWeekVM } from '@/contracts/client';
 import { canAccessClient, canReadResource, visibleAssessmentTestIds } from '@/domain/access';
 import { addDays, startOfIsoWeek } from '@/domain/time';
 import { sortSessions } from '@/domain/training/session';
-import { weeklyVolume } from '@/domain/training/volume';
+import { executedWeeklyVolume } from '@/domain/analysis/period';
 import { type ClientContext } from '../context';
-import { loggedSets, logsBySession, toAssessmentSeries, toSessionCard } from './mappers';
+import { executedEntries } from './analysis-data';
+import { logsBySession, toAssessmentSeries, toSessionCard } from './mappers';
 
 async function loadSelf(ctx: ClientContext) {
   const client = await ctx.repos.clients.getById(ctx.actor.clientId);
@@ -46,16 +47,14 @@ export async function getClientProgress(ctx: ClientContext): Promise<ClientProgr
   let volume: ClientProgressVM['volume'] = null;
   if (canReadResource(ctx.actor, client, 'volume', sharing)) {
     const range = { from: startOfIsoWeek(addDays(ctx.today, -21)), to: ctx.today };
-    const [sessions, logs] = await Promise.all([
-      ctx.repos.sessions.listByClient(client.id, range),
-      ctx.repos.logs.listByClient(client.id, range),
-    ]);
-    const byId = new Map(sessions.map((s) => [s.id, s]));
-    volume = weeklyVolume(
-      logs.flatMap((log) => {
-        const session = byId.get(log.sessionId);
-        return session ? [{ date: log.date, sets: loggedSets(session, log) }] : [];
-      }),
+    // P-106: el mismo dominio y las mismas fórmulas que el entrenador (fecha de ejecución,
+    // tonelaje 2.0.0, cada serie frente a su versión). Solo lo propio: `client.id` es la clienta.
+    const entries = await executedEntries(ctx.repos, client.id, range, {
+      today: ctx.today,
+      timeZone: ctx.timeZone,
+    });
+    volume = executedWeeklyVolume(
+      entries.map((e) => ({ executedOn: e.executedOn, executed: e.analysis.executed })),
       range,
     );
   }
